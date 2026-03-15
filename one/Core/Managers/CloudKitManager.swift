@@ -1,0 +1,601 @@
+//
+//  CloudKitManager.swift
+//  one
+//
+//  Created for Circle feature
+//
+
+import Foundation
+import CloudKit
+import Combine
+import Security
+
+class CloudKitManager: ObservableObject {
+    static let shared = CloudKitManager()
+    
+    struct FriendCircleData: Identifiable {
+        let id = UUID()
+        let user: CKRecord
+        let share: CKRecord?
+    }
+    
+    let container: CKContainer
+    let privateDatabase: CKDatabase
+    let publicDatabase: CKDatabase
+    
+    @Published var isCloudKitAvailable = false
+    @Published var currentUser: CKRecord?
+    @Published var isFetchingUser = false
+    @Published var syncStatus: SyncStatus = .idle
+    
+    enum SyncStatus {
+        case idle
+        case syncing
+        case success
+        case error(String)
+    }
+    
+    private init() {
+        container = CKContainer(identifier: "iCloud.com.batu.ones")
+        privateDatabase = container.privateCloudDatabase
+        publicDatabase = container.publicCloudDatabase
+        
+        checkCloudKitAvailability()
+        loadCurrentUser()
+    }
+    
+    // MARK: - Load Current User
+    
+    func loadCurrentUser() {
+        DispatchQueue.main.async {
+            self.isFetchingUser = true
+        }
+        
+        container.fetchUserRecordID { [weak self] recordID, error in
+            guard let self = self else { return }
+            
+            guard let recordID = recordID else {
+                ONELogger.error("Could not fetch user record ID: \(error?.localizedDescription ?? "unknown")", category: .cloudkit)
+                DispatchQueue.main.async {
+                    self.isFetchingUser = false
+                }
+                return
+            }
+            
+            let userID = recordID.recordName
+            
+            // Check if custom User record exists in PUBLIC database
+            let predicate = NSPredicate(format: "userID == %@", userID)
+            let query = CKQuery(recordType: "AppUser", predicate: predicate)
+            
+            self.publicDatabase.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { result in
+                switch result {
+                case .success(let (matchResults, _)):
+                    let records = matchResults.compactMap { try? $0.1.get() }
+                    if let existingUser = records.first {
+                        ONELogger.success("Loaded existing user profile", category: .cloudkit)
+                        DispatchQueue.main.async {
+                            self.currentUser = existingUser
+                            self.isFetchingUser = false
+                        }
+                    } else {
+                        ONELogger.info("No user profile found, will create one", category: .cloudkit)
+                        DispatchQueue.main.async {
+                            self.isFetchingUser = false
+                        }
+                    }
+                case .failure(let error):
+                    let nsError = error as NSError
+                    if nsError.domain == CKErrorDomain && nsError.code == 12 {
+                        ONELogger.info("User profile not found (this is normal for new users)", category: .cloudkit)
+                    } else {
+                        ONELogger.error("Failed to load user", error: error, category: .cloudkit)
+                    }
+                    DispatchQueue.main.async {
+                        self.isFetchingUser = false
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Ensure Current User is Loaded
+
+    /// Waits until currentUser is non-nil, with a timeout.
+    /// If currentUser is already loaded, returns immediately.
+    /// If not yet loaded, triggers loadCurrentUser() and waits up to 10 seconds.
+    func ensureCurrentUser() async -> Bool {
+        // Already loaded
+        if currentUser != nil { return true }
+
+        // Trigger a load if not already fetching
+        if !isFetchingUser {
+            loadCurrentUser()
+        }
+
+        // Wait for currentUser to become non-nil, with timeout
+        let timeoutDate = Date().addingTimeInterval(10)
+        while currentUser == nil && Date() < timeoutDate {
+            try? await Task.sleep(nanoseconds: 200_000_000) // 0.2s polling
+        }
+
+        if currentUser == nil {
+            ONELogger.error("ensureCurrentUser timed out — currentUser is still nil", category: .cloudkit)
+        }
+        return currentUser != nil
+    }
+
+    // MARK: - CloudKit Availability
+
+    func checkCloudKitAvailability() {
+        container.accountStatus { [weak self] status, error in
+            DispatchQueue.main.async {
+                let isAvailable = (status == .available)
+                self?.isCloudKitAvailable = isAvailable
+                
+                // Debug logging
+                ONELogger.debug("CloudKit Status: \(self?.statusDescription(status) ?? "unknown") | Available: \(isAvailable)", category: .cloudkit)
+                
+                if let error = error {
+                    ONELogger.error("CloudKit status check error", error: error, category: .cloudkit)
+                }
+                
+                // Additional container info check
+                self?.container.fetchUserRecordID { recordID, fetchError in
+                    if recordID != nil {
+                        ONELogger.debug("User record ID fetched", category: .cloudkit)
+                    } else if let fetchError = fetchError {
+                        ONELogger.error("Could not fetch user record", error: fetchError, category: .cloudkit)
+                    }
+                }
+            }
+        }
+    }
+    
+    private func statusDescription(_ status: CKAccountStatus) -> String {
+        switch status {
+        case .available:
+            return "Available"
+        case .noAccount:
+            return "No Account"
+        case .restricted:
+            return "Restricted"
+        case .couldNotDetermine:
+            return "Could Not Determine"
+        case .temporarilyUnavailable:
+            return "Temporarily Unavailable"
+        @unknown default:
+            return "Unknown"
+        }
+    }
+    
+    // MARK: - User Management
+    
+    func createOrFetchUser(displayName: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        container.fetchUserRecordID { [weak self] recordID, error in
+            guard let self = self, let recordID = recordID else {
+                completion(.failure(error ?? NSError(domain: "CloudKit", code: -1, userInfo: [NSLocalizedDescriptionKey: "Could not fetch user record ID"])))
+                return
+            }
+            
+            let userID = recordID.recordName
+            
+            // Check if custom User record exists in PUBLIC database
+            let predicate = NSPredicate(format: "userID == %@", userID)
+            let query = CKQuery(recordType: "AppUser", predicate: predicate)
+            
+            self.publicDatabase.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { result in
+                switch result {
+                case .success(let (matchResults, _)):
+                    let records = matchResults.compactMap { try? $0.1.get() }
+                    if let existingUser = records.first {
+                        // User exists
+                        DispatchQueue.main.async {
+                            self.currentUser = existingUser
+                        }
+                        completion(.success(existingUser))
+                    } else {
+                        // Create new user in PUBLIC database
+                        self.createNewUser(userID: userID, displayName: displayName, completion: completion)
+                    }
+                case .failure(_):
+                    // Create new user in PUBLIC database
+                    self.createNewUser(userID: userID, displayName: displayName, completion: completion)
+                }
+            }
+        }
+    }
+    
+    private func createNewUser(userID: String, displayName: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        let inviteCode = generateInviteCode()
+        
+        // Check if invite code is unique (retry if not)
+        checkAndCreateUser(userID: userID, displayName: displayName, inviteCode: inviteCode, retryCount: 0, completion: completion)
+    }
+    
+    private func checkAndCreateUser(userID: String, displayName: String, inviteCode: String, retryCount: Int, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        // Max 5 retries to find unique code
+        guard retryCount < 5 else {
+            completion(.failure(NSError(domain: "CloudKit", code: -1, userInfo: [NSLocalizedDescriptionKey: "Could not generate unique invite code"])))
+            return
+        }
+        
+        isInviteCodeUnique(inviteCode) { [weak self] isUnique in
+            guard let self = self else { return }
+            
+            if isUnique {
+                // Code is unique, create user
+                let userRecord = CKRecord(recordType: "AppUser")
+                userRecord["userID"] = userID as CKRecordValue
+                userRecord["displayName"] = displayName as CKRecordValue
+                userRecord["inviteCode"] = inviteCode as CKRecordValue
+                userRecord["avatarColor"] = self.generateRandomColor() as CKRecordValue
+                userRecord["isPublic"] = 0 as CKRecordValue
+                userRecord["createdDate"] = Date() as CKRecordValue
+                
+                ONELogger.debug("Creating new user record", category: .cloudkit)
+                
+                // Use CKModifyRecordsOperation for PUBLIC database
+                let operation = CKModifyRecordsOperation(recordsToSave: [userRecord], recordIDsToDelete: nil)
+                operation.savePolicy = .allKeys
+                operation.qualityOfService = .userInitiated
+                
+                operation.modifyRecordsResultBlock = { result in
+                    switch result {
+                    case .success:
+                        ONELogger.success("User record created successfully", category: .cloudkit)
+                        DispatchQueue.main.async {
+                            self.currentUser = userRecord
+                            ONELogger.debug("currentUser set in CloudKitManager", category: .cloudkit)
+                        }
+                        completion(.success(userRecord))
+                    case .failure(let error):
+                        ONELogger.error("Failed to create user", error: error, category: .cloudkit)
+                        completion(.failure(error))
+                    }
+                }
+                
+                self.publicDatabase.add(operation)
+            } else {
+                // Code exists, generate new one and retry
+                let newCode = self.generateInviteCode()
+                self.checkAndCreateUser(userID: userID, displayName: displayName, inviteCode: newCode, retryCount: retryCount + 1, completion: completion)
+            }
+        }
+    }
+    
+    // MARK: - Invite Code
+    
+    func generateInviteCode() -> String {
+        let charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        let charsetCount = UInt32(charset.count)
+        var result = ""
+        for _ in 0..<6 {
+            var randomValue: UInt32 = 0
+            _ = SecRandomCopyBytes(kSecRandomDefault, 4, &randomValue)
+            let index = charset.index(charset.startIndex, offsetBy: Int(randomValue % charsetCount))
+            result.append(charset[index])
+        }
+        return result
+    }
+    
+    private func generateRandomColor() -> String {
+        let colors = [
+            "#E84040", "#FF8C42", "#F5C842", "#4CAF82",
+            "#5B8DEF", "#9B7FD4", "#E8334A", "#1DB954"
+        ]
+        return colors.randomElement() ?? "#4ECDC4"
+    }
+    
+    // MARK: - Update User Profile
+    
+    func updateUserProfile(displayName: String, avatarColor: String, username: String? = nil, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        guard let currentUser = currentUser else {
+            ONELogger.error("No current user to update", category: .cloudkit)
+            completion(.failure(NSError(domain: "CloudKit", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user"])))
+            return
+        }
+        
+        ONELogger.debug("Updating user profile", category: .cloudkit)
+        
+        // Update the current record directly (don't fetch again)
+        currentUser["displayName"] = displayName as CKRecordValue
+        currentUser["avatarColor"] = avatarColor as CKRecordValue
+        if let username = username {
+            currentUser["username"] = username.lowercased() as CKRecordValue
+        }
+        
+        // Save with operation
+        let operation = CKModifyRecordsOperation(recordsToSave: [currentUser], recordIDsToDelete: nil)
+        operation.savePolicy = .changedKeys
+        operation.qualityOfService = .userInitiated
+        
+        operation.modifyRecordsResultBlock = { [weak self] result in
+            switch result {
+            case .success:
+                ONELogger.success("User profile updated", category: .cloudkit)
+                DispatchQueue.main.async {
+                    self?.currentUser = currentUser
+                }
+                completion(.success(currentUser))
+            case .failure(let error):
+                ONELogger.error("Failed to update user profile", error: error, category: .cloudkit)
+                
+                let nsError = error as NSError
+                if nsError.domain == CKErrorDomain {
+                    ONELogger.debug("CloudKit Error Code: \(nsError.code)", category: .cloudkit)
+                    if nsError.code == 26 {
+                        ONELogger.warning("Schema not deployed to Production", category: .cloudkit)
+                    } else if nsError.code == 14 {
+                        // Server record changed - fetch and retry
+                        ONELogger.info("Server record changed, fetching latest version", category: .cloudkit)
+                        self?.fetchAndRetryUpdate(displayName: displayName, avatarColor: avatarColor, username: username, completion: completion)
+                        return
+                    }
+                }
+                
+                completion(.failure(error))
+            }
+        }
+        
+        publicDatabase.add(operation)
+    }
+    
+    private func fetchAndRetryUpdate(displayName: String, avatarColor: String, username: String?, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        guard let currentUser = currentUser else {
+            completion(.failure(NSError(domain: "CloudKit", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user"])))
+            return
+        }
+        
+        publicDatabase.fetch(withRecordID: currentUser.recordID) { [weak self] fetchedRecord, error in
+            guard let self = self, let fetchedRecord = fetchedRecord else {
+                completion(.failure(error ?? NSError(domain: "CloudKit", code: -1)))
+                return
+            }
+            
+            // Update fetched record
+            fetchedRecord["displayName"] = displayName as CKRecordValue
+            fetchedRecord["avatarColor"] = avatarColor as CKRecordValue
+            if let username = username {
+                fetchedRecord["username"] = username.lowercased() as CKRecordValue
+            }
+            
+            // Update currentUser reference
+            DispatchQueue.main.async {
+                self.currentUser = fetchedRecord
+            }
+            
+            // Save again
+            self.saveRecordWithOperation(fetchedRecord, completion: completion)
+        }
+    }
+    
+    private func saveRecordWithOperation(_ record: CKRecord, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        // Use CKModifyRecordsOperation with changedKeys policy
+        let operation = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
+        operation.savePolicy = .changedKeys  // Only update changed fields
+        operation.qualityOfService = .userInitiated
+        
+        operation.modifyRecordsResultBlock = { [weak self] result in
+            switch result {
+            case .success:
+                ONELogger.success("User profile updated (retry)", category: .cloudkit)
+                DispatchQueue.main.async {
+                    self?.currentUser = record
+                }
+                completion(.success(record))
+            case .failure(let error):
+                ONELogger.error("Failed to update user profile (retry)", error: error, category: .cloudkit)
+                
+                // Check if it's a schema error
+                let nsError = error as NSError
+                if nsError.domain == CKErrorDomain {
+                    ONELogger.debug("CloudKit Error Code: \(nsError.code)", category: .cloudkit)
+                    if nsError.code == 26 {
+                        ONELogger.warning("Schema not deployed to Production. Deploy via CloudKit Dashboard.", category: .cloudkit)
+                    } else if nsError.code == 10 {
+                        ONELogger.warning("CREATE not permitted — record may not exist in CloudKit", category: .cloudkit)
+                    }
+                }
+                
+                completion(.failure(error))
+            }
+        }
+        
+        publicDatabase.add(operation)
+    }
+    
+    func findUserByInviteCode(_ code: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        ONELogger.debug("Searching for user by invite code", category: .cloudkit)
+        
+        let predicate = NSPredicate(format: "inviteCode == %@", code)
+        let query = CKQuery(recordType: "AppUser", predicate: predicate)
+        
+        // Search in PUBLIC database (where all users are)
+        publicDatabase.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { result in
+            switch result {
+            case .success(let (matchResults, _)):
+                let records = matchResults.compactMap { try? $0.1.get() }
+                ONELogger.debug("Invite code lookup: \(records.count) result(s)", category: .cloudkit)
+
+                if let record = records.first {
+                    ONELogger.success("User lookup by invite code succeeded", category: .cloudkit)
+                    completion(.success(record))
+                } else {
+                    ONELogger.info("No user found with provided invite code", category: .cloudkit)
+                    completion(.failure(NSError(domain: "CloudKit", code: 404, userInfo: [NSLocalizedDescriptionKey: "User not found"])))
+                }
+            case .failure(let error):
+                let nsError = error as NSError
+                // CKError code 12 = "Invalid Arguments" which can happen with system types
+                // But for our custom Users type, this shouldn't happen
+                if nsError.domain == CKErrorDomain && nsError.code == 12 {
+                    ONELogger.warning("CloudKit query validation error — ensure 'AppUser' record type and 'inviteCode' index exist", category: .cloudkit)
+                } else {
+                    ONELogger.error("CloudKit query error", error: error, category: .cloudkit)
+                }
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func findUserByUsername(_ username: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        let normalizedUsername = username.lowercased().trimmingCharacters(in: .whitespaces)
+        ONELogger.debug("Searching for user by username", category: .cloudkit)
+        
+        let predicate = NSPredicate(format: "username == %@", normalizedUsername)
+        let query = CKQuery(recordType: "AppUser", predicate: predicate)
+        
+        publicDatabase.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { result in
+            switch result {
+            case .success(let (matchResults, _)):
+                let records = matchResults.compactMap { try? $0.1.get() }
+                ONELogger.debug("Username lookup: \(records.count) result(s)", category: .cloudkit)
+
+                if let record = records.first {
+                    ONELogger.success("User lookup by username succeeded", category: .cloudkit)
+                    completion(.success(record))
+                } else {
+                    ONELogger.info("No user found with provided username", category: .cloudkit)
+                    completion(.failure(NSError(domain: "CloudKit", code: 404, userInfo: [NSLocalizedDescriptionKey: "User not found"])))
+                }
+            case .failure(let error):
+                ONELogger.error("CloudKit query error", error: error, category: .cloudkit)
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func findUserByCodeOrUsername(_ searchText: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        let trimmed = searchText.trimmingCharacters(in: .whitespaces)
+        
+        // If starts with @, search by username
+        if trimmed.hasPrefix("@") {
+            let username = String(trimmed.dropFirst())
+            findUserByUsername(username, completion: completion)
+        } else if trimmed.count == 6 && trimmed.allSatisfy({ $0.isLetter || $0.isNumber }) {
+            // Looks like invite code (6 chars, alphanumeric)
+            findUserByInviteCode(trimmed.uppercased(), completion: completion)
+        } else {
+            // Try username first, then invite code
+            findUserByUsername(trimmed) { result in
+                switch result {
+                case .success(let record):
+                    completion(.success(record))
+                case .failure:
+                    // Try invite code as fallback
+                    self.findUserByInviteCode(trimmed.uppercased(), completion: completion)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Invite Code Uniqueness Check
+    
+    private func isInviteCodeUnique(_ code: String, completion: @escaping (Bool) -> Void) {
+        findUserByInviteCode(code) { result in
+            switch result {
+            case .success:
+                // Code already exists
+                completion(false)
+            case .failure:
+                // Code doesn't exist, it's unique
+                completion(true)
+            }
+        }
+    }
+    
+    // MARK: - Username Management
+    
+    func checkUsernameAvailability(_ username: String, excludingCurrentUser: Bool = false, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let normalizedUsername = username.lowercased().trimmingCharacters(in: .whitespaces)
+        
+        guard !normalizedUsername.isEmpty else {
+            completion(.success(false))
+            return
+        }
+        
+        ONELogger.debug("Checking username availability", category: .cloudkit)
+        
+        let predicate = NSPredicate(format: "username == %@", normalizedUsername)
+        let query = CKQuery(recordType: "AppUser", predicate: predicate)
+        
+        publicDatabase.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { [weak self] result in
+            switch result {
+            case .success(let (matchResults, _)):
+                let records = matchResults.compactMap { try? $0.1.get() }
+                
+                if excludingCurrentUser, let currentUserID = self?.currentUser?.recordID.recordName {
+                    // Filter out current user's record
+                    let otherUsers = records.filter { $0.recordID.recordName != currentUserID }
+                    let isAvailable = otherUsers.isEmpty
+                    ONELogger.debug(isAvailable ? "Username available" : "Username taken by another user", category: .cloudkit)
+                    completion(.success(isAvailable))
+                } else {
+                    let isAvailable = records.isEmpty
+                    ONELogger.debug(isAvailable ? "Username available" : "Username already taken", category: .cloudkit)
+                    completion(.success(isAvailable))
+                }
+                
+            case .failure(let error):
+                let nsError = error as NSError
+                // CKError code 12 = "Invalid Arguments" - schema not ready yet
+                if nsError.domain == CKErrorDomain && nsError.code == 12 {
+                    ONELogger.warning("Username field not queryable yet (schema not deployed). Allowing for now.", category: .cloudkit)
+                    // Allow the username for now - schema will be created after first user
+                    completion(.success(true))
+                } else {
+                    ONELogger.error("Username check error", error: error, category: .cloudkit)
+                    // On error, allow the username (fail open for better UX)
+                    completion(.success(true))
+                }
+            }
+        }
+    }
+    
+    func validateUsername(_ username: String) -> (isValid: Bool, error: String?) {
+        let trimmed = username.trimmingCharacters(in: .whitespaces)
+        
+        // Length check
+        if trimmed.count < 3 {
+            return (false, "En az 3 karakter olmalı")
+        }
+        
+        if trimmed.count > 20 {
+            return (false, "En fazla 20 karakter olabilir")
+        }
+        
+        // Character check: only letters, numbers, underscore
+        let allowedCharacters = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
+        if trimmed.unicodeScalars.contains(where: { !allowedCharacters.contains($0) }) {
+            return (false, "Sadece harf, rakam ve _ kullanılabilir")
+        }
+        
+        // Must start with letter
+        if let firstChar = trimmed.first, !firstChar.isLetter {
+            return (false, "Harf ile başlamalı")
+        }
+        
+        return (true, nil)
+    }
+    
+    // MARK: - Account Deletion
+
+    /// Kullanıcının CloudKit'teki public kayıtlarını siler ve yerel state'i temizler.
+    /// App Store Privacy guidelines — kullanıcı verilerini silme hakkı.
+    func deleteCurrentUserRecord() {
+        guard let record = currentUser else {
+            DispatchQueue.main.async { self.currentUser = nil }
+            return
+        }
+        publicDatabase.delete(withRecordID: record.recordID) { [weak self] _, _ in
+            DispatchQueue.main.async {
+                self?.currentUser = nil
+            }
+        }
+    }
+
+    // MARK: - Helper Functions
+    // Friendship management: see CloudKitFriendshipService.swift
+    // Daily share management: see CloudKitDailyShareService.swift
+}

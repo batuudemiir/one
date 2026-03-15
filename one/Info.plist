@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.batu.ones.midnightReset</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.one.spotify</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ones</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>spotify</string>
+		<string>instagram</string>
+		<string>instagram-stories</string>
+	</array>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Günlük müziğini kaydetmek için Apple Music&apos;e erişim gereklidir.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Günlük anlarını fotoğraflamak ve QR kod taramak için kamera erişimi gereklidir.</string>
+	<key>LSBundleContainsCoreMLmlmodelc</key>
+	<false/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>DMSans_24pt-Regular.ttf</string>
+		<string>DMSans_24pt-Medium.ttf</string>
+		<string>DMSans_24pt-SemiBold.ttf</string>
+		<string>DMSans-Bold.ttf</string>
+		<string>DMSans_18pt-LightItalic.ttf</string>
+	</array>
+	<key>SpotifyClientID</key>
+	<string>f2afa405bc0e44bf8ed6c171adc0fa79</string>
+	<key>TicketmasterAPIKey</key>
+	<string>$(TICKETMASTER_API_KEY)</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>processing</string>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,31 @@
+/* Share button */
+"share_to_instagram" = "Share";
+"save_to_library" = "Save";
+"generating" = "Generating...";
+
+/* Default values */
+"untitled_song" = "Untitled";
+"unknown_artist" = "Unknown Artist";
+
+/* Error messages */
+"missing_data_coverImage" = "Cover image missing";
+"missing_data_songName" = "Song name missing";
+"render_failed" = "Failed to create card. Please try again.";
+"image_too_large" = "Image size too large. Please use a smaller photo.";
+"invalid_format" = "Invalid format";
+"export_failed" = "Export failed";
+"instagram_not_installed" = "Instagram not installed. Please install Instagram app.";
+"save_failed" = "Failed to save photo";
+"permission_denied" = "Photo library access required. Please grant permission in Settings.";
+
+/* Recovery suggestions */
+"check_song_data" = "Check song information";
+"try_again" = "Please try again";
+"reduce_image_size" = "Reduce photo size";
+"check_format" = "Check format compatibility";
+"check_storage" = "Check storage space";
+"install_instagram" = "Install Instagram app";
+
+/* Success messages */
+"card_generated" = "Card ready!";
+"saved_to_library" = "Saved to Photos";

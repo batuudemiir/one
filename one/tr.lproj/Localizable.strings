@@ -1,0 +1,31 @@
+/* Share button */
+"share_to_instagram" = "Paylaş";
+"save_to_library" = "Kaydet";
+"generating" = "Hazırlanıyor...";
+
+/* Default values */
+"untitled_song" = "Untitled";
+"unknown_artist" = "Unknown Artist";
+
+/* Error messages */
+"missing_data_coverImage" = "Kapak görseli eksik";
+"missing_data_songName" = "Şarkı adı eksik";
+"render_failed" = "Kart oluşturulamadı. Lütfen tekrar deneyin.";
+"image_too_large" = "Görsel boyutu çok büyük. Lütfen daha küçük bir fotoğraf kullanın.";
+"invalid_format" = "Geçersiz format";
+"export_failed" = "Dışa aktarma başarısız";
+"instagram_not_installed" = "Instagram yüklü değil. Lütfen Instagram uygulamasını yükleyin.";
+"save_failed" = "Fotoğraf kaydedilemedi";
+"permission_denied" = "Fotoğraf erişim izni gerekli. Lütfen Ayarlar'dan izin verin.";
+
+/* Recovery suggestions */
+"check_song_data" = "Şarkı bilgilerini kontrol edin";
+"try_again" = "Lütfen tekrar deneyin";
+"reduce_image_size" = "Fotoğraf boyutunu küçültün";
+"check_format" = "Format uyumluluğunu kontrol edin";
+"check_storage" = "Depolama alanını kontrol edin";
+"install_instagram" = "Instagram uygulamasını yükleyin";
+
+/* Success messages */
+"card_generated" = "Kart hazır!";
+"saved_to_library" = "Fotoğraflara kaydedildi";

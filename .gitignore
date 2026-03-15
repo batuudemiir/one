@@ -1,0 +1,35 @@
+# Xcode
+build/
+build_new/
+DerivedData/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Build artifacts
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.app
+
+# Secrets / Config (never commit these)
+Config.xcconfig
+Secrets.xcconfig
+*.env
+*.p12
+*.pem
+*.key
+*.mobileprovision
+
+# CocoaPods / SPM
+Pods/
+.build/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
