@@ -1,0 +1,62 @@
+{
+  "last_updated": null,
+  "note": "Populate competitor app IDs after running Phase 1 competitor analysis. Re-run monthly.",
+  "competitors": {
+    "us": [],
+    "gb": [],
+    "au": [],
+    "ca": [],
+    "de": [],
+    "at": [],
+    "ch": [],
+    "fr": [],
+    "es": [],
+    "mx": [],
+    "pt": [],
+    "br": [],
+    "it": [],
+    "nl": [],
+    "ja": [],
+    "ko": [],
+    "zh": [],
+    "tw": [],
+    "tr": [],
+    "ru": [],
+    "ar": [],
+    "sv": [],
+    "no": [],
+    "da": [],
+    "fi": [],
+    "th": [],
+    "id": [],
+    "ms": [],
+    "vi": [],
+    "pl": [],
+    "cs": [],
+    "ro": [],
+    "hu": [],
+    "uk": []
+  },
+  "known_global_competitors": [
+    {
+      "name": "Day One",
+      "notes": "Premium journaling app, strong US/global presence"
+    },
+    {
+      "name": "Notion",
+      "notes": "Productivity/notes crossover, broad keyword overlap"
+    },
+    {
+      "name": "Reflectly",
+      "notes": "AI journal, mood tracking overlap"
+    },
+    {
+      "name": "Journey",
+      "notes": "Cross-platform diary, strong organic ASO"
+    },
+    {
+      "name": "Diarium",
+      "notes": "Windows/iOS diary app, niche overlap"
+    }
+  ]
+}

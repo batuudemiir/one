@@ -1,0 +1,54 @@
+{
+  "app": {
+    "name": "ONE",
+    "bundle_id": "com.batu.ones",
+    "app_store_id": null,
+    "category": "Lifestyle",
+    "sub_category": "Social Networking",
+    "growth_strategy": "100% organic ASO"
+  },
+  "mrr": {
+    "target": null,
+    "current": null,
+    "currency": "USD",
+    "note": "Set target MRR and track current MRR from RevenueCat. Update current after each daily report."
+  },
+  "keyword_scoring": {
+    "popularity_weight": 0.4,
+    "difficulty_weight": 0.3,
+    "rank_improvement_weight": 0.3,
+    "winner_threshold": 70,
+    "potential_threshold": 50,
+    "underperformer_threshold": 30,
+    "underperformer_days": 14
+  },
+  "metadata_limits": {
+    "title_max_chars": 30,
+    "subtitle_max_chars": 30,
+    "keyword_field_max_chars": 100,
+    "description_max_chars": 4000
+  },
+  "loop_cadence": {
+    "daily": ["phase3_daily_report"],
+    "weekly": ["phase3_weekly_report", "phase4_keyword_scoring"],
+    "biweekly": ["phase1_research", "phase2_implement", "phase4_metadata_rotation"],
+    "monthly": ["phase4_locale_retier", "competitor_reanalysis"]
+  },
+  "keyword_research": {
+    "max_difficulty": 60,
+    "top_n_keywords": 50,
+    "competitor_count_per_locale": 5
+  },
+  "core_category_keywords": {
+    "en": ["daily journal", "mood tracker", "day diary", "personal diary", "daily log", "life tracker", "daily planner", "memory journal"],
+    "de": ["tagesbuch", "tagebuch app", "stimmungs tracker", "tages journal"],
+    "fr": ["journal quotidien", "carnet de jour", "humeur tracker"],
+    "es": ["diario diario", "diario personal", "rastreador de humor"],
+    "pt": ["diário diário", "diário pessoal", "rastreador humor"],
+    "it": ["diario quotidiano", "diario personale"],
+    "ja": ["日記 アプリ", "毎日日記", "気分トラッカー"],
+    "ko": ["일기 앱", "매일 일기", "기분 트래커"],
+    "zh": ["日记app", "每日日记", "心情记录"],
+    "tr": ["günlük uygulama", "günlük tutma", "ruh hali takibi"]
+  }
+}

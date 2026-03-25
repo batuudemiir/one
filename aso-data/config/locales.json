@@ -1,0 +1,49 @@
+{
+  "locales": [
+    { "code": "us", "language": "en", "region": "United States", "tier": 1 },
+    { "code": "gb", "language": "en", "region": "United Kingdom", "tier": 1 },
+    { "code": "au", "language": "en", "region": "Australia", "tier": 2 },
+    { "code": "ca", "language": "en", "region": "Canada", "tier": 2 },
+    { "code": "de", "language": "de", "region": "Germany", "tier": 1 },
+    { "code": "at", "language": "de", "region": "Austria", "tier": 3 },
+    { "code": "ch", "language": "de", "region": "Switzerland", "tier": 3 },
+    { "code": "fr", "language": "fr", "region": "France", "tier": 2 },
+    { "code": "es", "language": "es", "region": "Spain", "tier": 2 },
+    { "code": "mx", "language": "es", "region": "Mexico", "tier": 2 },
+    { "code": "pt", "language": "pt", "region": "Portugal", "tier": 3 },
+    { "code": "br", "language": "pt", "region": "Brazil", "tier": 2 },
+    { "code": "it", "language": "it", "region": "Italy", "tier": 2 },
+    { "code": "nl", "language": "nl", "region": "Netherlands", "tier": 2 },
+    { "code": "ja", "language": "ja", "region": "Japan", "tier": 1 },
+    { "code": "ko", "language": "ko", "region": "South Korea", "tier": 2 },
+    { "code": "zh", "language": "zh-Hans", "region": "China (Simplified)", "tier": 2 },
+    { "code": "tw", "language": "zh-Hant", "region": "Taiwan (Traditional)", "tier": 2 },
+    { "code": "tr", "language": "tr", "region": "Turkey", "tier": 2 },
+    { "code": "ru", "language": "ru", "region": "Russia", "tier": 2 },
+    { "code": "ar", "language": "ar", "region": "Arabic Markets", "tier": 3 },
+    { "code": "sv", "language": "sv", "region": "Sweden", "tier": 3 },
+    { "code": "no", "language": "no", "region": "Norway", "tier": 3 },
+    { "code": "da", "language": "da", "region": "Denmark", "tier": 3 },
+    { "code": "fi", "language": "fi", "region": "Finland", "tier": 3 },
+    { "code": "th", "language": "th", "region": "Thailand", "tier": 3 },
+    { "code": "id", "language": "id", "region": "Indonesia", "tier": 3 },
+    { "code": "ms", "language": "ms", "region": "Malaysia", "tier": 3 },
+    { "code": "vi", "language": "vi", "region": "Vietnam", "tier": 3 },
+    { "code": "pl", "language": "pl", "region": "Poland", "tier": 3 },
+    { "code": "cs", "language": "cs", "region": "Czech Republic", "tier": 3 },
+    { "code": "ro", "language": "ro", "region": "Romania", "tier": 3 },
+    { "code": "hu", "language": "hu", "region": "Hungary", "tier": 3 },
+    { "code": "uk", "language": "uk", "region": "Ukraine", "tier": 3 }
+  ],
+  "tier_rules": {
+    "1": "Full optimization every cycle (bi-weekly)",
+    "2": "Optimize every other cycle (monthly)",
+    "3": "Quarterly optimization"
+  },
+  "tier_thresholds": {
+    "tier_1_min_revenue_pct": 10,
+    "tier_2_min_revenue_pct": 2,
+    "tier_3_min_revenue_pct": 0
+  },
+  "notes": "Tiers are re-evaluated monthly based on RevenueCat revenue-by-country data. Update tier field per locale accordingly."
+}
