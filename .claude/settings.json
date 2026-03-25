@@ -1,0 +1,23 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "description": "Load ONE project context and Xcode build environment",
+        "command": "echo 'ONE iOS App — SwiftUI/CloudKit/Spotify. Xcode project: ones.xcodeproj. Active skills: swiftui-patterns, swift-actor-persistence, swift-protocol-di-testing, swift-concurrency-6-2, tdd-workflow, security-review, verification-loop, continuous-learning'"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "description": "Swift file quality gate — check for force unwrap and debug prints",
+        "command": "node -e \"const fs=require('fs'),path=require('path');const f=process.env.TOOL_FILE||'';if(!f.endsWith('.swift'))process.exit(0);const src=fs.existsSync(f)?fs.readFileSync(f,'utf8'):'';const issues=[];if(/[^!]=![^=]/.test(src))issues.push('⚠️  Force unwrap (!) detected — use guard let / if let');if(/print\\(/.test(src))issues.push('⚠️  print() detected — use ONELogger instead');if(issues.length){console.log('Swift Quality Gate:\\n'+issues.join('\\n'))};\""
+      }
+    ],
+    "Stop": [
+      {
+        "description": "Session state — remind to run verification loop before PR",
+        "command": "echo 'Session complete. Run /verify before opening a PR.'"
+      }
+    ]
+  }
+}
