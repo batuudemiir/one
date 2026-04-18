@@ -58,7 +58,7 @@ final class YearlySummaryViewModel: ObservableObject {
         return (try? context.fetch(req)) ?? []
     }
 
-    private static func build(year: Int, songs: [DailySong]) -> YearlySummaryData {
+    static func build(year: Int, songs: [DailySong]) -> YearlySummaryData {
         let cal = Calendar.current
 
         // Unique logged days
