@@ -131,6 +131,7 @@ extension CloudKitManager {
                     DispatchQueue.main.async {
                         if let saved {
                             ONELogger.success("Friend request sent", category: .circle)
+                            AppAnalytics.shared.track(.friendRequestSent)
                             completion(.success(saved))
                         } else {
                             completion(.failure(error ?? NSError(domain: "CloudKit", code: -1)))
@@ -198,6 +199,7 @@ extension CloudKitManager {
             self.publicDatabase.save(accepted) { saved, saveError in
                 if let saved {
                     ONELogger.success("Friend request accepted", category: .circle)
+                    AppAnalytics.shared.track(.friendRequestAccepted)
                     DispatchQueue.main.async { completion(.success(saved)) }
 
                     // Also update the original pending record's status

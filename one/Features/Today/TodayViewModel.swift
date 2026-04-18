@@ -204,6 +204,8 @@ class TodayViewModel: ObservableObject {
 
         try? context.save()
 
+        AppAnalytics.shared.track(.entrySaved(hasPhoto: photo != nil, hasNote: !note.isEmpty))
+
         // Lock Screen widget güncellemesi
         WidgetDataWriter.writeTodayEntry(
             songName:     song.name,

@@ -73,6 +73,8 @@ struct OnboardingView: View {
                     isCompleted = true
                 }
                 KeychainHelper.set(true, forKey: "hasCompletedOnboarding")
+                let platform = UserDefaults.standard.string(forKey: "selectedMusicPlatform") ?? "unknown"
+                AppAnalytics.shared.track(.onboardingCompleted(musicPlatform: platform))
             }
         }
     }

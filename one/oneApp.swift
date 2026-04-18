@@ -176,6 +176,13 @@ struct oneApp: App {
     init() {
         // Register background task for midnight reset
         MidnightResetManager.shared.registerBackgroundTask()
+
+        // Observability bootstrap — real SDK registration lives in
+        // docs/OBSERVABILITY_SETUP.md (Sentry + PostHog). Default stack
+        // is console-only so DEBUG builds still see event flow.
+        #if DEBUG
+        AppAnalytics.shared.register(ConsoleAnalyticsService())
+        #endif
     }
 
     var body: some Scene {
@@ -272,7 +279,9 @@ struct oneApp: App {
                     }
                 }
                 .onChange(of: cloudKitManager.currentUser?.recordID.recordName) { _, newValue in
-                    if newValue != nil {
+                    if let userID = newValue {
+                        AppAnalytics.shared.identify(userID: userID)
+                        CrashReporter.shared.setUser(id: userID)
                         cloudKitManager.registerAllSubscriptions()
                         // Fire any deep link that arrived before currentUser was ready
                         if let code = pendingDeepLinkCode {
