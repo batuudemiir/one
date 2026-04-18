@@ -2,7 +2,7 @@
 //  CircleShareToggle.swift
 //  one
 //
-//  Wabi-Sabi minimalist toggle for Circle photo sharing
+//  Prominent toggle for sharing today's entry with Circle friends
 //
 
 import SwiftUI
@@ -10,75 +10,76 @@ import SwiftUI
 struct CircleShareToggle: View {
     @Binding var isOn: Bool
     let hasPhoto: Bool
-    
+
     var body: some View {
-        if hasPhoto {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 12) {
-                    // Toggle switch
-                    Button(action: {
-                        withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
-                            isOn.toggle()
-                        }
-                        
-                        // Haptic feedback
-                        let generator = UIImpactFeedbackGenerator(style: .light)
-                        generator.impactOccurred()
-                    }) {
-                        ZStack {
-                            // Background track
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(isOn ? ONETokens.oneInk : ONETokens.oneCreamLow)
-                                .frame(width: 36, height: 20)
-                            
-                            // Knob
-                            Circle()
-                                .fill(Color.white)
-                                .frame(width: 14, height: 14)
-                                .offset(x: isOn ? 8 : -8)
-                        }
-                    }
-                    
-                    // Label
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Çevrenle paylaş")
-                            .monoSM(tracking: 0)
-                            .foregroundColor(ONETokens.oneInk)
-                        
-                        if isOn {
-                            Text("Gece yarısına kadar")
-                                .monoSM()
-                                .foregroundColor(ONETokens.oneAsh)
-                        }
-                    }
-                    
-                    Spacer()
+        Button(action: {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                isOn.toggle()
+            }
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }) {
+            HStack(spacing: 14) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(isOn ? ONETokens.oneBrand : ONETokens.oneCreamMid)
+                        .frame(width: 42, height: 42)
+
+                    Image(systemName: isOn ? "person.2.fill" : "person.2")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(isOn ? .white : ONETokens.oneAsh)
                 }
-                .padding(.vertical, 12)
-                .padding(.horizontal, 16)
-                .background(
-                    RoundedRectangle(cornerRadius: 2)
-                        .strokeBorder(ONETokens.oneInk.opacity(0.1), lineWidth: 1)
-                        .background(
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(ONETokens.oneCream)
-                        )
-                )
-                
-                // Info text
-                if isOn {
-                    HStack(spacing: 6) {
-                        Image(systemName: "info.circle")
-                            .font(.system(size: 11))
-                            .foregroundColor(ONETokens.oneAsh)
-                        
-                        Text("Fotoğrafın çevrende görünür olacak")
-                            .monoBase()
-                            .foregroundColor(ONETokens.oneAsh)
-                    }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+
+                // Text
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(NSLocalizedString("circle.shareWithCircle", comment: ""))
+                        .bodySMMedium()
+                        .foregroundColor(ONETokens.oneInk)
+
+                    Text(subtitleText)
+                        .monoSM()
+                        .foregroundColor(isOn ? ONETokens.oneBrand : ONETokens.oneAsh)
+                }
+
+                Spacer()
+
+                // Toggle indicator
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isOn ? ONETokens.oneBrand : ONETokens.oneCreamLow)
+                        .frame(width: 44, height: 26)
+
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 20, height: 20)
+                        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                        .offset(x: isOn ? 9 : -9)
                 }
             }
+            .padding(.vertical, 14)
+            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: ONETokens.radiusCardLg)
+                    .fill(isOn ? ONETokens.oneBrand.opacity(0.08) : ONETokens.onePaper)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: ONETokens.radiusCardLg)
+                            .stroke(
+                                isOn ? ONETokens.oneBrand.opacity(0.3) : ONETokens.oneStone.opacity(0.2),
+                                lineWidth: isOn ? 1.5 : 1
+                            )
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+
+    private var subtitleText: String {
+        if isOn {
+            return hasPhoto
+                ? NSLocalizedString("circle.shareWithPhotoDesc", comment: "")
+                : NSLocalizedString("circle.shareWithMoodDesc", comment: "")
+        } else {
+            return NSLocalizedString("circle.shareHint", comment: "")
         }
     }
 }

@@ -67,14 +67,24 @@ class ArchiveStore: ObservableObject {
                  currentMonth.month == cal.component(.month, from: now))
     }
     
+    /// Returns the primary (last) entry for a given date
     func entry(for date: Date) -> DailyEntry? {
         let startOfDay = Calendar.current.startOfDay(for: date)
-        // Search currentMonth first, then fallback to any month in yearData
-        if let entry = currentMonth.entries[startOfDay] { return entry }
+        if let entry = currentMonth.entries[startOfDay]?.last { return entry }
         for month in yearData {
-            if let entry = month.entries[startOfDay] { return entry }
+            if let entry = month.entries[startOfDay]?.last { return entry }
         }
         return nil
+    }
+
+    /// Returns all entries for a given date (supports premium multi-entry)
+    func allEntries(for date: Date) -> [DailyEntry] {
+        let startOfDay = Calendar.current.startOfDay(for: date)
+        if let entries = currentMonth.entries[startOfDay], !entries.isEmpty { return entries }
+        for month in yearData {
+            if let entries = month.entries[startOfDay], !entries.isEmpty { return entries }
+        }
+        return []
     }
     
     private func loadMonth(year: Int, month: Int) -> MonthSummary {
@@ -105,18 +115,23 @@ class ArchiveStore: ObservableObject {
             nextMonthFirstDay as NSDate
         )
         
-        var entries: [Date: DailyEntry] = [:]
-        
+        var entries: [Date: [DailyEntry]] = [:]
+
         do {
             let items = try context.fetch(fetchRequest)
-            
+
             for item in items {
                 guard let timestamp = item.date else { continue }
                 let startOfDay = calendar.startOfDay(for: timestamp)
-                
+
                 if let entry = createEntry(from: item, using: calendar) {
-                    entries[startOfDay] = entry
+                    entries[startOfDay, default: []].append(entry)
                 }
+            }
+
+            // Sort each day's entries by createdAt (via time string as proxy)
+            for key in entries.keys {
+                entries[key]?.sort { $0.time < $1.time }
             }
         } catch {
             // CoreData fetch hatası - boş entries ile devam et
@@ -157,14 +172,14 @@ class ArchiveStore: ObservableObject {
         return DailyEntry(
             id: item.id ?? UUID(),
             date: timestamp,
-            songName: item.songName ?? "Bilinmeyen Şarkı",
-            artistName: item.artistName ?? "Bilinmeyen Sanatçı",
-            genre: item.genre ?? "Bilinmeyen",
+            songName: item.songName ?? NSLocalizedString("archive.unknownSong", comment: ""),
+            artistName: item.artistName ?? NSLocalizedString("archive.unknownArtist", comment: ""),
+            genre: item.genre ?? NSLocalizedString("archive.unknown", comment: ""),
             moodColor: Color(hex: item.moodColorHex ?? "#607D8B"),
             moodColorHex: item.moodColorHex ?? "#607D8B",
-            moodLabel: item.moodLabel ?? item.moodWord ?? "Nötr",
+            moodLabel: item.moodLabel ?? item.moodWord ?? NSLocalizedString("archive.defaultMood", comment: ""),
             feeling: FeelingType(rawValue: item.feeling ?? "calm") ?? .calm,
-            feelingLabel: item.feelingLabel ?? "Dingin",
+            feelingLabel: item.feelingLabel ?? NSLocalizedString("archive.defaultFeeling", comment: ""),
             time: formatTime(actualTime),
             photoURL: photoURL,
             shareWithCircle: item.shareWithCircle,

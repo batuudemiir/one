@@ -15,6 +15,7 @@ import SwiftUI
 struct MoodMapCardView: View {
     let data: MonthlySummaryData
     var isExport: Bool = false
+    var showWatermark: Bool = false
 
     // Bar chart animasyon için her duygunun genişliği
     @State private var animatedWidths: [CGFloat] = []
@@ -29,11 +30,11 @@ struct MoodMapCardView: View {
 
                     // Başlık
                     VStack(alignment: .leading, spacing: 0) {
-                        Text("Ruh hali")
+                        Text(NSLocalizedString("monthly.moodTitle", comment: ""))
                             // Gerçek font: Font.custom("BebasNeue-Regular", size: 56)
                             .font(.system(size: 56, weight: .black))
                             .foregroundColor(.white)
-                        Text("haritası.")
+                        Text(NSLocalizedString("monthly.moodMap", comment: ""))
                             // Gerçek font: Font.custom("BebasNeue-Regular", size: 56)
                             .font(.system(size: 56, weight: .black))
                             .foregroundColor(.white.opacity(0.30))
@@ -57,6 +58,9 @@ struct MoodMapCardView: View {
                 .padding(.horizontal, 28)
             }
         }
+        .overlay(alignment: .bottomTrailing) {
+            if showWatermark { watermarkView }
+        }
         .background(Color.black)
         .ignoresSafeArea()
         .onAppear {
@@ -74,6 +78,27 @@ struct MoodMapCardView: View {
                 }
             }
         }
+    }
+
+    // MARK: — Watermark
+    private var watermarkView: some View {
+        Group {
+            if let _ = UIImage(named: "ONE_Watermark") {
+                Image("ONE_Watermark")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(.white.opacity(0.85))
+                    .frame(width: 80, height: 28)
+            } else {
+                Text("ONE")
+                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .foregroundColor(.white.opacity(0.7))
+                    .tracking(3)
+            }
+        }
+        .padding(.trailing, 20)
+        .padding(.bottom, 32)
     }
 
     // MARK: — Takvim Grid
@@ -154,7 +179,7 @@ struct MoodMapCardView: View {
     // MARK: — Emotion Bar Chart
     private func emotionBars(containerWidth: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("DUYGU DAĞILIMI")
+            Text(NSLocalizedString("monthly.emotionDistribution", comment: ""))
                 // Gerçek font: Font.custom("SyneMono-Regular", size: 9)
                 .font(.system(size: 9, weight: .regular, design: .monospaced))
                 .tracking(2)

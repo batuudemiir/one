@@ -18,7 +18,7 @@ struct RecommendationsSection: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header with refresh button
             HStack {
-                Text("SENİN İÇİN SEÇTİK")
+                Text(NSLocalizedString("discover.ourPicks", comment: ""))
                     .monoBase(tracking: 2.0)
                     .foregroundColor(ONETokens.oneAsh)
                 
@@ -42,7 +42,7 @@ struct RecommendationsSection: View {
                                 .font(.system(size: 10, weight: .semibold))
                                 .rotationEffect(.degrees(isRefreshing ? 360 : 0))
                                 .animation(isRefreshing ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: isRefreshing)
-                            Text("Yenile")
+                            Text(NSLocalizedString("discover.refresh", comment: ""))
                                 .monoSM(tracking: 0.8)
                         }
                         .foregroundColor(ONETokens.oneCharcoal)
@@ -65,6 +65,11 @@ struct RecommendationsSection: View {
                 errorView(error)
             } else if !engine.recommendations.isEmpty {
                 recommendationsGridView
+            }
+        }
+        .onAppear {
+            if engine.recommendations.isEmpty && !engine.isLoading {
+                Task { await engine.fetchRecommendations() }
             }
         }
     }
@@ -166,7 +171,7 @@ struct RecommendationsSection: View {
                         await engine.fetchRecommendations()
                     }
                 }) {
-                    Text("Tekrar Dene")
+                    Text(NSLocalizedString("general.retry", comment: ""))
                         .font(.custom("GeistMono-Regular", size: 10))
                         .tracking(0.6)
                         .foregroundColor(ONETokens.oneCharcoal)
@@ -188,18 +193,18 @@ struct RecommendationsSection: View {
     private func errorMessage(for error: RecommendationError) -> String {
         switch error {
         case .notAuthenticated:
-            return "Müzik servisi seç ve öneriler al"
+            return NSLocalizedString("discover.notAuthenticated", comment: "")
         case .insufficientHistory:
-            return "Daha fazla şarkı seç, sana özel öneriler gelsin"
+            return NSLocalizedString("discover.insufficientHistory", comment: "")
         case .networkError:
-            return "İnternet bağlantısı yok"
+            return NSLocalizedString("discover.noInternet", comment: "")
         case .spotifyAPIError(let message):
             if message.contains("Rate limit") {
-                return "Çok fazla istek, lütfen biraz bekle"
+                return NSLocalizedString("discover.rateLimit", comment: "")
             }
-            return "Öneriler yüklenemedi"
+            return NSLocalizedString("discover.loadFailed", comment: "")
         case .cacheError:
-            return "Önbellek hatası"
+            return NSLocalizedString("discover.cacheError", comment: "")
         }
     }
 }

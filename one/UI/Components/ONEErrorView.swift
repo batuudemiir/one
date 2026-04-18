@@ -23,7 +23,7 @@ struct ONEErrorView: View {
 
             if let onRetry {
                 Button(action: onRetry) {
-                    Text("Tekrar dene")
+                    Text(NSLocalizedString("general.retry", comment: ""))
                         .monoBase(tracking: 1.0)
                         .foregroundColor(ONETokens.oneInk)
                         .padding(.horizontal, ONETokens.spacingXL)

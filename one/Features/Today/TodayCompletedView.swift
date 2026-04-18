@@ -13,44 +13,67 @@ struct TodayCompletedView: View {
     @State private var showPhotoViewer = false
     @State private var showShareOptions = false
     @State private var showChangeConfirm = false
-    @State private var showEvents = false
+    @State private var photoSaved = false
+
+    private var displayedEntry: DailyEntry { entry }
+
+    // MARK: - Dynamic sizing helpers
+
+    /// Photo height: ~23 % of available height, hard-capped at 175 pt.
+    private func photoHeight(available: CGFloat) -> CGFloat {
+        max(90, min(175, available * 0.23))
+    }
+
+    /// Header top padding: scales 10–32 pt.
+    private func headerTopPad(available: CGFloat) -> CGFloat {
+        max(10, min(32, available * 0.038))
+    }
+
+    /// Header bottom padding: scales 8–16 pt.
+    private func headerBottomPad(available: CGFloat) -> CGFloat {
+        max(8, min(16, available * 0.02))
+    }
+
+    /// Hide the subtitle hint on very compact screens to save vertical space.
+    private func showSubtitle(available: CGFloat) -> Bool { available > 600 }
 
     var body: some View {
+        GeometryReader { geo in
+        let available = geo.size.height
         ZStack {
             // Background
             ONETokens.oneCream.ignoresSafeArea()
-            
+
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     // Header
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("hisset · keşfet · paylaş")
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(NSLocalizedString("splash.slogan", comment: ""))
                             .font(ONETypography.monoSM)
                             .tracking(1.6)
                             .foregroundColor(ONETokens.oneBrand.opacity(0.8))
 
-                        Text("Bugünün seçimi\nhazır")
+                        Text(NSLocalizedString("today.completedSubtitle", comment: ""))
                             .displayLG()
                             .foregroundColor(ONETokens.oneInk)
                             .lineSpacing(2)
 
-                        Text("Şimdi etkinlikleri açabilir ya da çevrene gönderebilirsin.")
-                            .bodySM()
-                            .foregroundColor(ONETokens.oneAsh)
+                        if showSubtitle(available: available) {
+                            Text(NSLocalizedString("today.shareHint", comment: ""))
+                                .bodySM()
+                                .foregroundColor(ONETokens.oneAsh)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, ONETokens.spacingXL2)
-                    .padding(.top, ONETokens.spacingXL4)
-                    .padding(.bottom, 24)
-                    .opacity(appeared ? 1 : 0)
-                    .offset(y: appeared ? 0 : -10)
-                    .animation(ONEAnimation.screenTransition.delay(0.1), value: appeared)
+                    .padding(.top, headerTopPad(available: available))
+                    .padding(.bottom, headerBottomPad(available: available))
                     
                     // Main Card
                     VStack(spacing: 0) {
                         // Photo or Mood gradient header
                         ZStack(alignment: .bottomLeading) {
-                            if let photoURL = entry.photoURL {
+                            if let photoURL = displayedEntry.photoURL {
                                 // Photo background - tıklanabilir
                                 Button(action: {
                                     withAnimation(ONEAnimation.panelSpring) {
@@ -65,15 +88,15 @@ struct TodayCompletedView: View {
                                         // Gradient fallback while loading
                                         LinearGradient(
                                             stops: [
-                                                .init(color: entry.moodColor.opacity(0.65), location: 0.0),
-                                                .init(color: entry.moodColor.opacity(0.35), location: 0.5),
-                                                .init(color: entry.moodColor.opacity(0.15), location: 1.0)
+                                                .init(color: displayedEntry.moodColor.opacity(0.65), location: 0.0),
+                                                .init(color: displayedEntry.moodColor.opacity(0.35), location: 0.5),
+                                                .init(color: displayedEntry.moodColor.opacity(0.15), location: 1.0)
                                             ],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         )
                                     }
-                                    .frame(height: 180)
+                                    .frame(height: photoHeight(available: available))
                                     .clipped()
                                     .overlay(
                                         // Subtle tap indicator
@@ -86,15 +109,16 @@ struct TodayCompletedView: View {
                                     )
                                 }
                                 .buttonStyle(PlainButtonStyle())
+                                .accessibilityLabel(String(format: NSLocalizedString("accessibility.today.photoOf", comment: ""), displayedEntry.songName))
                             } else {
                                 // Gradient background with wabi-sabi design
                                 ZStack {
                                     // Base gradient
                                     LinearGradient(
                                         stops: [
-                                            .init(color: entry.moodColor.opacity(0.65), location: 0.0),
-                                            .init(color: entry.moodColor.opacity(0.35), location: 0.5),
-                                            .init(color: entry.moodColor.opacity(0.15), location: 1.0)
+                                            .init(color: displayedEntry.moodColor.opacity(0.65), location: 0.0),
+                                            .init(color: displayedEntry.moodColor.opacity(0.35), location: 0.5),
+                                            .init(color: displayedEntry.moodColor.opacity(0.15), location: 1.0)
                                         ],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
@@ -137,7 +161,7 @@ struct TodayCompletedView: View {
                                     
                                     // Radial glow
                                     RadialGradient(
-                                        colors: [entry.moodColor.opacity(0.15), .clear],
+                                        colors: [displayedEntry.moodColor.opacity(0.15), .clear],
                                         center: UnitPoint(x: 0.7, y: 0.2),
                                         startRadius: 0,
                                         endRadius: 120
@@ -166,7 +190,7 @@ struct TodayCompletedView: View {
                                 Circle()
                                     .fill(Color.white.opacity(0.9))
                                     .frame(width: 6, height: 6)
-                                Text("\(entry.time)'te")
+                                Text(String(format: NSLocalizedString("today.timeSelected", comment: ""), displayedEntry.time))
                                     .monoLabel(tracking: 1.0)
                                     .foregroundColor(.white.opacity(0.85))
                             }
@@ -182,20 +206,20 @@ struct TodayCompletedView: View {
                             )
                             .padding(20)
                         }
-                        .frame(height: 180)
+                        .frame(height: photoHeight(available: available))
                         .frame(maxWidth: .infinity)
                         
                         // Song info section
                         VStack(alignment: .leading, spacing: ONETokens.spacingLG) {
                             // Song name
-                            Text(entry.songName)
+                            Text(displayedEntry.songName)
                                 .displayMD()
                                 .foregroundColor(ONETokens.oneInk)
                                 .tracking(-0.8)
                                 .lineLimit(2)
                             
                             // Artist & genre
-                            Text("\(entry.artistName) · \(entry.genre)")
+                            Text("\(displayedEntry.artistName) · \(displayedEntry.genre)")
                                 .monoBase(tracking: 0.5)
                                 .foregroundColor(ONETokens.oneCharcoal)
                             
@@ -210,9 +234,9 @@ struct TodayCompletedView: View {
                                 // Mood
                                 HStack(spacing: 6) {
                                     Circle()
-                                        .fill(entry.moodColor)
+                                        .fill(displayedEntry.moodColor)
                                         .frame(width: 7, height: 7)
-                                    Text(entry.moodLabel.uppercased())
+                                    Text(displayedEntry.moodLabel.uppercased())
                                         .monoLabel(tracking: 1.2)
                                         .foregroundColor(ONETokens.oneCharcoal)
                                 }
@@ -220,14 +244,14 @@ struct TodayCompletedView: View {
                                 .padding(.vertical, 6)
                                 .background(
                                     Capsule()
-                                        .fill(entry.moodColor.opacity(0.12))
+                                        .fill(displayedEntry.moodColor.opacity(0.12))
                                 )
                                 
                                 // Feeling
                                 HStack(spacing: 6) {
-                                    FeelingIconView(type: entry.feeling)
+                                    FeelingIconView(type: displayedEntry.feeling)
                                         .frame(width: 20, height: 16)
-                                    Text(entry.feelingLabel.uppercased())
+                                    Text(displayedEntry.feelingLabel.uppercased())
                                         .monoLabel(tracking: 1.2)
                                         .foregroundColor(ONETokens.oneCharcoal)
                                 }
@@ -242,18 +266,18 @@ struct TodayCompletedView: View {
                             // Weather & Share info
                             HStack(spacing: ONETokens.spacingMD) {
                                 HStack(spacing: 5) {
-                                    Text(entry.weatherIcon)
+                                    Text(displayedEntry.weatherIcon)
                                         .font(.system(size: 11))
-                                    Text(entry.weatherDesc)
+                                    Text(displayedEntry.weatherDesc)
                                         .monoLabel()
                                         .foregroundColor(ONETokens.oneCharcoal)
                                 }
                                 
-                                if entry.shareWithCircle {
+                                if displayedEntry.shareWithCircle {
                                     HStack(spacing: 5) {
                                         Text("🌍")
                                             .font(.system(size: 11))
-                                        Text("Çevre'de paylaşıldı")
+                                        Text(NSLocalizedString("today.sharedInCircle", comment: ""))
                                             .monoLabel()
                                             .foregroundColor(ONETokens.oneCharcoal)
                                     }
@@ -261,11 +285,11 @@ struct TodayCompletedView: View {
                             }
                             .padding(.top, 4)
 
-                            if entry.shareWithCircle {
+                            if displayedEntry.shareWithCircle {
                                 HStack(spacing: 8) {
                                     Image(systemName: "person.2.fill")
                                         .font(.system(size: 11, weight: .medium))
-                                    Text("Çevren bugünkü mood'unu görebiliyor")
+                                    Text(NSLocalizedString("today.circleCanSee", comment: ""))
                                         .monoSM(tracking: 0.2)
                                 }
                                 .foregroundColor(ONETokens.oneAsh)
@@ -278,9 +302,9 @@ struct TodayCompletedView: View {
                             }
                             
                             // Note section (if exists)
-                            if let note = entry.note, !note.isEmpty {
+                            if let note = displayedEntry.note, !note.isEmpty {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text("NOT")
+                                    Text(NSLocalizedString("today.note", comment: ""))
                                         .monoLabel(tracking: 1.5)
                                         .foregroundColor(ONETokens.oneAsh)
 
@@ -294,7 +318,7 @@ struct TodayCompletedView: View {
                                 .padding(ONETokens.spacingLG)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(entry.moodColor.opacity(0.08))
+                                        .fill(displayedEntry.moodColor.opacity(0.08))
                                 )
                                 .padding(.top, ONETokens.spacingLG)
                             }
@@ -306,109 +330,122 @@ struct TodayCompletedView: View {
                                 .padding(.top, 8)
 
                             // Action buttons
-                            HStack(spacing: 8) {
+                            VStack(spacing: 10) {
+                                // Primary row — Keşfet (full width, prominent)
                                 Button(action: {
                                     ONEHaptics.feelingSelected()
-                                    showEvents = true
+                                    NotificationManager.shared.shouldNavigateToDiscovery = true
                                 }) {
-                                    HStack(spacing: 4) {
+                                    HStack(spacing: 6) {
                                         Image(systemName: "sparkles")
-                                            .font(.system(size: 10, weight: .medium))
-                                        Text("Keşfet")
-                                            .monoBase(tracking: 0.8)
+                                            .font(.system(size: 12, weight: .semibold))
+                                        Text(NSLocalizedString("notification.openDiscovery", comment: ""))
+                                            .bodySMMedium()
                                     }
                                     .foregroundColor(ONETokens.oneCream)
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 8)
-                                    .background(Capsule().fill(entry.moodColor))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(Capsule().fill(displayedEntry.moodColor))
                                 }
+                                .accessibilityLabel(NSLocalizedString("notification.openDiscovery", comment: ""))
+                                .accessibilityHint(NSLocalizedString("accessibility.discovery.eventHint", comment: ""))
 
-                                Spacer()
-
+                                // Secondary row — Kaydet, Paylaş, Ekle
                                 HStack(spacing: 8) {
+                                    if displayedEntry.photoURL != nil {
+                                        Button(action: {
+                                            savePhotoToGallery()
+                                        }) {
+                                            HStack(spacing: 5) {
+                                                Image(systemName: photoSaved ? "checkmark" : "arrow.down.to.line")
+                                                    .font(.system(size: 11, weight: .medium))
+                                                Text(photoSaved ? NSLocalizedString("today.saved", comment: "") : NSLocalizedString("general.save", comment: ""))
+                                                    .monoBase(tracking: 0.5)
+                                            }
+                                            .foregroundColor(photoSaved ? ONETokens.oneGreen : ONETokens.oneInk)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 10)
+                                            .background(
+                                                Capsule()
+                                                    .fill(photoSaved ? ONETokens.oneGreen.opacity(0.08) : ONETokens.oneCreamMid.opacity(0.5))
+                                                    .overlay(Capsule().stroke(photoSaved ? ONETokens.oneGreen.opacity(0.3) : ONETokens.oneSilver, lineWidth: 1))
+                                            )
+                                        }
+                                        .disabled(photoSaved)
+                                    }
+
                                     Button(action: {
                                         ONEHaptics.feelingSelected()
                                         showShareOptions = true
                                     }) {
-                                        HStack(spacing: 4) {
+                                        HStack(spacing: 5) {
                                             Image(systemName: "square.and.arrow.up")
-                                                .font(.system(size: 10, weight: .medium))
-                                            Text("Paylaş")
-                                                .monoBase(tracking: 0.8)
+                                                .font(.system(size: 11, weight: .medium))
+                                            Text(NSLocalizedString("general.share", comment: ""))
+                                                .monoBase(tracking: 0.5)
                                         }
-                                        .foregroundColor(ONETokens.oneCharcoal)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 8)
+                                        .foregroundColor(ONETokens.oneInk)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 10)
                                         .background(
-                                            Capsule().stroke(ONETokens.oneCreamLow, lineWidth: 1.5)
+                                            Capsule()
+                                                .fill(ONETokens.oneCreamMid.opacity(0.5))
+                                                .overlay(Capsule().stroke(ONETokens.oneSilver, lineWidth: 1))
                                         )
                                     }
-
-                                    Button(action: {
-                                        ONEHaptics.moodSelected()
-                                        showChangeConfirm = true
-                                    }) {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "arrow.triangle.2.circlepath")
-                                                .font(.system(size: 10, weight: .medium))
-                                            Text("Değiştir")
-                                                .monoBase(tracking: 0.8)
-                                        }
-                                        .foregroundColor(ONETokens.oneCream)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 8)
-                                        .background(Capsule().fill(ONETokens.oneInk))
-                                    }
+                                    .accessibilityLabel(NSLocalizedString("accessibility.today.shareButton", comment: ""))
                                 }
                             }
                         }
                         .padding(20)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .background(Color.white)
+                    .background(ONETokens.onePaper)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
                     .padding(.horizontal, 20)
                     .scaleEffect(appeared ? 1 : 0.94)
                     .opacity(appeared ? 1 : 0)
                     .animation(ONEAnimation.panelSpring.delay(0.2), value: appeared)
-                    
-                    // Context card
-                    DailyContextCard(entry: entry)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                    .padding(.bottom, 24)
-                    .opacity(appeared ? 1 : 0)
-                    .animation(.easeOut(duration: ONEAnimation.durationLong).delay(0.35), value: appeared)
+
                 }
             }
-        }
+        } // ZStack
+        } // GeometryReader
         .fullScreenCover(isPresented: $showPhotoViewer) {
-            if let photoURL = entry.photoURL {
+            if let photoURL = displayedEntry.photoURL {
                 PhotoViewerSheet(photoURL: photoURL, isPresented: $showPhotoViewer)
             }
         }
         .sheet(isPresented: $showShareOptions) {
-            ONEShareSheet(entry: entry)
-        }
-        .sheet(isPresented: $showEvents) {
-            MoodEventsSheet(entry: entry)
+            ONEShareSheet(entry: displayedEntry)
         }
         .confirmationDialog(
-            "Seçimini değiştir",
+            NSLocalizedString("today.changeConfirmTitle", comment: ""),
             isPresented: $showChangeConfirm,
             titleVisibility: .visible
         ) {
-            Button("Evet, değiştir", role: .destructive) {
+            Button(NSLocalizedString("today.changeConfirmYes", comment: ""), role: .destructive) {
                 onEdit()
             }
-            Button("Vazgeç", role: .cancel) { }
+            Button(NSLocalizedString("general.cancel", comment: ""), role: .cancel) { }
         } message: {
-            Text("Bugünkü şarkın silinecek ve yeniden seçebileceksin.")
+            Text(NSLocalizedString("today.changeConfirmMessage", comment: ""))
         }
         .onAppear {
             withAnimation(ONEAnimation.screenTransition) { appeared = true }
         }
+    }
+
+    // MARK: - Save Photo to Gallery
+    private func savePhotoToGallery() {
+        guard let photoURL = displayedEntry.photoURL,
+              let data = try? Data(contentsOf: photoURL),
+              let image = UIImage(data: data) else { return }
+
+        ONEHaptics.feelingSelected()
+        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+        withAnimation(ONEAnimation.micro) { photoSaved = true }
     }
 }
 
@@ -417,6 +454,7 @@ struct PhotoViewerSheet: View {
     let photoURL: URL
     @Binding var isPresented: Bool
 
+    @State private var loadedImage: UIImage? = nil
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
     @State private var dismissOffset: CGFloat = 0
@@ -431,99 +469,91 @@ struct PhotoViewerSheet: View {
         return ZStack {
             Color.black.opacity(backgroundOpacity).ignoresSafeArea()
 
-            AsyncImage(url: photoURL) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .scaleEffect(scale)
-                        .offset(
-                            x: isZoomed ? panOffset.width  : 0,
-                            y: isZoomed ? panOffset.height : dismissOffset
-                        )
-                        .gesture(
-                            SimultaneousGesture(
-                                MagnificationGesture()
-                                    .onChanged { value in
-                                        scale = min(max(lastScale * value, 1.0), 5.0)
-                                    }
-                                    .onEnded { _ in
-                                        lastScale = scale
-                                        if scale <= 1.0 {
-                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                                scale = 1.0
-                                                lastScale = 1.0
-                                                panOffset = .zero
-                                                lastPanOffset = .zero
-                                            }
-                                        }
-                                    },
-                                DragGesture()
-                                    .onChanged { val in
-                                        if scale > 1.01 {
-                                            panOffset = CGSize(
-                                                width:  lastPanOffset.width  + val.translation.width,
-                                                height: lastPanOffset.height + val.translation.height
-                                            )
-                                        } else {
-                                            let dy = val.translation.height
-                                            if dy > 0 {
-                                                dismissOffset = dy
-                                                backgroundOpacity = Double(max(0.3, 1.0 - dy / 300))
-                                            }
+            if let uiImage = loadedImage {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .scaleEffect(scale)
+                    .offset(
+                        x: isZoomed ? panOffset.width  : 0,
+                        y: isZoomed ? panOffset.height : dismissOffset
+                    )
+                    .gesture(
+                        SimultaneousGesture(
+                            MagnificationGesture()
+                                .onChanged { value in
+                                    scale = min(max(lastScale * value, 1.0), 5.0)
+                                }
+                                .onEnded { _ in
+                                    lastScale = scale
+                                    if scale <= 1.0 {
+                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                            scale = 1.0
+                                            lastScale = 1.0
+                                            panOffset = .zero
+                                            lastPanOffset = .zero
                                         }
                                     }
-                                    .onEnded { val in
-                                        if scale > 1.01 {
-                                            lastPanOffset = panOffset
-                                        } else if val.translation.height > dismissThreshold {
+                                },
+                            DragGesture()
+                                .onChanged { val in
+                                    if scale > 1.01 {
+                                        panOffset = CGSize(
+                                            width:  lastPanOffset.width  + val.translation.width,
+                                            height: lastPanOffset.height + val.translation.height
+                                        )
+                                    } else {
+                                        let dy = val.translation.height
+                                        if dy > 0 {
+                                            dismissOffset = dy
+                                            backgroundOpacity = Double(max(0.3, 1.0 - dy / 300))
+                                        }
+                                    }
+                                }
+                                .onEnded { val in
+                                    if scale > 1.01 {
+                                        lastPanOffset = panOffset
+                                    } else {
+                                        let velocity = val.predictedEndTranslation.height - val.translation.height
+                                        let shouldDismiss = val.translation.height > dismissThreshold
+                                            || (val.translation.height > 30 && velocity > 250)
+                                        if shouldDismiss {
                                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                            withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
-                                                dismissOffset = 800
+                                            withAnimation(.easeOut(duration: 0.18)) {
+                                                dismissOffset = UIScreen.main.bounds.height
                                                 backgroundOpacity = 0
                                             }
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [self] in
+                                                guard isPresented else { return }
                                                 var t = Transaction()
                                                 t.disablesAnimations = true
                                                 withTransaction(t) { isPresented = false }
                                             }
                                         } else {
-                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                            withAnimation(.spring(response: 0.32, dampingFraction: 0.76)) {
                                                 dismissOffset = 0
                                                 backgroundOpacity = 1.0
                                             }
                                         }
                                     }
-                            )
-                        )
-                        .onTapGesture(count: 2) {
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                if isZoomed {
-                                    scale = 1.0
-                                    lastScale = 1.0
-                                    panOffset = .zero
-                                    lastPanOffset = .zero
-                                } else {
-                                    scale = 2.5
-                                    lastScale = 2.5
                                 }
+                        )
+                    )
+                    .onTapGesture(count: 2) {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                            if isZoomed {
+                                scale = 1.0
+                                lastScale = 1.0
+                                panOffset = .zero
+                                lastPanOffset = .zero
+                            } else {
+                                scale = 2.5
+                                lastScale = 2.5
                             }
                         }
-                case .failure:
-                    VStack(spacing: 12) {
-                        Image(systemName: "photo.fill")
-                            .font(.system(size: 48))
-                            .foregroundColor(.white.opacity(0.3))
-                        Text("Fotoğraf yüklenemedi")
-                            .monoBase()
-                            .foregroundColor(.white.opacity(0.6))
                     }
-                case .empty:
-                    ProgressView().tint(.white)
-                @unknown default:
-                    EmptyView()
-                }
+            } else {
+                ProgressView().tint(.white)
             }
 
             // Kapat butonu — zoom'dayken sabit, değilse fotoğrafla kayar
@@ -558,115 +588,15 @@ struct PhotoViewerSheet: View {
             .offset(y: isZoomed ? 0 : dismissOffset)
         }
         .statusBar(hidden: true)
-    }
-}
-
-
-// MARK: - Daily Context Card
-struct DailyContextCard: View {
-    let entry: DailyEntry
-    @State private var showEvents = false
-    @AppStorage(ONETokens.cityPreferenceKey) private var preferredCity: String = ONETokens.defaultCity
-    @State private var liveEventCount: Int? = nil
-    @State private var liveCategories: String? = nil
-
-    private var moodCategories: String {
-        switch canonicalMoodLabel(entry.moodLabel) {
-        case "Ateşli":    return "Aktivite · Konser · Tiyatro"
-        case "Coşkulu":   return "Aktivite · Konser · Tiyatro"
-        case "Mutlu":     return "Aktivite · Sergi · Konser"
-        case "Doğal":     return "Aktivite · Sergi · Konser"
-        case "Huzurlu":   return "Aktivite · Tiyatro · Sergi"
-        case "Özgür":     return "Aktivite · Konser · Sergi"
-        case "Derin":     return "Aktivite · Tiyatro · Konser"
-        case "Nostaljik": return "Aktivite · Konser · Sergi"
-        case "Gizemli":   return "Aktivite · Sergi · Konser"
-        case "Hassas":    return "Aktivite · Konser · Sergi"
-        case "Sessiz":    return "Aktivite · Sergi · Tiyatro"
-        case "Nötr":      return "Aktivite · Sergi · Konser"
-        default:           return "Aktivite · Konser · Sergi"
-        }
-    }
-
-    private var eventCount: Int { liveEventCount ?? mockEvents(for: entry.moodLabel, city: preferredCity).count }
-
-    private var buttonTextColor: Color {
-        let moodLabel = canonicalMoodLabel(entry.moodLabel)
-        // Light-background moods need dark text for legibility
-        return ["Mutlu", "Doğal", "Nötr"].contains(moodLabel)
-            ? ONETokens.oneInk : .white
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 7) {
-                Circle()
-                    .fill(entry.moodColor)
-                    .frame(width: 5, height: 5)
-                Text("KESFET · \(entry.moodLabel.uppercased()) · \(preferredCity.uppercased())")
-                    .monoSM(tracking: 1.5)
-                    .foregroundColor(.white.opacity(0.45))
-            }
-
-            Text("Bu mood için\n\(eventCount) yakın öneri hazır.")
-                .displayMD()
-                .foregroundColor(.white)
-                .lineSpacing(4)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text(liveCategories ?? moodCategories)
-                .monoSM(tracking: 0.8)
-                .foregroundColor(.white.opacity(0.4))
-
-            Text("Konserlerden sergilere, bugünkü enerjine uyan rotaları aç.")
-                .bodySM()
-                .foregroundColor(.white.opacity(0.72))
-
-            Button(action: {
-                ONEHaptics.feelingSelected()
-                showEvents = true
-            }) {
-                HStack(spacing: 4) {
-                    Text("Etkinlikleri keşfet")
-                        .monoBase(tracking: 0.5)
-                    Text("→")
-                }
-                .foregroundColor(buttonTextColor)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 10)
-                .background(Capsule().fill(entry.moodColor))
-            }
-            .padding(.top, 2)
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color(red: 0.157, green: 0.129, blue: 0.110))
-        )
-        .sheet(isPresented: $showEvents) {
-            MoodEventsSheet(entry: entry)
-        }
-        .task(id: preferredCity) {
-            if preferredCity == "İzmit" {
-                preferredCity = "Kocaeli"
-                return
-            }
-            let fetched = await ActivityRecommendationEngine.shared.fetchRecommendations(for: entry, city: preferredCity)
-            liveEventCount = fetched.count
-            let topCategories = Dictionary(grouping: fetched, by: { $0.category })
-                .mapValues(\.count)
-                .sorted { $0.value > $1.value }
-                .prefix(3)
-                .map { $0.key.rawValue }
-            if !topCategories.isEmpty {
-                liveCategories = topCategories.joined(separator: " · ")
-            } else {
-                liveCategories = moodCategories
+        .task {
+            // Pre-load image once to avoid AsyncImage re-fetches during gesture
+            if let data = try? Data(contentsOf: photoURL) {
+                loadedImage = UIImage(data: data)
             }
         }
     }
 }
+
 
 // MARK: - Story Card Share Sheet
 struct StoryCardShareSheet: View {
@@ -704,7 +634,7 @@ struct StoryCardShareSheet: View {
                                 .scaleEffect(breathe ? 1.4 : 0.8)
                                 .opacity(breathe ? 1.0 : 0.4)
                             
-                            Text("Kartın hazırlanıyor...")
+                            Text(NSLocalizedString("today.cardLoading", comment: ""))
                                 .monoBase(tracking: 0.5)
                                 .foregroundColor(ONETokens.oneCharcoal)
                         }
@@ -716,7 +646,7 @@ struct StoryCardShareSheet: View {
                                 .font(.system(size: 48, weight: .light))
                                 .foregroundColor(ONETokens.oneAsh)
                             
-                            Text("Paylaşım kartını oluştur")
+                            Text(NSLocalizedString("today.createShareCard", comment: ""))
                                 .monoBase(tracking: 0.5)
                                 .foregroundColor(ONETokens.oneCharcoal)
                         }
@@ -733,7 +663,7 @@ struct StoryCardShareSheet: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "square.and.arrow.up")
                                         .font(.system(size: 16, weight: .light))
-                                    Text("Paylaş")
+                                    Text(NSLocalizedString("general.share", comment: ""))
                                         .monoBase(tracking: 0.5)
                                 }
                                 .foregroundColor(.white)
@@ -750,7 +680,7 @@ struct StoryCardShareSheet: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "square.and.arrow.down")
                                         .font(.system(size: 14, weight: .light))
-                                    Text("Fotoğraflara Kaydet")
+                                    Text(NSLocalizedString("today.saveToPhotos", comment: ""))
                                         .monoBase(tracking: 0.5)
                                 }
                                 .foregroundColor(ONETokens.oneCharcoal)
@@ -767,7 +697,7 @@ struct StoryCardShareSheet: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "sparkles")
                                         .font(.system(size: 16, weight: .light))
-                                    Text("Kart Oluştur")
+                                    Text(NSLocalizedString("today.generateCard", comment: ""))
                                         .monoBase(tracking: 0.5)
                                 }
                                 .foregroundColor(.white)
@@ -786,26 +716,26 @@ struct StoryCardShareSheet: View {
                     .padding(.bottom, 20)
                 }
             }
-            .navigationTitle("Paylaş")
+            .navigationTitle(NSLocalizedString("general.share", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Kapat") {
+                    Button(NSLocalizedString("general.close", comment: "")) {
                         dismiss()
                     }
                     .foregroundColor(ONETokens.oneCharcoal)
                 }
             }
         }
-        .alert("Hata", isPresented: $showError) {
-            Button("Tamam", role: .cancel) {}
+        .alert(NSLocalizedString("general.error", comment: ""), isPresented: $showError) {
+            Button(NSLocalizedString("general.ok", comment: ""), role: .cancel) {}
             if generatedImage == nil {
-                Button("Tekrar Dene") {
+                Button(NSLocalizedString("general.retry", comment: "")) {
                     handleGenerate()
                 }
             }
         } message: {
-            Text(errorMessage ?? "Bir hata oluştu")
+            Text(errorMessage ?? NSLocalizedString("general.error", comment: ""))
         }
         .onChange(of: isGeneratingCard) { oldValue, newValue in
             if newValue {

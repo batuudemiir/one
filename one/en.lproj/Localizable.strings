@@ -29,3 +29,819 @@
 /* Success messages */
 "card_generated" = "Card ready!";
 "saved_to_library" = "Saved to Photos";
+
+/* ── TODAY ── */
+"today.title" = "Pick today's song";
+"today.subtitle" = "Start your mood and day from here.";
+"today.moodSection" = "how are you feeling?";
+"today.noteSection" = "leave a note";
+"today.notePlaceholder" = "what did this song leave in you?";
+"today.photoChange" = "change";
+"today.saveButton" = "Save";
+"today.continueButton" = "Continue";
+"today.searchPlaceholder" = "What kind of song today?";
+"today.alreadySelected" = "Today's song has already been selected.";
+"today.completedSubtitle" = "Today's pick is ready";
+"today.shareHint" = "You can now explore events or send to your Circle.";
+"today.sharedInCircle" = "Shared in Circle";
+
+/* ── CONFIRM ── */
+"confirm.back" = "← BACK";
+"confirm.moodQuestion" = "HOW ARE YOU FEELING RIGHT NOW?";
+"confirm.todaySong" = "This is today's song";
+"confirm.addPhoto" = "Add photo";
+"confirm.shareCircle" = "Share in Circle";
+
+/* ── CIRCLE ── */
+"circle.title" = "circle";
+"circle.sharedCount" = "%d/%d shared";
+"circle.removeFriend" = "remove from friends?";
+"circle.setupCTA" = "Set up your Circle";
+"circle.emptyHint" = "See your friends' mood for today...";
+"circle.addFriend" = "Add Friend";
+
+/* ── DISCOVER ── */
+"discover.title" = "discover";
+"discover.todaySong" = "TODAY'S SONG";
+"discover.yourProfile" = "YOUR PROFILE";
+"discover.thisFeeling" = "FOR THIS FEELING";
+"discover.weeklyPlaylist" = "Weekly Playlist";
+"discover.greeting.morning" = "Good morning";
+"discover.greeting.afternoon" = "Good afternoon";
+"discover.greeting.evening" = "Good evening";
+
+/* ── PROFILE / SETTINGS ── */
+"profile.title" = "PROFILE";
+"profile.edit" = "Edit";
+"profile.features" = "FEATURES";
+"profile.joinDate" = "Joined";
+"profile.days" = "Days";
+"profile.music" = "Music";
+"profile.language" = "Language";
+"profile.darkMode" = "Dark Mode";
+"profile.haptics" = "Haptic Feedback";
+"profile.city" = "City";
+"profile.notifications" = "Notifications";
+"profile.icloud" = "iCloud";
+"profile.logout" = "Sign Out";
+
+/* ── ONBOARDING ── */
+"onboarding.searchPlaceholder" = "What kind of song today?";
+"onboarding.slogan" = "Feel. Discover. Share.";
+"onboarding.connectMusic" = "Connect music service";
+"onboarding.later" = "LATER";
+
+/* ── SPLASH ── */
+"splash.slogan" = "feel · discover · share";
+
+/* ── GENERAL ── */
+"general.save" = "Save";
+"general.cancel" = "Cancel";
+"general.clearFilter" = "Clear";
+"general.done" = "Done";
+"general.back" = "Back";
+"general.close" = "Close";
+"general.loading" = "Loading...";
+"general.error" = "An error occurred";
+"general.retry" = "Try Again";
+
+/* ── NOTIFICATIONS ── */
+"notification.acceptFriend" = "Accept";
+"notification.declineFriend" = "Decline";
+"notification.openToday" = "Pick My Song";
+"notification.openEcho" = "View Summary";
+"notification.openDiscovery" = "Discover";
+"notification.openCircle" = "Open Circle";
+
+/* ── ACCESSIBILITY ── */
+"accessibility.today.nowPlayingBanner" = "Now Playing — tap to select";
+"accessibility.today.nowPlayingBannerHint" = "Tap to use the currently playing song";
+"accessibility.today.clearSearch" = "Clear search";
+"accessibility.today.addPhoto" = "Add photo";
+"accessibility.today.removePhoto" = "Remove photo";
+"accessibility.today.continueButton" = "Continue";
+"accessibility.today.saveButton" = "Save today's entry";
+"accessibility.today.photoViewer" = "Today's photo";
+"accessibility.today.shareButton" = "Share";
+"accessibility.today.changeEntry" = "Change today's entry";
+"accessibility.today.artistFilter" = "%@ — filter by artist";
+"accessibility.today.photoOf" = "Photo for %@";
+"accessibility.confirm.moodButton" = "%@ mood";
+"accessibility.confirm.feelingButton" = "%@ feeling";
+"accessibility.circle.addFriend" = "Add friend";
+"accessibility.circle.addFriendHint" = "Add someone to your Circle";
+"accessibility.circle.setupCircle" = "Set up your Circle";
+"accessibility.circle.acceptFriend" = "Accept %@'s friend request";
+"accessibility.circle.declineFriend" = "Decline %@'s friend request";
+"accessibility.search.platformPicker" = "Select music platform";
+"accessibility.discovery.openEvent" = "Open %@ event";
+"accessibility.discovery.eventHint" = "Opens event details";
+"accessibility.settings.notificationToggle" = "Enable notifications";
+
+/* Discover redesign */
+"discover.biletixEvents" = "UPCOMING EVENTS";
+"discover.newDiscover" = "NEW DISCOVERY";
+"discover.thisWeekDiscover" = "THIS WEEK'S PICKS";
+
+/* ── ECHO ── */
+"echo.title" = "Echo";
+"echo.subtitle" = "Your mood history, habits, and moments that intersect with your circle.";
+"echo.loading" = "Preparing Echo…";
+"echo.thisMonth" = "This Month";
+"echo.allTime" = "All Time";
+"echo.stats.thisMonth" = "This month's stats";
+"echo.stats.allTime" = "All-time stats";
+"echo.stats.songs" = "songs";
+"echo.stats.streakDays" = "day streak";
+"echo.stats.mostActive" = "most active";
+"echo.stats.monthlyAvg" = "mo. avg.";
+"echo.moodDistribution" = "Mood distribution";
+"echo.noData" = "Not enough data yet.";
+"echo.thisWeek" = "This week";
+"echo.dominantFeeling" = "This feeling dominated this week.";
+"echo.repeatedSongs" = "Repeated songs";
+"echo.noRepeatedSongs" = "No repeated songs this week.";
+"echo.whenPick" = "When do you pick?";
+"echo.time.morning" = "Morning";
+"echo.time.noon" = "Noon";
+"echo.time.evening" = "Evening";
+"echo.time.night" = "Night";
+"echo.selections" = "%d picks";
+"echo.longestStreak" = "Longest streak";
+"echo.noStreak" = "No streak yet.";
+"echo.days" = "days";
+"echo.circle" = "With Circle";
+"echo.circleMatches" = "times you matched songs with your circle.";
+"echo.noCircleMatches" = "No song matches with your circle yet.";
+"echo.moreMatches" = "and %d more matches";
+"echo.backToProfile" = "Profile";
+
+/* ── CIRCLE (extended) ── */
+"circle.subtitle" = "See your friends' mood for today, leave your pick, grow the share.";
+"circle.awaitingShare" = "A share from you is awaited today.";
+"circle.headerCount" = "Circle · %d/%d shared";
+"circle.you" = "YOU";
+"circle.pendingRequests" = "%d incoming requests";
+"circle.tapToApprove" = "Tap to approve";
+"circle.shareToday" = "Share today and appear in circle";
+"circle.notSharedYet" = "Hasn't shared today";
+"circle.oneShared" = "Your friend shared today.";
+"circle.allShared" = "Everyone has shared today.";
+"circle.someShared" = "%d/%d people shared today.";
+"circle.morningPending" = "Morning! Your friends haven't shared yet.";
+"circle.inviteHint" = "Add with code or @username";
+"circle.blockUser" = "Block User";
+"circle.blockMessage" = "Are you sure you want to block %@? This action cannot be undone.";
+"circle.removeAction" = "Remove";
+"circle.blockAction" = "Block";
+"circle.iCloudRequired" = "iCloud access required";
+"circle.iCloudMessage" = "You must sign in with your iCloud\naccount to use the Circle feature.";
+"circle.tryAgain" = "Try Again";
+"circle.goToSettings" = "Go to Settings";
+"circle.shareWithCircle" = "Share in Circle";
+
+/* ── ADD FRIEND ── */
+"addFriend.title" = "Invite";
+"addFriend.loading" = "Loading invite info…";
+"addFriend.yourCode" = "YOUR CODE";
+"addFriend.copied" = "Copied";
+"addFriend.tapToCopy" = "Tap code to copy";
+"addFriend.share" = "Share";
+"addFriend.showQR" = "Show QR";
+"addFriend.contacts" = "Contacts";
+"addFriend.friendCode" = "FRIEND'S CODE";
+"addFriend.paste" = "Paste";
+"addFriend.sendInvite" = "Send Invite";
+"addFriend.scanQR" = "Scan QR Code";
+"addFriend.pendingTitle" = "Request Already Sent";
+"addFriend.pendingMessage" = "You already sent an invite to %@. Would you like to withdraw this request?";
+"addFriend.withdraw" = "Withdraw Request";
+"addFriend.dismiss" = "Dismiss";
+"addFriend.invitedYou" = "%@ invited you\nto their circle.";
+"addFriend.joinCircle" = "Join Circle";
+"addFriend.notNow" = "Not Now";
+"addFriend.requestSent" = "Request Sent!";
+"addFriend.acceptedInfo" = "When accepted, you'll share today's\nsongs in the same circle.";
+"addFriend.addAnother" = "Add Another";
+"addFriend.friendScansCode" = "Friend scans this code";
+"addFriend.frameQR" = "Frame the QR code";
+"addFriend.cameraRequired" = "Camera access required";
+"addFriend.cancel" = "Cancel";
+"addFriend.ok" = "OK";
+"addFriend.orDivider" = "OR";
+"addFriend.searchByUsername" = "USERNAME";
+"addFriend.usernamePlaceholder" = "username";
+"addFriend.addUser" = "Add";
+"addFriend.usernameNotFound" = "No user found with that username";
+"addFriend.addSection" = "ADD FRIEND";
+"addFriend.searchPlaceholder" = "code or @username";
+"addFriend.yourProfile" = "YOUR PROFILE";
+"friendRequests.decline" = "Decline";
+"friendRequests.summaryPending" = "%d waiting for you";
+"friendRequests.allClear" = "All clear";
+
+/* ── PROFILE (extended) ── */
+"profile.inviteCode" = "INVITE CODE";
+"profile.usernameAvailable" = "Available ✓";
+"profile.usernameTaken" = "This username is taken";
+"profile.usernameCheckFailed" = "Couldn't check availability";
+"profile.usernameExisting" = "Your current username";
+"profile.musicServices" = "MUSIC SERVICES";
+"profile.comingSoon" = "Coming Soon";
+"profile.general" = "GENERAL";
+"profile.notificationsHeader" = "NOTIFICATIONS";
+"profile.other" = "OTHER";
+"profile.notificationsOff" = "Notifications off — Open Settings";
+"profile.reminderTime" = "Reminder time";
+"profile.streakAlert" = "Streak Alert";
+"profile.weeklySummary" = "Weekly Summary";
+"profile.discoveryAlerts" = "Discovery Alerts";
+"profile.appName" = "One — Daily Mood";
+"profile.echoTitle" = "Echo";
+"profile.echoDesc" = "Discover your listening patterns and repeats";
+"profile.spotifyDisconnect" = "Disconnect Spotify";
+"profile.spotifyDisconnectMsg" = "Are you sure you want to disconnect Spotify? Recommendations and cache will be cleared.";
+"profile.appleMusicTitle" = "Apple Music Permission";
+"profile.appleMusicMsg" = "To remove Apple Music permission, go to Settings > Privacy & Security > Media & Apple Music and turn off ONE.";
+"profile.icloudDeleteTitle" = "Delete iCloud Data";
+"profile.icloudDeleteMsg" = "Your profile and circle data in ONE will be deleted from iCloud. This action cannot be undone.";
+"profile.deleteAccountTitle" = "Delete Account";
+"profile.deleteAccountMsg" = "All your song records, profile, and circle data will be permanently deleted. This action cannot be undone.";
+"profile.disconnect" = "Disconnect";
+"profile.openSettings" = "Open Settings";
+"profile.deleteData" = "Delete Data";
+"profile.deleteAccount" = "Delete Account";
+"profile.name" = "NAME";
+"profile.username" = "USERNAME";
+"profile.color" = "COLOR";
+"profile.getToKnowYou" = "Let's get to know you";
+"profile.editProfile" = "Edit Profile";
+"profile.createProfile" = "Create Profile";
+"profile.namePlaceholder" = "What should we call you?";
+"profile.icloudActive" = "Active · Delete data";
+"profile.icloudOff" = "Off";
+"profile.appleMusicConnected" = "Connected · Disconnect in Settings";
+"profile.appleMusicConnect" = "Connect";
+"profile.exportData" = "Export My Data";
+"profile.rateApp" = "Rate the App";
+"profile.exportFormat" = "Export Format";
+"profile.exportError" = "Export Error";
+"profile.unknownError" = "An unknown error occurred.";
+"profile.musicBoth" = "Both";
+"profile.recentMoods" = "Recent moods";
+
+/* ── DISCOVER (extended) ── */
+"discover.selectMood" = "Select today's mood";
+"discover.selectMoodHint" = "Suggestions will appear after selecting a mood";
+"discover.all" = "All";
+"discover.loadingActivities" = "Loading activities…";
+"discover.noEvents" = "No upcoming events found";
+"discover.free" = "Free";
+"discover.showOnMap" = "Show on Map";
+"discover.viewOnBiletix" = "View on Biletix";
+"discover.buyOnBiletix" = "Buy on Biletix";
+"discover.weekSuggestions" = "Suggestions based on this week's moods";
+"discover.noSuggestionsHint" = "After selecting a mood, personalized\nactivity and song suggestions will appear here.";
+"discover.genreTitle" = "Music Genres";
+"discover.music.connect" = "Connect your music service";
+"discover.music.connectHint" = "Connect Spotify or Apple Music\nto receive personalized recommendations.";
+
+/* ── ONBOARDING (extended) ── */
+"onboarding.howItWorks" = "How does\nit work?";
+"onboarding.back" = "← BACK";
+"onboarding.serviceConnections" = "SERVICE CONNECTIONS";
+"onboarding.lastStep" = "One final\nstep";
+"onboarding.connectDesc" = "Connect for a better experience.";
+"onboarding.spotifySettings" = "You can connect Spotify from settings.";
+"onboarding.appleMusicDenied" = "Apple Music access denied. Go to Settings → Privacy → Media & Apple Music to grant permission.";
+"onboarding.notificationDesc" = "We can send you one notification per day…";
+
+/* ── CONTACTS ── */
+"contacts.smsNotAvailable" = "SMS sending is not available on this device.";
+"contacts.smsSendHint" = "Invite link will be sent via SMS";
+
+/* ── ARCHIVE ── */
+"archive.photoLoadFailed" = "Photo could not be loaded";
+"archive.openSong" = "Open Song";
+"archive.colorDistribution" = "COLOR DISTRIBUTION";
+"archive.musicYear" = "Your music year";
+
+/* --- ONBOARDING EXTRA --- */
+"onboarding.start" = "LET'S GO";
+"onboarding.startConnected" = "GREAT, LET'S START";
+"onboarding.connected" = "✓ Connected";
+"onboarding.noSubscriptionHint" = "No subscription needed — for search only";
+"onboarding.noSubscriptionRequired" = "No subscription required";
+"onboarding.noDataSelling" = "We don't sell your data, everything stays on your device";
+
+/* --- FRIEND REQUESTS --- */
+"friendRequests.title" = "Notifications";
+"friendRequests.incoming" = "Incoming";
+"friendRequests.outgoing" = "Outgoing";
+"friendRequests.noIncoming" = "No incoming requests";
+"friendRequests.noOutgoing" = "No sent requests";
+"friendRequests.noIncomingHint" = "When someone invites you to their circle,\nit will appear here.";
+"friendRequests.noOutgoingHint" = "Circle invitations you've sent\nwill appear here.";
+"friendRequests.wantsToAdd" = "Wants to add to circle  ·  ";
+"friendRequests.requestSent" = "Request sent  ·  ";
+"friendRequests.friendAccepted" = "Friendship accepted!";
+"friendRequests.requestWithdrawn" = "Request withdrawn";
+"friendRequests.unknown" = "Unknown";
+"friendRequests.pendingStatus" = "Pending";
+"friendRequests.incomingIcon" = "Incoming";
+"friendRequests.outgoingIcon" = "Outgoing";
+"friendRequests.notifications" = "Activity";
+"friendRequests.noNotifications" = "No activity yet";
+"friendRequests.noNotificationsHint" = "Friend acceptances, shares, and\nreactions will appear here.";
+
+/* --- ARCHIVE EXTRA --- */
+"archive.selectedDays" = "Selected days";
+"archive.silentDays" = "Silent days";
+"archive.completion" = "Completion";
+"archive.month" = "MONTH";
+"archive.year" = "YEAR";
+"archive.totalSelections" = "Total selections";
+"archive.activeMonths" = "Active months";
+"archive.yearCompletion" = "Year completion";
+"archive.selectedAt" = "Selected at %@";
+
+/* --- GENERAL EXTRA --- */
+"general.share" = "Share";
+
+/* --- CIRCLE SHARE TOGGLE --- */
+"circle.shareWithPhotoDesc" = "Your song and photo will be shared";
+"circle.shareWithMoodDesc" = "Your song and mood will be shared";
+"circle.shareHint" = "Let your friends see today's pick";
+
+/* --- GENERAL OK --- */
+"general.ok" = "OK";
+
+/* --- ONBOARDING FEATURES --- */
+"onboarding.feature.dailySong" = "Song of the Day";
+"onboarding.feature.dailySongDesc" = "Pick a song that represents you every day";
+"onboarding.feature.photoMood" = "Photo + Mood";
+"onboarding.feature.photoMoodDesc" = "Capture your moment with a photo and color";
+"onboarding.feature.circle" = "Circle";
+"onboarding.feature.circleDesc" = "Share songs and moods with your friends";
+"onboarding.feature.discover" = "Discover";
+"onboarding.feature.discoverDesc" = "Get activity suggestions based on your mood";
+
+/* --- TODAY EXTRA --- */
+"today.circleCanSee" = "Your circle can see today's mood";
+"today.note" = "NOTE";
+"today.timeSelected" = "at %@";
+"today.cardLoading" = "Preparing your card...";
+"today.createShareCard" = "Create Share Card";
+"today.saveToPhotos" = "Save to Photos";
+"today.generateCard" = "Create Card";
+"today.changeConfirmTitle" = "Change your pick";
+"today.changeConfirmYes" = "Yes, change";
+"today.changeConfirmMessage" = "Today's song will be deleted and you can pick again.";
+"today.select" = "select";
+"today.noResults" = "No results found";
+"today.optional" = "optional";
+"today.changeSong" = "change song";
+"today.saved" = "Saved";
+
+/* --- MOOD EVENTS SHEET --- */
+"moodEvents.ourPicks" = "Our picks\nfor this mood.";
+"moodEvents.noEvents" = "No events found for this category.";
+"moodEvents.matchPercent" = "%%%d match";
+"moodEvents.nearbyCity" = "Nearby city: %@";
+
+/* --- CAMERA / PHOTO --- */
+"camera.captureHint" = "You captured this moment beautifully";
+"camera.permissionChecking" = "Checking camera access...";
+"camera.permissionTitle" = "Camera Access Required";
+"camera.permissionMessage" = "Enable camera access in Settings to capture your daily moment.";
+"camera.openSettings" = "Open Settings";
+"camera.cancel" = "Cancel";
+"camera.use" = "Use";
+"camera.afLock" = "AE/AF LOCK";
+"camera.mode.story" = "Story";
+"camera.mode.photo" = "Photo";
+"camera.mode.square" = "Square";
+"photo.optionalHint" = "Optional · Only visible to you";
+
+/* --- DISCOVER EXTRA --- */
+"discover.match" = "match";
+"discover.explore" = "MOOD EXPLORE";
+"discover.today" = "today";
+"discover.ourPicks" = "OUR PICKS FOR YOU";
+"discover.refresh" = "Refresh";
+"discover.nearbyCity" = "Nearby city: %@";
+
+/* --- CIRCLE FRIEND DETAIL --- */
+"circle.removeConfirmMessage" = "Are you sure you want to remove %@ from your circle?";
+"circle.blockConfirmMessage" = "Are you sure you want to block %@? This action cannot be undone.";
+"circle.todayFeeling" = "What are they\nfeeling today?";
+"circle.note" = "NOTE";
+"circle.heard" = "heard";
+"circle.waitingPick" = "Waiting for pick…";
+"circle.willAppear" = "Will appear when they pick a song";
+"circle.updating" = "Updating…";
+"circle.notSelectedYet" = "Hasn't picked\na song yet.";
+
+/* --- CONTACTS --- */
+"contacts.navTitle" = "Invite from Contacts";
+"contacts.alertSmsCantSend" = "Can't Send SMS";
+"contacts.inviteCodeText" = "Invite code: %@";
+"contacts.contactsRequired" = "Contacts Access Required";
+"contacts.contactsPermissionHint" = "You can grant permission from Settings → Privacy → Contacts.";
+"contacts.openSettings" = "Open Settings";
+"contacts.contactsLoading" = "Loading contacts…";
+"contacts.inviteButton" = "Invite";
+"contacts.searchPlaceholder" = "Search contacts…";
+"contacts.noContacts" = "No contacts";
+"contacts.noResults" = "No contact found";
+"contacts.noName" = "Unnamed";
+
+/* --- SHARE --- */
+"share.joinCircle" = "JOIN YOUR CIRCLE";
+"share.sendInvite" = "Send Invite";
+"share.storyFormat" = "Story (9:16)";
+"share.postFormat" = "Post / X (16:9)";
+"share.cardPreparing" = "Preparing invite card...";
+"share.savedToPhotos" = "Saved to Photos";
+"share.inviteHeader" = "%@ INVITES YOU";
+"share.inviteSlogan" = "Feel.\nDiscover. Share.";
+"share.inviteCode" = "INVITE CODE";
+"share.inviteFooter" = "ONE · Share today's song with your circle.";
+
+/* --- MONTHLY SUMMARY --- */
+"monthly.summary" = "your summary.";
+"monthly.stats" = "%d days · %d songs · 1 you";
+"monthly.swipe" = "swipe";
+"monthly.oneMood" = "one mood";
+"monthly.dominantMood" = "dominant mood";
+"monthly.thisMonth" = "This month's";
+"monthly.sound" = "sound.";
+"monthly.noSongs" = "No songs\nselected this month yet.";
+"monthly.moodTitle" = "Mood";
+"monthly.moodMap" = "map.";
+"monthly.emotionDistribution" = "EMOTION DISTRIBUTION";
+"monthly.share" = "Share";
+"monthly.whichCard" = "Which card to add to your story?";
+"monthly.coverCard" = "Cover card";
+"monthly.moodMapCard" = "Mood map";
+"monthly.topTracksCard" = "Top songs";
+"monthly.statDays" = "DAYS";
+"monthly.statArtists" = "ARTISTS";
+"monthly.statMax" = "MAX";
+"monthly.statLogged" = "DAYS";
+"monthly.statStreak" = "STREAK";
+"monthly.selectionLabel" = "SELECTION";
+"monthly.timesLabel" = "TIMES";
+
+/* --- DISCOVER EXTRA --- */
+"discover.discoverTitle" = "discover";
+"discover.comingSoon" = "Mood-based suggestions\ncoming soon";
+"discover.weeklyPlaylistTitle" = "WEEKLY PLAYLIST";
+"discover.weeklyMoods" = "This week's\nmoods";
+"discover.dominantMood" = "Dominant mood: %@";
+"discover.minSelections" = "Pick songs for at least 3 days";
+"discover.minSelectionsHint" = "You need to pick songs at least 3 days this week for a weekly playlist.";
+"discover.daysCompleted" = "%d/3 days completed";
+"discover.moodDistribution" = "MOOD DISTRIBUTION";
+"discover.weekSongs" = "THIS WEEK'S SONGS";
+"discover.weeklyPlaylistLabel" = "YOUR WEEKLY PLAYLIST";
+
+/* --- SEARCH SCREEN --- */
+"search.alreadySelected" = "Today's song\nis already selected.";
+"search.canPickTomorrow" = "You can pick a new song tomorrow.";
+"search.todayQuestion" = "What kind of song\ntoday?";
+"search.connectSpotify" = "Connect to Spotify";
+"search.connectAppleMusic" = "Connect to Apple Music";
+"search.searchPlaceholder" = "song or artist...";
+"search.appleMusicPermission" = "Apple Music permission required. Please grant it from Settings.";
+
+/* --- CONFIRM SCREEN --- */
+"confirm.question" = "WHAT DOES THIS SONG EVOKE IN YOU?";
+
+/* --- DONE SCREEN --- */
+"done.saved" = "Saved.";
+"done.calendarAdded" = "Added to calendar";
+"done.todaysMemory" = "TODAY'S MEMORY";
+"done.todaysColor" = "TODAY'S COLOR";
+
+/* --- COLOR PICKER --- */
+/* --- INVITE SHARE --- */
+"invite.joinCircle" = "JOIN THE CIRCLE";
+"invite.sendInvite" = "Send Invite";
+"invite.formatPicker" = "Format";
+"invite.story" = "Story (9:16)";
+"invite.post" = "Post / X (16:9)";
+"invite.preparing" = "Preparing invite card...";
+"invite.instagramStory" = "Instagram Story";
+"invite.instagramInstalled" = "Send directly to Stories";
+"invite.instagramNotInstalled" = "Instagram not installed";
+"invite.otherApps" = "Other Apps";
+"invite.otherAppsHint" = "Invite link included";
+"invite.savedToPhotos" = "Saved to Photos";
+"invite.saveToPhotos" = "Save to Photos";
+"invite.saveToPhotosHint" = "Add to gallery as PNG";
+"invite.generateFailed" = "Couldn't create invite card";
+"invite.shareText" = "Join my circle on ONE. Feel, discover, share.\n%@";
+"invite.invitesYou" = "%@ INVITES YOU";
+"invite.codeLabel" = "INVITE CODE";
+"invite.footer" = "ONE · Share today's song with your circle.";
+"app.slogan" = "Feel.\nDiscover. Share.";
+
+/* --- COLOR PICKER --- */
+"colorPicker.echoes" = "ECHOES";
+"colorPicker.echoesDesc" = "Songs you've\npicked again.";
+"colorPicker.noEchoes" = "No echoes yet.";
+"colorPicker.echoesHint" = "When you pick the same song on multiple days,\nit will appear here.";
+"colorPicker.times" = "%d times";
+"colorPicker.insightText" = "\"%@\" seems to carry special meaning for you. You've picked it %d times.";
+
+/* --- SHARE SHEET --- */
+"share.title" = "SHARE";
+"share.preparing" = "Preparing story...";
+"share.instagramSend" = "Send directly to Stories";
+"share.instagramNotInstalled" = "Instagram not installed";
+"share.otherApps" = "Other Apps";
+"share.cardSaved" = "Card saved";
+"share.saveCard" = "Save Card";
+"share.saveCardHint" = "Add story card to gallery";
+"share.photoSaved" = "Photo saved";
+"share.savePhoto" = "Save Photo";
+"share.savePhotoHint" = "Add original photo to gallery";
+"share.spotifyLink" = "Spotify link included";
+"share.appleMusicLink" = "Apple Music link included";
+
+/* --- DISCOVER EXTRA --- */
+"discover.searchBiletix" = "Search on Biletix";
+
+/* --- MONTHLY POSTER --- */
+"monthly.echoTagline" = "ONE · A Month's Echo";
+
+/* --- MOOD LABELS --- */
+"mood.atesli" = "fire";
+"mood.enerjik" = "energy";
+"mood.isikli" = "light";
+"mood.taze" = "fresh";
+"mood.sakin" = "peace";
+"mood.ozgur" = "free";
+"mood.derin" = "depth";
+"mood.nostaljik" = "longing";
+"mood.gizemli" = "spell";
+"mood.hassas" = "fragile";
+"mood.bos" = "void";
+"mood.temiz" = "still";
+
+/* --- FEELING LABELS --- */
+"feeling.calm" = "Calm";
+"feeling.happy" = "Joyful";
+"feeling.sad" = "Down";
+"feeling.anxious" = "Anxious";
+"feeling.excited" = "Excited";
+"feeling.tired" = "Drained";
+"feeling.angry" = "Rebellious";
+"feeling.peaceful" = "Peaceful";
+
+/* --- TODAY EMPTY VIEW --- */
+"today.continueWithoutPhoto" = "Continue without photo";
+"today.done" = "Done";
+
+/* --- CIRCLE / ADD FRIEND --- */
+"circle.requestWithdrawn" = "Friend request withdrawn.";
+
+/* --- SHARE ERRORS --- */
+"share.cardFailed" = "Couldn't create share card";
+
+/* --- DISCOVER PRICING --- */
+"discover.free" = "Free";
+
+/* --- TODAY PLAYING --- */
+"today.playingOnSpotify" = "Playing on Spotify";
+"today.playingOnAppleMusic" = "Playing on Apple Music";
+
+/* --- TODAY GREETINGS --- */
+"today.morningGreeting" = "The day is just beginning.";
+"today.midDayGreeting" = "You're in the middle of the day.";
+"today.afternoonGreeting" = "Afternoon.";
+"today.eveningGreeting" = "The day is winding down.";
+"today.nightGreeting" = "Night.";
+
+/* --- TODAY PHOTO --- */
+"today.addPhoto" = "Add a photo for this moment";
+"today.photoAdded" = "Photo added";
+
+/* --- CAMERA --- */
+"camera.retake" = "Retake";
+
+/* --- ARCHIVE FALLBACKS --- */
+"archive.unknownSong" = "Unknown Song";
+"archive.unknownArtist" = "Unknown Artist";
+"archive.unknown" = "Unknown";
+"archive.defaultMood" = "Neutral";
+"archive.defaultFeeling" = "Calm";
+
+/* --- DISCOVER STATUS --- */
+"discover.notAuthenticated" = "Choose a music service to get recommendations";
+"discover.insufficientHistory" = "Pick more songs and get personalized suggestions";
+"discover.noInternet" = "No internet connection";
+"discover.rateLimit" = "Too many requests, please wait a moment";
+"discover.loadFailed" = "Couldn't load recommendations";
+"discover.cacheError" = "Cache error";
+"discover.artistConcert" = "ARTIST CONCERT";
+"discover.nearby" = "NEARBY";
+
+/* --- CALENDAR DAY ABBREVIATIONS --- */
+"calendar.day.mon" = "Mo";
+"calendar.day.tue" = "Tu";
+"calendar.day.wed" = "We";
+"calendar.day.thu" = "Th";
+"calendar.day.fri" = "Fr";
+"calendar.day.sat" = "Sa";
+"calendar.day.sun" = "Su";
+
+/* --- GENRE FALLBACK --- */
+"genre.music" = "Music";
+
+/* --- NAVIGATION TABS --- */
+"nav.discover" = "discover";
+"nav.archive" = "archive";
+"nav.today" = "today";
+"nav.circle" = "circle";
+"nav.profile" = "profile";
+"nav.tabAccessibility" = "%@ tab";
+
+/* --- DISCOVER CTA LABELS --- */
+"discover.ctaMap" = "Map";
+"discover.ctaBiletix" = "Biletix";
+
+/* --- ACTIVITY RECOMMENDATION SECTIONS --- */
+"discover.sectionMicroTitle" = "Feel better right now";
+"discover.sectionMicroSubtitle" = "Things you can start easily, tailored to your mood, time and the weather.";
+"discover.sectionConcertTitle" = "Concerts close to your music";
+"discover.sectionConcertSubtitle" = "Live music matching your chosen artist or genre.";
+"discover.sectionCityTitle" = "Plan something in the city";
+"discover.sectionCitySubtitle" = "Exhibitions, theatre, cinema and other live routes.";
+"discover.todaySpecial" = "Just for today";
+
+/* --- ACTIVITY TEMPLATES --- */
+"activity.walkSoft.title" = "Take a slow 25-minute walk";
+"activity.walkSoft.venue" = "Nearby";
+"activity.walkSoft.timing" = "Today";
+
+"activity.bikeRide.title" = "Ride your bike and raise your rhythm";
+"activity.bikeRide.venue" = "Route";
+"activity.bikeRide.timing" = "This afternoon";
+
+"activity.swimSea.title" = "Go for a swim and reset";
+"activity.swimSea.venue" = "Shore";
+"activity.swimSea.timing" = "Today near sunset";
+
+"activity.coffeeBreak.title" = "Take a quiet coffee break";
+"activity.coffeeBreak.venue" = "Nearby";
+"activity.coffeeBreak.timing" = "Now";
+
+"activity.bookstore.title" = "Stop by a bookshop or record store";
+"activity.bookstore.venue" = "Route";
+"activity.bookstore.timing" = "Today";
+
+"activity.museumHop.title" = "Plan a quick museum or gallery route";
+"activity.museumHop.venue" = "Center";
+"activity.museumHop.timing" = "This afternoon";
+
+"activity.sunsetWalk.title" = "Take a coastal walk at sunset";
+"activity.sunsetWalk.venue" = "Seafront";
+"activity.sunsetWalk.timing" = "This evening";
+
+"activity.yogaBreath.title" = "Lower your pace with yoga or breathwork";
+"activity.yogaBreath.venue" = "Space";
+"activity.yogaBreath.timing" = "Morning or evening";
+
+"activity.photoWalk.title" = "Go on a photo walk and notice the details";
+"activity.photoWalk.venue" = "Neighborhood";
+"activity.photoWalk.timing" = "Today";
+
+"activity.nightRun.title" = "Release energy with a night run";
+"activity.nightRun.venue" = "Track";
+"activity.nightRun.timing" = "This evening";
+
+"activity.friendDinner.title" = "Call a friend over for a long dinner";
+"activity.friendDinner.venue" = "Table";
+"activity.friendDinner.timing" = "This evening";
+
+/* --- ACTIVITY REASONS --- */
+"activity.reason.anxious" = "Could bring today's restlessness into a gentler rhythm.";
+"activity.reason.tired" = "A calm choice that carries your mood with low effort.";
+"activity.reason.happyExcited" = "Opens a good space to channel your high energy outward.";
+"activity.reason.sad" = "Fits a pressure-free, slow and supportive flow.";
+"activity.reason.calmPeaceful" = "Accompanies the day's rhythm without disturbing the calm within.";
+"activity.reason.angry" = "Chosen to channel your energy into a physical flow.";
+"activity.reason.outdoorWeather" = "Stands out for your mood and the outdoor-friendly weather.";
+"activity.reason.indoorWeather" = "Weather conditions make an indoor, relaxed flow more sensible.";
+"activity.reason.moodMatch" = "A good fit for your %@ mood today — easy to start.";
+
+/* --- SHARE CARD BRANDING --- */
+"share.brandWatermark" = "ONE · Mood Tracker";
+"share.brandWatermarkUpper" = "ONE · MOOD TRACKER";
+
+/* --- DISCOVER LISTEN LABELS --- */
+"discover.listenOnSpotify" = "Listen on Spotify";
+"discover.listenOnAppleMusic" = "Listen on Apple Music";
+
+/* --- GENERAL TOAST TITLES --- */
+"general.success" = "Success";
+"general.info" = "Info";
+"general.warning" = "Warning";
+
+/* --- ACTIVITY VENUE HINTS --- */
+"activity.venue.nature" = "A green route in the city";
+"activity.venue.culture" = "%@ city center — culture route";
+"activity.venue.neighborhood" = "A nearby neighborhood in %@";
+"activity.venue.motion" = "An active route in the city";
+"activity.venue.quiet" = "A quiet corner, café or bookshop";
+"activity.venue.coast" = "A waterfront route in the city";
+"cloudkit.connectionError" = "Could not connect to iCloud. Check your internet connection and try again.";
+"cloudkit.throttleWait" = "Server busy. Retrying in %d min %02d sec.";
+
+"update.title" = "New version available";
+"update.body" = "ONE %@ is out! Update now for a better experience.";
+"update.current" = "Installed version: %@";
+"update.cta" = "UPDATE NOW";
+"update.later" = "Remind me later";
+
+/* --- ONE+ PREMIUM --- */
+"premium.paywall.title" = "Feel everything\nfully";
+"premium.paywall.subtitle" = "Try ONE+. Cancel anytime.";
+"premium.paywall.subscribe" = "Start 3-Day Free Trial";
+"premium.paywall.restore" = "Restore Purchases";
+"premium.paywall.privacy" = "Privacy Policy";
+"premium.paywall.terms" = "Terms of Use";
+"premium.paywall.trialNote" = "Selected plan starts after the trial ends.\nCancel anytime.";
+"premium.paywall.success" = "Welcome to ONE+!";
+"premium.paywall.legal" = "Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless canceled at least 24 hours before the end of the current period.";
+"premium.plan.monthly" = "Monthly";
+"premium.plan.yearly" = "Yearly";
+"premium.plan.month" = "month";
+"premium.plan.year" = "year";
+"premium.plan.monthly.sub" = "every month";
+"premium.plan.yearly.sub" = "per year · $3.3/mo";
+"premium.plan.bestValue" = "47% off";
+"premium.feature.multipleEntries" = "Unlimited Sharing";
+"premium.feature.multipleEntries.desc" = "Save whenever your mood changes. No daily limit.";
+"premium.feature.weeklyPlaylist" = "Weekly Playlist";
+"premium.feature.weeklyPlaylist.desc" = "Your week's songs become an automatic playlist. Relisten to your week.";
+"premium.feature.circleFeed" = "Circle History";
+"premium.feature.circleFeed.desc" = "See your friends' past shares";
+"premium.feature.monthlySummary" = "Monthly Summary";
+"premium.feature.monthlySummary.desc" = "Detailed monthly mood reports";
+"premium.feature.premiumWidgets" = "Home Screen Widget";
+"premium.feature.premiumWidgets.desc" = "Today's mood color and song always in front. No need to open the app.";
+"premium.error.verification" = "Purchase verification failed";
+"premium.profile.title" = "ONE+";
+"premium.profile.manage" = "Manage Subscription";
+"premium.profile.active" = "Active";
+"premium.today.addMore" = "Add";
+"today.addNewEntry.title" = "New entry for today";
+"today.addNewEntry.subtitle" = "Add another song or mood.";
+"premium.today.entryCount" = "Entry %d of %d";
+"premium.archive.entries" = "%d entries";
+"premium.circle.history" = "Past Shares";
+"premium.circle.historyTeaser" = "See past shares with ONE+";
+"premium.monthlySummary.title" = "Monthly Summary";
+"premium.playlist.saveSpotify" = "Save to Spotify";
+"premium.playlist.openSpotify" = "Open in Spotify";
+"premium.playlist.spotifyRequired" = "Connect Spotify to create playlists";
+"premium.playlist.noSongs" = "Not enough recommendations to create a playlist";
+"premium.playlist.noMatches" = "Could not find matching tracks on Spotify";
+
+/* Premium Status Card */
+"premium.status.active" = "ACTIVE";
+"premium.status.subtitle" = "All ONE+ features unlocked";
+"premium.metric.multiEntryDays" = "MULTI";
+"premium.metric.totalEntries" = "THIS MONTH";
+"premium.metric.streak" = "STREAK";
+"premium.features.active" = "ACTIVE FEATURES";
+"premium.feature.circleHistory" = "Circle History";
+"premium.upgrade.title" = "Discover more with ONE+";
+"premium.upgrade.subtitle" = "Unlimited entries, playlists, summaries and more";
+
+/* Apple Music Playlist — A4 */
+"premium.playlist.saveAppleMusic" = "Save to Apple Music";
+"premium.playlist.openAppleMusic" = "Open in Apple Music";
+"premium.playlist.authRequired" = "Apple Music access required";
+"premium.playlist.description" = "Created based on weekly mood. With ONE app.";
+"premium.playlist.iosTooOld" = "This feature requires iOS 16 or later.";
+"premium.playlist.noMatchFound" = "Could not find matching tracks on Apple Music.";
+
+/* Monthly Summary — B3 */
+"monthly.totalEntries" = "entries";
+
+/* Premium Status — D4 */
+"premium.status.renewsOn" = "Renews: %@";
+"premium.status.monthlyActive" = "MONTHLY ACTIVE";
+"premium.status.yearlyActive" = "YEARLY ACTIVE";
+
+/* Premium Special Feel — E3, E7 */
+"premium.greeting" = "Hello, %@ ✦";
+"premium.firstMultiEntry" = "✦ Your first multi-entry day!";
+
+/* Month-End Summary Notification */
+"notification.monthEnd.title" = "Your monthly summary is ready 🎵";
+"notification.monthEnd.body" = "Ready to see what this month sounded like?";

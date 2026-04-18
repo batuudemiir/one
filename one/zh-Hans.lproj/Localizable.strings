@@ -1,0 +1,660 @@
+/* Share */
+"share_to_instagram" = "分享";
+"save_to_library" = "保存";
+"generating" = "生成中...";
+
+/* Default values */
+"untitled_song" = "无标题";
+"unknown_artist" = "未知艺术家";
+
+/* Error messages */
+"missing_data_coverImage" = "缺少封面图片";
+"missing_data_songName" = "缺少歌曲名称";
+"render_failed" = "无法创建卡片。请重试。";
+"image_too_large" = "图片太大。请使用较小的照片。";
+"invalid_format" = "格式无效";
+"export_failed" = "导出失败";
+"instagram_not_installed" = "未安装Instagram。请安装Instagram应用。";
+"save_failed" = "无法保存照片";
+"permission_denied" = "需要访问照片库。请在设置中允许。";
+
+/* Recovery suggestions */
+"check_song_data" = "检查歌曲信息";
+"try_again" = "请重试";
+"reduce_image_size" = "缩小照片尺寸";
+"check_format" = "检查格式兼容性";
+"check_storage" = "检查存储空间";
+"install_instagram" = "安装Instagram";
+
+/* Success messages */
+"card_generated" = "卡片已准备好！";
+"saved_to_library" = "已保存到照片";
+
+/* ── 今天 ── */
+"today.title" = "选择今天的歌曲";
+"today.subtitle" = "从这里开始你的心情和一天。";
+"today.moodSection" = "你感觉怎么样？";
+"today.noteSection" = "留下备注";
+"today.notePlaceholder" = "这首歌给你留下了什么？";
+"today.photoChange" = "更换";
+"today.saveButton" = "保存";
+"today.continueButton" = "继续";
+"today.searchPlaceholder" = "今天想听什么歌？";
+"today.alreadySelected" = "今天的歌曲已经选好了。";
+"today.completedSubtitle" = "今天的选择已完成";
+"today.shareHint" = "现在你可以探索活动或发送给你的圈子。";
+"today.sharedInCircle" = "已在圈子中分享";
+
+/* ── 确认 ── */
+"confirm.back" = "← 返回";
+"confirm.moodQuestion" = "你现在感觉如何？";
+"confirm.todaySong" = "这就是今天的歌曲";
+"confirm.addPhoto" = "添加照片";
+"confirm.shareCircle" = "在圈子中分享";
+
+/* ── 圈子 ── */
+"circle.title" = "圈子";
+"circle.sharedCount" = "%d/%d 已分享";
+"circle.removeFriend" = "从好友中删除？";
+"circle.setupCTA" = "创建你的圈子";
+"circle.emptyHint" = "查看朋友们今天的心情...";
+"circle.addFriend" = "添加朋友";
+
+/* ── 发现 ── */
+"discover.title" = "发现";
+"discover.todaySong" = "今日歌曲";
+"discover.yourProfile" = "我的档案";
+"discover.thisFeeling" = "为了这种感觉";
+"discover.weeklyPlaylist" = "每周歌单";
+"discover.greeting.morning" = "早上好";
+"discover.greeting.afternoon" = "下午好";
+"discover.greeting.evening" = "晚上好";
+
+/* ── 个人资料 / 设置 ── */
+"profile.title" = "个人资料";
+"profile.edit" = "编辑";
+"profile.joinDate" = "加入时间";
+"profile.days" = "天";
+"profile.music" = "音乐";
+"profile.language" = "语言";
+"profile.darkMode" = "深色模式";
+"profile.haptics" = "触感反馈";
+"profile.city" = "城市";
+"profile.notifications" = "通知";
+"profile.icloud" = "iCloud";
+"profile.logout" = "退出登录";
+
+/* ── 引导 ── */
+"onboarding.searchPlaceholder" = "今天想听什么歌？";
+"onboarding.slogan" = "感受。发现。分享。";
+"onboarding.connectMusic" = "连接音乐服务";
+"onboarding.later" = "稍后";
+
+/* ── 启动页 ── */
+"splash.slogan" = "感受 · 发现 · 分享";
+
+/* ── 通用 ── */
+"general.save" = "保存";
+"general.cancel" = "取消";
+"general.done" = "完成";
+"general.back" = "返回";
+"general.close" = "关闭";
+"general.loading" = "加载中...";
+"general.error" = "发生错误";
+"general.retry" = "重试";
+
+/* ── 通知 ── */
+"notification.acceptFriend" = "接受";
+"notification.declineFriend" = "拒绝";
+"notification.openToday" = "选择我的歌曲";
+"notification.openEcho" = "查看摘要";
+"notification.openDiscovery" = "发现";
+
+/* ── 无障碍 ── */
+"accessibility.today.nowPlayingBanner" = "正在播放 — 点击选择";
+"accessibility.today.nowPlayingBannerHint" = "将当前播放的歌曲用作今天的歌曲";
+"accessibility.today.clearSearch" = "清除搜索";
+"accessibility.today.addPhoto" = "添加照片";
+"accessibility.today.removePhoto" = "删除照片";
+"accessibility.today.continueButton" = "继续";
+"accessibility.today.saveButton" = "保存今天的记录";
+"accessibility.today.photoViewer" = "今天的照片";
+"accessibility.today.shareButton" = "分享";
+"accessibility.today.changeEntry" = "更改今天的记录";
+"accessibility.today.artistFilter" = "%@ — 按艺术家筛选";
+"accessibility.today.photoOf" = "%@的照片";
+"accessibility.confirm.moodButton" = "%@心情";
+"accessibility.confirm.feelingButton" = "%@感受";
+"accessibility.circle.addFriend" = "添加朋友";
+"accessibility.circle.addFriendHint" = "将某人添加到你的圈子";
+"accessibility.circle.setupCircle" = "创建你的圈子";
+"accessibility.circle.acceptFriend" = "接受%@的好友请求";
+"accessibility.circle.declineFriend" = "拒绝%@的好友请求";
+"accessibility.search.platformPicker" = "选择音乐平台";
+"accessibility.discovery.openEvent" = "打开%@活动";
+"accessibility.discovery.eventHint" = "打开活动详情";
+"accessibility.settings.notificationToggle" = "启用通知";
+
+/* Discover redesign */
+"discover.biletixEvents" = "即将到来的活动";
+"discover.newDiscover" = "新发现";
+"discover.thisWeekDiscover" = "本周推荐";
+
+/* ── ECHO ── */
+"echo.title" = "回声";
+"echo.subtitle" = "您的心情历史、习惯以及与圈子交汇的时刻。";
+"echo.loading" = "正在准备回声…";
+"echo.thisMonth" = "本月";
+"echo.allTime" = "全部时间";
+"echo.stats.thisMonth" = "本月统计";
+"echo.stats.allTime" = "总体统计";
+"echo.stats.songs" = "首";
+"echo.stats.streakDays" = "天连续";
+"echo.stats.mostActive" = "最活跃";
+"echo.stats.monthlyAvg" = "月均";
+"echo.moodDistribution" = "心情分布";
+"echo.noData" = "暂时没有足够的数据。";
+"echo.thisWeek" = "本周";
+"echo.dominantFeeling" = "本周这种情绪最为突出。";
+"echo.repeatedSongs" = "重复的歌曲";
+"echo.noRepeatedSongs" = "本周没有重复的歌曲。";
+"echo.whenPick" = "你什么时候选择？";
+"echo.time.morning" = "早上";
+"echo.time.noon" = "中午";
+"echo.time.evening" = "傍晚";
+"echo.time.night" = "夜晚";
+"echo.selections" = "%d 次选择";
+"echo.longestStreak" = "最长连续";
+"echo.noStreak" = "还没有连续记录。";
+"echo.days" = "天";
+"echo.circle" = "与圈子";
+"echo.circleMatches" = "次与圈子选择了同一首歌。";
+"echo.noCircleMatches" = "与圈子还没有歌曲匹配。";
+"echo.moreMatches" = "还有 %d 个匹配";
+"echo.backToProfile" = "个人资料";
+"circle.subtitle" = "查看朋友今天的心情，留下你的选择，扩大分享。";
+"circle.awaitingShare" = "今天等待您的分享。";
+"circle.headerCount" = "圈子 · %d/%d 已分享";
+"circle.you" = "你";
+"circle.pendingRequests" = "%d 个请求";
+"circle.tapToApprove" = "点击批准";
+"circle.shareToday" = "今天分享并出现在圈子中";
+"circle.notSharedYet" = "今天还没有分享";
+"circle.blockUser" = "屏蔽用户";
+"circle.blockMessage" = "确定要屏蔽 %@ 吗？此操作无法撤销。";
+"circle.removeAction" = "移除";
+"circle.blockAction" = "屏蔽";
+"circle.iCloudRequired" = "需要 iCloud 访问";
+"circle.iCloudMessage" = "使用圈子功能需要\n使用 iCloud 账户登录。";
+"circle.tryAgain" = "重试";
+"circle.goToSettings" = "前往设置";
+"circle.shareWithCircle" = "在圈子中分享";
+"addFriend.title" = "邀请";
+"addFriend.loading" = "正在加载邀请信息…";
+"addFriend.yourCode" = "你的代码";
+"addFriend.copied" = "已复制";
+"addFriend.tapToCopy" = "点击代码复制";
+"addFriend.share" = "分享";
+"addFriend.showQR" = "显示 QR";
+"addFriend.contacts" = "联系人";
+"addFriend.friendCode" = "朋友的代码";
+"addFriend.paste" = "粘贴";
+"addFriend.sendInvite" = "发送邀请";
+"addFriend.scanQR" = "扫描 QR";
+"addFriend.pendingTitle" = "请求已发送";
+"addFriend.pendingMessage" = "你已经向 %@ 发送了邀请。要撤回吗？";
+"addFriend.withdraw" = "撤回请求";
+"addFriend.dismiss" = "取消";
+"addFriend.invitedYou" = "%@ 邀请您\n加入他的圈子。";
+"addFriend.joinCircle" = "加入圈子";
+"addFriend.notNow" = "暂时不";
+"addFriend.requestSent" = "请求已发送！";
+"addFriend.acceptedInfo" = "接受后，您将在同一圈子中\n共享今天的歌曲。";
+"addFriend.addAnother" = "添加其他人";
+"addFriend.friendScansCode" = "朋友扫描此代码";
+"addFriend.frameQR" = "将 QR 码放入框内";
+"addFriend.cameraRequired" = "需要相机权限";
+"addFriend.cancel" = "取消";
+"addFriend.ok" = "确定";
+"profile.inviteCode" = "邀请码";
+"profile.musicServices" = "音乐服务";
+"profile.comingSoon" = "即将推出";
+"profile.general" = "通用";
+"profile.notificationsHeader" = "通知";
+"profile.other" = "其他";
+"profile.notificationsOff" = "通知已关闭 — 打开设置";
+"profile.reminderTime" = "提醒时间";
+"profile.streakAlert" = "连续提醒";
+"profile.weeklySummary" = "每周摘要";
+"profile.discoveryAlerts" = "发现提醒";
+"profile.appName" = "One — 每日心情";
+"profile.echoTitle" = "回声";
+"profile.echoDesc" = "发现您的听歌规律和重复";
+"profile.spotifyDisconnect" = "断开 Spotify";
+"profile.spotifyDisconnectMsg" = "确定要断开 Spotify 吗？推荐和缓存将被清除。";
+"profile.appleMusicTitle" = "Apple Music 权限";
+"profile.appleMusicMsg" = "要移除 Apple Music 权限，请前往设置 > 隐私 > 媒体与 Apple Music。";
+"profile.icloudDeleteTitle" = "删除 iCloud 数据";
+"profile.icloudDeleteMsg" = "ONE 中的个人资料和圈子数据将从 iCloud 中删除。此操作无法撤销。";
+"profile.deleteAccountTitle" = "删除账户";
+"profile.deleteAccountMsg" = "所有歌曲记录、个人资料和圈子数据将被永久删除。此操作无法撤销。";
+"profile.disconnect" = "断开连接";
+"profile.openSettings" = "打开设置";
+"profile.deleteData" = "删除数据";
+"profile.deleteAccount" = "删除账户";
+"profile.name" = "姓名";
+"profile.username" = "用户名";
+"profile.color" = "颜色";
+"profile.getToKnowYou" = "让我们了解你";
+"profile.editProfile" = "编辑资料";
+"profile.createProfile" = "创建资料";
+"profile.namePlaceholder" = "我们该怎么称呼你？";
+"profile.icloudActive" = "活跃 · 删除数据";
+"profile.icloudOff" = "关闭";
+"profile.appleMusicConnected" = "已连接 · 在设置中断开";
+"profile.appleMusicConnect" = "连接";
+"profile.exportData" = "导出我的数据";
+"profile.rateApp" = "评价应用";
+"profile.exportFormat" = "导出格式";
+"profile.exportError" = "导出错误";
+"profile.unknownError" = "发生了未知错误。";
+"profile.musicBoth" = "两者都是";
+"discover.selectMood" = "选择今天的心情";
+"discover.selectMoodHint" = "选择心情后将显示建议";
+"discover.all" = "全部";
+"discover.loadingActivities" = "正在加载活动…";
+"discover.noEvents" = "没有找到即将到来的活动";
+"discover.free" = "免费";
+"discover.showOnMap" = "在地图上显示";
+"discover.viewOnBiletix" = "在 Biletix 上查看";
+"discover.buyOnBiletix" = "在 Biletix 上购买";
+"discover.weekSuggestions" = "基于本周心情的建议";
+"discover.noSuggestionsHint" = "选择心情后，\n个性化的活动和歌曲建议将显示在这里。";
+"discover.genreTitle" = "音乐流派";
+"onboarding.howItWorks" = "怎么\n使用？";
+"onboarding.back" = "← 返回";
+"onboarding.serviceConnections" = "服务连接";
+"onboarding.lastStep" = "最后\n一步";
+"onboarding.connectDesc" = "连接以获得更好的体验。";
+"onboarding.spotifySettings" = "您可以在设置中连接 Spotify。";
+"onboarding.appleMusicDenied" = "Apple Music 访问被拒绝。设置 → 隐私 → 媒体与 Apple Music 授权。";
+"onboarding.notificationDesc" = "我们每天可以向您发送一条通知…";
+"contacts.smsNotAvailable" = "此设备不支持发送短信。";
+"contacts.smsSendHint" = "邀请链接将通过短信发送";
+"archive.photoLoadFailed" = "无法加载照片";
+"archive.openSong" = "打开歌曲";
+"archive.colorDistribution" = "颜色分布";
+"archive.musicYear" = "您的音乐年";
+
+/* --- ONBOARDING EXTRA --- */
+"onboarding.start" = "出发吧";
+"onboarding.startConnected" = "太棒了，出发吧";
+"onboarding.connected" = "✓ 已连接";
+"onboarding.noSubscriptionHint" = "无需订阅 — 仅用于搜索";
+"onboarding.noSubscriptionRequired" = "无需订阅";
+"onboarding.noDataSelling" = "我们不出售您的数据，一切都保存在您的设备上";
+
+/* --- FRIEND REQUESTS --- */
+"friendRequests.title" = "通知";
+"friendRequests.incoming" = "收到";
+"friendRequests.outgoing" = "已发送";
+"friendRequests.noIncoming" = "没有收到的请求";
+"friendRequests.noOutgoing" = "没有发送的请求";
+"friendRequests.noIncomingHint" = "当有人邀请您加入他们的圈子时，\n将显示在这里。";
+"friendRequests.noOutgoingHint" = "您发送的圈子邀请\n将显示在这里。";
+"friendRequests.wantsToAdd" = "想添加到圈子  ·  ";
+"friendRequests.requestSent" = "请求已发送  ·  ";
+"friendRequests.friendAccepted" = "好友请求已接受！";
+"friendRequests.requestWithdrawn" = "请求已撤回";
+"friendRequests.unknown" = "未知";
+
+/* --- ARCHIVE EXTRA --- */
+"archive.selectedDays" = "已选天数";
+"archive.silentDays" = "静默天数";
+"archive.completion" = "完成度";
+"archive.month" = "月";
+"archive.year" = "年";
+"archive.totalSelections" = "总选择数";
+"archive.activeMonths" = "活跃月份";
+"archive.yearCompletion" = "年度完成度";
+"archive.selectedAt" = "在 %@ 选择";
+
+/* --- GENERAL EXTRA --- */
+"general.share" = "分享";
+
+/* --- CIRCLE SHARE TOGGLE --- */
+"circle.shareWithPhotoDesc" = "您的歌曲和照片将被分享";
+"circle.shareWithMoodDesc" = "您的歌曲和心情将被分享";
+"circle.shareHint" = "让朋友们看到今天的选择";
+
+/* --- GENERAL OK --- */
+"general.ok" = "OK";
+
+/* --- ONBOARDING FEATURES --- */
+"onboarding.feature.dailySong" = "今日之歌";
+"onboarding.feature.dailySongDesc" = "每天选一首代表你的歌";
+"onboarding.feature.photoMood" = "照片 + 心情";
+"onboarding.feature.photoMoodDesc" = "用照片和颜色记录你的瞬间";
+"onboarding.feature.circle" = "圈子";
+"onboarding.feature.circleDesc" = "与朋友分享歌曲和心情";
+"onboarding.feature.discover" = "发现";
+"onboarding.feature.discoverDesc" = "根据心情获得活动建议";
+"today.circleCanSee" = "您的圈子可以看到今天的心情";
+"today.note" = "备注";
+"today.timeSelected" = "%@时选择";
+"today.cardLoading" = "正在准备您的卡片...";
+"today.createShareCard" = "创建分享卡片";
+"today.saveToPhotos" = "保存到照片";
+"today.generateCard" = "创建卡片";
+"today.changeConfirmTitle" = "更改您的选择";
+"today.changeConfirmYes" = "是，更改";
+"today.changeConfirmMessage" = "今天的歌曲将被删除，您可以重新选择。";
+"today.select" = "选择";
+"today.noResults" = "未找到结果";
+"today.optional" = "可选";
+"today.changeSong" = "更换歌曲";
+"today.saved" = "已保存";
+"moodEvents.ourPicks" = "这种心情的\n我们推荐。";
+"moodEvents.noEvents" = "此类别没有找到活动。";
+"moodEvents.matchPercent" = "%%%d 匹配";
+"moodEvents.nearbyCity" = "附近城市：%@";
+"camera.captureHint" = "您完美地捕捉了这一刻";
+"photo.optionalHint" = "可选 · 仅您可见";
+"discover.match" = "匹配";
+"discover.explore" = "探索心情";
+"discover.today" = "今天";
+"discover.ourPicks" = "为您精选";
+"discover.refresh" = "刷新";
+"discover.nearbyCity" = "附近城市：%@";
+
+"circle.removeConfirmMessage" = "您确定要将%@从您的圈子中移除吗？";
+"circle.blockConfirmMessage" = "您确定要屏蔽%@吗？此操作无法撤销。";
+"circle.todayFeeling" = "他们今天\n感觉如何？";
+"circle.note" = "备注";
+"circle.heard" = "已听";
+"circle.waitingPick" = "等待选择…";
+"circle.willAppear" = "当他们选择一首歌时将会显示";
+"circle.updating" = "更新中…";
+"circle.notSelectedYet" = "今天还没有\n选择歌曲。";
+"contacts.navTitle" = "从联系人邀请";
+"contacts.alertSmsCantSend" = "无法发送短信";
+"contacts.inviteCodeText" = "邀请码：%@";
+"contacts.contactsRequired" = "需要访问联系人";
+"contacts.contactsPermissionHint" = "您可以在设置 → 隐私 → 联系人中授予权限。";
+"contacts.openSettings" = "打开设置";
+"contacts.contactsLoading" = "正在加载联系人…";
+"contacts.inviteButton" = "邀请";
+"contacts.searchPlaceholder" = "搜索联系人…";
+"contacts.noContacts" = "没有联系人";
+"contacts.noResults" = "未找到联系人";
+"contacts.noName" = "无名";
+"share.joinCircle" = "加入您的圈子";
+"share.sendInvite" = "发送邀请";
+"share.storyFormat" = "故事 (9:16)";
+"share.postFormat" = "帖子 / X (16:9)";
+"share.cardPreparing" = "正在准备邀请卡...";
+"share.savedToPhotos" = "已保存到照片";
+"share.inviteHeader" = "%@邀请您";
+"share.inviteSlogan" = "感受。\n发现。分享。";
+"share.inviteCode" = "邀请码";
+"share.inviteFooter" = "ONE · 与您的圈子分享今天的歌曲。";
+"monthly.summary" = "您的总结。";
+"monthly.stats" = "%d天 · %d首歌 · 1个您";
+"monthly.swipe" = "滑动";
+"monthly.oneMood" = "一种心情";
+"monthly.dominantMood" = "主要心情";
+"monthly.thisMonth" = "本月的";
+"monthly.sound" = "声音。";
+"monthly.noSongs" = "本月还没有\n选择任何歌曲。";
+"monthly.moodTitle" = "心情";
+"monthly.moodMap" = "地图。";
+"monthly.emotionDistribution" = "情绪分布";
+"monthly.share" = "分享";
+"monthly.whichCard" = "要添加到故事的哪张卡片？";
+"monthly.coverCard" = "封面卡片";
+"monthly.moodMapCard" = "心情地图";
+"monthly.topTracksCard" = "热门歌曲";
+"monthly.statDays" = "天";
+"monthly.statArtists" = "艺术家";
+"monthly.statMax" = "最多";
+"monthly.selectionLabel" = "选择";
+"monthly.timesLabel" = "次";
+"discover.discoverTitle" = "发现";
+"discover.comingSoon" = "基于心情的建议\n即将推出";
+"discover.weeklyPlaylistTitle" = "每周播放列表";
+"discover.weeklyMoods" = "本周的\n心情";
+"discover.dominantMood" = "主要心情：%@";
+"discover.minSelections" = "至少选择3天的歌曲";
+"discover.minSelectionsHint" = "您需要本周至少3天选择歌曲才能获得每周播放列表。";
+"discover.daysCompleted" = "%d/3天已完成";
+"discover.moodDistribution" = "心情分布";
+"discover.weekSongs" = "本周歌曲";
+"discover.weeklyPlaylistLabel" = "您的每周播放列表";
+"search.alreadySelected" = "今天的歌曲\n已经选择了。";
+"search.canPickTomorrow" = "您明天可以选择新歌曲。";
+"search.todayQuestion" = "今天是什么\n类型的歌曲？";
+"search.connectSpotify" = "连接到Spotify";
+"search.connectAppleMusic" = "连接到Apple Music";
+"search.searchPlaceholder" = "歌曲或艺术家...";
+"search.appleMusicPermission" = "需要Apple Music权限。请在设置中授权。";
+"confirm.question" = "这首歌让您想起了什么？";
+"done.saved" = "已保存。";
+"done.calendarAdded" = "已添加到日历";
+"done.todaysMemory" = "今日记忆";
+"done.todaysColor" = "今日颜色";
+/* --- INVITE SHARE --- */
+"invite.joinCircle" = "加入圈子";
+"invite.sendInvite" = "发送邀请";
+"invite.formatPicker" = "格式";
+"invite.story" = "故事 (9:16)";
+"invite.post" = "帖子 / X (16:9)";
+"invite.preparing" = "正在准备邀请卡...";
+"invite.instagramStory" = "Instagram Story";
+"invite.instagramInstalled" = "直接发送到Stories";
+"invite.instagramNotInstalled" = "未安装Instagram";
+"invite.otherApps" = "其他应用";
+"invite.otherAppsHint" = "包含邀请链接";
+"invite.savedToPhotos" = "已保存到照片";
+"invite.saveToPhotos" = "保存到照片";
+"invite.saveToPhotosHint" = "以PNG格式添加到相册";
+"invite.generateFailed" = "无法创建邀请卡";
+"invite.shareText" = "加入我在ONE上的圈子。感受、发现、分享。\n%@";
+"invite.invitesYou" = "%@邀请您";
+"invite.codeLabel" = "邀请码";
+"invite.footer" = "ONE · 与您的圈子分享今日歌曲。";
+"app.slogan" = "感受。\n发现。分享。";
+"colorPicker.echoes" = "回声";
+"colorPicker.echoesDesc" = "您再次选择的\n歌曲。";
+"colorPicker.noEchoes" = "还没有回声。";
+"colorPicker.echoesHint" = "当您在多天选择同一首歌时，\n它将显示在这里。";
+"colorPicker.times" = "%d次";
+"colorPicker.insightText" = "「%@」似乎对你有特别的意义。你已经选择了它%d次。";
+
+/* --- SHARE SHEET --- */
+"share.title" = "分享";
+"share.preparing" = "正在准备故事...";
+"share.instagramSend" = "直接发送到故事";
+"share.instagramNotInstalled" = "未安装Instagram";
+"share.otherApps" = "其他应用";
+"share.cardSaved" = "卡片已保存";
+"share.saveCard" = "保存卡片";
+"share.saveCardHint" = "将故事卡片添加到相册";
+"share.photoSaved" = "照片已保存";
+"share.savePhoto" = "保存照片";
+"share.savePhotoHint" = "将原始照片添加到相册";
+"share.spotifyLink" = "包含Spotify链接";
+"share.appleMusicLink" = "包含Apple Music链接";
+
+/* --- DISCOVER EXTRA --- */
+"discover.searchBiletix" = "在Biletix搜索";
+
+/* --- MONTHLY POSTER --- */
+"monthly.echoTagline" = "ONE · 一个月的回响";
+
+/* --- MOOD LABELS --- */
+"mood.atesli" = "热情";
+"mood.enerjik" = "充满活力";
+"mood.isikli" = "快乐";
+"mood.taze" = "清新";
+"mood.sakin" = "平静";
+"mood.ozgur" = "自由";
+"mood.derin" = "深沉";
+"mood.nostaljik" = "怀旧";
+"mood.gizemli" = "神秘";
+"mood.hassas" = "敏感";
+"mood.bos" = "安静";
+"mood.temiz" = "中性";
+
+/* --- FEELING LABELS --- */
+"feeling.calm" = "平静";
+"feeling.happy" = "快乐";
+"feeling.sad" = "难过";
+"feeling.anxious" = "焦虑";
+"feeling.excited" = "兴奋";
+"feeling.tired" = "疲惫";
+"feeling.angry" = "叛逆";
+"feeling.peaceful" = "平和";
+
+/* --- TODAY EMPTY VIEW --- */
+"today.continueWithoutPhoto" = "不带照片继续";
+"today.done" = "完成";
+
+/* --- NAVIGATION TABS --- */
+"nav.discover" = "发现";
+"nav.archive" = "存档";
+"nav.today" = "今天";
+"nav.circle" = "圈子";
+"nav.profile" = "个人";
+"nav.tabAccessibility" = "%@标签";
+
+/* --- DISCOVER CTA LABELS --- */
+"discover.ctaMap" = "地图";
+"discover.ctaBiletix" = "Biletix";
+
+/* --- ACTIVITY RECOMMENDATION SECTIONS --- */
+"discover.sectionMicroTitle" = "立刻感觉好一些";
+"discover.sectionMicroSubtitle" = "根据你的心情、时间和天气，轻松就能开始的事情。";
+"discover.sectionConcertTitle" = "靠近你音乐的演唱会";
+"discover.sectionConcertSubtitle" = "与你选择的艺术家或风格相符的现场音乐。";
+"discover.sectionCityTitle" = "在城市里计划些什么";
+"discover.sectionCitySubtitle" = "展览、戏剧、电影及其他现场路线。";
+"discover.todaySpecial" = "只为今天";
+
+/* --- ACTIVITY TEMPLATES --- */
+"activity.walkSoft.title" = "慢慢散步25分钟";
+"activity.walkSoft.venue" = "附近";
+"activity.walkSoft.timing" = "今天";
+
+"activity.bikeRide.title" = "骑自行车，提高你的节奏";
+"activity.bikeRide.venue" = "路线";
+"activity.bikeRide.timing" = "今天下午";
+
+"activity.swimSea.title" = "去游泳，让自己重置";
+"activity.swimSea.venue" = "海岸";
+"activity.swimSea.timing" = "今天日落前";
+
+"activity.coffeeBreak.title" = "享受一次安静的咖啡休息";
+"activity.coffeeBreak.venue" = "附近";
+"activity.coffeeBreak.timing" = "现在";
+
+"activity.bookstore.title" = "去书店或唱片店逛逛";
+"activity.bookstore.venue" = "路线";
+"activity.bookstore.timing" = "今天";
+
+"activity.museumHop.title" = "规划一条短暂的博物馆或画廊路线";
+"activity.museumHop.venue" = "市中心";
+"activity.museumHop.timing" = "今天下午";
+
+"activity.sunsetWalk.title" = "日落时沿海岸散步";
+"activity.sunsetWalk.venue" = "海滨";
+"activity.sunsetWalk.timing" = "今晚";
+
+"activity.yogaBreath.title" = "通过瑜伽或呼吸练习放慢节奏";
+"activity.yogaBreath.venue" = "空间";
+"activity.yogaBreath.timing" = "早晨或晚上";
+
+"activity.photoWalk.title" = "去拍照散步，注意细节";
+"activity.photoWalk.venue" = "街区";
+"activity.photoWalk.timing" = "今天";
+
+"activity.nightRun.title" = "夜跑释放能量";
+"activity.nightRun.venue" = "跑道";
+"activity.nightRun.timing" = "今晚";
+
+"activity.friendDinner.title" = "邀请朋友共进一顿悠长的晚餐";
+"activity.friendDinner.venue" = "餐桌";
+"activity.friendDinner.timing" = "今晚";
+
+/* --- ACTIVITY REASONS --- */
+"activity.reason.anxious" = "可以将今天的不安带入更温和的节奏。";
+"activity.reason.tired" = "一个平静的选择，用最少的力气承载你的心情。";
+"activity.reason.happyExcited" = "为将高能量向外传递打开了好的空间。";
+"activity.reason.sad" = "适合无压力、缓慢和支持性的流动。";
+"activity.reason.calmPeaceful" = "陪伴一天的节奏，不打扰内心的平静。";
+"activity.reason.angry" = "被选来将能量引导到身体流动中。";
+"activity.reason.outdoorWeather" = "因你的心情和适合户外活动的天气而脱颖而出。";
+"activity.reason.indoorWeather" = "天气条件使室内放松的流动更加合理。";
+"activity.reason.moodMatch" = "今天的%@心情很合适 — 容易开始。";
+
+/* --- ACTIVITY VENUE HINTS --- */
+"activity.venue.nature" = "城市中的绿色路线";
+"activity.venue.culture" = "%@市中心 — 文化路线";
+"activity.venue.neighborhood" = "%@附近的街区";
+"activity.venue.motion" = "城市中的活跃路线";
+"activity.venue.quiet" = "安静的角落、咖啡馆或书店";
+"activity.venue.coast" = "城市中的滨水路线";
+
+/* --- SHARE CARD BRANDING --- */
+"share.brandWatermark" = "ONE · Mood Tracker";
+"share.brandWatermarkUpper" = "ONE · MOOD TRACKER";
+
+/* --- DISCOVER LISTEN LABELS --- */
+"discover.listenOnSpotify" = "在Spotify收听";
+"discover.listenOnAppleMusic" = "在Apple Music收听";
+
+/* --- GENERAL TOAST TITLES --- */
+"general.success" = "成功";
+"general.info" = "信息";
+"general.warning" = "警告";
+
+/* --- CAMERA MISSING KEYS --- */
+"camera.use" = "使用";
+"camera.afLock" = "AE/AF 锁定";
+"camera.retake" = "重拍";
+
+/* --- CIRCLE / SHARE MISSING --- */
+"circle.requestWithdrawn" = "好友请求已撤回。";
+"share.cardFailed" = "无法创建分享卡片";
+
+/* --- TODAY MISSING KEYS --- */
+"today.playingOnSpotify" = "正在 Spotify 播放";
+"today.playingOnAppleMusic" = "正在 Apple Music 播放";
+"today.morningGreeting" = "一天才刚刚开始。";
+"today.midDayGreeting" = "你正处于一天的中间。";
+"today.afternoonGreeting" = "下午。";
+"today.eveningGreeting" = "一天即将结束。";
+"today.nightGreeting" = "夜晚。";
+"today.addPhoto" = "为这一刻添加照片";
+"today.photoAdded" = "照片已添加";
+
+/* --- DISCOVER STATUS MISSING --- */
+"discover.notAuthenticated" = "选择音乐服务以获取推荐";
+"discover.insufficientHistory" = "选择更多歌曲以获取个性化建议";
+"discover.noInternet" = "没有网络连接";
+"discover.rateLimit" = "请求过多，请稍候";
+"discover.loadFailed" = "无法加载推荐";
+"discover.cacheError" = "缓存错误";
+"discover.artistConcert" = "艺术家演唱会";
+"discover.nearby" = "附近";
+
+/* --- CALENDAR DAY ABBREVIATIONS --- */
+"calendar.day.mon" = "一";
+"calendar.day.tue" = "二";
+"calendar.day.wed" = "三";
+"calendar.day.thu" = "四";
+"calendar.day.fri" = "五";
+"calendar.day.sat" = "六";
+"calendar.day.sun" = "日";
+
+/* --- GENRE FALLBACK --- */
+"genre.music" = "音乐";

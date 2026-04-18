@@ -40,10 +40,38 @@ struct SongRecommendation: Identifiable, Codable, Hashable {
 struct TasteProfile: Codable {
     let topGenres: [String]
     let topArtists: [String]
+    /// Spotify track IDs extracted from the user's saved spotifyURL entries — used as seed_tracks
+    let topTrackIds: [String]
     let moodPatterns: [MoodPattern]
     let totalEntries: Int
     let averageMoodScore: Double
     let createdAt: Date
+
+    /// Frequency-weighted genre pool — dominant genres appear multiple times so they are
+    /// sampled as seeds more often. E.g. pop×3, indie×2, rock×1. Used by recommendation
+    /// services instead of the flat topGenres list.
+    /// Falls back to topGenres if empty (older cached profiles).
+    var weightedGenres: [String] { _weightedGenres ?? topGenres }
+    private let _weightedGenres: [String]?
+
+    // Memberwise init that fills _weightedGenres (used by TasteProfileAnalyzer)
+    init(topGenres: [String],
+         topArtists: [String],
+         topTrackIds: [String],
+         moodPatterns: [MoodPattern],
+         totalEntries: Int,
+         averageMoodScore: Double,
+         createdAt: Date,
+         weightedGenres: [String]? = nil) {
+        self.topGenres       = topGenres
+        self.topArtists      = topArtists
+        self.topTrackIds     = topTrackIds
+        self.moodPatterns    = moodPatterns
+        self.totalEntries    = totalEntries
+        self.averageMoodScore = averageMoodScore
+        self.createdAt       = createdAt
+        self._weightedGenres = weightedGenres
+    }
 }
 
 // MARK: - Mood Pattern

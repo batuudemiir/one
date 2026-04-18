@@ -88,6 +88,13 @@ struct TodayEmptyView: View {
                             .foregroundColor(ONETokens.oneAsh)
                             .padding(.bottom, 16)
 
+                        // "Bu gün geçen yıl" hafıza kartı
+                        if let lastYear = vm.lastYearEntry, selectedSong == nil {
+                            lastYearMemoryCard(lastYear)
+                                .padding(.bottom, 20)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+
                         // Şimdi çalıyor banner'ı (Apple Music veya Spotify, şarkı seçilmemişse)
                         if selectedSong == nil,
                            let track = nowPlayingManager.currentTrack {
@@ -117,7 +124,7 @@ struct TodayEmptyView: View {
 
                                 // Fotoğrafsız devam et — mood'a geç
                                 if !showMoodSection {
-                                    continueButton(label: "Fotoğrafsız devam et") {
+                                    continueButton(label: NSLocalizedString("today.continueWithoutPhoto", comment: "")) {
                                         reveal("moodSection", proxy: proxy) {
                                             showMoodSection = true
                                         }
@@ -155,7 +162,7 @@ struct TodayEmptyView: View {
                                     .transition(.opacity.combined(with: .move(edge: .bottom)))
 
                                 if !showSaveButton {
-                                    continueButton(label: "Hazır") {
+                                    continueButton(label: NSLocalizedString("today.done", comment: "")) {
                                         withAnimation(ONEAnimation.panelSpring) {
                                             showSaveButton = true
                                         }
@@ -178,8 +185,8 @@ struct TodayEmptyView: View {
 
                         }
 
-                        // Öneriler
-                        if selectedSong == nil && searchText.isEmpty {
+                        // Öneriler — şarkı seçilmediği sürece her zaman göster
+                        if selectedSong == nil {
                             RecommendationsSection(
                                 engine: recommendationEngine,
                                 onSelectSong: { rec in
@@ -189,7 +196,7 @@ struct TodayEmptyView: View {
                                         id: id,
                                         name: rec.name,
                                         artist: rec.artist,
-                                        genre: rec.genre ?? "Müzik",
+                                        genre: rec.genre ?? NSLocalizedString("genre.music", comment: ""),
                                         coverURL: rec.coverURL,
                                         spotifyURL: url,
                                         artworkURLString: rec.coverURL?.absoluteString
@@ -219,7 +226,7 @@ struct TodayEmptyView: View {
             guard newPhoto != nil, !showMoodSection, let proxy = scrollProxy else { return }
             reveal("moodSection", proxy: proxy) { showMoodSection = true }
         }
-        .sheet(isPresented: $showCamera) { CameraView(image: $photoImage) }
+        .fullScreenCover(isPresented: $showCamera) { CameraView(image: $photoImage) }
         .fullScreenCover(isPresented: $showFullScreenPhoto) { photoFullScreenView }
         .task { await recommendationEngine.fetchRecommendations() }
         .task {
@@ -229,6 +236,50 @@ struct TodayEmptyView: View {
         .onDisappear {
             nowPlayingManager.stopPolling()
         }
+    }
+
+    // MARK: - Bu Gün Geçen Yıl Hafıza Kartı
+
+    func lastYearMemoryCard(_ entry: DailyEntry) -> some View {
+        HStack(spacing: 14) {
+            Circle()
+                .fill(entry.moodColor)
+                .frame(width: 10, height: 10)
+                .padding(.leading, 2)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("365 gün önce")
+                    .monoLabel(tracking: 1.0)
+                    .foregroundColor(ONETokens.oneAsh)
+                Text(entry.songName)
+                    .bodySMMedium()
+                    .foregroundColor(ONETokens.oneInk)
+                    .lineLimit(1)
+                Text(entry.artistName)
+                    .monoSM(tracking: 0)
+                    .foregroundColor(ONETokens.oneCharcoal)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            Text(entry.moodLabel.uppercased())
+                .monoLabel(tracking: 1.0)
+                .foregroundColor(entry.moodColor)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Capsule().fill(entry.moodColor.opacity(0.12)))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(ONETokens.onePaper)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(ONETokens.oneSilver, lineWidth: 1)
+                )
+        )
     }
 
     // MARK: - Section Divider
@@ -249,7 +300,7 @@ struct TodayEmptyView: View {
                 id: UUID(),
                 name: track.name,
                 artist: track.artist,
-                genre: "Müzik",
+                genre: NSLocalizedString("genre.music", comment: ""),
                 coverURL: track.artworkURL,
                 spotifyURL: track.spotifyURL,
                 artworkURLString: track.artworkURL?.absoluteString
@@ -279,7 +330,7 @@ struct TodayEmptyView: View {
                         Circle()
                             .fill(track.source == .spotify ? ONETokens.spotifyGreen : ONETokens.appleMusicRed)
                             .frame(width: 6, height: 6)
-                        Text(track.source == .spotify ? "Spotify'da çalıyor" : "Apple Music'te çalıyor")
+                        Text(track.source == .spotify ? NSLocalizedString("today.playingOnSpotify", comment: "") : NSLocalizedString("today.playingOnAppleMusic", comment: ""))
                             .monoLabel(tracking: 0.8)
                             .foregroundColor(track.source == .spotify ? ONETokens.spotifyGreen : ONETokens.appleMusicRed)
                     }
@@ -300,7 +351,7 @@ struct TodayEmptyView: View {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 24))
                         .foregroundColor(ONETokens.oneShadow)
-                    Text("seç")
+                    Text(NSLocalizedString("today.select", comment: ""))
                         .monoLabel(tracking: 0.5)
                         .foregroundColor(ONETokens.oneMist)
                 }
@@ -314,6 +365,8 @@ struct TodayEmptyView: View {
             )
         }
         .buttonStyle(ScaleButtonStyle())
+        .accessibilityLabel(NSLocalizedString("accessibility.today.nowPlayingBanner", comment: ""))
+        .accessibilityHint(NSLocalizedString("accessibility.today.nowPlayingBannerHint", comment: ""))
     }
 
     // MARK: - Şarkı Arama
@@ -321,13 +374,13 @@ struct TodayEmptyView: View {
     var songSearchSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             if selectedSong == nil {
-                Text("Bugünün şarkısını seç")
+                Text(NSLocalizedString("today.title", comment: ""))
                     .displayLG()
                     .foregroundColor(ONETokens.oneShadow)
                     .lineSpacing(2)
                     .padding(.bottom, 2)
 
-                Text("Mood'unu ve gününü buradan başlat.")
+                Text(NSLocalizedString("today.subtitle", comment: ""))
                     .monoBase(tracking: 0.2)
                     .foregroundColor(ONETokens.oneAsh)
                     .padding(.bottom, 12)
@@ -341,7 +394,7 @@ struct TodayEmptyView: View {
                             .font(.system(size: 13))
                             .foregroundColor(ONETokens.oneMist)
                     }
-                    TextField("Şarkı veya sanatçı ara", text: $searchText)
+                    TextField(NSLocalizedString("search.searchPlaceholder", comment: ""), text: $searchText)
                         .monoSM(tracking: 0)
                         .foregroundColor(ONETokens.oneShadow)
                         .onChange(of: searchText) { _, v in vm.search(v) }
@@ -351,6 +404,9 @@ struct TodayEmptyView: View {
                                 .foregroundColor(ONETokens.oneMist)
                                 .font(.system(size: 13))
                         }
+                        .accessibilityLabel(NSLocalizedString("accessibility.today.clearSearch", comment: ""))
+                        .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
+                        .contentShape(Rectangle())
                     }
                 }
                 .padding(.horizontal, 14)
@@ -370,6 +426,7 @@ struct TodayEmptyView: View {
                                         .padding(.vertical, 7)
                                         .background(Capsule().stroke(ONETokens.oneCreamMid, lineWidth: 1))
                                 }
+                                .accessibilityLabel(String(format: NSLocalizedString("accessibility.today.artistFilter", comment: ""), artist))
                             }
                         }
                     }
@@ -408,7 +465,7 @@ struct TodayEmptyView: View {
                 if let err = vm.searchError {
                     Text(err).monoSM(tracking: 0).foregroundColor(ONETokens.oneRed.opacity(0.7)).padding(.top, 6)
                 } else if !searchText.isEmpty && !vm.isSearching && vm.searchResults.isEmpty {
-                    Text("Sonuç bulunamadı").monoSM(tracking: 0).foregroundColor(ONETokens.oneCreamLow).padding(.top, 6)
+                    Text(NSLocalizedString("today.noResults", comment: "")).monoSM(tracking: 0).foregroundColor(ONETokens.oneCreamLow).padding(.top, 6)
                 }
             }
 
@@ -440,7 +497,7 @@ struct TodayEmptyView: View {
             Spacer()
 
             Button(action: { resetAll() }) {
-                Text("değiştir")
+                Text(NSLocalizedString("today.photoChange", comment: ""))
                     .monoSM(tracking: 1.0)
                     .foregroundColor(ONETokens.oneCreamLow)
             }
@@ -452,7 +509,7 @@ struct TodayEmptyView: View {
     // MARK: - Fotoğraf Satırı
 
     var photoRow: some View {
-        Button(action: { ONEHaptics.feelingSelected(); showCamera = true }) {
+        Button(action: { ONEHaptics.feelingSelected(); showCamera = true })  {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
@@ -462,16 +519,19 @@ struct TodayEmptyView: View {
                         .font(.system(size: 15, weight: .light))
                         .foregroundColor(photoImage != nil ? ONETokens.oneGreen : ONETokens.oneAsh)
                 }
-                Text(photoImage != nil ? "Fotoğraf eklendi" : "Fotoğraf ekle")
+                Text(photoImage != nil ? "Fotoğraf eklendi" : NSLocalizedString("confirm.addPhoto", comment: ""))
                     .bodyMD().foregroundColor(ONETokens.oneShadow)
                 Spacer()
                 if photoImage == nil {
-                    Text("opsiyonel").monoSM(tracking: 0.5).foregroundColor(ONETokens.oneMist)
+                    Text(NSLocalizedString("today.optional", comment: "")).monoSM(tracking: 0.5).foregroundColor(ONETokens.oneMist)
                 }
                 if photoImage != nil {
                     Button(action: { withAnimation(ONEAnimation.micro) { photoImage = nil } }) {
                         Image(systemName: "xmark.circle.fill").font(.system(size: 18)).foregroundColor(ONETokens.oneMist)
                     }
+                    .accessibilityLabel(NSLocalizedString("accessibility.today.removePhoto", comment: ""))
+                    .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
+                    .contentShape(Rectangle())
                 }
             }
             .padding(.horizontal, 14).padding(.vertical, 12)
@@ -483,6 +543,11 @@ struct TodayEmptyView: View {
             )
         }
         .buttonStyle(ScaleButtonStyle())
+        .accessibilityLabel(
+            photoImage != nil
+                ? NSLocalizedString("accessibility.today.removePhoto", comment: "")
+                : NSLocalizedString("accessibility.today.addPhoto", comment: "")
+        )
     }
 
     func photoPreview(_ photo: UIImage) -> some View {
@@ -505,7 +570,7 @@ struct TodayEmptyView: View {
 
     var moodSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("nasıl hissediyorsun?")
+            Text(NSLocalizedString("today.moodSection", comment: ""))
                 .bodySM().foregroundColor(ONETokens.oneAsh)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 14) {
@@ -532,6 +597,8 @@ struct TodayEmptyView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
+                    .accessibilityLabel(String(format: NSLocalizedString("accessibility.confirm.moodButton", comment: ""), mood.label))
+                    .accessibilityAddTraits(selectedMood?.key == mood.key ? .isSelected : [])
                 }
             }
         }
@@ -542,7 +609,7 @@ struct TodayEmptyView: View {
 
     var feelingSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("bu şarkı sende ne bıraktı?")
+            Text(NSLocalizedString("today.noteSection", comment: ""))
                 .bodySM()
                 .foregroundColor(ONETokens.oneAsh)
 
@@ -583,6 +650,8 @@ struct TodayEmptyView: View {
                             .animation(ONEAnimation.micro, value: selectedFeeling)
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .accessibilityLabel(String(format: NSLocalizedString("accessibility.confirm.feelingButton", comment: ""), feel.label))
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
                 }
             }
         }
@@ -592,11 +661,11 @@ struct TodayEmptyView: View {
 
     var noteField: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("bir not bırak")
+            Text(NSLocalizedString("today.noteSection", comment: ""))
                 .bodySM().foregroundColor(ONETokens.oneAsh)
 
             HStack(spacing: 12) {
-                TextField("Bugün ne hissediyorsun? (opsiyonel)", text: $dailyNote)
+                TextField(NSLocalizedString("today.notePlaceholder", comment: ""), text: $dailyNote)
                     .monoSM(tracking: 0).foregroundColor(ONETokens.oneShadow)
                     .submitLabel(.done).focused($isNoteFieldFocused)
                     .onSubmit { isNoteFieldFocused = false }
@@ -655,20 +724,12 @@ struct TodayEmptyView: View {
                 .background(Capsule().fill(ONETokens.oneSilver))
             }
 
-            // Çevre paylaşım toggle
-            if photoImage != nil {
-                HStack {
-                    Text("Fotoğrafı çevrede paylaş")
-                        .monoSM(tracking: 0.6).foregroundColor(ONETokens.oneMist)
-                    Spacer()
-                    Toggle("", isOn: $sharePhoto).toggleStyle(ONEToggleStyle())
-                }
-                .padding(.horizontal, 4)
-            }
+            // Çevre paylaşım toggle — her zaman göster (fotoğrafsız da paylaşılabilir)
+            CircleShareToggle(isOn: $sharePhoto, hasPhoto: photoImage != nil)
 
-            Text("Hisset. Keşfet. Paylaş.")
+            Text(NSLocalizedString("onboarding.slogan", comment: ""))
                 .monoSM(tracking: 1.2)
-                .foregroundColor(ONETokens.oneMist)
+                .foregroundColor(ONETokens.oneAsh)
 
             // Ana CTA
             Button(action: {
@@ -679,7 +740,7 @@ struct TodayEmptyView: View {
                 vm.saveEntry(song: song, mood: mood, feeling: feeling,
                              photo: photoImage, note: dailyNote, sharePhoto: sharePhoto)
             }) {
-                Text("Bugünün şarkısı bu")
+                Text(NSLocalizedString("confirm.todaySong", comment: ""))
                     .displayXS()
                     .foregroundColor(ONETokens.oneCream)
                     .frame(maxWidth: .infinity)
@@ -691,10 +752,11 @@ struct TodayEmptyView: View {
             }
             .buttonStyle(ScaleButtonStyle())
             .animation(ONEAnimation.micro, value: selectedMood?.key)
+            .accessibilityLabel(NSLocalizedString("accessibility.today.saveButton", comment: ""))
 
             // Şarkıyı değiştir
             Button(action: { resetAll() }) {
-                Text("şarkıyı değiştir")
+                Text(NSLocalizedString("today.changeSong", comment: ""))
                     .monoSM(tracking: 0.8).foregroundColor(ONETokens.oneMist)
             }
             .frame(maxWidth: .infinity)
@@ -826,11 +888,11 @@ struct TodayEmptyView: View {
     private var timeGreetingText: String {
         let h = Calendar.current.component(.hour, from: Date())
         switch h {
-        case 5..<10:  return "Gün henüz başlıyor."
-        case 10..<14: return "Günün ortasındasın."
-        case 14..<19: return "Öğleden sonra."
-        case 19..<23: return "Gün bitmek üzere."
-        default:      return "Gece."
+        case 5..<10:  return NSLocalizedString("today.morningGreeting", comment: "")
+        case 10..<14: return NSLocalizedString("today.midDayGreeting", comment: "")
+        case 14..<19: return NSLocalizedString("today.afternoonGreeting", comment: "")
+        case 19..<23: return NSLocalizedString("today.eveningGreeting", comment: "")
+        default:      return NSLocalizedString("today.nightGreeting", comment: "")
         }
     }
 

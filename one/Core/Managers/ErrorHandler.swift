@@ -98,7 +98,7 @@ class ErrorHandler: ObservableObject {
     func showSuccess(_ message: String) {
         let toast = ToastItem(
             type: .success,
-            title: "Başarılı",
+            title: NSLocalizedString("general.success", comment: ""),
             message: message,
             isRetryable: false
         )
@@ -109,7 +109,7 @@ class ErrorHandler: ObservableObject {
     func showInfo(_ message: String) {
         let toast = ToastItem(
             type: .info,
-            title: "Bilgi",
+            title: NSLocalizedString("general.info", comment: ""),
             message: message,
             isRetryable: false
         )
@@ -120,7 +120,7 @@ class ErrorHandler: ObservableObject {
     func showWarning(_ message: String) {
         let toast = ToastItem(
             type: .warning,
-            title: "Uyarı",
+            title: NSLocalizedString("general.warning", comment: ""),
             message: message,
             isRetryable: false
         )

@@ -15,6 +15,7 @@ import SwiftUI
 struct TopTracksCardView: View {
     let data: MonthlySummaryData
     var isExport: Bool = false
+    var showWatermark: Bool = false
 
     @State private var itemsVisible: [Bool] = []
 
@@ -29,10 +30,10 @@ struct TopTracksCardView: View {
 
                     // Başlık
                     VStack(alignment: .leading, spacing: 0) {
-                        Text("Bu ayın")
+                        Text(NSLocalizedString("monthly.thisMonth", comment: ""))
                             .font(.system(size: 56, weight: .black))
                             .foregroundColor(.white)
-                        Text("sesi.")
+                        Text(NSLocalizedString("monthly.sound", comment: ""))
                             .font(.system(size: 56, weight: .black))
                             .foregroundColor(.white.opacity(0.30))
                     }
@@ -45,7 +46,7 @@ struct TopTracksCardView: View {
                                 Text("🎵")
                                     .font(.system(size: 48))
                                     .opacity(0.4)
-                                Text("Bu ay henüz\nşarkı seçilmedi.")
+                                Text(NSLocalizedString("monthly.noSongs", comment: ""))
                                     .font(.system(size: 15, weight: .light))
                                     .foregroundColor(.white.opacity(0.40))
                                     .multilineTextAlignment(.center)
@@ -75,6 +76,9 @@ struct TopTracksCardView: View {
                     .padding(.horizontal, 28)
             }
         }
+        .overlay(alignment: .bottomTrailing) {
+            if showWatermark { watermarkView }
+        }
         .background(Color.black)
         .ignoresSafeArea()
         .onAppear {
@@ -88,6 +92,27 @@ struct TopTracksCardView: View {
                 }
             }
         }
+    }
+
+    // MARK: — Watermark
+    private var watermarkView: some View {
+        Group {
+            if let _ = UIImage(named: "ONE_Watermark") {
+                Image("ONE_Watermark")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(.white.opacity(0.85))
+                    .frame(width: 80, height: 28)
+            } else {
+                Text("ONE")
+                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .foregroundColor(.white.opacity(0.7))
+                    .tracking(3)
+            }
+        }
+        .padding(.trailing, 20)
+        .padding(.bottom, 32)
     }
 
     // MARK: — Track Row
@@ -134,7 +159,7 @@ struct TopTracksCardView: View {
                 Text("\(track.days)")
                     .font(.system(size: 22, weight: .black))
                     .foregroundColor(.white)
-                Text(track.days > 1 ? "SEÇİM" : "KEZ")
+                Text(NSLocalizedString(track.days > 1 ? "monthly.selectionLabel" : "monthly.timesLabel", comment: ""))
                     .font(.system(size: 8, weight: .regular, design: .monospaced))
                     .foregroundColor(.white.opacity(0.35))
             }

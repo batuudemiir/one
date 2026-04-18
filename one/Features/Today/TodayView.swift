@@ -11,6 +11,11 @@ struct TodayView: View {
     @StateObject private var vm: TodayViewModel
     @Binding var entryStep: Step
 
+    // Streak milestone kutlaması
+    @State private var showMilestone:    Bool    = false
+    @State private var milestoneScale:   CGFloat = 0.8
+    @State private var milestoneOpacity: Double  = 0
+
     // Save Ritual animasyonu
     @State private var showRitual:       Bool    = false
     @State private var ritualColor:      Color   = .clear
@@ -56,11 +61,14 @@ struct TodayView: View {
                         ))
                 case .completed:
                     if let entry = vm.todayEntry {
-                        TodayCompletedView(entry: entry, onEdit: {
-                            withAnimation(.easeInOut(duration: 0.4)) {
-                                vm.clearToday()
+                        TodayCompletedView(
+                            entry: entry,
+                            onEdit: {
+                                withAnimation(.easeInOut(duration: 0.4)) {
+                                    vm.clearToday()
+                                }
                             }
-                        })
+                        )
                         .transition(.asymmetric(
                             insertion: .scale(scale: 0.96).combined(with: .opacity),
                             removal: .opacity
@@ -69,6 +77,19 @@ struct TodayView: View {
                 }
             }
             .animation(.spring(response: 0.45, dampingFraction: 0.82), value: vm.todayState == .completed)
+
+            // Streak milestone kutlaması
+            if showMilestone, let milestone = vm.streakMilestone {
+                VStack {
+                    Spacer()
+                    StreakMilestoneCard(days: milestone)
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 130)
+                        .scaleEffect(milestoneScale)
+                        .opacity(milestoneOpacity)
+                        .allowsHitTesting(false)
+                }
+            }
 
             // Save Ritual — kaydetme anında mood'a özgü animasyon
             if showRitual {
@@ -175,6 +196,34 @@ struct TodayView: View {
             triggerRitual(color: entry.moodColor, mood: mood)
             // Kayıt tamamlandı — step sıfırla ki tab bar görünsün
             entryStep = .search
+        }
+        .onChange(of: vm.streakMilestone) { _, milestone in
+            guard milestone != nil else { return }
+            showMilestone = true
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.68)) {
+                milestoneScale   = 1.0
+                milestoneOpacity = 1.0
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                withAnimation(.easeOut(duration: 0.4)) {
+                    milestoneOpacity = 0
+                    milestoneScale   = 0.92
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    showMilestone = false
+                    vm.clearStreakMilestone()
+                }
+            }
+        }
+        .alert("Dynamic Island Kapalı", isPresented: $vm.showLiveActivityAlert) {
+            Button("Ayarları Aç") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Tamam", role: .cancel) {}
+        } message: {
+            Text("Mood'unu Dynamic Island'da görmek için Ayarlar > ONE > Canlı Etkinlikler'i etkinleştir.")
         }
     }
 
@@ -389,6 +438,63 @@ struct TodayView: View {
                 ritualMood = nil
             }
         }
+    }
+}
+
+// MARK: - Streak Milestone Card
+
+struct StreakMilestoneCard: View {
+    let days: Int
+
+    private var emoji: String {
+        switch days {
+        case 7:   return "🔥"
+        case 30:  return "⚡️"
+        case 100: return "💎"
+        default:  return "🌟"
+        }
+    }
+
+    private var title: String {
+        switch days {
+        case 7:   return "\(days) günlük seri!"
+        case 30:  return "\(days) günlük seri!"
+        case 100: return "\(days) günlük seri!"
+        default:  return "\(days) günlük seri!"
+        }
+    }
+
+    private var subtitle: String {
+        switch days {
+        case 7:   return "Bir haftadır her gün hissediyorsun."
+        case 30:  return "Bir ay boyunca hiç bırakmadın."
+        case 100: return "100 gün. Bu bir alışkanlık artık."
+        default:  return "Bir yıl. Olağanüstü bir bağlılık."
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 16) {
+            Text(emoji)
+                .font(.system(size: 32))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(ONETypography.displaySM)
+                    .foregroundColor(ONETokens.oneCream)
+                Text(subtitle)
+                    .font(ONETypography.monoSM)
+                    .foregroundColor(ONETokens.oneCream.opacity(0.75))
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 18)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(ONETokens.oneInk)
+                .shadow(color: Color.black.opacity(0.18), radius: 20, x: 0, y: 8)
+        )
     }
 }
 

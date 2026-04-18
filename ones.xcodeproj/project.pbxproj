@@ -6,7 +6,26 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		2D02482D2F8D2A3300491104 /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 2D02482C2F8D2A3300491104 /* ReceiptParser */; };
+		2D02482F2F8D2A3300491104 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2D02482E2F8D2A3300491104 /* RevenueCat */; };
+		2D0248312F8D2A3300491104 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2D0248302F8D2A3300491104 /* RevenueCatUI */; };
+		2D48C49A2F77F9F6002F8A60 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DA82E7D2F768BEF0090C0F0 /* WidgetKit.framework */; };
+		2D48C49B2F77F9F6002F8A60 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DA82E7F2F768BF00090C0F0 /* SwiftUI.framework */; };
+		2D48C4AA2F77F9F9002F8A60 /* MoodWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2D48C4992F77F9F6002F8A60 /* MoodWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2DA82E7E2F768BF00090C0F0 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DA82E7D2F768BEF0090C0F0 /* WidgetKit.framework */; };
+		2DA82E802F768BF00090C0F0 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DA82E7F2F768BF00090C0F0 /* SwiftUI.framework */; };
+		2DA82E912F768BF20090C0F0 /* OneActivityExtensionExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2DA82E7B2F768BEF0090C0F0 /* OneActivityExtensionExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		2D48C4A82F77F9F9002F8A60 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D91B3542F4BAF85001C70F2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2D48C4982F77F9F6002F8A60;
+			remoteInfo = MoodWidgetExtension;
+		};
 		2D91B36F2F4BAF87001C70F2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2D91B3542F4BAF85001C70F2 /* Project object */;
@@ -21,12 +40,41 @@
 			remoteGlobalIDString = 2D91B35B2F4BAF85001C70F2;
 			remoteInfo = one;
 		};
+		2DA82E8F2F768BF20090C0F0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D91B3542F4BAF85001C70F2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2DA82E7A2F768BEF0090C0F0;
+			remoteInfo = OneActivityExtensionExtension;
+		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		2DA82E962F768BF20090C0F0 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				2DA82E912F768BF20090C0F0 /* OneActivityExtensionExtension.appex in Embed Foundation Extensions */,
+				2D48C4AA2F77F9F9002F8A60 /* MoodWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		0BD98DA509EB489F8A3E87B9 /* one/Secrets.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = one/Secrets.xcconfig; sourceTree = SOURCE_ROOT; };
+		2D024C8D2F8D9B7D00491104 /* ONEPlus.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = ONEPlus.storekit; sourceTree = "<group>"; };
+		2D48C4992F77F9F6002F8A60 /* MoodWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MoodWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D48C4AF2F77FE55002F8A60 /* MoodWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MoodWidgetExtension.entitlements; sourceTree = "<group>"; };
 		2D91B35C2F4BAF85001C70F2 /* OneDailyBatuhan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OneDailyBatuhan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D91B36E2F4BAF87001C70F2 /* oneTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = oneTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D91B3782F4BAF87001C70F2 /* oneUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = oneUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DA82E7B2F768BEF0090C0F0 /* OneActivityExtensionExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OneActivityExtensionExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DA82E7D2F768BEF0090C0F0 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		2DA82E7F2F768BF00090C0F0 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -34,12 +82,52 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Secrets.xcconfig,
 			);
 			target = 2D91B35B2F4BAF85001C70F2 /* one */;
 		};
+		2D48C4AE2F77F9F9002F8A60 /* Exceptions for "MoodWidget" folder in "MoodWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 2D48C4982F77F9F6002F8A60 /* MoodWidgetExtension */;
+		};
+		2D9BB5E62F76DAF90017C835 /* Exceptions for "OneActivityExtension" folder in "one" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ActivityAttributes.swift,
+			);
+			target = 2D91B35B2F4BAF85001C70F2 /* one */;
+		};
+		2DA82E952F768BF20090C0F0 /* Exceptions for "OneActivityExtension" folder in "OneActivityExtensionExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 2DA82E7A2F768BEF0090C0F0 /* OneActivityExtensionExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		2DA82EA02F768FCB0090C0F0 /* Exceptions for "OneActivityExtension" folder in "Embed Foundation Extensions" phase from "one" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 2DA82E962F768BF20090C0F0 /* Embed Foundation Extensions */;
+			membershipExceptions = (
+				OneActivityExtension.swift,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		2D48C49C2F77F9F6002F8A60 /* MoodWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				2D48C4AE2F77F9F9002F8A60 /* Exceptions for "MoodWidget" folder in "MoodWidgetExtension" target */,
+			);
+			path = MoodWidget;
+			sourceTree = "<group>";
+		};
 		2D91B35E2F4BAF85001C70F2 /* one */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -58,13 +146,35 @@
 			path = oneUITests;
 			sourceTree = "<group>";
 		};
+		2DA82E812F768BF00090C0F0 /* OneActivityExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				2D9BB5E62F76DAF90017C835 /* Exceptions for "OneActivityExtension" folder in "one" target */,
+				2DA82EA02F768FCB0090C0F0 /* Exceptions for "OneActivityExtension" folder in "Embed Foundation Extensions" phase from "one" target */,
+				2DA82E952F768BF20090C0F0 /* Exceptions for "OneActivityExtension" folder in "OneActivityExtensionExtension" target */,
+			);
+			path = OneActivityExtension;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2D48C4962F77F9F6002F8A60 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D48C49B2F77F9F6002F8A60 /* SwiftUI.framework in Frameworks */,
+				2D48C49A2F77F9F6002F8A60 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		2D91B3592F4BAF85001C70F2 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2D02482F2F8D2A3300491104 /* RevenueCat in Frameworks */,
+				2D02482D2F8D2A3300491104 /* ReceiptParser in Frameworks */,
+				2D0248312F8D2A3300491104 /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,15 +192,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2DA82E782F768BEF0090C0F0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2DA82E802F768BF00090C0F0 /* SwiftUI.framework in Frameworks */,
+				2DA82E7E2F768BF00090C0F0 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		2D91B3532F4BAF85001C70F2 = {
 			isa = PBXGroup;
 			children = (
+				2D024C8D2F8D9B7D00491104 /* ONEPlus.storekit */,
+				2D48C4AF2F77FE55002F8A60 /* MoodWidgetExtension.entitlements */,
+				0BD98DA509EB489F8A3E87B9 /* one/Secrets.xcconfig */,
 				2D91B35E2F4BAF85001C70F2 /* one */,
 				2D91B3712F4BAF87001C70F2 /* oneTests */,
 				2D91B37B2F4BAF87001C70F2 /* oneUITests */,
+				2DA82E812F768BF00090C0F0 /* OneActivityExtension */,
+				2D48C49C2F77F9F6002F8A60 /* MoodWidget */,
+				2DA82E7C2F768BEF0090C0F0 /* Frameworks */,
 				2D91B35D2F4BAF85001C70F2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -101,13 +226,46 @@
 				2D91B35C2F4BAF85001C70F2 /* OneDailyBatuhan.app */,
 				2D91B36E2F4BAF87001C70F2 /* oneTests.xctest */,
 				2D91B3782F4BAF87001C70F2 /* oneUITests.xctest */,
+				2DA82E7B2F768BEF0090C0F0 /* OneActivityExtensionExtension.appex */,
+				2D48C4992F77F9F6002F8A60 /* MoodWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		2DA82E7C2F768BEF0090C0F0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2DA82E7D2F768BEF0090C0F0 /* WidgetKit.framework */,
+				2DA82E7F2F768BF00090C0F0 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		2D48C4982F77F9F6002F8A60 /* MoodWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2D48C4AD2F77F9F9002F8A60 /* Build configuration list for PBXNativeTarget "MoodWidgetExtension" */;
+			buildPhases = (
+				2D48C4952F77F9F6002F8A60 /* Sources */,
+				2D48C4962F77F9F6002F8A60 /* Frameworks */,
+				2D48C4972F77F9F6002F8A60 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				2D48C49C2F77F9F6002F8A60 /* MoodWidget */,
+			);
+			name = MoodWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = MoodWidgetExtension;
+			productReference = 2D48C4992F77F9F6002F8A60 /* MoodWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		2D91B35B2F4BAF85001C70F2 /* one */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2D91B3822F4BAF87001C70F2 /* Build configuration list for PBXNativeTarget "one" */;
@@ -115,10 +273,13 @@
 				2D91B3582F4BAF85001C70F2 /* Sources */,
 				2D91B3592F4BAF85001C70F2 /* Frameworks */,
 				2D91B35A2F4BAF85001C70F2 /* Resources */,
+				2DA82E962F768BF20090C0F0 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				2DA82E902F768BF20090C0F0 /* PBXTargetDependency */,
+				2D48C4A92F77F9F9002F8A60 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				2D91B35E2F4BAF85001C70F2 /* one */,
@@ -170,6 +331,28 @@
 			productReference = 2D91B3782F4BAF87001C70F2 /* oneUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		2DA82E7A2F768BEF0090C0F0 /* OneActivityExtensionExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2DA82E922F768BF20090C0F0 /* Build configuration list for PBXNativeTarget "OneActivityExtensionExtension" */;
+			buildPhases = (
+				2DA82E772F768BEF0090C0F0 /* Sources */,
+				2DA82E782F768BEF0090C0F0 /* Frameworks */,
+				2DA82E792F768BEF0090C0F0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				2DA82E812F768BF00090C0F0 /* OneActivityExtension */,
+			);
+			name = OneActivityExtensionExtension;
+			packageProductDependencies = (
+			);
+			productName = OneActivityExtensionExtension;
+			productReference = 2DA82E7B2F768BEF0090C0F0 /* OneActivityExtensionExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -177,9 +360,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2620;
-				LastUpgradeCheck = 2620;
+				LastSwiftUpdateCheck = 2640;
+				LastUpgradeCheck = 2630;
 				TargetAttributes = {
+					2D48C4982F77F9F6002F8A60 = {
+						CreatedOnToolsVersion = 26.4;
+					};
 					2D91B35B2F4BAF85001C70F2 = {
 						CreatedOnToolsVersion = 26.2;
 					};
@@ -191,6 +377,9 @@
 						CreatedOnToolsVersion = 26.2;
 						TestTargetID = 2D91B35B2F4BAF85001C70F2;
 					};
+					2DA82E7A2F768BEF0090C0F0 = {
+						CreatedOnToolsVersion = 26.4;
+					};
 				};
 			};
 			buildConfigurationList = 2D91B3572F4BAF85001C70F2 /* Build configuration list for PBXProject "ones" */;
@@ -200,9 +389,19 @@
 				en,
 				Base,
 				tr,
+				de,
+				fr,
+				es,
+				ru,
+				ja,
+				ko,
+				"zh-Hans",
 			);
 			mainGroup = 2D91B3532F4BAF85001C70F2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2D02482B2F8D2A3300491104 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2D91B35D2F4BAF85001C70F2 /* Products */;
 			projectDirPath = "";
@@ -211,11 +410,20 @@
 				2D91B35B2F4BAF85001C70F2 /* one */,
 				2D91B36D2F4BAF87001C70F2 /* oneTests */,
 				2D91B3772F4BAF87001C70F2 /* oneUITests */,
+				2DA82E7A2F768BEF0090C0F0 /* OneActivityExtensionExtension */,
+				2D48C4982F77F9F6002F8A60 /* MoodWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		2D48C4972F77F9F6002F8A60 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		2D91B35A2F4BAF85001C70F2 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -237,9 +445,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2DA82E792F768BEF0090C0F0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2D48C4952F77F9F6002F8A60 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		2D91B3582F4BAF85001C70F2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -261,9 +483,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2DA82E772F768BEF0090C0F0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		2D48C4A92F77F9F9002F8A60 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2D48C4982F77F9F6002F8A60 /* MoodWidgetExtension */;
+			targetProxy = 2D48C4A82F77F9F9002F8A60 /* PBXContainerItemProxy */;
+		};
 		2D91B3702F4BAF87001C70F2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 2D91B35B2F4BAF85001C70F2 /* one */;
@@ -274,9 +508,80 @@
 			target = 2D91B35B2F4BAF85001C70F2 /* one */;
 			targetProxy = 2D91B3792F4BAF87001C70F2 /* PBXContainerItemProxy */;
 		};
+		2DA82E902F768BF20090C0F0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2DA82E7A2F768BEF0090C0F0 /* OneActivityExtensionExtension */;
+			targetProxy = 2DA82E8F2F768BF20090C0F0 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		2D48C4AB2F77F9F9002F8A60 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MoodWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = T4L7QU56YY;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MoodWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MoodWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones.MoodWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2D48C4AC2F77F9F9002F8A60 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MoodWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = T4L7QU56YY;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MoodWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MoodWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones.MoodWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		2D91B3802F4BAF87001C70F2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -404,18 +709,19 @@
 		};
 		2D91B3832F4BAF87001C70F2 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BD98DA509EB489F8A3E87B9 /* one/Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = one/one.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = one/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = One;
+				INFOPLIST_KEY_CFBundleDisplayName = "One +";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Bu uygulamanın müzik kütüphanenize erişebilmesi için izni gereklidir.";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "Günlük şarkı seçimlerinizi takviminize kaydetmek için izin gereklidir.";
@@ -427,12 +733,12 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones;
 				PRODUCT_NAME = OneDailyBatuhan;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -448,18 +754,19 @@
 		};
 		2D91B3842F4BAF87001C70F2 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BD98DA509EB489F8A3E87B9 /* one/Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = one/one.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = one/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = One;
+				INFOPLIST_KEY_CFBundleDisplayName = "One +";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Bu uygulamanın müzik kütüphanenize erişebilmesi için izni gereklidir.";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "Günlük şarkı seçimlerinizi takviminize kaydetmek için izin gereklidir.";
@@ -471,12 +778,12 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones;
 				PRODUCT_NAME = OneDailyBatuhan;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -574,9 +881,82 @@
 			};
 			name = Release;
 		};
+		2DA82E932F768BF20090C0F0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = T4L7QU56YY;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OneActivityExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OneActivityExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones.OneActivityExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2DA82E942F768BF20090C0F0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = T4L7QU56YY;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OneActivityExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OneActivityExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones.OneActivityExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		2D48C4AD2F77F9F9002F8A60 /* Build configuration list for PBXNativeTarget "MoodWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2D48C4AB2F77F9F9002F8A60 /* Debug */,
+				2D48C4AC2F77F9F9002F8A60 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		2D91B3572F4BAF85001C70F2 /* Build configuration list for PBXProject "ones" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -613,7 +993,45 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		2DA82E922F768BF20090C0F0 /* Build configuration list for PBXNativeTarget "OneActivityExtensionExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2DA82E932F768BF20090C0F0 /* Debug */,
+				2DA82E942F768BF20090C0F0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2D02482B2F8D2A3300491104 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.67.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2D02482C2F8D2A3300491104 /* ReceiptParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2D02482B2F8D2A3300491104 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = ReceiptParser;
+		};
+		2D02482E2F8D2A3300491104 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2D02482B2F8D2A3300491104 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		2D0248302F8D2A3300491104 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2D02482B2F8D2A3300491104 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2D91B3542F4BAF85001C70F2 /* Project object */;
 }

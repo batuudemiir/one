@@ -51,7 +51,7 @@ class MonthlySummaryViewModel: ObservableObject {
         comps.year = year; comps.month = month; comps.day = 1
         let firstDay = calendar.date(from: comps) ?? Date()
         let monthFmt = DateFormatter()
-        monthFmt.locale = Locale(identifier: "tr_TR")
+        monthFmt.locale = LanguageManager.shared.currentLocale
         monthFmt.dateFormat = "MMMM"
         let monthName = monthFmt.string(from: firstDay).capitalized
 
@@ -91,6 +91,23 @@ class MonthlySummaryViewModel: ObservableObject {
         }
         let maxRepeat = songCount.values.max() ?? 1
 
+        // Benzersiz gün sayısı (daysLogged)
+        let loggedDayNumbers: Set<Int> = Set(songs.compactMap { s -> Int? in
+            guard let d = s.date else { return nil }
+            return calendar.component(.day, from: d)
+        })
+        let daysLogged = loggedDayNumbers.count
+
+        // Ay içindeki en uzun ardışık seri (monthStreak)
+        let monthStreak: Int = {
+            var streak = 0, current = 0
+            for day in 1...totalDays {
+                if loggedDayNumbers.contains(day) { current += 1; streak = max(streak, current) }
+                else { current = 0 }
+            }
+            return streak
+        }()
+
         // Baskın mood (en çok tekrar eden moodWord)
         var moodCount: [String: (count: Int, hex: String)] = [:]
         for s in songs {
@@ -126,16 +143,16 @@ class MonthlySummaryViewModel: ObservableObject {
             "Gergin"     : ONETokens.oneRed,
             "Üzgün"      : ONETokens.moodIndigo,
         ]
-        let total = Double(max(1, songs.count))
+        let total = Double(max(1, daysLogged))
         let emotionBreakdown: [(name: String, percentage: Double, color: Color)] = moodCount
             .sorted { $0.value.count > $1.value.count }
             .prefix(5)
             .map { word, val in
                 let c = moodPalette[word] ?? Color(hex: val.hex)
-                return (name: word, percentage: Double(val.count) / total, color: c)
+                return (name: word, percentage: min(1.0, Double(val.count) / total), color: c)
             }
 
-        // Top parçalar (en fazla tekrar eden, max 5)
+        // Top parçalar (en fazla tekrar eden, max 5) — eşitlikte en yakın tarihe göre
         let gradientPairs: [[Color]] = [
             [Color(red: 0.85, green: 0.35, blue: 0.10), Color(red: 0.90, green: 0.65, blue: 0.10)],
             [Color(red: 0.25, green: 0.44, blue: 0.80), Color(red: 0.25, green: 0.66, blue: 0.61)],
@@ -143,15 +160,24 @@ class MonthlySummaryViewModel: ObservableObject {
             [Color(red: 0.78, green: 0.25, blue: 0.25), Color(red: 0.85, green: 0.50, blue: 0.10)],
             [Color(red: 0.25, green: 0.66, blue: 0.61), Color(red: 0.25, green: 0.44, blue: 0.80)],
         ]
+        // Build recency map for tie-breaking
+        var recencyMap: [String: Date] = [:]
+        for s in songs {
+            guard let n = s.songName, let a = s.artistName, let d = s.date else { continue }
+            let k = "\(n)|\(a)"
+            recencyMap[k] = max(recencyMap[k] ?? .distantPast, d)
+        }
         let topTracks: [TrackEntry] = songCount
-            .sorted { $0.value > $1.value }
+            .sorted { lhs, rhs in
+                if lhs.value != rhs.value { return lhs.value > rhs.value }
+                return (recencyMap[lhs.key] ?? .distantPast) > (recencyMap[rhs.key] ?? .distantPast)
+            }
             .prefix(5)
             .enumerated()
             .map { idx, pair -> TrackEntry in
                 let parts   = pair.key.components(separatedBy: "|")
                 let name    = parts[0]
                 let artist  = parts.count > 1 ? parts[1] : ""
-                // emoji'yi kayıtlı veriden bul
                 let emoji   = songs.first { $0.songName == name && $0.artistName == artist }?.emoji ?? "🎵"
                 return TrackEntry(
                     rank:           idx + 1,
@@ -175,7 +201,10 @@ class MonthlySummaryViewModel: ObservableObject {
             emotionBreakdown:   emotionBreakdown.isEmpty
                                     ? [(name: "—", percentage: 1.0, color: .gray.opacity(0.3))]
                                     : emotionBreakdown,
-            topTracks:          topTracks
+            topTracks:          topTracks,
+            totalEntries:       songs.count,
+            daysLogged:         daysLogged,
+            monthStreak:        monthStreak
         )
     }
 }

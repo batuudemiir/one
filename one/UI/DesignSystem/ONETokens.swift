@@ -12,47 +12,47 @@ import SwiftUI
 /// Provides centralized color, spacing, and border radius values
 enum ONETokens {
     
-    // MARK: - Neutral Color Palette
-    
-    /// Lightest neutral - cream background (#F7F6F3)
-    /// Purpose: Primary background color for the app, providing a warm, natural base
-    /// Usage: Main screen backgrounds, card backgrounds, light surfaces
-    static let oneCream = Color(hex: "#F7F6F3")
-    
-    /// Mid-light neutral - subtle backgrounds (#E5E3DD)
-    /// Purpose: Secondary background for subtle elevation and layering
-    /// Usage: Card backgrounds, elevated panels, secondary surfaces
-    static let oneCreamMid = Color(hex: "#E5E3DD")
-    
-    /// Low-light neutral - muted backgrounds (#D8D6D0)
-    /// Purpose: Tertiary background for additional depth and hierarchy
-    /// Usage: Input fields, disabled states, subtle containers
-    static let oneCreamLow = Color(hex: "#D8D6D0")
-    
-    /// Light-medium neutral - borders and dividers (#A8A6A0)
-    /// Purpose: Visible borders and dividers
-    /// Usage: Card borders, section dividers, input field borders
-    static let oneStone = Color(hex: "#A8A6A0")
-    
-    /// Medium neutral - secondary text (#6B6965)
-    /// Purpose: Secondary text that provides hierarchy with good readability
-    /// Usage: Metadata, timestamps, secondary labels, helper text
-    static let oneAsh = Color(hex: "#6B6965")
-    
-    /// Medium-dark neutral - tertiary text (#4A4845)
-    /// Purpose: Tertiary text for less important information
-    /// Usage: Placeholder text, disabled text, subtle labels
-    static let oneCharcoal = Color(hex: "#4A4845")
-    
-    /// Dark neutral - primary text (#1A1A1B)
-    /// Purpose: Primary text color for maximum readability and contrast
-    /// Usage: Headings, body text, primary labels, important content
-    static let oneInk = Color(hex: "#1A1A1B")
-    
-    /// Darkest neutral - deep backgrounds (#0D0D0E)
-    /// Purpose: Deep background for mood gradients and dark surfaces
-    /// Usage: Mood gradient base, dark mode backgrounds, deep shadows
-    static let oneVoid = Color(hex: "#0D0D0E")
+    // MARK: - Neutral Color Palette (Adaptive Light/Dark)
+
+    /// Lightest neutral - cream background (Light: #F7F6F3 / Dark: #1A1A1B)
+    static let oneCream = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#1A1A1B") : UIColor(hex: "#F7F6F3")
+    })
+
+    /// Mid-light neutral - subtle backgrounds (Light: #E5E3DD / Dark: #2C2C2E)
+    static let oneCreamMid = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#2C2C2E") : UIColor(hex: "#E5E3DD")
+    })
+
+    /// Low-light neutral - muted backgrounds (Light: #D8D6D0 / Dark: #3A3A3C)
+    static let oneCreamLow = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#3A3A3C") : UIColor(hex: "#D8D6D0")
+    })
+
+    /// Light-medium neutral - borders and dividers (Light: #A8A6A0 / Dark: #6B6965)
+    static let oneStone = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#6B6965") : UIColor(hex: "#A8A6A0")
+    })
+
+    /// Medium neutral - secondary text (Light: #6B6965 / Dark: #A8A6A0)
+    static let oneAsh = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#A8A6A0") : UIColor(hex: "#6B6965")
+    })
+
+    /// Medium-dark neutral - tertiary text (Light: #4A4845 / Dark: #BFBDB5)
+    static let oneCharcoal = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#BFBDB5") : UIColor(hex: "#4A4845")
+    })
+
+    /// Dark neutral - primary text (Light: #1A1A1B / Dark: #F7F6F3)
+    static let oneInk = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#F7F6F3") : UIColor(hex: "#1A1A1B")
+    })
+
+    /// Darkest neutral - deep backgrounds (Light: #0D0D0E / Dark: #F7F6F3)
+    static let oneVoid = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#F7F6F3") : UIColor(hex: "#0D0D0E")
+    })
     
     // MARK: - Brand Accent
 
@@ -96,9 +96,36 @@ enum ONETokens {
     static let appleMusicRed = Color(hex: "#FA243C")
     
     // MARK: - Mood Palette
-    
+
     /// Mood: Energetic orange (#FF8C42)
     static let moodOrange = Color(hex: "#FF8C42")
+
+    // MARK: - Pastel Mood Palette (Gen Z)
+
+    /// Pastel coral — ateş (atesli) #FFB5A7
+    static let moodPastelRed      = Color(hex: "#FFB5A7")
+    /// Pastel peach — enerji (enerjik) #FFCBA4
+    static let moodPastelOrange   = Color(hex: "#FFCBA4")
+    /// Pastel yellow — ışık (isikli) #FFF0B3
+    static let moodPastelYellow   = Color(hex: "#FFF0B3")
+    /// Pastel mint — taze (taze) #B8F0D4
+    static let moodPastelMint     = Color(hex: "#B8F0D4")
+    /// Pastel sage — huzur (sakin) #A8D5B5
+    static let moodPastelGreen    = Color(hex: "#A8D5B5")
+    /// Pastel sky — özgür (ozgur) #A8D4F5
+    static let moodPastelBlue     = Color(hex: "#A8D4F5")
+    /// Pastel periwinkle — derin (derin) #B8C5F0
+    static let moodPastelIndigo   = Color(hex: "#B8C5F0")
+    /// Pastel lavender — özlem (nostaljik) #C5B8F0
+    static let moodPastelLavender = Color(hex: "#C5B8F0")
+    /// Pastel violet — büyü (gizemli) #D4B8F0
+    static let moodPastelViolet   = Color(hex: "#D4B8F0")
+    /// Pastel rose — kırılgan (hassas) #FFB8CC
+    static let moodPastelRose     = Color(hex: "#FFB8CC")
+    /// Pastel slate — boşluk (bos) #CDD5E8
+    static let moodPastelSlate    = Color(hex: "#CDD5E8")
+    /// Pastel cream — sessiz (temiz) #F0EDE8
+    static let moodPastelCream    = Color(hex: "#F0EDE8")
     
     /// Mood: Bright/Light yellow (#F5C842)
     static let moodYellow = Color(hex: "#F5C842")
@@ -112,44 +139,48 @@ enum ONETokens {
     /// Mood: Slate/Muted (#607D8B)
     static let moodSlate = Color(hex: "#607D8B")
     
-    // MARK: - Extended Neutrals
-    
-    /// Light border/divider (#EEECEA)
-    /// Purpose: Subtle borders, dividers, card outlines
-    /// Usage: Card borders, section dividers, subtle outlines
-    static let oneSilver = Color(hex: "#EEECEA")
-    
-    /// Mid-light neutral (#BFBDB5)
-    /// Purpose: Placeholder text, disabled icons, subtle decorations
-    /// Usage: Placeholder text, secondary icons, muted labels
-    static let oneMist = Color(hex: "#BFBDB5")
-    
-    /// Near-black for dark surfaces (#111112)
-    /// Purpose: Deep dark surfaces, camera backgrounds
-    /// Usage: Camera view background, dark overlays, near-black surfaces
-    static let oneShadow = Color(hex: "#111112")
+    // MARK: - Extended Neutrals (Adaptive)
+
+    /// Light border/divider (Light: #EEECEA / Dark: #2A2A2C)
+    static let oneSilver = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#2A2A2C") : UIColor(hex: "#EEECEA")
+    })
+
+    /// Mid-light neutral (Light: #BFBDB5 / Dark: #5A5856)
+    static let oneMist = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#5A5856") : UIColor(hex: "#BFBDB5")
+    })
+
+    /// Near-black for dark surfaces (Light: #111112 / Dark: #F5F5F3)
+    static let oneShadow = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#F5F5F3") : UIColor(hex: "#111112")
+    })
+
+    /// Cinematic warm dark — sabit koyu yüzey, mood/dark kartlar için (#1C1714)
+    /// Always dark regardless of color scheme — intentional for cinematic card backgrounds
+    static let oneCinematicDark = Color(hex: "#1C1714")
     
     // MARK: - Additional Neutrals
     
-    /// Paper white background (#FAFAF8)
-    /// Purpose: Very light, warm paper-like background for share cards and read-only surfaces
-    /// Usage: Story share cards, monthly poster backgrounds, echo detail backgrounds
-    static let onePaper = Color(hex: "#FAFAF8")
-    
-    /// Ivory surface (#E8E6E0)
-    /// Purpose: Clean/temiz mood color, soft surface for subtle backgrounds
-    /// Usage: Temiz mood, share card fills, soft dividers, empty state backgrounds
-    static let oneIvory = Color(hex: "#E8E6E0")
-    
-    /// Pebble - warm muted neutral (#CEC9BF)
-    /// Purpose: Decorative lines, subtle strokes, muted placeholders
-    /// Usage: Day cell decorations, faint borders, secondary placeholder elements
-    static let onePebble = Color(hex: "#CEC9BF")
-    
-    /// Graphite - dark gray text (#333333)
-    /// Purpose: Dark gray for secondary headings in dark contexts
-    /// Usage: Dark text on light backgrounds when oneInk is too strong
-    static let oneGraphite = Color(hex: "#333333")
+    /// Paper white background (Light: #FAFAF8 / Dark: #1C1C1E)
+    static let onePaper = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#1C1C1E") : UIColor(hex: "#FAFAF8")
+    })
+
+    /// Ivory surface (Light: #E8E6E0 / Dark: #2E2E30)
+    static let oneIvory = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#2E2E30") : UIColor(hex: "#E8E6E0")
+    })
+
+    /// Pebble - warm muted neutral (Light: #CEC9BF / Dark: #48463F)
+    static let onePebble = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#48463F") : UIColor(hex: "#CEC9BF")
+    })
+
+    /// Graphite - dark gray text (Light: #333333 / Dark: #CCCCCC)
+    static let oneGraphite = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(hex: "#CCCCCC") : UIColor(hex: "#333333")
+    })
     
     // MARK: - Additional Accent Colors
     
@@ -223,10 +254,29 @@ enum ONETokens {
     /// Typical use cases: Hero section padding, splash screen spacing, dramatic visual breaks
     static let spacingXL5: CGFloat = 72
     
+    // MARK: - Accessibility
+
+    /// Minimum touch target size per Apple HIG (44×44pt)
+    static let minTouchTarget: CGFloat = 44
+
     // MARK: - Location Preference
 
     /// UserDefaults key for user's preferred city (used by event recommendations)
     static let cityPreferenceKey = "preferredCity"
+
+    /// UserDefaults key for user's preferred in-app language
+    static let languagePreferenceKey = "appLanguage"
+
+    // MARK: - App Store & Web
+
+    /// App Store numeric ID (used for review requests and store link)
+    static let appStoreID = "6759794739"
+
+    /// Direct App Store link
+    static let appStoreURL = "https://apps.apple.com/us/app/one/id6759794739"
+
+    /// Public website
+    static let websiteURL = "https://one.forvibe.app"
 
     /// Default city shown before user sets a preference
     static let defaultCity = "İstanbul"

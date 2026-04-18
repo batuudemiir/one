@@ -11,6 +11,8 @@ class EchoViewModel: ObservableObject {
     @Published var data: EchoData = .empty
     @Published var isLoading = true
     @Published var isSyncLoading = false
+    /// "Bu Ay" toggle — affects moodDistribution and repeatedSongs shown in UI
+    @Published var showThisMonth = false
 
     private let context: NSManagedObjectContext
     private let cloudKit = CloudKitManager.shared
@@ -60,7 +62,13 @@ class EchoViewModel: ObservableObject {
                             currentStreak: self.data.currentStreak,
                             hourDistribution: self.data.hourDistribution,
                             circleSyncMatches: matches,
-                            last30DaysColors: self.data.last30DaysColors
+                            last30DaysColors: self.data.last30DaysColors,
+                            totalSongs: self.data.totalSongs,
+                            thisMonthSongs: self.data.thisMonthSongs,
+                            mostActiveDayOfWeek: self.data.mostActiveDayOfWeek,
+                            averageSongsPerMonth: self.data.averageSongsPerMonth,
+                            moodDistribution: self.data.moodDistribution,
+                            thisMonthMoodDistribution: self.data.thisMonthMoodDistribution
                         )
                         self.isSyncLoading = false
                         continuation.resume()
@@ -87,7 +95,7 @@ class EchoViewModel: ObservableObject {
         let calendar = Calendar.current
         let now = Date()
         let monthFmt = DateFormatter()
-        monthFmt.locale = Locale(identifier: "tr_TR")
+        monthFmt.locale = LanguageManager.shared.currentLocale
         monthFmt.dateFormat = "d MMM"
 
         // ── Bu haftanın Pazartesi'si ────────────────────────────
@@ -105,10 +113,9 @@ class EchoViewModel: ObservableObject {
             // Gelecek günler boş
             if start > todayStartOfDay { return nil }
             let end = calendar.date(byAdding: .day, value: 1, to: start)!
-            let match = songs.first { s in
-                guard let d = s.date else { return false }
-                return d >= start && d < end
-            }
+            let match = songs
+                .filter { s in guard let d = s.date else { return false }; return d >= start && d < end }
+                .max(by: { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) })
             if let hex = match?.moodColorHex { return Color(hex: hex) }
             return nil
         }
@@ -207,7 +214,7 @@ class EchoViewModel: ObservableObject {
             }
 
         let dateFmt = DateFormatter()
-        dateFmt.locale = Locale(identifier: "tr_TR")
+        dateFmt.locale = LanguageManager.shared.currentLocale
         dateFmt.dateFormat = "d MMM"
 
         let streak = StreakInfo(
@@ -242,16 +249,77 @@ class EchoViewModel: ObservableObject {
 
         // ── Sync count: CloudKit'ten gelir, burada placeholder ──
 
+        // ── Genel istatistikler ─────────────────────────────────
+        let totalSongs = songs.count
+
+        // Bu ay kayıtları
+        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
+        let nextMonthStart = calendar.date(byAdding: .month, value: 1, to: monthStart) ?? now
+        let thisMonthSongs = songs.filter { s in
+            guard let d = s.date else { return false }
+            return d >= monthStart && d < nextMonthStart
+        }.count
+
+        // Haftanın en aktif günü (tüm zamanlar)
+        let dayCounts = songs.reduce(into: [Int: Int]()) { d, s in
+            guard let date = s.date else { return }
+            let weekday = calendar.component(.weekday, from: date) // 1=Sun, 2=Mon…7=Sat
+            d[weekday, default: 0] += 1
+        }
+        let mostActiveWeekday = dayCounts.max(by: { $0.value < $1.value })?.key
+        let df = DateFormatter()
+        df.locale = Locale.current
+        df.dateFormat = "EEEE"
+        let mostActiveDayOfWeek: String? = mostActiveWeekday.flatMap { weekday in
+            // weekday: 1=Sun, 2=Mon, ..., 7=Sat
+            var comps = DateComponents()
+            comps.weekday = weekday
+            return calendar.nextDate(after: Date(), matching: comps, matchingPolicy: .nextTime)
+                .map { df.string(from: $0) }
+        }
+
+        // Aylık ortalama şarkı sayısı
+        let allMonths = Set(songs.compactMap { s -> String? in
+            guard let d = s.date else { return nil }
+            let comps = calendar.dateComponents([.year, .month], from: d)
+            return "\(comps.year ?? 0)-\(comps.month ?? 0)"
+        })
+        let averageSongsPerMonth: Double = allMonths.isEmpty ? 0 :
+            Double(totalSongs) / Double(allMonths.count)
+
+        // Mood dağılımı (tüm zamanlar)
+        let allMoodMap = songs.reduce(into: [String: (count: Int, hex: String)]()) { d, s in
+            guard let mood = s.moodWord, !mood.isEmpty else { return }
+            let hex = s.moodColorHex ?? "#888888"
+            d[mood] = (d[mood].map { ($0.count + 1, $0.hex) } ?? (1, hex))
+        }
+        let moodDistribution = allMoodMap
+            .map { MoodStat(label: $0.key, colorHex: $0.value.hex, count: $0.value.count) }
+            .sorted { $0.count > $1.count }
+
+        // Bu ayki mood dağılımı
+        let thisMonthSongList = songs.filter { s in
+            guard let d = s.date else { return false }
+            return d >= monthStart && d < nextMonthStart
+        }
+        let monthMoodMap = thisMonthSongList.reduce(into: [String: (count: Int, hex: String)]()) { d, s in
+            guard let mood = s.moodWord, !mood.isEmpty else { return }
+            let hex = s.moodColorHex ?? "#888888"
+            d[mood] = (d[mood].map { ($0.count + 1, $0.hex) } ?? (1, hex))
+        }
+        let thisMonthMoodDistribution = monthMoodMap
+            .map { MoodStat(label: $0.key, colorHex: $0.value.hex, count: $0.value.count) }
+            .sorted { $0.count > $1.count }
+
         // ── 30-Day Colors ──────────────────────────────────────
         let thirtyDaysAgo = calendar.date(byAdding: .day, value: -29, to: startOfDay(for: now, calendar: calendar)) ?? now
         let thirtyDayColors: [Color?] = (0..<30).map { offset -> Color? in
             guard let day = calendar.date(byAdding: .day, value: offset, to: thirtyDaysAgo) else { return nil }
             let start = calendar.startOfDay(for: day)
             let end = calendar.date(byAdding: .day, value: 1, to: start)!
-            let match = songs.first { s in
-                guard let d = s.date else { return false }
-                return d >= start && d < end
-            }
+            let match = songs
+                .filter { s in guard let d = s.date else { return false }; return d >= start && d < end }
+                .max(by: { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) })
             if let hex = match?.moodColorHex { return Color(hex: hex) }
             return nil
         }
@@ -266,7 +334,13 @@ class EchoViewModel: ObservableObject {
             currentStreak: currentStreak,
             hourDistribution: hourDist,
             circleSyncMatches: circleSyncMatches,
-            last30DaysColors: thirtyDayColors
+            last30DaysColors: thirtyDayColors,
+            totalSongs: totalSongs,
+            thisMonthSongs: thisMonthSongs,
+            mostActiveDayOfWeek: mostActiveDayOfWeek,
+            averageSongsPerMonth: averageSongsPerMonth,
+            moodDistribution: moodDistribution,
+            thisMonthMoodDistribution: thisMonthMoodDistribution
         )
     }
 

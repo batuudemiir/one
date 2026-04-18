@@ -16,7 +16,7 @@ struct WaveStrip: View {
             
             HStack(alignment: .center, spacing: 1) {
                 ForEach(Array(orderedDays.enumerated()), id: \.offset) { idx, date in
-                    if let date, let entry = summary.entries[date] {
+                    if let date, let entry = summary.primaryEntry(for: date) {
                         // Filled day bar with mood color
                         if let mood = ONEMood(hex: entry.moodColorHex) {
                             RoundedRectangle(cornerRadius: 2)

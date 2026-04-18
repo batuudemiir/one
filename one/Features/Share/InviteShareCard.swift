@@ -71,20 +71,20 @@ struct InviteShareCard: View {
                 .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
                 .padding(.bottom, 40)
             
-            Text("\(userName.uppercased()) SENİ DAVET EDİYOR")
+            Text(String(format: NSLocalizedString("invite.invitesYou", comment: ""), userName.uppercased()))
                 .monoLabel(tracking: 2.0)
                 .foregroundColor(ONETokens.oneAsh)
                 .padding(.bottom, 12)
-            
-            Text("Hisset.\nKeşfet. Paylaş.")
+
+            Text(NSLocalizedString("app.slogan", comment: ""))
                 .displayXL()
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
                 .padding(.bottom, 60)
-            
+
             VStack(spacing: 8) {
-                Text("DAVET KODU")
+                Text(NSLocalizedString("invite.codeLabel", comment: ""))
                     .monoSM(tracking: 1.5)
                     .foregroundColor(ONETokens.oneAsh)
                 
@@ -101,7 +101,7 @@ struct InviteShareCard: View {
             }
             .padding(.bottom, 100)
             
-            Text("ONE · Bugünün şarkısını çevrenle paylaş.")
+            Text(NSLocalizedString("invite.footer", comment: ""))
                 .monoMicro(tracking: 1.0)
                 .foregroundColor(.white.opacity(0.4))
                 .padding(.bottom, 60)
@@ -126,21 +126,21 @@ struct InviteShareCard: View {
             VStack(alignment: .leading, spacing: 0) {
                 Spacer()
                 
-                Text("\(userName.uppercased()) SENİ DAVET EDİYOR")
+                Text(String(format: NSLocalizedString("invite.invitesYou", comment: ""), userName.uppercased()))
                     .monoLabel(tracking: 2.0)
                     .foregroundColor(ONETokens.oneAsh)
                     .padding(.bottom, 8)
-                
-                Text("Hisset.\nKeşfet. Paylaş.")
+
+                Text(NSLocalizedString("app.slogan", comment: ""))
                     .displayXL()
                     .foregroundColor(.white)
                     .multilineTextAlignment(.leading)
                     .lineSpacing(4)
                     .padding(.bottom, 32)
-                
+
                 HStack(alignment: .bottom) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("DAVET KODU")
+                        Text(NSLocalizedString("invite.codeLabel", comment: ""))
                             .monoSM(tracking: 1.5)
                             .foregroundColor(ONETokens.oneAsh)
                         
@@ -156,7 +156,7 @@ struct InviteShareCard: View {
                             .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
                     }
                     Spacer()
-                    Text("ONE · Bugünün şarkısını çevrenle paylaş.")
+                    Text(NSLocalizedString("invite.footer", comment: ""))
                         .monoMicro(tracking: 1.0)
                         .foregroundColor(.white.opacity(0.4))
                         .padding(.bottom, 4)

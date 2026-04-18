@@ -13,15 +13,16 @@ struct EchoView: View {
     @StateObject private var vm: EchoViewModel
     @State private var appeared = false
     private let context: NSManagedObjectContext
+    var onDismiss: (() -> Void)? = nil
 
-
-    init(context: NSManagedObjectContext) {
+    init(context: NSManagedObjectContext, onDismiss: (() -> Void)? = nil) {
         self.context = context
+        self.onDismiss = onDismiss
         _vm = StateObject(wrappedValue: EchoViewModel(context: context))
     }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topLeading) {
             ONETokens.oneCream.ignoresSafeArea()
 
             if vm.isLoading {
@@ -30,11 +31,18 @@ struct EchoView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
                         header
-                            .padding(.top, 56)
+                            .padding(.top, onDismiss != nil ? 90 : 56)
                             .padding(.horizontal, 24)
 
+                        // ── Bu Ay / Tüm Zamanlar toggle ──
+                        periodToggle
+                            .padding(.horizontal, 16)
+                            .padding(.top, 16)
+
                         // ── Bölümler — sosyal proof önce ──
+                        sectionCard { statsSection }
                         sectionCard { weekSection }
+                        sectionCard { moodDistributionSection }
                         if vm.data.syncCount > 0 {
                             sectionCard { syncSection }
                         }
@@ -45,6 +53,29 @@ struct EchoView: View {
                         Spacer().frame(height: 100)
                     }
                 }
+            }
+
+            // Fixed back button (outside ScrollView)
+            if let onDismiss {
+                Button(action: onDismiss) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 15, weight: .semibold))
+                        Text(NSLocalizedString("echo.backToProfile", comment: ""))
+                            .bodySMMedium()
+                    }
+                    .foregroundColor(ONETokens.oneInk)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(
+                        Capsule()
+                            .fill(ONETokens.onePaper.opacity(0.9))
+                            .overlay(Capsule().stroke(ONETokens.oneSilver, lineWidth: 1))
+                            .shadow(color: Color.black.opacity(0.06), radius: 8, y: 2)
+                    )
+                }
+                .padding(.top, 54)
+                .padding(.leading, 20)
             }
         }
         .navigationBarHidden(true)
@@ -59,7 +90,7 @@ struct EchoView: View {
             ProgressView()
                 .scaleEffect(1.1)
                 .tint(ONETokens.oneAsh)
-            Text("Yankı hazırlanıyor…")
+            Text(NSLocalizedString("echo.loading", comment: ""))
                 .font(ONETypography.bodyXS)
                 .italic()
                 .foregroundColor(ONETokens.oneAsh)
@@ -73,7 +104,7 @@ struct EchoView: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white.opacity(0.72))
+        .background(ONETokens.onePaper.opacity(0.72))
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay(
             RoundedRectangle(cornerRadius: 18)
@@ -86,11 +117,11 @@ struct EchoView: View {
     // MARK: — Header
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Yankı")
+            Text(NSLocalizedString("echo.title", comment: ""))
                 .displayLG()
                 .foregroundColor(ONETokens.oneInk)
 
-            Text("Mood geçmişin, alışkanlıkların ve çevrenle kesişen anların burada.")
+            Text(NSLocalizedString("echo.subtitle", comment: ""))
                 .bodySM()
                 .foregroundColor(ONETokens.oneAsh)
         }
@@ -100,10 +131,140 @@ struct EchoView: View {
         .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.0), value: appeared)
     }
 
+    // MARK: — Period Toggle
+    private var periodToggle: some View {
+        HStack(spacing: 0) {
+            periodBtn(NSLocalizedString("echo.thisMonth", comment: ""), isSelected: vm.showThisMonth) {
+                withAnimation(.easeInOut(duration: 0.18)) { vm.showThisMonth = true }
+            }
+            periodBtn(NSLocalizedString("echo.allTime", comment: ""), isSelected: !vm.showThisMonth) {
+                withAnimation(.easeInOut(duration: 0.18)) { vm.showThisMonth = false }
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(ONETokens.oneSilver.opacity(0.5))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(ONETokens.oneSilver, lineWidth: 1))
+        )
+    }
+
+    private func periodBtn(_ label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(label)
+                .monoSM(tracking: 0.6)
+                .foregroundColor(isSelected ? ONETokens.oneCream : ONETokens.oneAsh)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 9)
+                .background(
+                    RoundedRectangle(cornerRadius: 9)
+                        .fill(isSelected ? ONETokens.oneInk : Color.clear)
+                )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(3)
+    }
+
+    // MARK: — Genel İstatistikler
+    private var statsSection: some View {
+        let songCount = vm.showThisMonth ? vm.data.thisMonthSongs : vm.data.totalSongs
+        let songLabel = vm.showThisMonth ? NSLocalizedString("echo.stats.thisMonth", comment: "") : NSLocalizedString("echo.stats.allTime", comment: "")
+        return VStack(alignment: .leading, spacing: 14) {
+            label(songLabel)
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                statTile(value: "\(songCount)", unit: NSLocalizedString("echo.stats.songs", comment: ""),
+                         icon: "music.note", color: ONETokens.oneBrand)
+                statTile(value: "\(vm.data.currentStreak)", unit: NSLocalizedString("echo.stats.streakDays", comment: ""),
+                         icon: "flame.fill", color: ONETokens.moodOrange)
+                if let day = vm.data.mostActiveDayOfWeek {
+                    statTile(value: day, unit: NSLocalizedString("echo.stats.mostActive", comment: ""),
+                             icon: "calendar", color: ONETokens.oneBlue)
+                }
+                if !vm.showThisMonth {
+                    let avg = vm.data.averageSongsPerMonth
+                    let avgStr = avg >= 10 ? String(Int(avg.rounded())) : String(format: "%.1f", avg)
+                    statTile(value: avgStr, unit: NSLocalizedString("echo.stats.monthlyAvg", comment: ""),
+                             icon: "chart.bar.fill", color: ONETokens.oneGreen)
+                }
+            }
+        }
+    }
+
+    private func statTile(value: String, unit: String, icon: String, color: Color) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(color)
+                .frame(width: 24)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(value)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(ONETokens.oneInk)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                Text(unit)
+                    .monoLabel(tracking: 0.4)
+                    .foregroundColor(ONETokens.oneAsh)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(ONETokens.oneSilver.opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: — Mood Dağılımı
+    private var moodDistributionSection: some View {
+        let moods = vm.showThisMonth ? vm.data.thisMonthMoodDistribution : vm.data.moodDistribution
+        let topMoods = Array(moods.prefix(6))
+        let maxCount = topMoods.map(\.count).max() ?? 1
+
+        return VStack(alignment: .leading, spacing: 14) {
+            label(NSLocalizedString("echo.moodDistribution", comment: ""))
+
+            if topMoods.isEmpty {
+                emptyNote(NSLocalizedString("echo.noData", comment: ""))
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(topMoods) { mood in
+                        HStack(spacing: 10) {
+                            Text(mood.label)
+                                .monoSM(tracking: 0.3)
+                                .foregroundColor(ONETokens.oneAsh)
+                                .frame(width: 72, alignment: .leading)
+                                .lineLimit(1)
+
+                            GeometryReader { geo in
+                                let barWidth = geo.size.width * CGFloat(mood.count) / CGFloat(maxCount)
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(ONETokens.oneSilver.opacity(0.6))
+                                        .frame(maxWidth: .infinity)
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(Color(hex: mood.colorHex))
+                                        .frame(width: max(barWidth, 8))
+                                }
+                            }
+                            .frame(height: 10)
+
+                            Text("\(mood.count)")
+                                .monoSM(tracking: 0)
+                                .foregroundColor(ONETokens.oneCharcoal)
+                                .frame(width: 28, alignment: .trailing)
+                        }
+                        .opacity(appeared ? 1 : 0)
+                        .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.1), value: appeared)
+                    }
+                }
+            }
+        }
+    }
+
     // MARK: — Hafta Bölümü
     private var weekSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            label("Bu hafta")
+            label(NSLocalizedString("echo.thisWeek", comment: ""))
 
             // 7 renk kutusu
             HStack(spacing: 5) {
@@ -145,7 +306,7 @@ struct EchoView: View {
                     FeelingIconView(type: feeling)
                         .frame(width: 26, height: 20)
                         .opacity(0.55)
-                    Text("Bu hafta en çok bu his ağır bastı.")
+                    Text(NSLocalizedString("echo.dominantFeeling", comment: ""))
                         .bodyXS()
                         .foregroundColor(ONETokens.oneAsh)
                 }
@@ -158,16 +319,18 @@ struct EchoView: View {
 
     // Pazar = 0 başlıyorsa üste düşer diye idx = Mon-first
     private func weekDayLabel(_ idx: Int) -> String {
-        ["Pt","Sa","Ça","Pe","Cu","Ct","Pz"][idx % 7]
+        (["calendar.day.mon", "calendar.day.tue", "calendar.day.wed",
+           "calendar.day.thu", "calendar.day.fri", "calendar.day.sat", "calendar.day.sun"]
+            .map { NSLocalizedString($0, comment: "") })[idx % 7]
     }
 
     // MARK: — Tekrar Eden Şarkılar
     private var repeatedSongsSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            label("Tekrar eden şarkılar")
+            label(NSLocalizedString("echo.repeatedSongs", comment: ""))
 
             if vm.data.repeatedSongs.isEmpty {
-                emptyNote("Bu hafta hiç tekrar eden şarkı yok.")
+                emptyNote(NSLocalizedString("echo.noRepeatedSongs", comment: ""))
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(vm.data.repeatedSongs.enumerated()), id: \.element.id) { idx, song in
@@ -229,7 +392,7 @@ struct EchoView: View {
     // MARK: — Saat Dağılımı
     private var hourSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            label("Ne zaman seçiyorsun?")
+            label(NSLocalizedString("echo.whenPick", comment: ""))
 
             HStack(alignment: .center, spacing: 24) {
                 HourRingView(distribution: vm.data.hourDistribution)
@@ -239,10 +402,10 @@ struct EchoView: View {
                     .animation(ONEAnimation.cardSpring.delay(0.2), value: appeared)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    timeRow(icon: "sunrise.fill",  label: "Sabah", hours: [6,7,8,9,10],   color: ONETokens.moodYellow)
-                    timeRow(icon: "sun.max.fill",   label: "Öğlen", hours: [11,12,13,14], color: ONETokens.moodOrange)
-                    timeRow(icon: "moon.fill",      label: "Akşam", hours: [18,19,20,21], color: ONETokens.oneBlue)
-                    timeRow(icon: "moon.stars.fill", label: "Gece", hours: [22,23,0,1,2], color: ONETokens.moodPurple)
+                    timeRow(icon: "sunrise.fill",  label: NSLocalizedString("echo.time.morning", comment: ""), hours: [6,7,8,9,10],   color: ONETokens.moodYellow)
+                    timeRow(icon: "sun.max.fill",   label: NSLocalizedString("echo.time.noon", comment: ""), hours: [11,12,13,14], color: ONETokens.moodOrange)
+                    timeRow(icon: "moon.fill",      label: NSLocalizedString("echo.time.evening", comment: ""), hours: [18,19,20,21], color: ONETokens.oneBlue)
+                    timeRow(icon: "moon.stars.fill", label: NSLocalizedString("echo.time.night", comment: ""), hours: [22,23,0,1,2], color: ONETokens.moodPurple)
                 }
                 .opacity(appeared ? 1 : 0)
                 .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.35), value: appeared)
@@ -261,7 +424,7 @@ struct EchoView: View {
                 .monoSM()
                 .foregroundColor(ONETokens.oneAsh)
                 .frame(width: 40, alignment: .leading)
-            Text("\(count) seçim")
+            Text(String(format: NSLocalizedString("echo.selections", comment: ""), count))
                 .font(ONETypography.bodyXS)
                 .foregroundColor(ONETokens.oneInk)
         }
@@ -270,10 +433,10 @@ struct EchoView: View {
     // MARK: — En Uzun Seri
     private var streakSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            label("En uzun seri")
+            label(NSLocalizedString("echo.longestStreak", comment: ""))
 
             if vm.data.longestStreak.days == 0 {
-                emptyNote("Henüz bir seri oluşmadı.")
+                emptyNote(NSLocalizedString("echo.noStreak", comment: ""))
             } else {
                 VStack(alignment: .leading, spacing: 10) {
                     // Büyük sayı
@@ -282,7 +445,7 @@ struct EchoView: View {
                             .font(.system(size: 52, weight: .semibold))
                             .foregroundColor(ONETokens.oneInk)
                             .tracking(-1.5)
-                        Text("gün")
+                        Text(NSLocalizedString("echo.days", comment: ""))
                             .displayXS()
                             .foregroundColor(ONETokens.oneAsh)
                     }
@@ -319,7 +482,7 @@ struct EchoView: View {
         VStack(alignment: .leading, spacing: 14) {
             // Başlık + loading
             HStack {
-                label("Çevre ile")
+                label(NSLocalizedString("echo.circle", comment: ""))
                 Spacer()
                 if vm.isSyncLoading {
                     ProgressView()
@@ -332,7 +495,7 @@ struct EchoView: View {
                 Text("\(vm.data.syncCount)")
                     .font(.system(size: 40, weight: .semibold))
                     .foregroundColor(ONETokens.oneInk)
-                Text(vm.data.syncCount == 1 ? "kez çevrenle aynı şarkıda buluştun." : "kez çevrenle aynı şarkıda buluştun.")
+                Text(NSLocalizedString("echo.circleMatches", comment: ""))
                     .bodyMD()
                     .foregroundColor(ONETokens.oneAsh)
             }
@@ -380,7 +543,7 @@ struct EchoView: View {
 
                     // 5'ten fazlası varsa "ve X daha"
                     if vm.data.circleSyncMatches.count > 5 {
-                        Text("ve \(vm.data.circleSyncMatches.count - 5) eşleşme daha")
+                        Text(String(format: NSLocalizedString("echo.moreMatches", comment: ""), vm.data.circleSyncMatches.count - 5))
                             .monoSM(tracking: 0.5)
                             .foregroundColor(ONETokens.oneMist)
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -389,7 +552,7 @@ struct EchoView: View {
                 }
             } else if !vm.isSyncLoading {
                 // Boş durum
-                Text("Henüz çevrenizden kimseyle aynı şarkıyı seçmediniz.")
+                Text(NSLocalizedString("echo.noCircleMatches", comment: ""))
                     .monoSM(tracking: 0.3)
                     .foregroundColor(ONETokens.oneMist)
                     .padding(.top, 2)

@@ -35,12 +35,12 @@ struct PhotoPickerButton: View {
                 
                 // Text
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(selectedPhoto == nil ? "Bu ana ait bir fotoğraf ekle" : "Fotoğraf eklendi")
+                    Text(selectedPhoto == nil ? NSLocalizedString("today.addPhoto", comment: "") : NSLocalizedString("today.photoAdded", comment: ""))
                         .font(.system(size: 12, weight: .regular))
                         .foregroundColor(ONETokens.oneCharcoal)
                         .tracking(-0.1)
                     
-                    Text("Opsiyonel · Sadece sende kalır")
+                    Text(NSLocalizedString("photo.optionalHint", comment: ""))
                         .font(.system(size: 9.5, weight: .light, design: .monospaced))
                         .foregroundColor(ONETokens.oneAsh)
                         .tracking(0.3)

@@ -40,6 +40,7 @@ final class NowPlayingManager: ObservableObject {
 
     private var pollingTask: Task<Void, Never>? = nil
     private var appleMusicObserver: AnyCancellable? = nil
+    private var unchangedCount = 0
 
     private init() {
         Task { @MainActor in
@@ -51,10 +52,23 @@ final class NowPlayingManager: ObservableObject {
 
     func startPolling() {
         pollingTask?.cancel()
+        unchangedCount = 0
         pollingTask = Task { @MainActor in
             while !Task.isCancelled {
+                let oldTrack = self.currentTrack
                 await self.refresh()
-                try? await Task.sleep(nanoseconds: 15_000_000_000) // 15s
+                // Adaptive backoff: if track hasn't changed, slow down polling
+                if self.currentTrack == oldTrack {
+                    self.unchangedCount += 1
+                } else {
+                    self.unchangedCount = 0
+                }
+                let interval: UInt64 = switch self.unchangedCount {
+                case 0...2:  15_000_000_000  // 15s — active change
+                case 3...5:  30_000_000_000  // 30s — slowing
+                default:     60_000_000_000  // 60s — idle
+                }
+                try? await Task.sleep(nanoseconds: interval)
             }
         }
     }
@@ -90,11 +104,14 @@ final class NowPlayingManager: ObservableObject {
 
     @MainActor
     private func observeAppleMusicState() {
-        appleMusicObserver = NotificationCenter.default
-            .publisher(for: .init("com.apple.music.playbackStateChanged"))
-            .receive(on: DispatchQueue.main)
+        // Use MusicKit's built-in state observation instead of non-standard notification
+        appleMusicObserver = SystemMusicPlayer.shared.state.objectWillChange
+            .debounce(for: .seconds(1), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
-                Task { @MainActor in await self?.refresh() }
+                Task { @MainActor in
+                    self?.unchangedCount = 0
+                    await self?.refresh()
+                }
             }
     }
 

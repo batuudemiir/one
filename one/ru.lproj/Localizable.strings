@@ -1,0 +1,663 @@
+/* Share */
+"share_to_instagram" = "Поделиться";
+"save_to_library" = "Сохранить";
+"generating" = "Создание...";
+
+/* Default values */
+"untitled_song" = "Без названия";
+"unknown_artist" = "Неизвестный исполнитель";
+
+/* Error messages */
+"missing_data_coverImage" = "Обложка отсутствует";
+"missing_data_songName" = "Название песни отсутствует";
+"render_failed" = "Не удалось создать карточку. Попробуйте снова.";
+"image_too_large" = "Изображение слишком большое. Используйте фото меньшего размера.";
+"invalid_format" = "Неверный формат";
+"export_failed" = "Ошибка экспорта";
+"instagram_not_installed" = "Instagram не установлен. Пожалуйста, установите Instagram.";
+"save_failed" = "Не удалось сохранить фото";
+"permission_denied" = "Требуется доступ к библиотеке фото. Разрешите в Настройках.";
+
+/* Recovery suggestions */
+"check_song_data" = "Проверить информацию о песне";
+"try_again" = "Попробуйте снова";
+"reduce_image_size" = "Уменьшить размер фото";
+"check_format" = "Проверить совместимость формата";
+"check_storage" = "Проверить место хранения";
+"install_instagram" = "Установить Instagram";
+
+/* Success messages */
+"card_generated" = "Карточка готова!";
+"saved_to_library" = "Сохранено в Фото";
+
+/* ── СЕГОДНЯ ── */
+"today.title" = "Выбрать песню дня";
+"today.subtitle" = "Начни своё настроение и день отсюда.";
+"today.moodSection" = "как ты себя чувствуешь?";
+"today.noteSection" = "оставить заметку";
+"today.notePlaceholder" = "что оставила в тебе эта песня?";
+"today.photoChange" = "изменить";
+"today.saveButton" = "Сохранить";
+"today.continueButton" = "Продолжить";
+"today.searchPlaceholder" = "Какая песня сегодня?";
+"today.alreadySelected" = "Песня дня уже выбрана.";
+"today.completedSubtitle" = "Выбор дня готов";
+"today.shareHint" = "Теперь ты можешь исследовать события или отправить в Круг.";
+"today.sharedInCircle" = "Поделились в Круге";
+
+/* ── ПОДТВЕРЖДЕНИЕ ── */
+"confirm.back" = "← НАЗАД";
+"confirm.moodQuestion" = "КАК ТЫ СЕБЯ ЧУВСТВУЕШЬ ПРЯМО СЕЙЧАС?";
+"confirm.todaySong" = "Это песня дня";
+"confirm.addPhoto" = "Добавить фото";
+"confirm.shareCircle" = "Поделиться в Круге";
+
+/* ── КРУГ ── */
+"circle.title" = "круг";
+"circle.sharedCount" = "%d/%d поделились";
+"circle.removeFriend" = "удалить из друзей?";
+"circle.setupCTA" = "Создать свой Круг";
+"circle.emptyHint" = "Смотри настроение друзей сегодня...";
+"circle.addFriend" = "Добавить друга";
+
+/* ── ОТКРЫТЬ ── */
+"discover.title" = "открыть";
+"discover.todaySong" = "ПЕСНЯ ДНЯ";
+"discover.yourProfile" = "ТВОЙ ПРОФИЛЬ";
+"discover.thisFeeling" = "ДЛЯ ЭТОГО ЧУВСТВА";
+"discover.weeklyPlaylist" = "Еженедельный плейлист";
+"discover.greeting.morning" = "Доброе утро";
+"discover.greeting.afternoon" = "Добрый день";
+"discover.greeting.evening" = "Добрый вечер";
+
+/* ── ПРОФИЛЬ / НАСТРОЙКИ ── */
+"profile.title" = "ПРОФИЛЬ";
+"profile.edit" = "Редактировать";
+"profile.joinDate" = "Участник с";
+"profile.days" = "Дней";
+"profile.music" = "Музыка";
+"profile.language" = "Язык";
+"profile.darkMode" = "Тёмный режим";
+"profile.haptics" = "Тактильный отклик";
+"profile.city" = "Город";
+"profile.notifications" = "Уведомления";
+"profile.icloud" = "iCloud";
+"profile.logout" = "Выйти";
+
+/* ── ОНБОРДИНГ ── */
+"onboarding.searchPlaceholder" = "Какая песня сегодня?";
+"onboarding.slogan" = "Чувствуй. Открывай. Делись.";
+"onboarding.connectMusic" = "Подключить музыкальный сервис";
+"onboarding.later" = "ПОЗЖЕ";
+
+/* ── ЗАСТАВКА ── */
+"splash.slogan" = "чувствуй · открывай · делись";
+
+/* ── ОБЩЕЕ ── */
+"general.save" = "Сохранить";
+"general.cancel" = "Отмена";
+"general.done" = "Готово";
+"general.back" = "Назад";
+"general.close" = "Закрыть";
+"general.loading" = "Загрузка...";
+"general.error" = "Произошла ошибка";
+"general.retry" = "Попробовать снова";
+
+/* ── УВЕДОМЛЕНИЯ ── */
+"notification.acceptFriend" = "Принять";
+"notification.declineFriend" = "Отклонить";
+"notification.openToday" = "Выбрать мою песню";
+"notification.openEcho" = "Посмотреть сводку";
+"notification.openDiscovery" = "Открыть";
+
+/* ── ДОСТУПНОСТЬ ── */
+"accessibility.today.nowPlayingBanner" = "Сейчас играет — нажмите для выбора";
+"accessibility.today.nowPlayingBannerHint" = "Использовать текущую песню как песню дня";
+"accessibility.today.clearSearch" = "Очистить поиск";
+"accessibility.today.addPhoto" = "Добавить фото";
+"accessibility.today.removePhoto" = "Удалить фото";
+"accessibility.today.continueButton" = "Продолжить";
+"accessibility.today.saveButton" = "Сохранить запись дня";
+"accessibility.today.photoViewer" = "Фото дня";
+"accessibility.today.shareButton" = "Поделиться";
+"accessibility.today.changeEntry" = "Изменить запись дня";
+"accessibility.today.artistFilter" = "%@ — фильтр по исполнителю";
+"accessibility.today.photoOf" = "Фото для %@";
+"accessibility.confirm.moodButton" = "Настроение %@";
+"accessibility.confirm.feelingButton" = "Чувство %@";
+"accessibility.circle.addFriend" = "Добавить друга";
+"accessibility.circle.addFriendHint" = "Добавить кого-то в свой Круг";
+"accessibility.circle.setupCircle" = "Создать свой Круг";
+"accessibility.circle.acceptFriend" = "Принять запрос в друзья от %@";
+"accessibility.circle.declineFriend" = "Отклонить запрос в друзья от %@";
+"accessibility.search.platformPicker" = "Выбрать музыкальную платформу";
+"accessibility.discovery.openEvent" = "Открыть событие %@";
+"accessibility.discovery.eventHint" = "Открывает детали события";
+"accessibility.settings.notificationToggle" = "Включить уведомления";
+
+/* Discover redesign */
+"discover.biletixEvents" = "ПРЕДСТОЯЩИЕ СОБЫТИЯ";
+"discover.newDiscover" = "НОВЫЕ ОТКРЫТИЯ";
+"discover.thisWeekDiscover" = "НА ЭТОЙ НЕДЕЛЕ";
+
+/* ── ECHO ── */
+"echo.title" = "Эхо";
+"echo.subtitle" = "Твоя история настроений, привычки и моменты, пересекающиеся с кругом.";
+"echo.loading" = "Подготовка Эхо…";
+"echo.thisMonth" = "Этот месяц";
+"echo.allTime" = "За всё время";
+"echo.stats.thisMonth" = "Статистика этого месяца";
+"echo.stats.allTime" = "Общая статистика";
+"echo.stats.songs" = "песен";
+"echo.stats.streakDays" = "дней подряд";
+"echo.stats.mostActive" = "самый активный";
+"echo.stats.monthlyAvg" = "ср. в мес.";
+"echo.moodDistribution" = "Распределение настроений";
+"echo.noData" = "Пока недостаточно данных.";
+"echo.thisWeek" = "На этой неделе";
+"echo.dominantFeeling" = "Это чувство доминировало на этой неделе.";
+"echo.repeatedSongs" = "Повторяющиеся песни";
+"echo.noRepeatedSongs" = "На этой неделе повторяющихся песен нет.";
+"echo.whenPick" = "Когда ты выбираешь?";
+"echo.time.morning" = "Утро";
+"echo.time.noon" = "День";
+"echo.time.evening" = "Вечер";
+"echo.time.night" = "Ночь";
+"echo.selections" = "%d выборов";
+"echo.longestStreak" = "Самая длинная серия";
+"echo.noStreak" = "Пока серии нет.";
+"echo.days" = "дней";
+"echo.circle" = "С кругом";
+"echo.circleMatches" = "раз ты совпал с кругом по песне.";
+"echo.noCircleMatches" = "Пока совпадений с кругом нет.";
+"echo.moreMatches" = "и ещё %d совпадений";
+"echo.backToProfile" = "Профиль";
+"circle.subtitle" = "Смотри настроение друзей сегодня, оставь свой выбор, расширяй обмен.";
+"circle.awaitingShare" = "Сегодня от тебя ждут публикацию.";
+"circle.headerCount" = "Круг · %d/%d поделились";
+"circle.you" = "ТЫ";
+"circle.pendingRequests" = "%d входящих запросов";
+"circle.tapToApprove" = "Нажми для подтверждения";
+"circle.shareToday" = "Поделиться сегодня и появиться в круге";
+"circle.notSharedYet" = "Ещё не поделился сегодня";
+"circle.blockUser" = "Заблокировать пользователя";
+"circle.blockMessage" = "Уверен, что хочешь заблокировать %@? Это действие нельзя отменить.";
+"circle.removeAction" = "Удалить";
+"circle.blockAction" = "Заблокировать";
+"circle.iCloudRequired" = "Требуется доступ к iCloud";
+"circle.iCloudMessage" = "Необходимо войти в аккаунт iCloud\nдля использования Круга.";
+"circle.tryAgain" = "Попробовать снова";
+"circle.goToSettings" = "Перейти в настройки";
+"circle.shareWithCircle" = "Поделиться в круге";
+"addFriend.title" = "Пригласить";
+"addFriend.loading" = "Загрузка данных приглашения…";
+"addFriend.yourCode" = "ТВОЙ КОД";
+"addFriend.copied" = "Скопировано";
+"addFriend.tapToCopy" = "Нажми код для копирования";
+"addFriend.share" = "Поделиться";
+"addFriend.showQR" = "Показать QR";
+"addFriend.contacts" = "Контакты";
+"addFriend.friendCode" = "КОД ДРУГА";
+"addFriend.paste" = "Вставить";
+"addFriend.sendInvite" = "Отправить приглашение";
+"addFriend.scanQR" = "Сканировать QR";
+"addFriend.pendingTitle" = "Запрос уже отправлен";
+"addFriend.pendingMessage" = "Ты уже отправил приглашение %@. Хочешь отозвать его?";
+"addFriend.withdraw" = "Отозвать запрос";
+"addFriend.dismiss" = "Отмена";
+"addFriend.invitedYou" = "%@ пригласил тебя\nв свой круг.";
+"addFriend.joinCircle" = "Вступить в круг";
+"addFriend.notNow" = "Не сейчас";
+"addFriend.requestSent" = "Запрос отправлен!";
+"addFriend.acceptedInfo" = "После принятия вы сможете делиться\nпеснями дня в одном круге.";
+"addFriend.addAnother" = "Добавить ещё";
+"addFriend.friendScansCode" = "Друг сканирует этот код";
+"addFriend.frameQR" = "Наведи на QR-код";
+"addFriend.cameraRequired" = "Требуется доступ к камере";
+"addFriend.cancel" = "Отмена";
+"addFriend.ok" = "OK";
+"profile.inviteCode" = "КОД ПРИГЛАШЕНИЯ";
+"profile.musicServices" = "МУЗЫКАЛЬНЫЕ СЕРВИСЫ";
+"profile.comingSoon" = "Скоро";
+"profile.general" = "ОБЩЕЕ";
+"profile.notificationsHeader" = "УВЕДОМЛЕНИЯ";
+"profile.other" = "ДРУГОЕ";
+"profile.notificationsOff" = "Уведомления отключены — Открыть настройки";
+"profile.reminderTime" = "Время напоминания";
+"profile.streakAlert" = "Предупреждение о серии";
+"profile.weeklySummary" = "Еженедельная сводка";
+"profile.discoveryAlerts" = "Оповещения об открытиях";
+"profile.appName" = "One — Ежедневное настроение";
+"profile.echoTitle" = "Эхо";
+"profile.echoDesc" = "Открой свои паттерны прослушивания и повторения";
+"profile.spotifyDisconnect" = "Отключить Spotify";
+"profile.spotifyDisconnectMsg" = "Вы уверены, что хотите отключить Spotify? Рекомендации и кэш будут очищены.";
+"profile.appleMusicTitle" = "Разрешение Apple Music";
+"profile.appleMusicMsg" = "Для удаления разрешения Apple Music перейди в Настройки > Конфиденциальность > Медиатека и Apple Music.";
+"profile.icloudDeleteTitle" = "Удалить данные iCloud";
+"profile.icloudDeleteMsg" = "Твой профиль и данные круга будут удалены из iCloud. Это действие нельзя отменить.";
+"profile.deleteAccountTitle" = "Удалить аккаунт";
+"profile.deleteAccountMsg" = "Все записи песен, профиль и данные круга будут удалены навсегда.";
+"profile.disconnect" = "Отключить";
+"profile.openSettings" = "Открыть настройки";
+"profile.deleteData" = "Удалить данные";
+"profile.deleteAccount" = "Удалить аккаунт";
+"profile.name" = "ИМЯ";
+"profile.username" = "ИМЯ ПОЛЬЗОВАТЕЛЯ";
+"profile.color" = "ЦВЕТ";
+"profile.getToKnowYou" = "Познакомимся";
+"profile.editProfile" = "Редактировать профиль";
+"profile.createProfile" = "Создать профиль";
+"profile.namePlaceholder" = "Как нам к тебе обращаться?";
+"profile.icloudActive" = "Активно · Удалить данные";
+"profile.icloudOff" = "Выключено";
+"profile.appleMusicConnected" = "Подключено · Отключить в настройках";
+"profile.appleMusicConnect" = "Подключить";
+"profile.exportData" = "Экспортировать мои данные";
+"profile.rateApp" = "Оценить приложение";
+"profile.exportFormat" = "Формат экспорта";
+"profile.exportError" = "Ошибка экспорта";
+"profile.unknownError" = "Произошла неизвестная ошибка.";
+"profile.musicBoth" = "Оба";
+"discover.selectMood" = "Выбрать настроение дня";
+"discover.selectMoodHint" = "Предложения появятся после выбора настроения";
+"discover.all" = "Все";
+"discover.loadingActivities" = "Загрузка активностей…";
+"discover.noEvents" = "Предстоящих событий не найдено";
+"discover.free" = "Бесплатно";
+"discover.showOnMap" = "Показать на карте";
+"discover.viewOnBiletix" = "Смотреть на Biletix";
+"discover.buyOnBiletix" = "Купить на Biletix";
+"discover.weekSuggestions" = "Предложения на основе настроений этой недели";
+"discover.noSuggestionsHint" = "После выбора настроения здесь появятся\nперсонализированные предложения.";
+"discover.genreTitle" = "Музыкальные жанры";
+"onboarding.howItWorks" = "Как\nэто работает?";
+"onboarding.back" = "← НАЗАД";
+"onboarding.serviceConnections" = "ПОДКЛЮЧЕНИЕ СЕРВИСОВ";
+"onboarding.lastStep" = "Последний\nшаг";
+"onboarding.connectDesc" = "Подключись для лучшего опыта.";
+"onboarding.spotifySettings" = "Ты можешь подключить Spotify в настройках.";
+"onboarding.appleMusicDenied" = "Доступ к Apple Music запрещён. Настройки → Конфиденциальность → Медиатека и Apple Music.";
+"onboarding.notificationDesc" = "Мы можем отправлять тебе одно уведомление в день…";
+"contacts.smsNotAvailable" = "Отправка SMS недоступна на этом устройстве.";
+"contacts.smsSendHint" = "Ссылка-приглашение будет отправлена по SMS";
+"archive.photoLoadFailed" = "Не удалось загрузить фото";
+"archive.openSong" = "Открыть песню";
+"archive.colorDistribution" = "РАСПРЕДЕЛЕНИЕ ЦВЕТОВ";
+"archive.musicYear" = "Твой музыкальный год";
+
+/* --- ONBOARDING EXTRA --- */
+"onboarding.start" = "ПОЕХАЛИ";
+"onboarding.startConnected" = "ОТЛИЧНО, ПОЕХАЛИ";
+"onboarding.connected" = "✓ Подключено";
+"onboarding.noSubscriptionHint" = "Подписка не нужна — только для поиска";
+"onboarding.noSubscriptionRequired" = "Подписка не требуется";
+"onboarding.noDataSelling" = "Мы не продаём твои данные, всё хранится на устройстве";
+
+/* --- FRIEND REQUESTS --- */
+"friendRequests.title" = "Уведомления";
+"friendRequests.incoming" = "Входящие";
+"friendRequests.outgoing" = "Исходящие";
+"friendRequests.noIncoming" = "Нет входящих запросов";
+"friendRequests.noOutgoing" = "Нет отправленных запросов";
+"friendRequests.noIncomingHint" = "Когда кто-то пригласит тебя в свой круг,\nэто появится здесь.";
+"friendRequests.noOutgoingHint" = "Приглашения в круг, которые ты отправил,\nпоявятся здесь.";
+"friendRequests.wantsToAdd" = "Хочет добавить в круг  ·  ";
+"friendRequests.requestSent" = "Запрос отправлен  ·  ";
+"friendRequests.friendAccepted" = "Дружба принята!";
+"friendRequests.requestWithdrawn" = "Запрос отозван";
+"friendRequests.unknown" = "Неизвестно";
+
+/* --- ARCHIVE EXTRA --- */
+"archive.selectedDays" = "Выбранные дни";
+"archive.silentDays" = "Тихие дни";
+"archive.completion" = "Заполнено";
+"archive.month" = "МЕСЯЦ";
+"archive.year" = "ГОД";
+"archive.totalSelections" = "Всего выборов";
+"archive.activeMonths" = "Активные месяцы";
+"archive.yearCompletion" = "Заполнение за год";
+"archive.selectedAt" = "Выбрано в %@";
+
+/* --- GENERAL EXTRA --- */
+"general.share" = "Поделиться";
+
+/* --- CIRCLE SHARE TOGGLE --- */
+"circle.shareWithPhotoDesc" = "Твоя песня и фото будут опубликованы";
+"circle.shareWithMoodDesc" = "Твоя песня и настроение будут опубликованы";
+"circle.shareHint" = "Пусть друзья увидят сегодняшний выбор";
+
+/* --- GENERAL OK --- */
+"general.ok" = "OK";
+"general.ok" = "ОК";
+
+/* --- ONBOARDING FEATURES --- */
+"onboarding.feature.dailySong" = "Песня дня";
+"onboarding.feature.dailySongDesc" = "Выбирай каждый день песню, которая тебя описывает";
+"onboarding.feature.photoMood" = "Фото + Настроение";
+"onboarding.feature.photoMoodDesc" = "Запечатлей момент с фото и цветом";
+"onboarding.feature.circle" = "Круг";
+"onboarding.feature.circleDesc" = "Делись песнями и настроениями с друзьями";
+"onboarding.feature.discover" = "Открыть";
+"onboarding.feature.discoverDesc" = "Получай предложения активностей по настроению";
+
+/* --- TODAY EXTRA (to be filled per lang) --- */
+"today.circleCanSee" = "Твой круг видит твоё настроение сегодня";
+"today.note" = "ЗАМЕТКА";
+"today.timeSelected" = "в %@";
+"today.cardLoading" = "Карточка готовится...";
+"today.createShareCard" = "Создать карточку для публикации";
+"today.saveToPhotos" = "Сохранить в Фото";
+"today.generateCard" = "Создать карточку";
+"today.changeConfirmTitle" = "Изменить выбор";
+"today.changeConfirmYes" = "Да, изменить";
+"today.changeConfirmMessage" = "Сегодняшняя песня будет удалена и ты сможешь выбрать снова.";
+"today.select" = "выбрать";
+"today.noResults" = "Результаты не найдены";
+"today.optional" = "опционально";
+"today.changeSong" = "изменить песню";
+"today.saved" = "Сохранено";
+"moodEvents.ourPicks" = "Наш выбор\nдля этого настроения.";
+"moodEvents.noEvents" = "Для этой категории не найдено событий.";
+"moodEvents.matchPercent" = "%%%d совпадение";
+"moodEvents.nearbyCity" = "Ближайший город: %@";
+"camera.captureHint" = "Ты прекрасно запечатлел этот момент";
+"photo.optionalHint" = "Опционально · Видно только тебе";
+"discover.match" = "совпадение";
+"discover.explore" = "ИЗУЧИТЬ НАСТРОЕНИЕ";
+"discover.today" = "сегодня";
+"discover.ourPicks" = "НАШ ВЫБОР ДЛЯ ТЕБЯ";
+"discover.refresh" = "Обновить";
+"discover.nearbyCity" = "Ближайший город: %@";
+
+"circle.removeConfirmMessage" = "Вы уверены, что хотите удалить %@ из своего круга?";
+"circle.blockConfirmMessage" = "Вы уверены, что хотите заблокировать %@? Это действие нельзя отменить.";
+"circle.todayFeeling" = "Что они\nчувствуют сегодня?";
+"circle.note" = "ЗАМЕТКА";
+"circle.heard" = "прослушано";
+"circle.waitingPick" = "Ожидание выбора…";
+"circle.willAppear" = "Появится, когда они выберут песню";
+"circle.updating" = "Обновление…";
+"circle.notSelectedYet" = "Сегодня ещё\nне выбрано.";
+"contacts.navTitle" = "Пригласить из контактов";
+"contacts.alertSmsCantSend" = "Не удаётся отправить SMS";
+"contacts.inviteCodeText" = "Код приглашения: %@";
+"contacts.contactsRequired" = "Требуется доступ к контактам";
+"contacts.contactsPermissionHint" = "Вы можете разрешить доступ в Настройки → Конфиденциальность → Контакты.";
+"contacts.openSettings" = "Открыть настройки";
+"contacts.contactsLoading" = "Загрузка контактов…";
+"contacts.inviteButton" = "Пригласить";
+"contacts.searchPlaceholder" = "Поиск контактов…";
+"contacts.noContacts" = "Нет контактов";
+"contacts.noResults" = "Контакты не найдены";
+"contacts.noName" = "Без имени";
+"share.joinCircle" = "ПРИСОЕДИНИСЬ К СВОЕМУ КРУГУ";
+"share.sendInvite" = "Отправить приглашение";
+"share.storyFormat" = "История (9:16)";
+"share.postFormat" = "Пост / X (16:9)";
+"share.cardPreparing" = "Подготовка карточки приглашения...";
+"share.savedToPhotos" = "Сохранено в Фото";
+"share.inviteHeader" = "%@ ПРИГЛАШАЕТ ТЕБЯ";
+"share.inviteSlogan" = "Чувствуй.\nОткрывай. Делись.";
+"share.inviteCode" = "КОД ПРИГЛАШЕНИЯ";
+"share.inviteFooter" = "ONE · Делись песней дня со своим кругом.";
+"monthly.summary" = "ваша сводка.";
+"monthly.stats" = "%d дней · %d песен · 1 ты";
+"monthly.swipe" = "листать";
+"monthly.oneMood" = "одно настроение";
+"monthly.dominantMood" = "доминирующее настроение";
+"monthly.thisMonth" = "В этом месяце";
+"monthly.sound" = "звук.";
+"monthly.noSongs" = "В этом месяце\nпесни ещё не выбраны.";
+"monthly.moodTitle" = "Настроение";
+"monthly.moodMap" = "карта.";
+"monthly.emotionDistribution" = "РАСПРЕДЕЛЕНИЕ ЭМОЦИЙ";
+"monthly.share" = "Поделиться";
+"monthly.whichCard" = "Какую карточку добавить в историю?";
+"monthly.coverCard" = "Обложка";
+"monthly.moodMapCard" = "Карта настроений";
+"monthly.topTracksCard" = "Лучшие песни";
+"monthly.statDays" = "ДНЕЙ";
+"monthly.statArtists" = "АРТИСТОВ";
+"monthly.statMax" = "МАКС";
+"monthly.selectionLabel" = "ВЫБОР";
+"monthly.timesLabel" = "РАЗ";
+"discover.discoverTitle" = "открывать";
+"discover.comingSoon" = "Предложения на основе настроения\nскоро появятся";
+"discover.weeklyPlaylistTitle" = "ЕЖЕНЕДЕЛЬНЫЙ ПЛЕЙЛИСТ";
+"discover.weeklyMoods" = "Настроения\nэтой недели";
+"discover.dominantMood" = "Доминирующее настроение: %@";
+"discover.minSelections" = "Выбирайте песни не менее 3 дней";
+"discover.minSelectionsHint" = "Вам нужно выбирать песни не менее 3 дней на этой неделе для создания еженедельного плейлиста.";
+"discover.daysCompleted" = "%d/3 дней выполнено";
+"discover.moodDistribution" = "РАСПРЕДЕЛЕНИЕ НАСТРОЕНИЙ";
+"discover.weekSongs" = "ПЕСНИ ЭТОЙ НЕДЕЛИ";
+"discover.weeklyPlaylistLabel" = "ВАШ ЕЖЕНЕДЕЛЬНЫЙ ПЛЕЙЛИСТ";
+"search.alreadySelected" = "Сегодняшняя песня\nуже выбрана.";
+"search.canPickTomorrow" = "Вы сможете выбрать новую песню завтра.";
+"search.todayQuestion" = "Какая песня\nсегодня?";
+"search.connectSpotify" = "Подключиться к Spotify";
+"search.connectAppleMusic" = "Подключиться к Apple Music";
+"search.searchPlaceholder" = "песня или исполнитель...";
+"search.appleMusicPermission" = "Требуется разрешение Apple Music. Пожалуйста, предоставьте его в настройках.";
+"confirm.question" = "ЧТО НАВЕВАЕТ ТЕБЕ ЭТА ПЕСНЯ?";
+"done.saved" = "Сохранено.";
+"done.calendarAdded" = "Добавлено в календарь";
+"done.todaysMemory" = "ВОСПОМИНАНИЕ ДНЯ";
+"done.todaysColor" = "ЦВЕТ ДНЯ";
+/* --- INVITE SHARE --- */
+"invite.joinCircle" = "ПРИСОЕДИНИТЬСЯ К КРУГУ";
+"invite.sendInvite" = "Отправить приглашение";
+"invite.formatPicker" = "Формат";
+"invite.story" = "История (9:16)";
+"invite.post" = "Пост / X (16:9)";
+"invite.preparing" = "Подготовка карточки приглашения...";
+"invite.instagramStory" = "Instagram Story";
+"invite.instagramInstalled" = "Отправить прямо в Stories";
+"invite.instagramNotInstalled" = "Instagram не установлен";
+"invite.otherApps" = "Другие приложения";
+"invite.otherAppsHint" = "Ссылка-приглашение включена";
+"invite.savedToPhotos" = "Сохранено в фото";
+"invite.saveToPhotos" = "Сохранить в фото";
+"invite.saveToPhotosHint" = "Добавить в галерею как PNG";
+"invite.generateFailed" = "Не удалось создать карточку приглашения";
+"invite.shareText" = "Присоединяйся к моему кругу в ONE. Чувствуй, открывай, делись.\n%@";
+"invite.invitesYou" = "%@ ПРИГЛАШАЕТ ВАС";
+"invite.codeLabel" = "КОД ПРИГЛАШЕНИЯ";
+"invite.footer" = "ONE · Делитесь сегодняшней песней со своим кругом.";
+"app.slogan" = "Чувствовать.\nОткрывать. Делиться.";
+"colorPicker.echoes" = "ЭХО";
+"colorPicker.echoesDesc" = "Песни, которые\nты выбирал снова.";
+"colorPicker.noEchoes" = "Эхо пока нет.";
+"colorPicker.echoesHint" = "Когда ты выбираешь одну и ту же песню несколько дней,\nона появится здесь.";
+"colorPicker.times" = "%d раз";
+"colorPicker.insightText" = "\"%@\" кажется, несёт для тебя особый смысл. Ты выбирал это %d раз.";
+
+/* --- SHARE SHEET --- */
+"share.title" = "ПОДЕЛИТЬСЯ";
+"share.preparing" = "Подготовка сторис...";
+"share.instagramSend" = "Отправить прямо в Stories";
+"share.instagramNotInstalled" = "Instagram не установлен";
+"share.otherApps" = "Другие Приложения";
+"share.cardSaved" = "Карточка сохранена";
+"share.saveCard" = "Сохранить Карточку";
+"share.saveCardHint" = "Добавить карточку в галерею";
+"share.photoSaved" = "Фото сохранено";
+"share.savePhoto" = "Сохранить Фото";
+"share.savePhotoHint" = "Добавить оригинальное фото в галерею";
+"share.spotifyLink" = "Ссылка Spotify включена";
+"share.appleMusicLink" = "Ссылка Apple Music включена";
+
+/* --- DISCOVER EXTRA --- */
+"discover.searchBiletix" = "Искать на Biletix";
+
+/* --- MONTHLY POSTER --- */
+"monthly.echoTagline" = "ONE · Эхо месяца";
+
+/* --- MOOD LABELS --- */
+"mood.atesli" = "Пылкий";
+"mood.enerjik" = "Энергичный";
+"mood.isikli" = "Радостный";
+"mood.taze" = "Свежий";
+"mood.sakin" = "Спокойный";
+"mood.ozgur" = "Свободный";
+"mood.derin" = "Глубокий";
+"mood.nostaljik" = "Ностальгический";
+"mood.gizemli" = "Таинственный";
+"mood.hassas" = "Чувствительный";
+"mood.bos" = "Тихий";
+"mood.temiz" = "Нейтральный";
+
+/* --- FEELING LABELS --- */
+"feeling.calm" = "Спокойный";
+"feeling.happy" = "Радостный";
+"feeling.sad" = "Грустный";
+"feeling.anxious" = "Тревожный";
+"feeling.excited" = "Взволнованный";
+"feeling.tired" = "Усталый";
+"feeling.angry" = "Бунтарский";
+"feeling.peaceful" = "Умиротворённый";
+
+/* --- TODAY EMPTY VIEW --- */
+"today.continueWithoutPhoto" = "Продолжить без фото";
+"today.done" = "Готово";
+
+/* --- NAVIGATION TABS --- */
+"nav.discover" = "открыть";
+"nav.archive" = "архив";
+"nav.today" = "сегодня";
+"nav.circle" = "круг";
+"nav.profile" = "профиль";
+"nav.tabAccessibility" = "вкладка %@";
+
+/* --- DISCOVER CTA LABELS --- */
+"discover.ctaMap" = "Карта";
+"discover.ctaBiletix" = "Biletix";
+
+/* --- ACTIVITY RECOMMENDATION SECTIONS --- */
+"discover.sectionMicroTitle" = "Почувствуй себя лучше сейчас";
+"discover.sectionMicroSubtitle" = "Занятия, которые легко начать — под твоё настроение, время и погоду.";
+"discover.sectionConcertTitle" = "Концерты рядом с твоей музыкой";
+"discover.sectionConcertSubtitle" = "Живая музыка, подходящая твоему исполнителю или жанру.";
+"discover.sectionCityTitle" = "Запланируй что-нибудь в городе";
+"discover.sectionCitySubtitle" = "Выставки, театр, кино и другие живые маршруты.";
+"discover.todaySpecial" = "Только сегодня";
+
+/* --- ACTIVITY TEMPLATES --- */
+"activity.walkSoft.title" = "Прогуляйся медленно 25 минут";
+"activity.walkSoft.venue" = "Рядом";
+"activity.walkSoft.timing" = "Сегодня";
+
+"activity.bikeRide.title" = "Поезди на велосипеде и ускорь ритм";
+"activity.bikeRide.venue" = "Маршрут";
+"activity.bikeRide.timing" = "Сегодня после обеда";
+
+"activity.swimSea.title" = "Пойди поплавай и перезагрузись";
+"activity.swimSea.venue" = "Берег";
+"activity.swimSea.timing" = "Сегодня ближе к закату";
+
+"activity.coffeeBreak.title" = "Устрой тихий кофе-брейк";
+"activity.coffeeBreak.venue" = "Рядом";
+"activity.coffeeBreak.timing" = "Сейчас";
+
+"activity.bookstore.title" = "Зайди в книжный или пластиночный магазин";
+"activity.bookstore.venue" = "Маршрут";
+"activity.bookstore.timing" = "Сегодня";
+
+"activity.museumHop.title" = "Планируй короткий маршрут по музеям или галереям";
+"activity.museumHop.venue" = "Центр";
+"activity.museumHop.timing" = "Сегодня после обеда";
+
+"activity.sunsetWalk.title" = "Прогуляйся вдоль берега на закате";
+"activity.sunsetWalk.venue" = "Набережная";
+"activity.sunsetWalk.timing" = "Сегодня вечером";
+
+"activity.yogaBreath.title" = "Сбавь темп с йогой или дыхательными упражнениями";
+"activity.yogaBreath.venue" = "Площадка";
+"activity.yogaBreath.timing" = "Утром или вечером";
+
+"activity.photoWalk.title" = "Отправься на фотопрогулку и замечай детали";
+"activity.photoWalk.venue" = "Район";
+"activity.photoWalk.timing" = "Сегодня";
+
+"activity.nightRun.title" = "Выплесни энергию ночной пробежкой";
+"activity.nightRun.venue" = "Трасса";
+"activity.nightRun.timing" = "Сегодня вечером";
+
+"activity.friendDinner.title" = "Позови друга на долгий ужин";
+"activity.friendDinner.venue" = "Стол";
+"activity.friendDinner.timing" = "Сегодня вечером";
+
+/* --- ACTIVITY REASONS --- */
+"activity.reason.anxious" = "Могло бы перевести сегодняшнее беспокойство в более мягкий ритм.";
+"activity.reason.tired" = "Спокойный выбор, который несёт твоё настроение с минимальными усилиями.";
+"activity.reason.happyExcited" = "Открывает хорошее пространство, чтобы направить высокую энергию вовне.";
+"activity.reason.sad" = "Подходит для неспешного, мягкого и поддерживающего потока.";
+"activity.reason.calmPeaceful" = "Сопровождает ритм дня, не нарушая внутреннего спокойствия.";
+"activity.reason.angry" = "Выбрано, чтобы направить энергию в физический поток.";
+"activity.reason.outdoorWeather" = "Выделяется благодаря твоему настроению и благоприятной для прогулок погоде.";
+"activity.reason.indoorWeather" = "Погода делает закрытый, расслабленный поток более разумным.";
+"activity.reason.moodMatch" = "Хорошо подходит к твоему настроению %@ сегодня — легко начать.";
+
+/* --- ACTIVITY VENUE HINTS --- */
+"activity.venue.nature" = "Зелёный маршрут в городе";
+"activity.venue.culture" = "Центр %@ — культурный маршрут";
+"activity.venue.neighborhood" = "Ближайший район в %@";
+"activity.venue.motion" = "Активный маршрут в городе";
+"activity.venue.quiet" = "Тихий уголок, кафе или книжный магазин";
+"activity.venue.coast" = "Маршрут у воды в городе";
+
+/* --- SHARE CARD BRANDING --- */
+"share.brandWatermark" = "ONE · Mood Tracker";
+"share.brandWatermarkUpper" = "ONE · MOOD TRACKER";
+
+/* --- DISCOVER LISTEN LABELS --- */
+"discover.listenOnSpotify" = "Слушать в Spotify";
+"discover.listenOnAppleMusic" = "Слушать в Apple Music";
+
+/* --- GENERAL TOAST TITLES --- */
+"general.success" = "Успешно";
+"general.info" = "Инфо";
+"general.warning" = "Предупреждение";
+
+/* --- CAMERA MISSING KEYS --- */
+"camera.use" = "Использовать";
+"camera.afLock" = "БЛОКИРОВКА AE/AF";
+"camera.retake" = "Переснять";
+
+/* --- CIRCLE / SHARE MISSING --- */
+"circle.requestWithdrawn" = "Запрос в друзья отозван.";
+"share.cardFailed" = "Не удалось создать карточку";
+
+/* --- TODAY MISSING KEYS --- */
+"today.playingOnSpotify" = "Воспроизводится в Spotify";
+"today.playingOnAppleMusic" = "Воспроизводится в Apple Music";
+"today.morningGreeting" = "День только начинается.";
+"today.midDayGreeting" = "Ты в середине дня.";
+"today.afternoonGreeting" = "День.";
+"today.eveningGreeting" = "День подходит к концу.";
+"today.nightGreeting" = "Ночь.";
+"today.addPhoto" = "Добавь фото для этого момента";
+"today.photoAdded" = "Фото добавлено";
+
+/* --- DISCOVER STATUS MISSING --- */
+"discover.notAuthenticated" = "Выберите музыкальный сервис для рекомендаций";
+"discover.insufficientHistory" = "Выбери больше песен для персонализированных предложений";
+"discover.noInternet" = "Нет подключения к интернету";
+"discover.rateLimit" = "Слишком много запросов, подожди немного";
+"discover.loadFailed" = "Не удалось загрузить рекомендации";
+"discover.cacheError" = "Ошибка кэша";
+"discover.artistConcert" = "КОНЦЕРТ АРТИСТА";
+"discover.nearby" = "РЯДОМ";
+
+/* --- CALENDAR DAY ABBREVIATIONS --- */
+"calendar.day.mon" = "Пн";
+"calendar.day.tue" = "Вт";
+"calendar.day.wed" = "Ср";
+"calendar.day.thu" = "Чт";
+"calendar.day.fri" = "Пт";
+"calendar.day.sat" = "Сб";
+"calendar.day.sun" = "Вс";
+
+/* --- GENRE FALLBACK --- */
+"genre.music" = "Музыка";

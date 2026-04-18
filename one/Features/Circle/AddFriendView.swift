@@ -12,34 +12,69 @@ struct AddFriendView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var cloudKitManager = CloudKitManager.shared
 
-    // Optional prefilled code from Deep Link
     var prefilledCode: String?
 
-    @State private var inviteCode = ""
-    @State private var showError = false
-    @State private var errorMessage = ""
-    @State private var isLoading = false
-    @State private var showSuccess = false
-    @State private var successMessage = ""
-    @State private var showQRCode = false
-    @State private var showQRScanner = false
+    // Smart unified search
+    @State private var smartQuery       = ""
+    @State private var foundUser: CKRecord? = nil
+    @State private var isSearching      = false
+    @State private var userNotFound     = false
 
-    // Deep link welcome card
-    @State private var inviterUser: CKRecord? = nil
-    @State private var isLookingUpInviter = false
+    // Result
+    @State private var isLoading        = false
+    @State private var showSuccess      = false
+    @State private var successMessage   = ""
+    @State private var showError        = false
+    @State private var errorMessage     = ""
 
-    // Cancel pending request
-    @State private var showCancelAlert = false
+    // Deep link
+    @State private var inviterUser: CKRecord?  = nil
+    @State private var isLookingUpInviter      = false
+
+    // Cancel pending
+    @State private var showCancelAlert       = false
     @State private var pendingUserIDToCancel = ""
-    @State private var pendingUserName = ""
+    @State private var pendingUserName       = ""
 
-    // Copy feedback
-    @State private var codeCopied = false
+    // UI
+    @State private var codeCopied           = false
+    @State private var showQRCode           = false
+    @State private var showQRScanner        = false
     @State private var showInviteShareSheet = false
+    @State private var showContactsInvite   = false
+
+    // MARK: - Derived
 
     var myInviteCode: String {
         cloudKitManager.currentUser?["inviteCode"] as? String ?? "------"
     }
+
+    private var queryTrimmed: String { smartQuery.trimmingCharacters(in: .whitespaces) }
+
+    private var isCodeQuery: Bool {
+        let upper = queryTrimmed.uppercased().filter { $0.isLetter || $0.isNumber }
+        return upper.count == 6
+    }
+
+    private var isQueryReady: Bool {
+        if queryTrimmed.hasPrefix("@") { return queryTrimmed.count >= 4 }
+        return isCodeQuery || queryTrimmed.count >= 3
+    }
+
+    private var searchFieldIcon: String {
+        if queryTrimmed.hasPrefix("@") { return "at" }
+        if isCodeQuery { return "number" }
+        return "magnifyingglass"
+    }
+
+    private var searchBorderColor: Color {
+        if foundUser != nil { return ONETokens.oneGreen }
+        if userNotFound { return Color.red.opacity(0.4) }
+        if isQueryReady { return ONETokens.oneInk.opacity(0.3) }
+        return Color.clear
+    }
+
+    // MARK: - Body
 
     var body: some View {
         NavigationView {
@@ -47,16 +82,10 @@ struct AddFriendView: View {
                 ONETokens.oneCream.ignoresSafeArea()
 
                 if prefilledCode != nil {
-                    // ── Deep link karşılama modu ──────────────────
                     if showSuccess {
-                        ScrollView { successSection.padding(.horizontal, 24) }
+                        ScrollView { successSection.padding(.horizontal, 20) }
                     } else if isLookingUpInviter {
-                        VStack(spacing: 14) {
-                            ProgressView().scaleEffect(1.1).tint(ONETokens.oneAsh)
-                            Text("Davet bilgileri yükleniyor…")
-                                .monoBase()
-                                .foregroundColor(ONETokens.oneAsh)
-                        }
+                        lookupLoadingView
                     } else if inviterUser != nil {
                         inviteWelcomeView
                     } else {
@@ -66,22 +95,22 @@ struct AddFriendView: View {
                     mainContent
                 }
             }
-            .navigationTitle("Davet Et")
+            .navigationTitle(NSLocalizedString("addFriend.title", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Kapat") { dismiss() }
+                    Button(NSLocalizedString("addFriend.cancel", comment: "")) { dismiss() }
                         .foregroundColor(ONETokens.oneAsh)
                 }
             }
-            .alert("İstek Zaten Gönderildi", isPresented: $showCancelAlert) {
-                Button("İsteği Geri Çek", role: .destructive) { cancelPendingRequest() }
-                Button("Vazgeç", role: .cancel) { }
+            .alert(NSLocalizedString("addFriend.pendingTitle", comment: ""), isPresented: $showCancelAlert) {
+                Button(NSLocalizedString("addFriend.withdraw", comment: ""), role: .destructive) { cancelPendingRequest() }
+                Button(NSLocalizedString("addFriend.dismiss", comment: ""), role: .cancel) { }
             } message: {
-                Text("\(pendingUserName) adlı kullanıcıya zaten davet gönderdin. Bu isteği geri çekmek ister misin?")
+                Text(String(format: NSLocalizedString("addFriend.pendingMessage", comment: ""), pendingUserName))
             }
-            .alert("Hata", isPresented: $showError) {
-                Button("Tamam", role: .cancel) { }
+            .alert(NSLocalizedString("general.error", comment: ""), isPresented: $showError) {
+                Button(NSLocalizedString("addFriend.ok", comment: ""), role: .cancel) { }
             } message: {
                 Text(errorMessage)
             }
@@ -90,21 +119,24 @@ struct AddFriendView: View {
             }
             .sheet(isPresented: $showQRScanner) {
                 QRScannerView { scannedCode in
-                    inviteCode = scannedCode
+                    smartQuery = scannedCode.uppercased()
                     showQRScanner = false
-                    addFriend()
+                    performSmartSearch()
                 }
             }
             .sheet(isPresented: $showInviteShareSheet) {
                 InviteShareSheet(
                     inviteCode: myInviteCode,
-                    userName: cloudKitManager.currentUser?["name"] as? String ?? "BİRİ"
+                    userName: cloudKitManager.currentUser?["displayName"] as? String ?? "BİRİ"
                 )
+            }
+            .sheet(isPresented: $showContactsInvite) {
+                ContactsInviteView()
             }
             .onAppear {
                 initializeUser()
                 if let prefilled = prefilledCode, !prefilled.isEmpty {
-                    inviteCode = prefilled.uppercased()
+                    smartQuery = prefilled.uppercased()
                     isLookingUpInviter = true
                     cloudKitManager.findUserByInviteCode(prefilled.uppercased()) { result in
                         DispatchQueue.main.async {
@@ -121,209 +153,396 @@ struct AddFriendView: View {
         }
     }
 
-    // MARK: - Ana içerik
+    // MARK: - Main Content
 
     private var mainContent: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(spacing: 0) {
 
-                // ── Senin kodun ──────────────────────────────────
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("SENİN KODUN")
-                        .monoLabel(tracking: 2.0)
-                        .foregroundColor(ONETokens.oneAsh)
+                // ── Profil + kod kartı ──────────────────────────
+                profileCard
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
+                    .padding(.bottom, 16)
 
-                    Button(action: copyInviteCode) {
-                        Text(myInviteCode)
-                            .font(.system(size: 46, weight: .bold, design: .monospaced))
-                            .tracking(10)
-                            .foregroundColor(codeCopied ? ONETokens.oneGreen : ONETokens.oneInk)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .buttonStyle(.plain)
-                    .animation(ONEAnimation.micro, value: codeCopied)
+                // ── Paylaşım seçenekleri ────────────────────────
+                shareOptionsRow
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 28)
 
-                    HStack(spacing: 5) {
-                        Image(systemName: codeCopied ? "checkmark" : "doc.on.doc")
-                            .font(.system(size: 10, weight: .medium))
-                        Text(codeCopied ? "Kopyalandı" : "Koda dokunarak kopyala")
-                            .monoLabel(tracking: 0.4)
-                    }
-                    .foregroundColor(codeCopied ? ONETokens.oneGreen : ONETokens.oneMist)
-                    .animation(ONEAnimation.micro, value: codeCopied)
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 28)
-                .padding(.bottom, 20)
-
-                // Eylem butonları
-                HStack(spacing: 10) {
-                    codeActionButton("Paylaş", icon: "square.and.arrow.up") {
-                        showInviteShareSheet = true
-                    }
-                    codeActionButton("QR Göster", icon: "qrcode") {
-                        showQRCode = true
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
-
-                // ── Divider ──────────────────────────────────────
+                // ── Divider ─────────────────────────────────────
                 Rectangle()
                     .fill(ONETokens.oneSilver)
                     .frame(height: 1)
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 20)
 
-                // ── Arkadaş kodu gir ─────────────────────────────
+                // ── Arama / Başarı ──────────────────────────────
                 if showSuccess {
                     successSection
-                        .padding(.horizontal, 24)
-                        .padding(.top, 28)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 24)
                 } else {
-                    VStack(alignment: .leading, spacing: 14) {
-
-                        Text("ARKADAŞININ KODU")
-                            .monoLabel(tracking: 2.0)
-                            .foregroundColor(ONETokens.oneAsh)
-                            .padding(.top, 28)
-
-                        // Input
-                        ZStack(alignment: .trailing) {
-                            TextField("ABC123", text: $inviteCode)
-                                .textFieldStyle(.plain)
-                                .autocapitalization(.allCharacters)
-                                .font(.system(size: 28, weight: .semibold, design: .monospaced))
-                                .tracking(6)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 14)
-                                .padding(.trailing, inviteCode.isEmpty ? 80 : 0)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 13)
-                                        .fill(ONETokens.oneSilver)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 13)
-                                                .stroke(
-                                                    inviteCode.count == 6 ? ONETokens.oneGreen : Color.clear,
-                                                    lineWidth: 1.5
-                                                )
-                                        )
-                                )
-                                .onChange(of: inviteCode) { _, newValue in
-                                    var processed = newValue.uppercased()
-                                        .filter { $0.isLetter || $0.isNumber }
-                                    if processed.count > 6 { processed = String(processed.prefix(6)) }
-                                    if inviteCode != processed { inviteCode = processed }
-                                    if processed.count == 6 {
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                            guard inviteCode.count == 6, !isLoading, !showSuccess else { return }
-                                            addFriend()
-                                        }
-                                    }
-                                }
-                                .onSubmit { addFriend() }
-
-                            if inviteCode.isEmpty {
-                                Button(action: pasteFromClipboard) {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "doc.on.clipboard")
-                                            .font(.system(size: 10))
-                                        Text("Yapıştır")
-                                            .monoLabel(tracking: 0.3)
-                                    }
-                                    .foregroundColor(ONETokens.oneAsh)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(Capsule().fill(ONETokens.oneCreamMid))
-                                }
-                                .padding(.trailing, 12)
-                                .transition(.opacity.combined(with: .scale(scale: 0.9)))
-                            }
-                        }
-                        .animation(ONEAnimation.micro, value: inviteCode.isEmpty)
-
-                        // Karakter sayacı
-                        HStack {
-                            Spacer()
-                            Text("\(inviteCode.count)/6")
-                                .monoLabel(tracking: 0.3)
-                                .foregroundColor(inviteCode.count == 6 ? ONETokens.oneGreen : ONETokens.oneMist)
-                                .animation(ONEAnimation.micro, value: inviteCode.count)
-                        }
-
-                        // Gönder butonu
-                        Button(action: addFriend) {
-                            HStack(spacing: 8) {
-                                if isLoading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                        .scaleEffect(0.85)
-                                } else {
-                                    Text("Davet Gönder")
-                                        .monoSM(tracking: 1.2)
-                                }
-                            }
-                            .foregroundColor(ONETokens.oneCream)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .fill(inviteCode.count == 6 ? ONETokens.oneInk : ONETokens.oneSilver)
-                            )
-                        }
-                        .disabled(inviteCode.count != 6 || isLoading)
-                        .animation(ONEAnimation.micro, value: inviteCode.count == 6)
-
-                        // QR tara
-                        Button(action: { showQRScanner = true }) {
-                            HStack(spacing: 10) {
-                                Image(systemName: "qrcode.viewfinder")
-                                    .font(.system(size: 16, weight: .light))
-                                    .foregroundColor(ONETokens.oneAsh)
-                                Text("QR Kod Tara")
-                                    .bodyMD()
-                                    .foregroundColor(ONETokens.oneShadow)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(ONETokens.oneMist)
-                            }
-                            .padding(.vertical, 14)
-                        }
-                        .buttonStyle(ScaleButtonStyle())
-
-                    }
-                    .padding(.horizontal, 24)
+                    smartSearchSection
+                        .padding(.horizontal, 20)
+                        .padding(.top, 24)
                 }
 
-                Color.clear.frame(height: 40)
+                Color.clear.frame(height: 60)
             }
         }
         .scrollDismissesKeyboard(.interactively)
     }
 
-    // MARK: - Eylem butonu yardımcısı
+    // MARK: - Profile Card
 
-    private func codeActionButton(_ label: String, icon: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 13, weight: .medium))
-                Text(label)
-                    .monoSM(tracking: 0.8)
+    private var profileCard: some View {
+        let displayName = cloudKitManager.currentUser?["displayName"] as? String ?? "ONE"
+        let username    = cloudKitManager.currentUser?["username"]    as? String
+        let colorHex    = cloudKitManager.currentUser?["avatarColor"] as? String ?? "#888888"
+        let initial     = String(displayName.prefix(1)).uppercased()
+
+        return HStack(spacing: 16) {
+            // Avatar
+            ZStack {
+                Circle()
+                    .fill(Color(hex: colorHex))
+                    .frame(width: 56, height: 56)
+                Text(initial)
+                    .font(.system(size: 22, weight: .regular, design: .serif))
+                    .italic()
+                    .foregroundColor(.white.opacity(0.9))
             }
-            .foregroundColor(ONETokens.oneShadow)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(
-                Capsule()
-                    .fill(ONETokens.oneSilver)
-                    .overlay(Capsule().stroke(ONETokens.oneCreamMid, lineWidth: 1))
-            )
+
+            // İsim + kullanıcı adı
+            VStack(alignment: .leading, spacing: 3) {
+                Text(NSLocalizedString("addFriend.yourProfile", comment: ""))
+                    .monoMicro(tracking: 1.5)
+                    .foregroundColor(ONETokens.oneMist)
+                Text(displayName)
+                    .displaySM()
+                    .foregroundColor(ONETokens.oneInk)
+                if let uname = username, !uname.isEmpty {
+                    Text("@\(uname)")
+                        .monoLabel(tracking: 0.3)
+                        .foregroundColor(ONETokens.oneAsh)
+                }
+            }
+
+            Spacer()
+
+            // Davet kodu — dokunulabilir
+            Button(action: copyInviteCode) {
+                VStack(spacing: 5) {
+                    Text(myInviteCode)
+                        .font(.system(size: 17, weight: .bold, design: .monospaced))
+                        .tracking(5)
+                        .foregroundColor(codeCopied ? ONETokens.oneGreen : ONETokens.oneInk)
+
+                    HStack(spacing: 3) {
+                        Image(systemName: codeCopied ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 9, weight: .medium))
+                        Text(codeCopied
+                             ? NSLocalizedString("addFriend.copied", comment: "")
+                             : NSLocalizedString("addFriend.tapToCopy", comment: ""))
+                            .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    }
+                    .foregroundColor(codeCopied ? ONETokens.oneGreen : ONETokens.oneMist)
+                }
+                .animation(ONEAnimation.micro, value: codeCopied)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(codeCopied ? ONETokens.oneGreen.opacity(0.08) : ONETokens.oneSilver.opacity(0.9))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(codeCopied ? ONETokens.oneGreen.opacity(0.3) : Color.clear, lineWidth: 1)
+                        )
+                )
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(ONETokens.onePaper.opacity(0.75))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(ONETokens.oneSilver, lineWidth: 1)
+                )
+        )
+    }
+
+    // MARK: - Share Options Row
+
+    private var shareOptionsRow: some View {
+        HStack(spacing: 10) {
+            shareOptionBtn(
+                label: NSLocalizedString("addFriend.showQR", comment: ""),
+                icon: "qrcode",
+                primary: true
+            ) { showQRCode = true }
+
+            shareOptionBtn(
+                label: NSLocalizedString("addFriend.share", comment: ""),
+                icon: "square.and.arrow.up"
+            ) { showInviteShareSheet = true }
+
+            shareOptionBtn(
+                label: NSLocalizedString("addFriend.contacts", comment: ""),
+                icon: "person.2"
+            ) { showContactsInvite = true }
+
+            shareOptionBtn(
+                label: NSLocalizedString("addFriend.scanQR", comment: ""),
+                icon: "qrcode.viewfinder"
+            ) { showQRScanner = true }
+        }
+    }
+
+    private func shareOptionBtn(label: String, icon: String, primary: Bool = false, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(primary ? ONETokens.oneInk : ONETokens.oneSilver.opacity(0.9))
+                        .frame(width: 52, height: 52)
+                    Image(systemName: icon)
+                        .font(.system(size: 19, weight: primary ? .regular : .light))
+                        .foregroundColor(primary ? ONETokens.oneCream : ONETokens.oneAsh)
+                }
+                Text(label)
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .tracking(0.3)
+                    .foregroundColor(ONETokens.oneMist)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+            .frame(maxWidth: .infinity)
         }
         .buttonStyle(ScaleButtonStyle())
     }
 
-    // MARK: - Davet Karşılama
+    // MARK: - Smart Search Section
+
+    private var smartSearchSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+
+            Text(NSLocalizedString("addFriend.addSection", comment: ""))
+                .monoLabel(tracking: 2.0)
+                .foregroundColor(ONETokens.oneAsh)
+
+            // Arama alanı
+            ZStack(alignment: .trailing) {
+                HStack(spacing: 10) {
+                    Image(systemName: searchFieldIcon)
+                        .font(.system(size: 14, weight: .light))
+                        .foregroundColor(isQueryReady ? ONETokens.oneInk : ONETokens.oneMist)
+                        .frame(width: 22)
+                        .animation(ONEAnimation.micro, value: searchFieldIcon)
+
+                    TextField(
+                        NSLocalizedString("addFriend.searchPlaceholder", comment: ""),
+                        text: $smartQuery
+                    )
+                    .textFieldStyle(.plain)
+                    .autocapitalization(.none)
+                    .autocorrectionDisabled()
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .onSubmit { performSmartSearch() }
+                    .onChange(of: smartQuery) { _, newValue in
+                        foundUser     = nil
+                        userNotFound  = false
+                        // Otomatik arama: tam 6 karakter kod girilince
+                        let upper = newValue.uppercased().filter { $0.isLetter || $0.isNumber }
+                        if upper.count == 6 && !newValue.hasPrefix("@") {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                guard self.isCodeQuery, !self.isSearching, !self.isLoading else { return }
+                                self.performSmartSearch()
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 14)
+                .padding(.trailing, smartQuery.isEmpty ? 0 : 56)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(ONETokens.oneSilver.opacity(0.8))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(searchBorderColor, lineWidth: 1.5)
+                        )
+                )
+
+                // Yapıştır / Ara butonu
+                if smartQuery.isEmpty {
+                    Button(action: pasteFromClipboard) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "doc.on.clipboard")
+                                .font(.system(size: 10))
+                            Text(NSLocalizedString("addFriend.paste", comment: ""))
+                                .monoLabel(tracking: 0.3)
+                        }
+                        .foregroundColor(ONETokens.oneAsh)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Capsule().fill(ONETokens.oneCreamMid))
+                    }
+                    .padding(.trailing, 10)
+                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                } else {
+                    Button(action: performSmartSearch) {
+                        ZStack {
+                            Circle()
+                                .fill(isQueryReady ? ONETokens.oneInk : ONETokens.oneSilver)
+                                .frame(width: 38, height: 38)
+                            if isSearching || isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: ONETokens.oneCream))
+                                    .scaleEffect(0.75)
+                            } else {
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(isQueryReady ? ONETokens.oneCream : ONETokens.oneMist)
+                            }
+                        }
+                    }
+                    .disabled(!isQueryReady || isSearching || isLoading)
+                    .padding(.trailing, 8)
+                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                    .animation(ONEAnimation.micro, value: isQueryReady)
+                }
+            }
+            .animation(ONEAnimation.micro, value: smartQuery.isEmpty)
+
+            // İpucu chipler — boş alanda göster
+            if smartQuery.isEmpty {
+                HStack(spacing: 10) {
+                    hintChip(text: "ABC123", icon: "number")
+                    hintChip(text: "@kullanıcıadı", icon: "at")
+                }
+                .transition(.opacity)
+            }
+
+            // Bulunan kullanıcı kartı
+            if let user = foundUser {
+                foundUserCard(user: user)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
+            // Bulunamadı mesajı
+            if userNotFound {
+                HStack(spacing: 8) {
+                    Image(systemName: "person.slash")
+                        .font(.system(size: 13, weight: .light))
+                    Text(NSLocalizedString("addFriend.usernameNotFound", comment: ""))
+                        .monoSM(tracking: 0)
+                }
+                .foregroundColor(ONETokens.oneAsh)
+                .padding(.vertical, 4)
+                .transition(.opacity)
+            }
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: foundUser?.recordID.recordName)
+        .animation(ONEAnimation.micro, value: userNotFound)
+    }
+
+    // MARK: - Hint Chip
+
+    private func hintChip(text: String, icon: String) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: icon)
+                .font(.system(size: 10, weight: .medium))
+            Text(text)
+                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .tracking(0.3)
+        }
+        .foregroundColor(ONETokens.oneAsh)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(ONETokens.oneSilver.opacity(0.8))
+                .overlay(Capsule().stroke(ONETokens.oneCreamMid, lineWidth: 1))
+        )
+    }
+
+    // MARK: - Found User Card
+
+    private func foundUserCard(user: CKRecord) -> some View {
+        let name     = user["displayName"] as? String ?? "Kullanıcı"
+        let colorHex = user["avatarColor"] as? String ?? "#888888"
+        let uname    = user["username"]    as? String ?? ""
+        let initial  = String(name.prefix(1)).uppercased()
+
+        return HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(Color(hex: colorHex))
+                    .frame(width: 46, height: 46)
+                Text(initial)
+                    .font(.system(size: 18, weight: .regular, design: .serif))
+                    .italic()
+                    .foregroundColor(.white.opacity(0.9))
+            }
+            .overlay(alignment: .bottomTrailing) {
+                ZStack {
+                    Circle().fill(ONETokens.oneCream)
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(ONETokens.oneGreen)
+                }
+                .frame(width: 20, height: 20)
+                .offset(x: 3, y: 3)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name)
+                    .displaySM()
+                    .foregroundColor(ONETokens.oneInk)
+                if !uname.isEmpty {
+                    Text("@\(uname)")
+                        .monoLabel(tracking: 0.3)
+                        .foregroundColor(ONETokens.oneAsh)
+                }
+            }
+
+            Spacer()
+
+            Button(action: sendRequestToFoundUser) {
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: ONETokens.oneCream))
+                        .scaleEffect(0.8)
+                        .frame(width: 72, height: 36)
+                } else {
+                    HStack(spacing: 4) {
+                        Image(systemName: "person.badge.plus")
+                            .font(.system(size: 11, weight: .medium))
+                        Text(NSLocalizedString("addFriend.addUser", comment: ""))
+                            .monoSM(tracking: 0.5)
+                    }
+                    .foregroundColor(ONETokens.oneCream)
+                    .frame(width: 72, height: 36)
+                }
+            }
+            .background(RoundedRectangle(cornerRadius: 10).fill(ONETokens.oneInk))
+            .disabled(isLoading)
+            .buttonStyle(ScaleButtonStyle())
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(ONETokens.onePaper.opacity(0.6))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(ONETokens.oneGreen.opacity(0.25), lineWidth: 1.5)
+                )
+        )
+    }
+
+    // MARK: - Davet Karşılama (Deep Link)
 
     private var inviteWelcomeView: some View {
         let name     = inviterUser?["displayName"] as? String ?? "Birisi"
@@ -343,13 +562,12 @@ struct AddFriendView: View {
                 }
 
                 VStack(spacing: 10) {
-                    Text("\(name) seni çevresine\ndavet etti.")
+                    Text(String(format: NSLocalizedString("addFriend.invitedYou", comment: ""), name))
                         .displayLG()
                         .foregroundColor(ONETokens.oneInk)
                         .multilineTextAlignment(.center)
                         .lineSpacing(3)
-
-                    Text("Hisset. Keşfet. Paylaş.")
+                    Text(NSLocalizedString("onboarding.slogan", comment: ""))
                         .monoSM(tracking: 0.6)
                         .foregroundColor(ONETokens.oneAsh)
                 }
@@ -360,7 +578,7 @@ struct AddFriendView: View {
                             if isLoading {
                                 ProgressView().tint(ONETokens.oneCream).scaleEffect(0.85)
                             } else {
-                                Text("Çevreye Katıl")
+                                Text(NSLocalizedString("addFriend.joinCircle", comment: ""))
                                     .monoSM(tracking: 1.0)
                             }
                         }
@@ -373,7 +591,7 @@ struct AddFriendView: View {
                     .buttonStyle(ScaleButtonStyle())
 
                     Button(action: { dismiss() }) {
-                        Text("Şimdi değil")
+                        Text(NSLocalizedString("addFriend.notNow", comment: ""))
                             .monoSM(tracking: 0.5)
                             .foregroundColor(ONETokens.oneAsh)
                     }
@@ -381,6 +599,134 @@ struct AddFriendView: View {
             }
             .padding(.horizontal, 36)
             Spacer()
+        }
+    }
+
+    // MARK: - Başarı
+
+    private var successSection: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 44))
+                .foregroundColor(ONETokens.oneGreen)
+
+            Text(NSLocalizedString("addFriend.requestSent", comment: ""))
+                .displayMD()
+                .foregroundColor(ONETokens.oneInk)
+
+            Text(successMessage)
+                .monoSM(tracking: 0)
+                .multilineTextAlignment(.center)
+                .foregroundColor(ONETokens.oneAsh)
+
+            Text(NSLocalizedString("addFriend.acceptedInfo", comment: ""))
+                .monoSM(tracking: 0)
+                .multilineTextAlignment(.center)
+                .foregroundColor(ONETokens.oneMist)
+                .padding(.top, 4)
+
+            Button(action: {
+                withAnimation(ONEAnimation.micro) {
+                    showSuccess  = false
+                    smartQuery   = ""
+                    foundUser    = nil
+                    userNotFound = false
+                }
+            }) {
+                Text(NSLocalizedString("addFriend.addAnother", comment: ""))
+                    .monoSM(tracking: 1.0)
+                    .foregroundColor(ONETokens.oneInk)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(Capsule().stroke(ONETokens.oneCreamMid, lineWidth: 1.5))
+            }
+            .padding(.top, 8)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Loading (Deep Link)
+
+    private var lookupLoadingView: some View {
+        VStack(spacing: 14) {
+            ProgressView().scaleEffect(1.1).tint(ONETokens.oneAsh)
+            Text(NSLocalizedString("addFriend.loading", comment: ""))
+                .monoBase()
+                .foregroundColor(ONETokens.oneAsh)
+        }
+    }
+
+    // MARK: - Actions
+
+    private func initializeUser() {
+        guard cloudKitManager.currentUser == nil else { return }
+        cloudKitManager.createOrFetchUser(displayName: "ONE User") { result in
+            if case .failure(let error) = result {
+                ONELogger.error("User initialization failed", error: error, category: .circle)
+                DispatchQueue.main.async {
+                    self.errorMessage = "Kullanıcı oluşturulamadı. iCloud bağlantınızı kontrol edin."
+                    self.showError = true
+                }
+            }
+        }
+    }
+
+    private func performSmartSearch() {
+        let q = queryTrimmed
+        guard !q.isEmpty, isQueryReady else { return }
+
+        isSearching  = true
+        foundUser    = nil
+        userNotFound = false
+
+        // findUserByCodeOrUsername: @ ile başlıyorsa username, 6 char ise kod arar
+        let searchTerm = q.hasPrefix("@") ? q : (isCodeQuery ? q.uppercased() : q)
+        cloudKitManager.findUserByCodeOrUsername(searchTerm) { result in
+            DispatchQueue.main.async {
+                self.isSearching = false
+                switch result {
+                case .success(let user):
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                        self.foundUser = user
+                    }
+                case .failure:
+                    UINotificationFeedbackGenerator().notificationOccurred(.error)
+                    withAnimation(ONEAnimation.micro) { self.userNotFound = true }
+                }
+            }
+        }
+    }
+
+    private func sendRequestToFoundUser() {
+        guard let user = foundUser else { return }
+        let userID      = user["userID"]      as? String ?? ""
+        let displayName = user["displayName"] as? String ?? "Kullanıcı"
+
+        isLoading = true
+        cloudKitManager.sendFriendRequest(toUserID: userID) { result in
+            isLoading = false
+            switch result {
+            case .success:
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                withAnimation(ONEAnimation.micro) {
+                    successMessage = "\(displayName) adlı kullanıcıya istek gönderildi!"
+                    showSuccess    = true
+                    foundUser      = nil
+                    smartQuery     = ""
+                }
+            case .failure(let error):
+                let nsError = error as NSError
+                if nsError.code == -2 {
+                    pendingUserIDToCancel = userID
+                    pendingUserName       = displayName
+                    showCancelAlert       = true
+                } else {
+                    UINotificationFeedbackGenerator().notificationOccurred(.error)
+                    errorMessage = error.localizedDescription
+                    showError    = true
+                }
+            }
         }
     }
 
@@ -406,48 +752,26 @@ struct AddFriendView: View {
         }
     }
 
-    // MARK: - Başarı bölümü
-
-    private var successSection: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 44))
-                .foregroundColor(ONETokens.oneGreen)
-
-            Text("İstek Gönderildi!")
-                .displayMD()
-                .foregroundColor(ONETokens.oneInk)
-
-            Text(successMessage)
-                .monoSM(tracking: 0)
-                .multilineTextAlignment(.center)
-                .foregroundColor(ONETokens.oneAsh)
-
-            Text("Kabul edildiğinde bugünkü şarkılarınızı\naynı çevrede paylaşabileceksiniz.")
-                .monoSM(tracking: 0)
-                .multilineTextAlignment(.center)
-                .foregroundColor(ONETokens.oneMist)
-                .padding(.top, 4)
-
-            Button(action: {
-                withAnimation(ONEAnimation.micro) { showSuccess = false; inviteCode = "" }
-            }) {
-                Text("Başka birini ekle")
-                    .monoSM(tracking: 1.0)
-                    .foregroundColor(ONETokens.oneInk)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(
-                        Capsule()
-                            .stroke(ONETokens.oneCreamMid, lineWidth: 1.5)
-                    )
+    private func cancelPendingRequest() {
+        guard !pendingUserIDToCancel.isEmpty else { return }
+        isLoading = true
+        cloudKitManager.cancelFriendRequest(toUserID: pendingUserIDToCancel) { result in
+            isLoading = false
+            switch result {
+            case .success:
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                withAnimation(ONEAnimation.micro) {
+                    successMessage = NSLocalizedString("circle.requestWithdrawn", comment: "")
+                    showSuccess    = true
+                    smartQuery     = ""
+                }
+            case .failure(let error):
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
+                errorMessage = error.localizedDescription
+                showError    = true
             }
-            .padding(.top, 8)
         }
-        .frame(maxWidth: .infinity)
     }
-
-    // MARK: - Kopyala / Yapıştır
 
     private func copyInviteCode() {
         UIPasteboard.general.string = myInviteCode
@@ -460,95 +784,10 @@ struct AddFriendView: View {
 
     private func pasteFromClipboard() {
         guard let raw = UIPasteboard.general.string else { return }
-        let cleaned = String(raw.uppercased().filter { $0.isLetter || $0.isNumber }.prefix(6))
+        let cleaned = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleaned.isEmpty else { return }
-        inviteCode = cleaned
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-    }
-
-    // MARK: - Actions
-
-    private func initializeUser() {
-        guard cloudKitManager.currentUser == nil else { return }
-        cloudKitManager.createOrFetchUser(displayName: "ONE User") { result in
-            switch result {
-            case .success:
-                ONELogger.success("User initialized", category: .circle)
-            case .failure(let error):
-                ONELogger.error("User initialization failed", error: error, category: .circle)
-                DispatchQueue.main.async {
-                    self.errorMessage = "Kullanıcı oluşturulamadı. iCloud bağlantınızı kontrol edin."
-                    self.showError = true
-                }
-            }
-        }
-    }
-
-    private func addFriend() {
-        guard inviteCode.count == 6 else { return }
-        isLoading = true
-
-        cloudKitManager.findUserByInviteCode(inviteCode.uppercased()) { result in
-            switch result {
-            case .success(let user):
-                let userID      = user["userID"]      as? String ?? ""
-                let displayName = user["displayName"] as? String ?? "Bilinmeyen"
-
-                cloudKitManager.sendFriendRequest(toUserID: userID) { result in
-                    isLoading = false
-                    switch result {
-                    case .success:
-                        UINotificationFeedbackGenerator().notificationOccurred(.success)
-                        withAnimation(ONEAnimation.micro) {
-                            successMessage = "\(displayName) adlı kullanıcıya istek gönderildi!"
-                            showSuccess = true
-                        }
-                        inviteCode = ""
-                    case .failure(let error):
-                        let nsError = error as NSError
-                        if nsError.code == -2 {
-                            pendingUserIDToCancel = userID
-                            pendingUserName = displayName
-                            showCancelAlert = true
-                        } else {
-                            UINotificationFeedbackGenerator().notificationOccurred(.error)
-                            errorMessage = error.localizedDescription
-                            showError = true
-                        }
-                    }
-                }
-            case .failure:
-                isLoading = false
-                UINotificationFeedbackGenerator().notificationOccurred(.error)
-                #if DEBUG
-                errorMessage = "Kullanıcı bulunamadı.\n\nKod: \(inviteCode.uppercased())\n\nHer iki kullanıcı da aynı uygulama versiyonunu kullanmalı."
-                #else
-                errorMessage = "Kullanıcı bulunamadı. Kodu kontrol et."
-                #endif
-                showError = true
-            }
-        }
-    }
-
-    private func cancelPendingRequest() {
-        guard !pendingUserIDToCancel.isEmpty else { return }
-        isLoading = true
-        cloudKitManager.cancelFriendRequest(toUserID: pendingUserIDToCancel) { result in
-            isLoading = false
-            switch result {
-            case .success:
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
-                withAnimation(ONEAnimation.micro) {
-                    successMessage = "Arkadaşlık isteği geri çekildi."
-                    showSuccess = true
-                }
-                inviteCode = ""
-            case .failure(let error):
-                UINotificationFeedbackGenerator().notificationOccurred(.error)
-                errorMessage = error.localizedDescription
-                showError = true
-            }
-        }
+        smartQuery = cleaned
     }
 }
 
@@ -581,7 +820,6 @@ struct QRCodeView: View {
                 VStack(spacing: 0) {
                     Spacer()
 
-                    // QR kare
                     ZStack {
                         RoundedRectangle(cornerRadius: 24)
                             .fill(Color.white)
@@ -602,7 +840,6 @@ struct QRCodeView: View {
                     }
                     .padding(.bottom, 28)
 
-                    // Kod
                     Button(action: {
                         UIPasteboard.general.string = code
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -620,17 +857,20 @@ struct QRCodeView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: codeCopied ? "checkmark" : "doc.on.doc")
                                     .font(.system(size: 11))
-                                Text(codeCopied ? "Kopyalandı" : "Kopyalamak için dokun")
+                                Text(codeCopied
+                                     ? NSLocalizedString("addFriend.copied", comment: "")
+                                     : NSLocalizedString("addFriend.tapToCopy", comment: ""))
                                     .monoLabel(tracking: 0.4)
                             }
                             .foregroundColor(codeCopied ? ONETokens.oneGreen : ONETokens.oneMist)
                         }
                         .animation(ONEAnimation.micro, value: codeCopied)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .padding(.bottom, 16)
 
-                    Text("Arkadaşın bu kodu tarasın")
+                    Text(NSLocalizedString("addFriend.friendScansCode", comment: ""))
                         .monoSM(tracking: 0.5)
                         .foregroundColor(ONETokens.oneAsh)
 
@@ -640,7 +880,7 @@ struct QRCodeView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Kapat") { dismiss() }
+                    Button(NSLocalizedString("addFriend.cancel", comment: "")) { dismiss() }
                         .foregroundColor(ONETokens.oneAsh)
                 }
             }
@@ -655,7 +895,7 @@ struct QRScannerView: View {
     let onScan: (String) -> Void
 
     @State private var permissionGranted = false
-    @State private var permissionDenied = false
+    @State private var permissionDenied  = false
 
     var body: some View {
         NavigationView {
@@ -669,7 +909,6 @@ struct QRScannerView: View {
                     }
                     .ignoresSafeArea()
 
-                    // Vizör overlay
                     VStack {
                         Spacer()
                         RoundedRectangle(cornerRadius: 16)
@@ -686,7 +925,7 @@ struct QRScannerView: View {
                                 }
                             )
                         Spacer()
-                        Text("QR kodu çerçeve içine al")
+                        Text(NSLocalizedString("addFriend.frameQR", comment: ""))
                             .monoSM(tracking: 0)
                             .foregroundColor(.white.opacity(0.75))
                             .padding(.bottom, 60)
@@ -697,10 +936,10 @@ struct QRScannerView: View {
                         Image(systemName: "camera.slash")
                             .font(.system(size: 48, weight: .ultraLight))
                             .foregroundColor(.white)
-                        Text("Kamera erişimi gerekli")
+                        Text(NSLocalizedString("addFriend.cameraRequired", comment: ""))
                             .displaySM()
                             .foregroundColor(.white)
-                        Button("Ayarlar'a Git") {
+                        Button(NSLocalizedString("circle.goToSettings", comment: "")) {
                             if let url = URL(string: UIApplication.openSettingsURLString) {
                                 UIApplication.shared.open(url)
                             }
@@ -718,7 +957,7 @@ struct QRScannerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("İptal") { dismiss() }
+                    Button(NSLocalizedString("addFriend.cancel", comment: "")) { dismiss() }
                         .foregroundColor(.white)
                 }
             }
@@ -767,7 +1006,7 @@ private struct CornerAccent: View {
     }
 }
 
-// MARK: - AVFoundation QR scanner wrapper
+// MARK: - AVFoundation QR scanner
 
 struct CameraQRScannerRepresentable: UIViewRepresentable {
     let onScan: (String) -> Void
@@ -779,7 +1018,7 @@ struct CameraQRScannerRepresentable: UIViewRepresentable {
         let session = AVCaptureSession()
 
         guard let device = AVCaptureDevice.default(for: .video),
-              let input = try? AVCaptureDeviceInput(device: device),
+              let input  = try? AVCaptureDeviceInput(device: device),
               session.canAddInput(input) else { return view }
 
         session.addInput(input)
@@ -795,7 +1034,7 @@ struct CameraQRScannerRepresentable: UIViewRepresentable {
         previewLayer.frame = UIScreen.main.bounds
         view.layer.addSublayer(previewLayer)
 
-        context.coordinator.session = session
+        context.coordinator.session      = session
         context.coordinator.previewLayer = previewLayer
 
         DispatchQueue.global(qos: .userInitiated).async { session.startRunning() }
@@ -819,14 +1058,14 @@ struct CameraQRScannerRepresentable: UIViewRepresentable {
                             from connection: AVCaptureConnection) {
             guard !hasScanned,
                   let object = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
-                  let value = object.stringValue else { return }
+                  let value  = object.stringValue else { return }
 
             hasScanned = true
             session?.stopRunning()
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
 
             let code: String
-            if let url = URL(string: value),
+            if let url   = URL(string: value),
                let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
                let extracted = items.first(where: { $0.name == "code" })?.value {
                 code = extracted

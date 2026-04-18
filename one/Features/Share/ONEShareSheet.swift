@@ -23,6 +23,7 @@ struct ONEShareSheet: View {
     @State private var errorMessage: String?
     @State private var showError = false
     @State private var isSaved = false
+    @State private var isRawPhotoSaved = false
     @State private var breathe = false
 
     // MARK: - Body
@@ -53,11 +54,11 @@ struct ONEShareSheet: View {
         .presentationDetents([.height(560), .large])
         .presentationDragIndicator(.hidden)
         .task { await generateCard() }
-        .alert("Hata", isPresented: $showError) {
-            Button("Tamam", role: .cancel) {}
-            Button("Tekrar Dene") { Task { await generateCard() } }
+        .alert(NSLocalizedString("general.error", comment: ""), isPresented: $showError) {
+            Button(NSLocalizedString("general.ok", comment: ""), role: .cancel) {}
+            Button(NSLocalizedString("general.retry", comment: "")) { Task { await generateCard() } }
         } message: {
-            Text(errorMessage ?? "Bir hata oluştu")
+            Text(errorMessage ?? NSLocalizedString("general.error", comment: ""))
         }
     }
 
@@ -74,7 +75,7 @@ struct ONEShareSheet: View {
     private var titleRow: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("PAYLAŞ")
+                Text(NSLocalizedString("share.title", comment: ""))
                     .monoLabel(tracking: 2.0)
                     .foregroundColor(ONETokens.oneAsh)
                 Text(entry.songName)
@@ -107,7 +108,7 @@ struct ONEShareSheet: View {
                         breathe = true
                     }
                 }
-            Text("Story hazırlanıyor...")
+            Text(NSLocalizedString("share.preparing", comment: ""))
                 .monoSM(tracking: 0.5)
                 .foregroundColor(ONETokens.oneAsh)
         }
@@ -132,7 +133,7 @@ struct ONEShareSheet: View {
             ActionRow(
                 icon: "camera.viewfinder",
                 label: "Instagram Story",
-                sublabel: instaInstalled ? "Doğrudan Stories'e gönder" : "Instagram yüklü değil",
+                sublabel: instaInstalled ? NSLocalizedString("share.instagramSend", comment: "") : NSLocalizedString("share.instagramNotInstalled", comment: ""),
                 style: .filled(ONETokens.oneInk),
                 isEnabled: storyImage != nil && instaInstalled,
                 action: shareToInstagramStory
@@ -141,19 +142,19 @@ struct ONEShareSheet: View {
             // ── Diğer uygulamalar ────────────────────────────
             ActionRow(
                 icon: "square.and.arrow.up",
-                label: "Diğer Uygulamalar",
+                label: NSLocalizedString("share.otherApps", comment: ""),
                 sublabel: platformSublabel,
                 style: .bordered,
                 isEnabled: storyImage != nil && xImage != nil,
                 action: shareViaSystem
             )
 
-            // ── Fotoğraflara kaydet ──────────────────────────
+            // ── Story kartını kaydet ──────────────────────────
             if isSaved {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(ONETokens.oneGreen)
-                    Text("Fotoğraflara kaydedildi")
+                    Text(NSLocalizedString("share.cardSaved", comment: ""))
                         .monoSM(tracking: 0)
                         .foregroundColor(ONETokens.oneGreen)
                 }
@@ -163,12 +164,37 @@ struct ONEShareSheet: View {
             } else {
                 ActionRow(
                     icon: "square.and.arrow.down",
-                    label: "Fotoğraflara Kaydet",
-                    sublabel: "Galeriye PNG olarak ekle",
+                    label: NSLocalizedString("share.saveCard", comment: ""),
+                    sublabel: NSLocalizedString("share.saveCardHint", comment: ""),
                     style: .ghost,
                     isEnabled: storyImage != nil,
                     action: saveToPhotos
                 )
+            }
+
+            // ── Ham fotoğrafı kaydet ────────────────────────
+            if entry.photoURL != nil {
+                if isRawPhotoSaved {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(ONETokens.oneGreen)
+                        Text(NSLocalizedString("share.photoSaved", comment: ""))
+                            .monoSM(tracking: 0)
+                            .foregroundColor(ONETokens.oneGreen)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .transition(.opacity)
+                } else {
+                    ActionRow(
+                        icon: "photo.on.rectangle",
+                        label: NSLocalizedString("share.savePhoto", comment: ""),
+                        sublabel: NSLocalizedString("share.savePhotoHint", comment: ""),
+                        style: .ghost,
+                        isEnabled: true,
+                        action: saveRawPhotoToGallery
+                    )
+                }
             }
         }
         .animation(.easeInOut(duration: 0.2), value: isSaved)
@@ -178,8 +204,8 @@ struct ONEShareSheet: View {
 
     private var platformSublabel: String {
         entry.platform.lowercased().contains("spotify")
-            ? "Spotify linki dahil"
-            : "Apple Music linki dahil"
+            ? NSLocalizedString("share.spotifyLink", comment: "")
+            : NSLocalizedString("share.appleMusicLink", comment: "")
     }
 
     private var platformURL: URL? {
@@ -229,7 +255,7 @@ struct ONEShareSheet: View {
             }
         } else {
             ONELogger.error("ImageRenderer returned nil — share card generation failed", category: .general)
-            errorMessage = "Paylaşım kartı oluşturulamadı"
+            errorMessage = NSLocalizedString("share.cardFailed", comment: "")
             showError = true
         }
         isGenerating = false
@@ -275,6 +301,27 @@ struct ONEShareSheet: View {
             case .success:
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                 withAnimation { isSaved = true }
+            case .failure(let err):
+                errorMessage = err.localizedDescription
+                showError = true
+            }
+        }
+    }
+
+    private func saveRawPhotoToGallery() {
+        guard let photoURL = entry.photoURL,
+              let data = try? Data(contentsOf: photoURL),
+              let image = UIImage(data: data) else {
+            errorMessage = "Fotoğraf yüklenemedi"
+            showError = true
+            return
+        }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        ShareManager.shared.saveToPhotoLibrary(image: image) { result in
+            switch result {
+            case .success:
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                withAnimation { isRawPhotoSaved = true }
             case .failure(let err):
                 errorMessage = err.localizedDescription
                 showError = true

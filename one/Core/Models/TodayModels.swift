@@ -35,18 +35,18 @@ struct MoodOption: Identifiable {
     /// Row 2 — cool:    Huzurlu · Özgür  · Derin  · Nostaljik
     /// Row 3 — deep:    Gizemli · Hassas · Sessiz · Sade
     static let all: [MoodOption] = [
-        MoodOption(key: "atesli",    color: ONETokens.oneRed,     label: "Ateşli"),
-        MoodOption(key: "enerjik",   color: ONETokens.moodOrange, label: "Coşkulu"),
-        MoodOption(key: "isikli",    color: ONETokens.moodYellow, label: "Mutlu"),
-        MoodOption(key: "taze",      color: ONETokens.moodLime,   label: "Doğal"),
-        MoodOption(key: "sakin",     color: ONETokens.oneGreen,   label: "Huzurlu"),
-        MoodOption(key: "ozgur",     color: ONETokens.moodTeal,   label: "Özgür"),
-        MoodOption(key: "derin",     color: ONETokens.oneBlue,    label: "Derin"),
-        MoodOption(key: "nostaljik", color: ONETokens.moodIndigo, label: "Nostaljik"),
-        MoodOption(key: "gizemli",   color: ONETokens.moodPurple, label: "Gizemli"),
-        MoodOption(key: "hassas",    color: ONETokens.moodRose,   label: "Hassas"),
-        MoodOption(key: "bos",       color: ONETokens.moodDark,   label: "Sessiz"),
-        MoodOption(key: "temiz",     color: ONETokens.oneIvory,   label: "Nötr"),
+        MoodOption(key: "atesli",    color: ONETokens.oneRed,     label: NSLocalizedString("mood.atesli",    comment: "")),
+        MoodOption(key: "enerjik",   color: ONETokens.moodOrange, label: NSLocalizedString("mood.enerjik",   comment: "")),
+        MoodOption(key: "isikli",    color: ONETokens.moodYellow, label: NSLocalizedString("mood.isikli",    comment: "")),
+        MoodOption(key: "taze",      color: ONETokens.moodLime,   label: NSLocalizedString("mood.taze",      comment: "")),
+        MoodOption(key: "sakin",     color: ONETokens.oneGreen,   label: NSLocalizedString("mood.sakin",     comment: "")),
+        MoodOption(key: "ozgur",     color: ONETokens.moodTeal,   label: NSLocalizedString("mood.ozgur",     comment: "")),
+        MoodOption(key: "derin",     color: ONETokens.oneBlue,    label: NSLocalizedString("mood.derin",     comment: "")),
+        MoodOption(key: "nostaljik", color: ONETokens.moodIndigo, label: NSLocalizedString("mood.nostaljik", comment: "")),
+        MoodOption(key: "gizemli",   color: ONETokens.moodPurple, label: NSLocalizedString("mood.gizemli",   comment: "")),
+        MoodOption(key: "hassas",    color: ONETokens.moodRose,   label: NSLocalizedString("mood.hassas",    comment: "")),
+        MoodOption(key: "bos",       color: ONETokens.moodDark,   label: NSLocalizedString("mood.bos",       comment: "")),
+        MoodOption(key: "temiz",     color: ONETokens.oneIvory,   label: NSLocalizedString("mood.temiz",     comment: "")),
     ]
 }
 
@@ -57,14 +57,14 @@ struct FeelingOption: Identifiable {
     let label: String
 
     static let all: [FeelingOption] = [
-        FeelingOption(type: .calm,     label: "Dingin"),
-        FeelingOption(type: .happy,    label: "Neşeli"),
-        FeelingOption(type: .sad,      label: "Buruk"),
-        FeelingOption(type: .anxious,  label: "Tedirgin"),
-        FeelingOption(type: .excited,  label: "Coşkulu"),
-        FeelingOption(type: .tired,    label: "Durgun"),
-        FeelingOption(type: .angry,    label: "Asi"),
-        FeelingOption(type: .peaceful, label: "Huzurlu"),
+        FeelingOption(type: .calm,     label: NSLocalizedString("feeling.calm",     comment: "")),
+        FeelingOption(type: .happy,    label: NSLocalizedString("feeling.happy",    comment: "")),
+        FeelingOption(type: .sad,      label: NSLocalizedString("feeling.sad",      comment: "")),
+        FeelingOption(type: .anxious,  label: NSLocalizedString("feeling.anxious",  comment: "")),
+        FeelingOption(type: .excited,  label: NSLocalizedString("feeling.excited",  comment: "")),
+        FeelingOption(type: .tired,    label: NSLocalizedString("feeling.tired",    comment: "")),
+        FeelingOption(type: .angry,    label: NSLocalizedString("feeling.angry",    comment: "")),
+        FeelingOption(type: .peaceful, label: NSLocalizedString("feeling.peaceful", comment: "")),
     ]
 }
 

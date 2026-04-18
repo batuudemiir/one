@@ -1,0 +1,663 @@
+/* Share */
+"share_to_instagram" = "공유";
+"save_to_library" = "저장";
+"generating" = "생성 중...";
+
+/* Default values */
+"untitled_song" = "제목 없음";
+"unknown_artist" = "알 수 없는 아티스트";
+
+/* Error messages */
+"missing_data_coverImage" = "커버 이미지가 없습니다";
+"missing_data_songName" = "노래 이름이 없습니다";
+"render_failed" = "카드를 만들 수 없습니다. 다시 시도해주세요.";
+"image_too_large" = "이미지가 너무 큽니다. 더 작은 사진을 사용해주세요.";
+"invalid_format" = "잘못된 형식";
+"export_failed" = "내보내기 실패";
+"instagram_not_installed" = "Instagram이 설치되지 않았습니다. Instagram을 설치해주세요.";
+"save_failed" = "사진을 저장하지 못했습니다";
+"permission_denied" = "사진 라이브러리 접근이 필요합니다. 설정에서 허용해주세요.";
+
+/* Recovery suggestions */
+"check_song_data" = "노래 정보를 확인하세요";
+"try_again" = "다시 시도해주세요";
+"reduce_image_size" = "사진 크기를 줄이세요";
+"check_format" = "형식 호환성을 확인하세요";
+"check_storage" = "저장 공간을 확인하세요";
+"install_instagram" = "Instagram 설치";
+
+/* Success messages */
+"card_generated" = "카드 준비 완료!";
+"saved_to_library" = "사진에 저장되었습니다";
+
+/* ── 오늘 ── */
+"today.title" = "오늘의 노래 선택";
+"today.subtitle" = "여기서 기분과 하루를 시작하세요.";
+"today.moodSection" = "지금 어떤 기분이에요?";
+"today.noteSection" = "메모 남기기";
+"today.notePlaceholder" = "이 노래가 당신에게 무엇을 남겼나요?";
+"today.photoChange" = "변경";
+"today.saveButton" = "저장";
+"today.continueButton" = "계속";
+"today.searchPlaceholder" = "오늘은 어떤 노래?";
+"today.alreadySelected" = "오늘의 노래가 이미 선택되었습니다.";
+"today.completedSubtitle" = "오늘의 선택이 완료되었습니다";
+"today.shareHint" = "이제 이벤트를 탐색하거나 서클에 보낼 수 있습니다.";
+"today.sharedInCircle" = "서클에서 공유됨";
+
+/* ── 확인 ── */
+"confirm.back" = "← 뒤로";
+"confirm.moodQuestion" = "지금 어떤 기분인가요?";
+"confirm.todaySong" = "이것이 오늘의 노래입니다";
+"confirm.addPhoto" = "사진 추가";
+"confirm.shareCircle" = "서클에서 공유";
+
+/* ── 서클 ── */
+"circle.title" = "서클";
+"circle.sharedCount" = "%d/%d 공유됨";
+"circle.removeFriend" = "친구에서 삭제할까요?";
+"circle.setupCTA" = "서클 만들기";
+"circle.emptyHint" = "오늘 친구들의 기분을 확인하세요...";
+"circle.addFriend" = "친구 추가";
+
+/* ── 발견 ── */
+"discover.title" = "발견";
+"discover.todaySong" = "오늘의 노래";
+"discover.yourProfile" = "내 프로필";
+"discover.thisFeeling" = "이 감정을 위해";
+"discover.weeklyPlaylist" = "주간 플레이리스트";
+"discover.greeting.morning" = "좋은 아침이에요";
+"discover.greeting.afternoon" = "좋은 오후에요";
+"discover.greeting.evening" = "좋은 저녁이에요";
+
+/* ── 프로필 / 설정 ── */
+"profile.title" = "프로필";
+"profile.edit" = "편집";
+"profile.joinDate" = "가입일";
+"profile.days" = "일";
+"profile.music" = "음악";
+"profile.language" = "언어";
+"profile.darkMode" = "다크 모드";
+"profile.haptics" = "햅틱 피드백";
+"profile.city" = "도시";
+"profile.notifications" = "알림";
+"profile.icloud" = "iCloud";
+"profile.logout" = "로그아웃";
+
+/* ── 온보딩 ── */
+"onboarding.searchPlaceholder" = "오늘은 어떤 노래?";
+"onboarding.slogan" = "느끼다. 발견하다. 공유하다.";
+"onboarding.connectMusic" = "음악 서비스 연결";
+"onboarding.later" = "나중에";
+
+/* ── 스플래시 ── */
+"splash.slogan" = "느끼다 · 발견하다 · 공유하다";
+
+/* ── 일반 ── */
+"general.save" = "저장";
+"general.cancel" = "취소";
+"general.done" = "완료";
+"general.back" = "뒤로";
+"general.close" = "닫기";
+"general.loading" = "로딩 중...";
+"general.error" = "오류가 발생했습니다";
+"general.retry" = "다시 시도";
+
+/* ── 알림 ── */
+"notification.acceptFriend" = "수락";
+"notification.declineFriend" = "거절";
+"notification.openToday" = "내 노래 선택";
+"notification.openEcho" = "요약 보기";
+"notification.openDiscovery" = "발견하기";
+
+/* ── 접근성 ── */
+"accessibility.today.nowPlayingBanner" = "재생 중 — 탭하여 선택";
+"accessibility.today.nowPlayingBannerHint" = "현재 재생 중인 노래를 오늘의 노래로 사용";
+"accessibility.today.clearSearch" = "검색 지우기";
+"accessibility.today.addPhoto" = "사진 추가";
+"accessibility.today.removePhoto" = "사진 제거";
+"accessibility.today.continueButton" = "계속";
+"accessibility.today.saveButton" = "오늘 항목 저장";
+"accessibility.today.photoViewer" = "오늘의 사진";
+"accessibility.today.shareButton" = "공유";
+"accessibility.today.changeEntry" = "오늘 항목 변경";
+"accessibility.today.artistFilter" = "%@ — 아티스트로 필터";
+"accessibility.today.photoOf" = "%@의 사진";
+"accessibility.confirm.moodButton" = "%@ 무드";
+"accessibility.confirm.feelingButton" = "%@ 감정";
+"accessibility.circle.addFriend" = "친구 추가";
+"accessibility.circle.addFriendHint" = "서클에 누군가를 추가";
+"accessibility.circle.setupCircle" = "서클 만들기";
+"accessibility.circle.acceptFriend" = "%@의 친구 요청 수락";
+"accessibility.circle.declineFriend" = "%@의 친구 요청 거절";
+"accessibility.search.platformPicker" = "음악 플랫폼 선택";
+"accessibility.discovery.openEvent" = "%@ 이벤트 열기";
+"accessibility.discovery.eventHint" = "이벤트 세부 정보 열기";
+"accessibility.settings.notificationToggle" = "알림 활성화";
+
+/* Discover redesign */
+"discover.biletixEvents" = "다가오는 이벤트";
+"discover.newDiscover" = "새로운 발견";
+"discover.thisWeekDiscover" = "이번 주 추천";
+
+/* ── ECHO ── */
+"echo.title" = "에코";
+"echo.subtitle" = "나의 기분 기록, 습관, 그리고 서클과 교차하는 순간들.";
+"echo.loading" = "에코 준비 중…";
+"echo.thisMonth" = "이번 달";
+"echo.allTime" = "전체 기간";
+"echo.stats.thisMonth" = "이번 달 통계";
+"echo.stats.allTime" = "전체 통계";
+"echo.stats.songs" = "곡";
+"echo.stats.streakDays" = "일 연속";
+"echo.stats.mostActive" = "가장 활발";
+"echo.stats.monthlyAvg" = "월 평균";
+"echo.moodDistribution" = "기분 분포";
+"echo.noData" = "아직 데이터가 충분하지 않습니다.";
+"echo.thisWeek" = "이번 주";
+"echo.dominantFeeling" = "이번 주에 이 감정이 가장 많았습니다.";
+"echo.repeatedSongs" = "반복된 곡";
+"echo.noRepeatedSongs" = "이번 주에 반복된 곡이 없습니다.";
+"echo.whenPick" = "언제 선택하나요?";
+"echo.time.morning" = "아침";
+"echo.time.noon" = "낮";
+"echo.time.evening" = "저녁";
+"echo.time.night" = "밤";
+"echo.selections" = "%d 선택";
+"echo.longestStreak" = "최장 연속";
+"echo.noStreak" = "아직 연속 기록이 없습니다.";
+"echo.days" = "일";
+"echo.circle" = "서클과 함께";
+"echo.circleMatches" = "번 서클과 같은 곡을 선택했습니다.";
+"echo.noCircleMatches" = "아직 서클과 곡이 일치하지 않습니다.";
+"echo.moreMatches" = "%d개 더 일치";
+"echo.backToProfile" = "프로필";
+"circle.subtitle" = "친구의 오늘 기분을 보고, 나의 선택을 남기고, 공유를 넓히세요.";
+"circle.awaitingShare" = "오늘 당신의 공유를 기다리고 있습니다.";
+"circle.headerCount" = "서클 · %d/%d 공유함";
+"circle.you" = "나";
+"circle.pendingRequests" = "%d 수신 요청";
+"circle.tapToApprove" = "탭하여 승인";
+"circle.shareToday" = "오늘 공유하고 서클에 나타나기";
+"circle.notSharedYet" = "오늘 아직 공유하지 않음";
+"circle.blockUser" = "사용자 차단";
+"circle.blockMessage" = "%@을(를) 차단하시겠습니까? 이 작업은 취소할 수 없습니다.";
+"circle.removeAction" = "제거";
+"circle.blockAction" = "차단";
+"circle.iCloudRequired" = "iCloud 접근 필요";
+"circle.iCloudMessage" = "서클 기능을 사용하려면\niCloud 계정으로 로그인해야 합니다.";
+"circle.tryAgain" = "다시 시도";
+"circle.goToSettings" = "설정으로 이동";
+"circle.shareWithCircle" = "서클에서 공유";
+"addFriend.title" = "초대";
+"addFriend.loading" = "초대 정보 로딩 중…";
+"addFriend.yourCode" = "나의 코드";
+"addFriend.copied" = "복사됨";
+"addFriend.tapToCopy" = "코드를 탭하여 복사";
+"addFriend.share" = "공유";
+"addFriend.showQR" = "QR 표시";
+"addFriend.contacts" = "연락처";
+"addFriend.friendCode" = "친구의 코드";
+"addFriend.paste" = "붙여넣기";
+"addFriend.sendInvite" = "초대 보내기";
+"addFriend.scanQR" = "QR 스캔";
+"addFriend.pendingTitle" = "이미 요청 보냄";
+"addFriend.pendingMessage" = "%@에게 이미 초대를 보냈습니다. 취소하시겠습니까?";
+"addFriend.withdraw" = "요청 취소";
+"addFriend.dismiss" = "취소";
+"addFriend.invitedYou" = "%@이(가) 당신을\n서클에 초대했습니다.";
+"addFriend.joinCircle" = "서클 참여";
+"addFriend.notNow" = "나중에";
+"addFriend.requestSent" = "요청 보냄!";
+"addFriend.acceptedInfo" = "수락되면 같은 서클에서\n오늘의 곡을 공유할 수 있습니다.";
+"addFriend.addAnother" = "다른 사람 추가";
+"addFriend.friendScansCode" = "친구가 이 코드를 스캔합니다";
+"addFriend.frameQR" = "QR 코드를 프레임 안에 넣기";
+"addFriend.cameraRequired" = "카메라 접근 필요";
+"addFriend.cancel" = "취소";
+"addFriend.ok" = "확인";
+"profile.inviteCode" = "초대 코드";
+"profile.musicServices" = "음악 서비스";
+"profile.comingSoon" = "곧 출시";
+"profile.general" = "일반";
+"profile.notificationsHeader" = "알림";
+"profile.other" = "기타";
+"profile.notificationsOff" = "알림 꺼짐 — 설정 열기";
+"profile.reminderTime" = "리마인더 시간";
+"profile.streakAlert" = "연속 알림";
+"profile.weeklySummary" = "주간 요약";
+"profile.discoveryAlerts" = "디스커버리 알림";
+"profile.appName" = "One — 매일의 기분";
+"profile.echoTitle" = "에코";
+"profile.echoDesc" = "나의 청취 패턴과 반복을 발견하세요";
+"profile.spotifyDisconnect" = "Spotify 연결 해제";
+"profile.spotifyDisconnectMsg" = "Spotify를 연결 해제하시겠습니까? 추천 및 캐시가 삭제됩니다.";
+"profile.appleMusicTitle" = "Apple Music 권한";
+"profile.appleMusicMsg" = "Apple Music 권한을 제거하려면 설정 > 개인정보 > 미디어 및 Apple Music으로 이동하세요.";
+"profile.icloudDeleteTitle" = "iCloud 데이터 삭제";
+"profile.icloudDeleteMsg" = "ONE의 프로필 및 서클 데이터가 iCloud에서 삭제됩니다. 이 작업은 취소할 수 없습니다.";
+"profile.deleteAccountTitle" = "계정 삭제";
+"profile.deleteAccountMsg" = "모든 곡 기록, 프로필 및 서클 데이터가 영구적으로 삭제됩니다.";
+"profile.disconnect" = "연결 해제";
+"profile.openSettings" = "설정 열기";
+"profile.deleteData" = "데이터 삭제";
+"profile.deleteAccount" = "계정 삭제";
+"profile.name" = "이름";
+"profile.username" = "사용자 이름";
+"profile.color" = "색상";
+"profile.getToKnowYou" = "당신을 알아가봐요";
+"profile.editProfile" = "프로필 편집";
+"profile.createProfile" = "프로필 만들기";
+"profile.namePlaceholder" = "뭐라고 불러드릴까요?";
+"profile.icloudActive" = "활성 · 데이터 삭제";
+"profile.icloudOff" = "꺼짐";
+"profile.appleMusicConnected" = "연결됨 · 설정에서 해제";
+"profile.appleMusicConnect" = "연결";
+"profile.exportData" = "내 데이터 내보내기";
+"profile.rateApp" = "앱 평가하기";
+"profile.exportFormat" = "내보내기 형식";
+"profile.exportError" = "내보내기 오류";
+"profile.unknownError" = "알 수 없는 오류가 발생했습니다.";
+"profile.musicBoth" = "둘 다";
+"discover.selectMood" = "오늘의 기분 선택";
+"discover.selectMoodHint" = "기분을 선택하면 추천이 표시됩니다";
+"discover.all" = "전체";
+"discover.loadingActivities" = "활동 로딩 중…";
+"discover.noEvents" = "예정된 이벤트를 찾을 수 없습니다";
+"discover.free" = "무료";
+"discover.showOnMap" = "지도에서 보기";
+"discover.viewOnBiletix" = "Biletix에서 보기";
+"discover.buyOnBiletix" = "Biletix에서 구매";
+"discover.weekSuggestions" = "이번 주 기분 기반 추천";
+"discover.noSuggestionsHint" = "기분을 선택하면\n맞춤 추천이 여기에 표시됩니다.";
+"discover.genreTitle" = "음악 장르";
+"onboarding.howItWorks" = "어떻게\n사용하나요?";
+"onboarding.back" = "← 뒤로";
+"onboarding.serviceConnections" = "서비스 연결";
+"onboarding.lastStep" = "마지막\n단계";
+"onboarding.connectDesc" = "더 나은 경험을 위해 연결하세요.";
+"onboarding.spotifySettings" = "설정에서 Spotify를 연결할 수 있습니다.";
+"onboarding.appleMusicDenied" = "Apple Music 접근이 거부되었습니다. 설정 → 개인정보 → 미디어 및 Apple Music에서 허용하세요.";
+"onboarding.notificationDesc" = "하루에 한 번 알림을 보낼 수 있습니다…";
+"contacts.smsNotAvailable" = "이 기기에서는 SMS 전송을 사용할 수 없습니다.";
+"contacts.smsSendHint" = "초대 링크가 SMS로 전송됩니다";
+"archive.photoLoadFailed" = "사진을 불러올 수 없습니다";
+"archive.openSong" = "곡 열기";
+"archive.colorDistribution" = "색상 분포";
+"archive.musicYear" = "나의 음악의 해";
+
+/* --- ONBOARDING EXTRA --- */
+"onboarding.start" = "시작하기";
+"onboarding.startConnected" = "좋아요, 시작해볼게요";
+"onboarding.connected" = "✓ 연결됨";
+"onboarding.noSubscriptionHint" = "구독 불필요 — 검색 전용";
+"onboarding.noSubscriptionRequired" = "구독 불필요";
+"onboarding.noDataSelling" = "데이터를 판매하지 않으며, 모든 것이 기기에 저장됩니다";
+
+/* --- FRIEND REQUESTS --- */
+"friendRequests.title" = "알림";
+"friendRequests.incoming" = "받은 요청";
+"friendRequests.outgoing" = "보낸 요청";
+"friendRequests.noIncoming" = "받은 요청 없음";
+"friendRequests.noOutgoing" = "보낸 요청 없음";
+"friendRequests.noIncomingHint" = "누군가 서클에 초대하면\n여기에 표시됩니다.";
+"friendRequests.noOutgoingHint" = "보낸 서클 초대가\n여기에 표시됩니다.";
+"friendRequests.wantsToAdd" = "서클에 추가하고 싶어합니다  ·  ";
+"friendRequests.requestSent" = "요청 전송됨  ·  ";
+"friendRequests.friendAccepted" = "친구 요청이 수락되었습니다!";
+"friendRequests.requestWithdrawn" = "요청을 철회했습니다";
+"friendRequests.unknown" = "알 수 없음";
+
+/* --- ARCHIVE EXTRA --- */
+"archive.selectedDays" = "선택한 날";
+"archive.silentDays" = "조용한 날";
+"archive.completion" = "완료율";
+"archive.month" = "월";
+"archive.year" = "년";
+"archive.totalSelections" = "총 선택 수";
+"archive.activeMonths" = "활동적인 달";
+"archive.yearCompletion" = "연간 완료율";
+"archive.selectedAt" = "%@에 선택됨";
+
+/* --- GENERAL EXTRA --- */
+"general.share" = "공유";
+
+/* --- CIRCLE SHARE TOGGLE --- */
+"circle.shareWithPhotoDesc" = "노래와 사진이 공유됩니다";
+"circle.shareWithMoodDesc" = "노래와 기분이 공유됩니다";
+"circle.shareHint" = "친구들이 오늘의 선택을 볼 수 있게 하세요";
+
+/* --- GENERAL OK --- */
+"general.ok" = "OK";
+"general.ok" = "확인";
+
+/* --- ONBOARDING FEATURES --- */
+"onboarding.feature.dailySong" = "오늘의 노래";
+"onboarding.feature.dailySongDesc" = "매일 나를 표현하는 노래를 선택해요";
+"onboarding.feature.photoMood" = "사진 + 기분";
+"onboarding.feature.photoMoodDesc" = "사진과 색으로 순간을 담아보세요";
+"onboarding.feature.circle" = "서클";
+"onboarding.feature.circleDesc" = "친구들과 노래와 기분을 공유하세요";
+"onboarding.feature.discover" = "발견";
+"onboarding.feature.discoverDesc" = "기분에 맞는 활동을 추천받으세요";
+
+/* --- TODAY EXTRA (to be filled per lang) --- */
+"today.circleCanSee" = "서클이 오늘의 기분을 볼 수 있어요";
+"today.note" = "메모";
+"today.timeSelected" = "%@에";
+"today.cardLoading" = "카드를 준비 중...";
+"today.createShareCard" = "공유 카드 만들기";
+"today.saveToPhotos" = "사진에 저장";
+"today.generateCard" = "카드 만들기";
+"today.changeConfirmTitle" = "선택 변경";
+"today.changeConfirmYes" = "네, 변경할게요";
+"today.changeConfirmMessage" = "오늘의 노래가 삭제되고 다시 선택할 수 있어요.";
+"today.select" = "선택";
+"today.noResults" = "결과 없음";
+"today.optional" = "선택사항";
+"today.changeSong" = "노래 변경";
+"today.saved" = "저장됨";
+"moodEvents.ourPicks" = "이 기분에 맞는\n우리의 픽.";
+"moodEvents.noEvents" = "이 카테고리에 맞는 이벤트를 찾을 수 없습니다.";
+"moodEvents.matchPercent" = "%%%d 일치";
+"moodEvents.nearbyCity" = "인근 도시: %@";
+"camera.captureHint" = "이 순간을 아름답게 담았어요";
+"photo.optionalHint" = "선택사항 · 나만 볼 수 있음";
+"discover.match" = "일치";
+"discover.explore" = "기분 탐색";
+"discover.today" = "오늘";
+"discover.ourPicks" = "당신을 위한 픽";
+"discover.refresh" = "새로고침";
+"discover.nearbyCity" = "인근 도시: %@";
+
+"circle.removeConfirmMessage" = "%@을(를) 서클에서 제거하시겠습니까?";
+"circle.blockConfirmMessage" = "%@을(를) 차단하시겠습니까? 이 작업은 취소할 수 없습니다.";
+"circle.todayFeeling" = "오늘 어떤\n기분인가요?";
+"circle.note" = "노트";
+"circle.heard" = "들었음";
+"circle.waitingPick" = "선택 대기 중…";
+"circle.willAppear" = "노래를 선택하면 표시됩니다";
+"circle.updating" = "업데이트 중…";
+"circle.notSelectedYet" = "오늘 아직\n선택하지 않았어요.";
+"contacts.navTitle" = "연락처에서 초대";
+"contacts.alertSmsCantSend" = "SMS를 보낼 수 없습니다";
+"contacts.inviteCodeText" = "초대 코드: %@";
+"contacts.contactsRequired" = "연락처 접근 권한이 필요합니다";
+"contacts.contactsPermissionHint" = "설정 → 개인 정보 보호 → 연락처에서 권한을 허용할 수 있습니다.";
+"contacts.openSettings" = "설정 열기";
+"contacts.contactsLoading" = "연락처 불러오는 중…";
+"contacts.inviteButton" = "초대하기";
+"contacts.searchPlaceholder" = "연락처 검색…";
+"contacts.noContacts" = "연락처 없음";
+"contacts.noResults" = "연락처를 찾을 수 없음";
+"contacts.noName" = "이름 없음";
+"share.joinCircle" = "서클에 참여하기";
+"share.sendInvite" = "초대 보내기";
+"share.storyFormat" = "스토리 (9:16)";
+"share.postFormat" = "게시물 / X (16:9)";
+"share.cardPreparing" = "초대 카드 준비 중...";
+"share.savedToPhotos" = "사진에 저장됨";
+"share.inviteHeader" = "%@이(가) 초대합니다";
+"share.inviteSlogan" = "느껴라.\n발견하라. 나눠라.";
+"share.inviteCode" = "초대 코드";
+"share.inviteFooter" = "ONE · 오늘의 노래를 서클과 함께 나눠요.";
+"monthly.summary" = "당신의 요약.";
+"monthly.stats" = "%d일 · %d곡 · 1명의 당신";
+"monthly.swipe" = "스와이프";
+"monthly.oneMood" = "하나의 기분";
+"monthly.dominantMood" = "주요 기분";
+"monthly.thisMonth" = "이번 달의";
+"monthly.sound" = "사운드.";
+"monthly.noSongs" = "이번 달에는\n아직 선택된 노래가 없습니다.";
+"monthly.moodTitle" = "기분";
+"monthly.moodMap" = "맵.";
+"monthly.emotionDistribution" = "감정 분포";
+"monthly.share" = "공유";
+"monthly.whichCard" = "스토리에 추가할 카드를 선택하세요";
+"monthly.coverCard" = "커버 카드";
+"monthly.moodMapCard" = "기분 맵";
+"monthly.topTracksCard" = "인기 노래";
+"monthly.statDays" = "일";
+"monthly.statArtists" = "아티스트";
+"monthly.statMax" = "최대";
+"monthly.selectionLabel" = "선택";
+"monthly.timesLabel" = "회";
+"discover.discoverTitle" = "발견하기";
+"discover.comingSoon" = "기분 기반 추천\n곧 공개됩니다";
+"discover.weeklyPlaylistTitle" = "주간 플레이리스트";
+"discover.weeklyMoods" = "이번 주의\n기분";
+"discover.dominantMood" = "주요 기분: %@";
+"discover.minSelections" = "최소 3일 이상 노래를 선택하세요";
+"discover.minSelectionsHint" = "주간 플레이리스트를 받으려면 이번 주에 최소 3일 이상 노래를 선택해야 합니다.";
+"discover.daysCompleted" = "%d/3일 완료";
+"discover.moodDistribution" = "기분 분포";
+"discover.weekSongs" = "이번 주 노래";
+"discover.weeklyPlaylistLabel" = "나의 주간 플레이리스트";
+"search.alreadySelected" = "오늘의 노래가\n이미 선택되었습니다.";
+"search.canPickTomorrow" = "내일 새로운 노래를 선택할 수 있습니다.";
+"search.todayQuestion" = "오늘은 어떤\n노래인가요?";
+"search.connectSpotify" = "Spotify 연결";
+"search.connectAppleMusic" = "Apple Music 연결";
+"search.searchPlaceholder" = "노래 또는 아티스트...";
+"search.appleMusicPermission" = "Apple Music 권한이 필요합니다. 설정에서 허용해 주세요.";
+"confirm.question" = "이 노래가 당신에게 무엇을 떠올리게 하나요?";
+"done.saved" = "저장됨.";
+"done.calendarAdded" = "캘린더에 추가됨";
+"done.todaysMemory" = "오늘의 기억";
+"done.todaysColor" = "오늘의 색";
+/* --- INVITE SHARE --- */
+"invite.joinCircle" = "서클에 참여";
+"invite.sendInvite" = "초대 보내기";
+"invite.formatPicker" = "형식";
+"invite.story" = "스토리 (9:16)";
+"invite.post" = "게시물 / X (16:9)";
+"invite.preparing" = "초대 카드 준비 중...";
+"invite.instagramStory" = "Instagram Story";
+"invite.instagramInstalled" = "Stories에 직접 보내기";
+"invite.instagramNotInstalled" = "Instagram이 설치되지 않음";
+"invite.otherApps" = "다른 앱";
+"invite.otherAppsHint" = "초대 링크 포함";
+"invite.savedToPhotos" = "사진에 저장됨";
+"invite.saveToPhotos" = "사진에 저장";
+"invite.saveToPhotosHint" = "갤러리에 PNG로 추가";
+"invite.generateFailed" = "초대 카드를 만들 수 없음";
+"invite.shareText" = "ONE에서 내 서클에 참여해요. 느끼고, 발견하고, 공유해요.\n%@";
+"invite.invitesYou" = "%@이(가) 초대합니다";
+"invite.codeLabel" = "초대 코드";
+"invite.footer" = "ONE · 오늘의 노래를 서클과 공유하세요.";
+"app.slogan" = "느끼다.\n발견하다. 공유하다.";
+"colorPicker.echoes" = "에코";
+"colorPicker.echoesDesc" = "다시 선택한\n노래들.";
+"colorPicker.noEchoes" = "아직 에코가 없습니다.";
+"colorPicker.echoesHint" = "같은 노래를 여러 날 선택하면\n여기에 표시됩니다.";
+"colorPicker.times" = "%d번";
+"colorPicker.insightText" = "\"%@\"은(는) 당신에게 특별한 의미를 가진 것 같습니다. %d번 선택했습니다.";
+
+/* --- SHARE SHEET --- */
+"share.title" = "공유";
+"share.preparing" = "스토리 준비 중...";
+"share.instagramSend" = "스토리에 바로 전송";
+"share.instagramNotInstalled" = "Instagram이 설치되지 않음";
+"share.otherApps" = "다른 앱";
+"share.cardSaved" = "카드 저장됨";
+"share.saveCard" = "카드 저장";
+"share.saveCardHint" = "스토리 카드를 갤러리에 추가";
+"share.photoSaved" = "사진 저장됨";
+"share.savePhoto" = "사진 저장";
+"share.savePhotoHint" = "원본 사진을 갤러리에 추가";
+"share.spotifyLink" = "Spotify 링크 포함";
+"share.appleMusicLink" = "Apple Music 링크 포함";
+
+/* --- DISCOVER EXTRA --- */
+"discover.searchBiletix" = "Biletix에서 검색";
+
+/* --- MONTHLY POSTER --- */
+"monthly.echoTagline" = "ONE · 한 달의 울림";
+
+/* --- MOOD LABELS --- */
+"mood.atesli" = "열정적";
+"mood.enerjik" = "활기찬";
+"mood.isikli" = "행복한";
+"mood.taze" = "상쾌한";
+"mood.sakin" = "차분한";
+"mood.ozgur" = "자유로운";
+"mood.derin" = "깊은";
+"mood.nostaljik" = "향수어린";
+"mood.gizemli" = "신비로운";
+"mood.hassas" = "섬세한";
+"mood.bos" = "고요한";
+"mood.temiz" = "중립적";
+
+/* --- FEELING LABELS --- */
+"feeling.calm" = "차분함";
+"feeling.happy" = "기쁨";
+"feeling.sad" = "슬픔";
+"feeling.anxious" = "불안함";
+"feeling.excited" = "설렘";
+"feeling.tired" = "지침";
+"feeling.angry" = "반항적";
+"feeling.peaceful" = "평화로움";
+
+/* --- TODAY EMPTY VIEW --- */
+"today.continueWithoutPhoto" = "사진 없이 계속";
+"today.done" = "완료";
+
+/* --- NAVIGATION TABS --- */
+"nav.discover" = "발견";
+"nav.archive" = "아카이브";
+"nav.today" = "오늘";
+"nav.circle" = "서클";
+"nav.profile" = "프로필";
+"nav.tabAccessibility" = "%@ 탭";
+
+/* --- DISCOVER CTA LABELS --- */
+"discover.ctaMap" = "지도";
+"discover.ctaBiletix" = "Biletix";
+
+/* --- ACTIVITY RECOMMENDATION SECTIONS --- */
+"discover.sectionMicroTitle" = "지금 바로 기분 좋아지기";
+"discover.sectionMicroSubtitle" = "기분, 시간, 날씨에 맞춰 쉽게 시작할 수 있는 것들.";
+"discover.sectionConcertTitle" = "내 음악과 가까운 콘서트";
+"discover.sectionConcertSubtitle" = "선택한 아티스트나 장르와 어울리는 라이브 음악.";
+"discover.sectionCityTitle" = "도시에서 무언가 계획하기";
+"discover.sectionCitySubtitle" = "전시회, 연극, 영화 및 기타 라이브 루트.";
+"discover.todaySpecial" = "오늘만을 위한";
+
+/* --- ACTIVITY TEMPLATES --- */
+"activity.walkSoft.title" = "25분 천천히 걷기";
+"activity.walkSoft.venue" = "근처";
+"activity.walkSoft.timing" = "오늘";
+
+"activity.bikeRide.title" = "자전거 타며 리듬 높이기";
+"activity.bikeRide.venue" = "루트";
+"activity.bikeRide.timing" = "오늘 오후";
+
+"activity.swimSea.title" = "수영하러 가서 리셋하기";
+"activity.swimSea.venue" = "해안";
+"activity.swimSea.timing" = "오늘 석양 즈음";
+
+"activity.coffeeBreak.title" = "조용한 커피 휴식 취하기";
+"activity.coffeeBreak.venue" = "근처";
+"activity.coffeeBreak.timing" = "지금";
+
+"activity.bookstore.title" = "서점이나 레코드샵에 들르기";
+"activity.bookstore.venue" = "루트";
+"activity.bookstore.timing" = "오늘";
+
+"activity.museumHop.title" = "짧은 미술관 또는 갤러리 루트 계획하기";
+"activity.museumHop.venue" = "중심가";
+"activity.museumHop.timing" = "오늘 오후";
+
+"activity.sunsetWalk.title" = "석양에 해변 산책하기";
+"activity.sunsetWalk.venue" = "해변";
+"activity.sunsetWalk.timing" = "오늘 저녁";
+
+"activity.yogaBreath.title" = "요가나 호흡법으로 페이스 낮추기";
+"activity.yogaBreath.venue" = "공간";
+"activity.yogaBreath.timing" = "아침 또는 저녁";
+
+"activity.photoWalk.title" = "사진 산책하며 디테일 발견하기";
+"activity.photoWalk.venue" = "동네";
+"activity.photoWalk.timing" = "오늘";
+
+"activity.nightRun.title" = "야간 러닝으로 에너지 발산하기";
+"activity.nightRun.venue" = "트랙";
+"activity.nightRun.timing" = "오늘 저녁";
+
+"activity.friendDinner.title" = "친구를 불러 긴 저녁 식사 즐기기";
+"activity.friendDinner.venue" = "테이블";
+"activity.friendDinner.timing" = "오늘 저녁";
+
+/* --- ACTIVITY REASONS --- */
+"activity.reason.anxious" = "오늘의 불안을 더 부드러운 리듬으로 이끌 수 있어요.";
+"activity.reason.tired" = "적은 노력으로 기분을 유지하는 조용한 선택입니다.";
+"activity.reason.happyExcited" = "높은 에너지를 밖으로 발산하기 좋은 공간을 열어줍니다.";
+"activity.reason.sad" = "압박 없이 느리고 지지적인 흐름에 잘 맞아요.";
+"activity.reason.calmPeaceful" = "내면의 평온을 흐트러뜨리지 않고 하루의 리듬과 함께해요.";
+"activity.reason.angry" = "에너지를 신체적 흐름으로 전환하기 위해 선택되었어요.";
+"activity.reason.outdoorWeather" = "기분과 야외 활동에 좋은 날씨로 두드러집니다.";
+"activity.reason.indoorWeather" = "날씨 조건이 실내에서 편안한 흐름을 더 합리적으로 만듭니다.";
+"activity.reason.moodMatch" = "오늘 %@ 기분에 잘 맞아요 — 시작하기 쉬운 선택입니다.";
+
+/* --- ACTIVITY VENUE HINTS --- */
+"activity.venue.nature" = "도시 속 녹색 루트";
+"activity.venue.culture" = "%@ 시내 — 문화 루트";
+"activity.venue.neighborhood" = "%@ 근처 동네";
+"activity.venue.motion" = "도시 속 활동적인 루트";
+"activity.venue.quiet" = "조용한 구석, 카페 또는 서점";
+"activity.venue.coast" = "도시 속 수변 루트";
+
+/* --- SHARE CARD BRANDING --- */
+"share.brandWatermark" = "ONE · Mood Tracker";
+"share.brandWatermarkUpper" = "ONE · MOOD TRACKER";
+
+/* --- DISCOVER LISTEN LABELS --- */
+"discover.listenOnSpotify" = "Spotify에서 듣기";
+"discover.listenOnAppleMusic" = "Apple Music에서 듣기";
+
+/* --- GENERAL TOAST TITLES --- */
+"general.success" = "성공";
+"general.info" = "정보";
+"general.warning" = "경고";
+
+/* --- CAMERA MISSING KEYS --- */
+"camera.use" = "사용";
+"camera.afLock" = "AE/AF 잠금";
+"camera.retake" = "다시 찍기";
+
+/* --- CIRCLE / SHARE MISSING --- */
+"circle.requestWithdrawn" = "친구 요청이 취소되었습니다.";
+"share.cardFailed" = "공유 카드를 만들 수 없습니다";
+
+/* --- TODAY MISSING KEYS --- */
+"today.playingOnSpotify" = "Spotify에서 재생 중";
+"today.playingOnAppleMusic" = "Apple Music에서 재생 중";
+"today.morningGreeting" = "하루가 막 시작되었습니다.";
+"today.midDayGreeting" = "하루의 중간에 있습니다.";
+"today.afternoonGreeting" = "오후.";
+"today.eveningGreeting" = "하루가 저물어 가고 있습니다.";
+"today.nightGreeting" = "밤.";
+"today.addPhoto" = "이 순간을 위한 사진 추가";
+"today.photoAdded" = "사진이 추가되었습니다";
+
+/* --- DISCOVER STATUS MISSING --- */
+"discover.notAuthenticated" = "음악 서비스를 선택하여 추천 받기";
+"discover.insufficientHistory" = "더 많은 곡을 선택해 개인화된 제안 받기";
+"discover.noInternet" = "인터넷 연결 없음";
+"discover.rateLimit" = "요청이 너무 많습니다. 잠시 기다려 주세요";
+"discover.loadFailed" = "추천을 불러올 수 없습니다";
+"discover.cacheError" = "캐시 오류";
+"discover.artistConcert" = "아티스트 콘서트";
+"discover.nearby" = "근처";
+
+/* --- CALENDAR DAY ABBREVIATIONS --- */
+"calendar.day.mon" = "월";
+"calendar.day.tue" = "화";
+"calendar.day.wed" = "수";
+"calendar.day.thu" = "목";
+"calendar.day.fri" = "금";
+"calendar.day.sat" = "토";
+"calendar.day.sun" = "일";
+
+/* --- GENRE FALLBACK --- */
+"genre.music" = "음악";

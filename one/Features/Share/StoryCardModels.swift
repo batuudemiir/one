@@ -117,7 +117,7 @@ extension DailySong {
         guard let date = date else { return "" }
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM yyyy"
-        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.locale = LanguageManager.shared.currentLocale
         return formatter.string(from: date)
     }
     

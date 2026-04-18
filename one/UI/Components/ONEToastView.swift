@@ -48,23 +48,22 @@ struct ONEToastView: View {
             // Mesaj
             VStack(alignment: .leading, spacing: 2) {
                 Text(toast.title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .bodySMMedium()
                     .foregroundColor(ONETokens.oneInk)
-                
+
                 Text(toast.message)
-                    .font(.system(size: 11))
+                    .bodyXS()
                     .foregroundColor(ONETokens.oneAsh)
                     .lineLimit(2)
             }
-            
+
             Spacer(minLength: 4)
-            
+
             // Retry veya Dismiss
             if toast.isRetryable {
                 Button(action: { handler.retry() }) {
-                    Text("Tekrar Dene")
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                        .tracking(0.5)
+                    Text(NSLocalizedString("general.retry", comment: ""))
+                        .monoLabel(tracking: 0.5)
                         .foregroundColor(ONETokens.oneCream)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
@@ -72,14 +71,16 @@ struct ONEToastView: View {
                             Capsule().fill(toast.type.color)
                         )
                 }
+                .accessibilityLabel(NSLocalizedString("general.retry", comment: ""))
             } else {
                 Button(action: { handler.dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(ONETokens.oneStone)
-                        .frame(width: 24, height: 24)
-                        .background(Circle().fill(ONETokens.oneSilver))
+                        .frame(width: 44, height: 44)
+                        .background(Circle().fill(ONETokens.oneSilver).frame(width: 24, height: 24))
                 }
+                .accessibilityLabel(NSLocalizedString("general.close", comment: ""))
             }
         }
         .padding(.horizontal, 16)

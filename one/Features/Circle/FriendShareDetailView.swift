@@ -105,17 +105,17 @@ struct FriendShareDetailView: View {
                 PhotoDataViewerSheet(image: uiImage, isPresented: $showPhotoViewer)
             }
         }
-        .alert("Arkadaşlıktan Çıkar", isPresented: $showRemoveAlert) {
-            Button("Çıkar", role: .destructive) { removeFriend() }
-            Button("Vazgeç", role: .cancel) { }
+        .alert(NSLocalizedString("circle.removeFriend", comment: ""), isPresented: $showRemoveAlert) {
+            Button(NSLocalizedString("circle.removeAction", comment: ""), role: .destructive) { removeFriend() }
+            Button(NSLocalizedString("general.cancel", comment: ""), role: .cancel) { }
         } message: {
-            Text("\(getUserDisplayName()) adlı kullanıcıyı çevrenden çıkarmak istediğine emin misin?")
+            Text(String(format: NSLocalizedString("circle.removeConfirmMessage", comment: ""), getUserDisplayName()))
         }
-        .alert("Kullanıcıyı Engelle", isPresented: $showBlockAlert) {
-            Button("Engelle", role: .destructive) { blockUser() }
-            Button("Vazgeç", role: .cancel) { }
+        .alert(NSLocalizedString("circle.blockUser", comment: ""), isPresented: $showBlockAlert) {
+            Button(NSLocalizedString("circle.blockAction", comment: ""), role: .destructive) { blockUser() }
+            Button(NSLocalizedString("general.cancel", comment: ""), role: .cancel) { }
         } message: {
-            Text("\(getUserDisplayName()) adlı kullanıcıyı engellemek istediğine emin misin? Bu işlemi geri alamazsın.")
+            Text(String(format: NSLocalizedString("circle.blockConfirmMessage", comment: ""), getUserDisplayName()))
         }
         .overlay(
             Group {
@@ -123,7 +123,7 @@ struct FriendShareDetailView: View {
                     Color.black.opacity(0.3).ignoresSafeArea()
                     ProgressView()
                         .padding()
-                        .background(Color.white)
+                        .background(ONETokens.onePaper)
                         .cornerRadius(10)
                 }
             }
@@ -165,10 +165,10 @@ struct FriendShareDetailView: View {
                     
                     Menu {
                         Button(role: .destructive, action: { showRemoveAlert = true }) {
-                            Label("Çıkar", systemImage: "person.fill.xmark")
+                            Label(NSLocalizedString("circle.removeAction", comment: ""), systemImage: "person.fill.xmark")
                         }
                         Button(role: .destructive, action: { showBlockAlert = true }) {
-                            Label("Engelle", systemImage: "nosign")
+                            Label(NSLocalizedString("circle.blockAction", comment: ""), systemImage: "nosign")
                         }
                     } label: {
                         Image(systemName: "ellipsis")
@@ -180,7 +180,7 @@ struct FriendShareDetailView: View {
                 }
             }
             
-            Text("Bugün ne\nhissediyor?")
+            Text(NSLocalizedString("circle.todayFeeling", comment: ""))
                 .displayLG()
                 .foregroundColor(ONETokens.oneInk)
                 .lineSpacing(2)
@@ -305,7 +305,7 @@ struct FriendShareDetailView: View {
                         Circle()
                             .fill(Color.white.opacity(0.9))
                             .frame(width: 6, height: 6)
-                        Text("\(timeString)'te")
+                        Text(String(format: NSLocalizedString("today.timeSelected", comment: ""), timeString))
                             .monoLabel(tracking: 1.0)
                             .foregroundColor(.white.opacity(0.85))
                     }
@@ -408,7 +408,7 @@ struct FriendShareDetailView: View {
                 // Note section (if exists)
                 if let note = dailyNote {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("NOT")
+                        Text(NSLocalizedString("circle.note", comment: ""))
                             .monoLabel(tracking: 1.5)
                             .foregroundColor(ONETokens.oneAsh)
                         
@@ -430,7 +430,7 @@ struct FriendShareDetailView: View {
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color.white)
+        .background(ONETokens.onePaper)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
         .padding(.horizontal, 20)
@@ -449,7 +449,7 @@ struct FriendShareDetailView: View {
                 Button(action: { sendEmoji(emoji) }) {
                     Text(emoji)
                         .font(.system(size: 16))
-                        .frame(width: 42, height: 42)
+                        .frame(width: 44, height: 44)
                         .background(
                             Circle()
                                 .fill(sentEmoji == emoji ? moodColor.opacity(0.15) : ONETokens.oneCreamLow)
@@ -459,6 +459,7 @@ struct FriendShareDetailView: View {
                                 )
                         )
                 }
+                .accessibilityLabel(emoji)
                 .disabled(sentEmoji != nil && sentEmoji != emoji)
                 .scaleEffect(sentEmoji == emoji ? 1.1 : 1.0)
                 .animation(ONEAnimation.micro, value: sentEmoji)
@@ -466,7 +467,7 @@ struct FriendShareDetailView: View {
             
             Spacer()
             
-            Text("duydum")
+            Text(NSLocalizedString("circle.heard", comment: ""))
                 .monoMicro(tracking: 1.4)
                 .foregroundColor(ONETokens.oneStone)
         }
@@ -483,7 +484,7 @@ struct FriendShareDetailView: View {
             HStack(spacing: 8) {
                 Image(systemName: "chevron.down")
                     .font(.system(size: 10))
-                Text("Kapat")
+                Text(NSLocalizedString("general.close", comment: ""))
                     .monoBase(tracking: 1.0)
             }
             .foregroundColor(ONETokens.oneCharcoal)
@@ -519,7 +520,7 @@ struct FriendShareDetailView: View {
         guard let createdAt = share["createdAt"] as? Date else { return "" }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .short
-        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.locale = LanguageManager.shared.currentLocale
         return formatter.localizedString(for: createdAt, relativeTo: Date())
     }
     
@@ -649,19 +650,22 @@ struct PhotoDataViewerSheet: View {
                                 }
                                 .onEnded { val in
                                     guard scale <= 1.01 else { return }
-                                    if val.translation.height > dismissThreshold {
+                                    let velocity = val.predictedEndTranslation.height - val.translation.height
+                                    let shouldDismiss = val.translation.height > dismissThreshold
+                                        || (val.translation.height > 30 && velocity > 250)
+                                    if shouldDismiss {
                                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                        withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
-                                            dismissOffset = 800
+                                        withAnimation(.easeOut(duration: 0.18)) {
+                                            dismissOffset = UIScreen.main.bounds.height
                                             backgroundOpacity = 0
                                         }
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                                             var t = Transaction()
                                             t.disablesAnimations = true
                                             withTransaction(t) { isPresented = false }
                                         }
                                     } else {
-                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                        withAnimation(.spring(response: 0.32, dampingFraction: 0.76)) {
                                             dismissOffset = 0
                                             backgroundOpacity = 1.0
                                         }

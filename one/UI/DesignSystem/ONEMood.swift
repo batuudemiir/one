@@ -85,18 +85,18 @@ enum ONEMood: String, Codable, CaseIterable, Identifiable {
     /// Usage: Mood selection labels, mood display text, user-facing mood names
     var label: String {
         switch self {
-        case .atesli:    return "Ateşli"
-        case .enerjik:   return "Coşkulu"
-        case .isikli:    return "Mutlu"
-        case .taze:      return "Doğal"
-        case .sakin:     return "Huzurlu"
-        case .ozgur:     return "Özgür"
-        case .derin:     return "Derin"
-        case .nostaljik: return "Nostaljik"
-        case .gizemli:   return "Gizemli"
-        case .hassas:    return "Hassas"
-        case .bos:       return "Sessiz"
-        case .temiz:     return "Nötr"
+        case .atesli:    return "ateş"
+        case .enerjik:   return "enerji"
+        case .isikli:    return "ışık"
+        case .taze:      return "taze"
+        case .sakin:     return "huzur"
+        case .ozgur:     return "özgür"
+        case .derin:     return "derin"
+        case .nostaljik: return "özlem"
+        case .gizemli:   return "loş"
+        case .hassas:    return "kırılgan"
+        case .bos:       return "boşluk"
+        case .temiz:     return "sessiz"
         }
     }
     
@@ -105,21 +105,41 @@ enum ONEMood: String, Codable, CaseIterable, Identifiable {
     /// Usage: Mood descriptions, tooltips, help text, emotional context
     var meaning: String {
         switch self {
-        case .atesli:    return "Tutkulu, yoğun, alev alev"
-        case .enerjik:   return "Coşkulu, heyecanlı, canlı"
-        case .isikli:    return "Neşeli, umutlu, aydınlık"
-        case .taze:      return "Doğal, toprakla bağlantılı, dingin"
-        case .sakin:     return "Huzurlu, dengeli, dingin"
-        case .ozgur:     return "Özgür, ferah, engin"
-        case .derin:     return "İçsel, düşünceli, derin"
-        case .nostaljik: return "Özlem, hatıra, geçmiş"
-        case .gizemli:   return "Gizemli, büyülü, hayal"
-        case .hassas:    return "Nazik, hassas, yumuşak"
-        case .bos:       return "Sessiz, durgun, minimal"
-        case .temiz:     return "Nötr, yalın, belirsiz"
+        case .atesli:    return "içim yanıyor"
+        case .enerjik:   return "taşıp duruyor"
+        case .isikli:    return "içimden parlıyor"
+        case .taze:      return "yeni başlıyor"
+        case .sakin:     return "her şey yolunda"
+        case .ozgur:     return "hafif, özgür"
+        case .derin:     return "içimde kaybolmuş"
+        case .nostaljik: return "bir şeyleri özlüyor"
+        case .gizemli:   return "gerçek ötesi"
+        case .hassas:    return "hassas, savunmasız"
+        case .bos:       return "içi boş, sessiz"
+        case .temiz:     return "temiz sayfa"
         }
     }
     
+    /// SF Symbol icon representing this mood — used for accessibility labels and color-blind support
+    /// Purpose: VoiceOver announces mood name + icon context; icon is NOT rendered visually by default
+    /// Usage: .accessibilityLabel("\(label) — \(meaning)"), future icon overlay feature
+    var icon: String {
+        switch self {
+        case .atesli:    return "flame.fill"
+        case .enerjik:   return "bolt.fill"
+        case .isikli:    return "sun.max.fill"
+        case .taze:      return "leaf.fill"
+        case .sakin:     return "water.waves"
+        case .ozgur:     return "wind"
+        case .derin:     return "moon.fill"
+        case .nostaljik: return "clock.fill"
+        case .gizemli:   return "sparkles"
+        case .hassas:    return "heart.fill"
+        case .bos:       return "circle.dotted"
+        case .temiz:     return "snowflake"
+        }
+    }
+
     /// Whether this mood uses dark text (false) or light text (true)
     /// Purpose: Determines text color for optimal contrast on mood backgrounds
     /// Usage: Text color selection, accessibility, contrast calculations
@@ -186,6 +206,20 @@ extension ONEMood {
     init?(hex: String) {
         let normalized = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted).uppercased()
         switch normalized {
+        // Pastel hex values (new entries)
+        case "FFB5A7": self = .atesli
+        case "FFCBA4": self = .enerjik
+        case "FFF0B3": self = .isikli
+        case "B8F0D4": self = .taze
+        case "A8D5B5": self = .sakin
+        case "A8D4F5": self = .ozgur
+        case "B8C5F0": self = .derin
+        case "C5B8F0": self = .nostaljik
+        case "D4B8F0": self = .gizemli
+        case "FFB8CC": self = .hassas
+        case "CDD5E8": self = .bos
+        case "F0EDE8": self = .temiz
+        // Legacy saturated hex values (kept for existing saved entries)
         case "E84040": self = .atesli
         case "FF8C42": self = .enerjik
         case "F5C842": self = .isikli
@@ -198,7 +232,6 @@ extension ONEMood {
         case "E8829C": self = .hassas
         case "2C2C2C": self = .bos
         case "E8E6E0": self = .temiz
-        // Legacy labels that no longer match new system
         case "607D8B": self = .derin   // old moodSlate → derin
         case "C97840": self = .enerjik // old moodAmber → enerjik
         default: return nil

@@ -78,7 +78,7 @@ final class ActivityRecommendationEngine {
     func fetchSections(for entry: DailyEntry, city: String) async -> [RecommendationSection] {
         let microActivities = buildMicroActivities(for: entry, city: city)
         let liveEvents = (try? await TicketmasterManager.shared.fetchLiveEvents(for: entry, city: city))
-            ?? mockEvents(for: entry.moodLabel, city: city)
+            ?? biletixBrowseCards(for: entry.moodLabel, city: city)
 
         let artistConcerts = Array(
             liveEvents
@@ -100,8 +100,8 @@ final class ActivityRecommendationEngine {
             sections.append(
                 RecommendationSection(
                     id: "micro",
-                    title: "Hemen iyi gelebilir",
-                    subtitle: "Mood'una, saate ve havaya gore kolayca baslayabilecegin seyler.",
+                    title: NSLocalizedString("discover.sectionMicroTitle", comment: ""),
+                    subtitle: NSLocalizedString("discover.sectionMicroSubtitle", comment: ""),
                     items: microActivities
                 )
             )
@@ -111,8 +111,8 @@ final class ActivityRecommendationEngine {
             sections.append(
                 RecommendationSection(
                     id: "music-match",
-                    title: "Muzigine yakin konserler",
-                    subtitle: "Sectigin sanatciya veya ayni tarza yaslanan canli muzikler.",
+                    title: NSLocalizedString("discover.sectionConcertTitle", comment: ""),
+                    subtitle: NSLocalizedString("discover.sectionConcertSubtitle", comment: ""),
                     items: artistConcerts
                 )
             )
@@ -122,8 +122,8 @@ final class ActivityRecommendationEngine {
             sections.append(
                 RecommendationSection(
                     id: "city-events",
-                    title: "Sehirde planlayabileceklerin",
-                    subtitle: "Sergi, tiyatro, sinema ve diger canli rotalar.",
+                    title: NSLocalizedString("discover.sectionCityTitle", comment: ""),
+                    subtitle: NSLocalizedString("discover.sectionCitySubtitle", comment: ""),
                     items: cityEvents
                 )
             )
@@ -149,7 +149,7 @@ final class ActivityRecommendationEngine {
                     matchPercent: score,
                     kind: .microActivity,
                     reason: microReason(for: template, context: context, feeling: entry.feeling),
-                    sourceLabel: "Bugune ozel"
+                    sourceLabel: NSLocalizedString("discover.todaySpecial", comment: "")
                 )
             }
             .sorted {
@@ -285,45 +285,45 @@ final class ActivityRecommendationEngine {
         if template.feelings.contains(feeling) {
             switch feeling {
             case .anxious:
-                return "Bugunku tedirginligi daha yumusak bir ritme cekebilir."
+                return NSLocalizedString("activity.reason.anxious", comment: "")
             case .tired:
-                return "Dusuk eforla modunu tasiyan sakin bir secim."
+                return NSLocalizedString("activity.reason.tired", comment: "")
             case .happy, .excited:
-                return "Yuksek enerjini disari tasimak icin iyi bir alan aciyor."
+                return NSLocalizedString("activity.reason.happyExcited", comment: "")
             case .sad:
-                return "Baskisiz, yavas ve destekleyici bir akisa uyuyor."
+                return NSLocalizedString("activity.reason.sad", comment: "")
             case .calm, .peaceful:
-                return "Icindeki sakinligi bozmadan gunun ritmine eslik ediyor."
+                return NSLocalizedString("activity.reason.calmPeaceful", comment: "")
             case .angry:
-                return "Enerjiyi bedensel bir akisa cevirmen icin secildi."
+                return NSLocalizedString("activity.reason.angry", comment: "")
             }
         }
 
         if template.isOutdoor, [.sunny, .cloudy].contains(context.weather) {
-            return "Mood'una ve disarida olmaya uygun havaya gore onde cikiyor."
+            return NSLocalizedString("activity.reason.outdoorWeather", comment: "")
         }
 
         if !template.isOutdoor, [.rainy, .stormy, .snowy].contains(context.weather) {
-            return "Hava kosullari kapali ve rahat bir akisi daha mantikli kiliyor."
+            return NSLocalizedString("activity.reason.indoorWeather", comment: "")
         }
 
-        return "Bugunku \(context.moodLabel.lowercased()) haliyle uyumlu, kolay baslanabilir bir secim."
+        return String(format: NSLocalizedString("activity.reason.moodMatch", comment: ""), context.moodLabel.lowercased())
     }
 
     private func venueHint(for template: MicroActivityTemplate, city: String) -> String {
         switch template.locationStyle {
         case .nature:
-            return cityWalkingSpots(for: city).first?.venue ?? "Sehirde yesil bir rota"
+            return cityWalkingSpots(for: city).first?.venue ?? NSLocalizedString("activity.venue.nature", comment: "")
         case .coast:
             return coastalVenue(for: city)
         case .culture:
-            return "\(city) merkezinde kultur rotasi"
+            return String(format: NSLocalizedString("activity.venue.culture", comment: ""), city)
         case .neighborhood:
-            return "\(city) icinde yakin bir semt"
+            return String(format: NSLocalizedString("activity.venue.neighborhood", comment: ""), city)
         case .motion:
-            return cityWalkingSpots(for: city).dropFirst().first?.venue ?? "Sehirde hareketli bir rota"
+            return cityWalkingSpots(for: city).dropFirst().first?.venue ?? NSLocalizedString("activity.venue.motion", comment: "")
         case .quiet:
-            return "Sessiz bir kose, kafe veya kitapci"
+            return NSLocalizedString("activity.venue.quiet", comment: "")
         }
     }
 
@@ -337,17 +337,17 @@ final class ActivityRecommendationEngine {
         case "adana": return "Seyhan kıyısı"
         case "kocaeli": return "Başiskele ve Darıca sahil hattı"
         case "sakarya": return "Sapanca Gölü ve Karasu hattı"
-        default: return "Şehirde suya yakın bir rota"
+        default: return NSLocalizedString("activity.venue.coast", comment: "")
         }
     }
 
-    private let microActivityCatalog: [MicroActivityTemplate] = [
+    private var microActivityCatalog: [MicroActivityTemplate] {[
         MicroActivityTemplate(
             id: "walk-soft",
-            title: "25 dakikalik yavas bir yuruyuse cik",
-            venuePrefix: "Yakininda",
-            timingLabel: "Bugun icin",
-            price: "Ucretsiz",
+            title: NSLocalizedString("activity.walkSoft.title", comment: ""),
+            venuePrefix: NSLocalizedString("activity.walkSoft.venue", comment: ""),
+            timingLabel: NSLocalizedString("activity.walkSoft.timing", comment: ""),
+            price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Huzurlu", "Hassas", "Sessiz", "Derin", "Nötr"],
             feelings: [.calm, .peaceful, .sad, .anxious],
             energy: 1,
@@ -361,10 +361,10 @@ final class ActivityRecommendationEngine {
         ),
         MicroActivityTemplate(
             id: "bike-ride",
-            title: "Bisiklet sur ve ritmini yukari cek",
-            venuePrefix: "Rota",
-            timingLabel: "Bugun ogleden sonra",
-            price: "Ucretsiz",
+            title: NSLocalizedString("activity.bikeRide.title", comment: ""),
+            venuePrefix: NSLocalizedString("activity.bikeRide.venue", comment: ""),
+            timingLabel: NSLocalizedString("activity.bikeRide.timing", comment: ""),
+            price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Özgür", "Coşkulu", "Ateşli", "Doğal"],
             feelings: [.excited, .happy, .angry],
             energy: 4,
@@ -378,10 +378,10 @@ final class ActivityRecommendationEngine {
         ),
         MicroActivityTemplate(
             id: "swim-sea",
-            title: "Yuzmeye git ve bedeni sifirla",
-            venuePrefix: "Kiyi",
-            timingLabel: "Bugun gun batimina yakin",
-            price: "Ucretsiz",
+            title: NSLocalizedString("activity.swimSea.title", comment: ""),
+            venuePrefix: NSLocalizedString("activity.swimSea.venue", comment: ""),
+            timingLabel: NSLocalizedString("activity.swimSea.timing", comment: ""),
+            price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Doğal", "Mutlu", "Özgür", "Coşkulu"],
             feelings: [.happy, .excited, .calm],
             energy: 3,
@@ -395,9 +395,9 @@ final class ActivityRecommendationEngine {
         ),
         MicroActivityTemplate(
             id: "coffee-break",
-            title: "Sessiz bir kahve molasi ver",
-            venuePrefix: "Yakininda",
-            timingLabel: "Simdi",
+            title: NSLocalizedString("activity.coffeeBreak.title", comment: ""),
+            venuePrefix: NSLocalizedString("activity.coffeeBreak.venue", comment: ""),
+            timingLabel: NSLocalizedString("activity.coffeeBreak.timing", comment: ""),
             price: "₺",
             moods: ["Hassas", "Derin", "Nostaljik", "Sessiz", "Nötr"],
             feelings: [.tired, .sad, .calm],
@@ -412,9 +412,9 @@ final class ActivityRecommendationEngine {
         ),
         MicroActivityTemplate(
             id: "bookstore",
-            title: "Bir kitapciya ya da plakciya ugr",
-            venuePrefix: "Rota",
-            timingLabel: "Bugun",
+            title: NSLocalizedString("activity.bookstore.title", comment: ""),
+            venuePrefix: NSLocalizedString("activity.bookstore.venue", comment: ""),
+            timingLabel: NSLocalizedString("activity.bookstore.timing", comment: ""),
             price: "₺",
             moods: ["Nostaljik", "Derin", "Sessiz", "Gizemli"],
             feelings: [.calm, .sad, .peaceful],
@@ -429,9 +429,9 @@ final class ActivityRecommendationEngine {
         ),
         MicroActivityTemplate(
             id: "museum-hop",
-            title: "Kendine kisa bir muze veya sergi rotasi ac",
-            venuePrefix: "Merkez",
-            timingLabel: "Bugun ogle sonrasi",
+            title: NSLocalizedString("activity.museumHop.title", comment: ""),
+            venuePrefix: NSLocalizedString("activity.museumHop.venue", comment: ""),
+            timingLabel: NSLocalizedString("activity.museumHop.timing", comment: ""),
             price: "₺₺",
             moods: ["Derin", "Huzurlu", "Gizemli", "Hassas", "Mutlu"],
             feelings: [.peaceful, .calm, .sad],
@@ -446,10 +446,10 @@ final class ActivityRecommendationEngine {
         ),
         MicroActivityTemplate(
             id: "sunset-walk",
-            title: "Gunum batarken sahil turu yap",
-            venuePrefix: "Sahil",
-            timingLabel: "Aksamustu",
-            price: "Ucretsiz",
+            title: NSLocalizedString("activity.sunsetWalk.title", comment: ""),
+            venuePrefix: NSLocalizedString("activity.sunsetWalk.venue", comment: ""),
+            timingLabel: NSLocalizedString("activity.sunsetWalk.timing", comment: ""),
+            price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Mutlu", "Özgür", "Nostaljik", "Huzurlu"],
             feelings: [.happy, .calm, .peaceful],
             energy: 2,
@@ -463,10 +463,10 @@ final class ActivityRecommendationEngine {
         ),
         MicroActivityTemplate(
             id: "yoga-breath",
-            title: "Yoga ya da nefes calismasi ile tempo dusur",
-            venuePrefix: "Alan",
-            timingLabel: "Bugun sabah veya aksam",
-            price: "Ucretsiz",
+            title: NSLocalizedString("activity.yogaBreath.title", comment: ""),
+            venuePrefix: NSLocalizedString("activity.yogaBreath.venue", comment: ""),
+            timingLabel: NSLocalizedString("activity.yogaBreath.timing", comment: ""),
+            price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Huzurlu", "Sessiz", "Hassas", "Doğal"],
             feelings: [.anxious, .calm, .peaceful, .tired],
             energy: 1,
@@ -480,10 +480,10 @@ final class ActivityRecommendationEngine {
         ),
         MicroActivityTemplate(
             id: "photo-walk",
-            title: "Fotograf yuruyusu yap ve detaya bak",
-            venuePrefix: "Semt",
-            timingLabel: "Bugun",
-            price: "Ucretsiz",
+            title: NSLocalizedString("activity.photoWalk.title", comment: ""),
+            venuePrefix: NSLocalizedString("activity.photoWalk.venue", comment: ""),
+            timingLabel: NSLocalizedString("activity.photoWalk.timing", comment: ""),
+            price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Gizemli", "Doğal", "Derin", "Nostaljik"],
             feelings: [.calm, .peaceful, .happy],
             energy: 2,
@@ -497,10 +497,10 @@ final class ActivityRecommendationEngine {
         ),
         MicroActivityTemplate(
             id: "night-run",
-            title: "Gece kosusu ile enerjiyi bosalt",
-            venuePrefix: "Parkur",
-            timingLabel: "Bu aksam",
-            price: "Ucretsiz",
+            title: NSLocalizedString("activity.nightRun.title", comment: ""),
+            venuePrefix: NSLocalizedString("activity.nightRun.venue", comment: ""),
+            timingLabel: NSLocalizedString("activity.nightRun.timing", comment: ""),
+            price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Ateşli", "Coşkulu", "Gizemli"],
             feelings: [.angry, .excited],
             energy: 5,
@@ -514,9 +514,9 @@ final class ActivityRecommendationEngine {
         ),
         MicroActivityTemplate(
             id: "friend-dinner",
-            title: "Bir arkadasini cagirip uzun bir aksam yemegi kur",
-            venuePrefix: "Masa",
-            timingLabel: "Bu aksam",
+            title: NSLocalizedString("activity.friendDinner.title", comment: ""),
+            venuePrefix: NSLocalizedString("activity.friendDinner.venue", comment: ""),
+            timingLabel: NSLocalizedString("activity.friendDinner.timing", comment: ""),
             price: "₺₺",
             moods: ["Mutlu", "Coşkulu", "Nostaljik"],
             feelings: [.happy, .excited, .peaceful],
@@ -529,5 +529,5 @@ final class ActivityRecommendationEngine {
             avoidedWeather: [],
             locationStyle: .neighborhood
         )
-    ]
+    ]}
 }

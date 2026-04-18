@@ -109,7 +109,7 @@ struct StoryCardViewModel {
         // Format date
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM yyyy"
-        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.locale = LanguageManager.shared.currentLocale
         let dateString = formatter.string(from: dailyEntry.date)
         
         // Extract note

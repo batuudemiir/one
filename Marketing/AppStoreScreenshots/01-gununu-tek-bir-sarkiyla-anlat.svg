@@ -1,0 +1,42 @@
+<svg width="1290" height="2796" viewBox="0 0 1290 2796" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1290" y2="2796" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6F3EE"/>
+      <stop offset="1" stop-color="#EFEAE2"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="274" y1="782" x2="1048" y2="1888" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE2D8"/>
+      <stop offset="1" stop-color="#F7D46C"/>
+    </linearGradient>
+    <clipPath id="screenClip">
+      <rect x="237" y="708" width="816" height="1672" rx="84"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1290" height="2796" fill="url(#bg)"/>
+  <circle cx="988" cy="536" r="120" fill="#F1C24F" fill-opacity="0.18"/>
+  <circle cx="244" cy="2462" r="176" fill="#E7DDD2"/>
+
+  <text x="112" y="172" fill="#7B756C" font-size="28" font-weight="700" letter-spacing="6" font-family="Arial, Helvetica, sans-serif">ONE / TODAY</text>
+  <text x="112" y="316" fill="#171717" font-size="92" font-weight="800" font-family="Arial, Helvetica, sans-serif">Gununu bir</text>
+  <text x="112" y="412" fill="#171717" font-size="92" font-weight="800" font-family="Arial, Helvetica, sans-serif">sarkiyla yakala</text>
+  <text x="112" y="500" fill="#66615A" font-size="38" font-weight="500" font-family="Arial, Helvetica, sans-serif">Her gun tek bir sarki sec. Mood'un, rengin ve o ana ait hissin tek karede kalsin.</text>
+
+  <rect x="112" y="580" width="250" height="64" rx="32" fill="#EEE6DD"/>
+  <circle cx="154" cy="612" r="10" fill="#F78D45"/>
+  <text x="182" y="621" fill="#5E5952" font-size="28" font-weight="700" letter-spacing="3" font-family="Arial, Helvetica, sans-serif">GUNLUK SECIM</text>
+
+  <rect x="268" y="770" width="754" height="1588" rx="96" fill="url(#accent)"/>
+  <rect x="206" y="676" width="878" height="1740" rx="110" fill="#111111"/>
+  <rect x="237" y="708" width="816" height="1672" rx="84" fill="#FBFAF7"/>
+  <rect x="488" y="734" width="314" height="32" rx="16" fill="#080808"/>
+
+  <g clip-path="url(#screenClip)">
+    <rect x="237" y="708" width="816" height="1672" fill="#FBFAF7"/>
+    <rect x="273" y="792" width="744" height="1450" rx="44" fill="#FFFFFF" stroke="#DDD6CC" stroke-width="4" stroke-dasharray="16 16"/>
+    <text x="334" y="1516" fill="#989188" font-size="42" font-weight="700" font-family="Arial, Helvetica, sans-serif">Today ekran capture'ini buraya yerlestir</text>
+  </g>
+
+  <rect x="112" y="2556" width="482" height="96" rx="32" fill="#F1ECE5"/>
+  <text x="152" y="2616" fill="#171717" font-size="42" font-weight="700" font-family="Arial, Helvetica, sans-serif">Tek ekran, tek his, tek sarki.</text>
+</svg>

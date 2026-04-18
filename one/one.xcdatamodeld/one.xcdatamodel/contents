@@ -27,6 +27,7 @@
         <attribute name="weatherDesc" optional="YES" attributeType="String"/>
         <attribute name="spotifyURL" optional="YES" attributeType="String"/>
         <attribute name="shareWithCircle" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="entryIndex" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
     <elements>
         <element name="DailySong" positionX="-63" positionY="-18" width="128" height="389"/>

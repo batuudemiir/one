@@ -139,9 +139,10 @@ struct PersistenceController {
             } else if dailySong.photoData == nil {
                 // If no photo provided and no existing photo, try to download artwork
                 if let artworkURL = song.artworkURL {
-                    Task {
+                    Task.detached(priority: .utility) {
                         do {
                             let (data, _) = try await URLSession.shared.data(from: artworkURL)
+                            try Task.checkCancellation()
                             if let image = UIImage(data: data),
                                let compressedData = image.jpegData(compressionQuality: 0.7) {
                                 await MainActor.run {
@@ -150,14 +151,16 @@ struct PersistenceController {
                                 }
                             }
                         } catch {
-                            ONELogger.debug("Failed to download artwork: \(error)", category: .persistence)
+                            await MainActor.run {
+                                ONELogger.debug("Failed to download artwork: \(error)", category: .persistence)
+                            }
                         }
                     }
                 }
             }
             
-            // Circle sharing (only if photo exists)
-            if shareWithCircle && photo != nil {
+            // Circle sharing
+            if shareWithCircle {
                 dailySong.isSharedWithCircle = true
                 dailySong.sharedAt = Date()
                 
@@ -242,7 +245,7 @@ struct PersistenceController {
         var dateString: String {
             let formatter = DateFormatter()
             formatter.dateFormat = "d MMM"
-            formatter.locale = Locale(identifier: "tr_TR")
+            formatter.locale = LanguageManager.shared.currentLocale
             
             let sortedDates = dates.sorted()
             let dateStrings = sortedDates.prefix(4).map { formatter.string(from: $0) }

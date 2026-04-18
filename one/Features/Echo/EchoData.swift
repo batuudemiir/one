@@ -18,6 +18,13 @@ struct CircleSyncMatch: Identifiable {
     let moodColorHex: String    // kendi mood rengi
 }
 
+struct MoodStat: Identifiable {
+    let id = UUID()
+    let label: String
+    let colorHex: String
+    let count: Int
+}
+
 struct EchoData {
     let weekColors: [Color?]            // 7 gün, nil = boş
     let dominantFeeling: FeelingType?
@@ -29,6 +36,14 @@ struct EchoData {
     let hourDistribution: [Int: Int]    // saat: seçim sayısı (0-23)
     let circleSyncMatches: [CircleSyncMatch]   // CloudKit'ten gelen gerçek eşleşmeler
     let last30DaysColors: [Color?]
+
+    // MARK: — Ek istatistikler
+    let totalSongs: Int
+    let thisMonthSongs: Int
+    let mostActiveDayOfWeek: String?    // "Pazartesi" gibi
+    let averageSongsPerMonth: Double
+    let moodDistribution: [MoodStat]          // tüm zamanlar
+    let thisMonthMoodDistribution: [MoodStat] // bu ay
 
     var syncCount: Int { circleSyncMatches.count }
 
@@ -42,7 +57,13 @@ struct EchoData {
         currentStreak: 0,
         hourDistribution: [:],
         circleSyncMatches: [],
-        last30DaysColors: Array(repeating: nil, count: 30)
+        last30DaysColors: Array(repeating: nil, count: 30),
+        totalSongs: 0,
+        thisMonthSongs: 0,
+        mostActiveDayOfWeek: nil,
+        averageSongsPerMonth: 0,
+        moodDistribution: [],
+        thisMonthMoodDistribution: []
     )
 
     static func mock() -> EchoData {
@@ -86,7 +107,22 @@ struct EchoData {
                                 songName: "Last Last", artistName: "Burna Boy",
                                 friendDisplayName: "Mehmet", moodColorHex: "#E84040"),
             ],
-            last30DaysColors: Array(repeating: ONETokens.oneBlue, count: 30)
+            last30DaysColors: Array(repeating: ONETokens.oneBlue, count: 30),
+            totalSongs: 47,
+            thisMonthSongs: 12,
+            mostActiveDayOfWeek: "Salı",
+            averageSongsPerMonth: 15.3,
+            moodDistribution: [
+                MoodStat(label: "Sakin", colorHex: "#3BBFCF", count: 12),
+                MoodStat(label: "Enerjik", colorHex: "#FF8C42", count: 9),
+                MoodStat(label: "Derin", colorHex: "#5560B8", count: 8),
+                MoodStat(label: "Taze", colorHex: "#7CC874", count: 7),
+            ],
+            thisMonthMoodDistribution: [
+                MoodStat(label: "Sakin", colorHex: "#3BBFCF", count: 5),
+                MoodStat(label: "Enerjik", colorHex: "#FF8C42", count: 4),
+                MoodStat(label: "Derin", colorHex: "#5560B8", count: 3),
+            ]
         )
     }
 }

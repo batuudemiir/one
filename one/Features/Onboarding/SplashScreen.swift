@@ -66,7 +66,7 @@ struct SplashScreen: View {
                 }
 
                 // Slogan — mood karelerinden sonra belirir
-                Text("hisset · keşfet · paylaş")
+                Text(NSLocalizedString("splash.slogan", comment: ""))
                     .font(ONETypography.bodyMD)
                     .tracking(1.8)
                     .foregroundColor(ONETokens.oneAsh)
@@ -213,7 +213,7 @@ struct SplashScreenBreathing: View {
                         .foregroundColor(ONETokens.oneInk)
                         .tracking(-1)
 
-                    Text("Hisset. Keşfet. Paylaş.")
+                    Text(NSLocalizedString("splash.slogan", comment: ""))
                         .monoBase(tracking: 1.5)
                         .foregroundColor(ONETokens.oneAsh)
                 }

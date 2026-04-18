@@ -89,7 +89,7 @@ class ColorPickerViewModel: ObservableObject {
     
     func loadArchiveData(context: NSManagedObjectContext) {
         var calendar = Calendar.current
-        calendar.locale = Locale(identifier: "tr_TR")
+        calendar.locale = LanguageManager.shared.currentLocale
         
         currentMonthSongs = PersistenceController.shared.fetchDailySongsForMonth(
             year: selectedYear,

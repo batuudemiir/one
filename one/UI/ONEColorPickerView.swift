@@ -76,8 +76,15 @@ struct ONEColorPickerView: View {
                             removal: .opacity
                         ))
                 case .echo:
-                    // ── Yankı sekmesi: yeni EchoView ──
+                    // ── Yankı — profil içinden erişilir ──
                     EchoView(context: viewContext)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .leading).combined(with: .opacity),
+                            removal: .opacity
+                        ))
+                case .discover:
+                    // ── Keşfet sekmesi ──
+                    DiscoverView(context: viewContext)
                         .transition(.asymmetric(
                             insertion: .move(edge: .leading).combined(with: .opacity),
                             removal: .opacity
@@ -85,14 +92,14 @@ struct ONEColorPickerView: View {
                 }
             }
             .animation(ONEAnimation.cardSpring, value: vm.currentScreen)
-            
+
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if vm.currentScreen != .confirm {
                 BottomNavigation(currentScreen: $vm.currentScreen)
             }
         }
-        .preferredColorScheme(.light)
+        // Dark mode enabled — tokens are adaptive
         .onAppear {
             vm.loadArchiveData(context: viewContext)
             vm.loadPatternData(context: viewContext)
@@ -102,7 +109,7 @@ struct ONEColorPickerView: View {
                 .onEnded { value in
                     guard abs(value.translation.width) > abs(value.translation.height) else { return }
 
-                    let tabs: [ScreenType] = [.echo, .archive, .today, .circle, .profile]
+                    let tabs: [ScreenType] = [.discover, .archive, .today, .circle, .profile]
                     guard let currentIndex = tabs.firstIndex(of: vm.currentScreen) else { return }
 
                     let translation = value.translation.width
@@ -115,18 +122,33 @@ struct ONEColorPickerView: View {
                     } else if translation > threshold {
                         if currentIndex > 0 {
                             withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = tabs[currentIndex - 1] }
-                        } else if vm.currentScreen == .archive {
-                            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .today }
                         }
                     }
                 }
         )
         .onChange(of: notificationManager.shouldNavigateToCircle) { _, shouldNavigate in
             if shouldNavigate {
-                withAnimation(ONEAnimation.cardSpring) {
-                    vm.currentScreen = .circle
-                }
+                withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .circle }
                 notificationManager.shouldNavigateToCircle = false
+            }
+        }
+        .onChange(of: notificationManager.shouldNavigateToToday) { _, shouldNavigate in
+            if shouldNavigate {
+                withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .today }
+                notificationManager.shouldNavigateToToday = false
+            }
+        }
+        .onChange(of: notificationManager.shouldNavigateToEcho) { _, shouldNavigate in
+            if shouldNavigate {
+                // Yankı profil içinde — profil tab'ına git
+                withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .profile }
+                notificationManager.shouldNavigateToEcho = false
+            }
+        }
+        .onChange(of: notificationManager.shouldNavigateToDiscovery) { _, shouldNavigate in
+            if shouldNavigate {
+                withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .discover }
+                notificationManager.shouldNavigateToDiscovery = false
             }
         }
     }
@@ -182,7 +204,7 @@ struct MoodButton: View {
     let mood: ONEMood
     let isSelected: Bool
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 8) {
@@ -196,7 +218,7 @@ struct MoodButton: View {
                     )
                     .shadow(color: isSelected ? mood.color.opacity(0.4) : Color.clear, radius: 10, y: 5)
                     .animation(ONEAnimation.micro, value: isSelected)
-                
+
                 Text(mood.label.uppercased())
                     .monoSM(tracking: 1.2)
                     .foregroundColor(isSelected ? .black : ONETokens.oneAsh)
@@ -205,6 +227,9 @@ struct MoodButton: View {
             }
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(String(format: NSLocalizedString("accessibility.confirm.moodButton", comment: ""), mood.label))
+        .accessibilityHint(mood.meaning)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -213,7 +238,7 @@ struct FeelingButton: View {
     let feeling: FeelingOption
     let isSelected: Bool
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 8) {
@@ -222,7 +247,7 @@ struct FeelingButton: View {
                     .frame(width: isSelected ? 44 : 40, height: isSelected ? 36 : 32)
                     .opacity(isSelected ? 1.0 : 0.6)
                     .animation(ONEAnimation.micro, value: isSelected)
-                
+
                 // Label
                 Text(feeling.label.uppercased())
                     .monoLabel(tracking: 0.8)
@@ -239,6 +264,8 @@ struct FeelingButton: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(String(format: NSLocalizedString("accessibility.confirm.feelingButton", comment: ""), feeling.label))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -250,12 +277,12 @@ struct PatternScreen: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("YANKILANANLAR")
+            Text(NSLocalizedString("colorPicker.echoes", comment: ""))
                 .monoBase(tracking: 2)
                 .foregroundColor(ONETokens.oneAsh)
                 .padding(.top, 24)
-            
-            Text("Tekrar tekrar\nseçtiklerin.")
+
+            Text(NSLocalizedString("colorPicker.echoesDesc", comment: ""))
                 .displayLG()
                 .foregroundColor(ONETokens.oneInk)
                 .tracking(-0.02)
@@ -269,11 +296,11 @@ struct PatternScreen: View {
                         .font(.system(size: 60))
                         .padding(.top, 60)
                     
-                    Text("Henüz yankı yok.")
+                    Text(NSLocalizedString("colorPicker.noEchoes", comment: ""))
                         .displaySM()
                         .foregroundColor(ONETokens.oneInk)
-                    
-                    Text("Aynı şarkıyı birden fazla gün seçtiğinde\nburada görünecek.")
+
+                    Text(NSLocalizedString("colorPicker.echoesHint", comment: ""))
                         .monoSM(tracking: 0)
                         .foregroundColor(ONETokens.oneAsh)
                         .multilineTextAlignment(.center)
@@ -296,7 +323,7 @@ struct PatternScreen: View {
                                         .tracking(-0.01)
                                         .lineLimit(1)
                                     Spacer()
-                                    Text("\(pattern.count) kez")
+                                    Text(String(format: NSLocalizedString("colorPicker.times", comment: ""), pattern.count))
                                         .monoSM(tracking: 0.06)
                                         .foregroundColor(ONETokens.oneAsh)
                                 }
@@ -338,7 +365,7 @@ struct PatternScreen: View {
                                     Spacer()
                                 }
                                 
-                                Text("\"\(topSong.songName)\" senin için özel bir anlam taşıyor gibi. \(topSong.count) kez seçtin.")
+                                Text(String(format: NSLocalizedString("colorPicker.insightText", comment: ""), topSong.songName, topSong.count))
                                     .displayXS()
                                     .foregroundColor(ONETokens.oneCream)
                                     .lineSpacing(4)

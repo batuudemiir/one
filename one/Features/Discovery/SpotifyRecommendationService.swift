@@ -17,71 +17,100 @@ class SpotifyRecommendationService {
         }
         
         // Step 1: Prepare seed parameters (Spotify allows max 5 seeds total)
+        // Priority: seed_tracks (URL-based or derived via artist top-tracks) > seed_genres > seed_artists
+        let urlTrackIds: [String] = Array(profile.topTrackIds.shuffled().prefix(3))
+        var derivedTrackIds: [String] = []   // resolved via artist top-tracks when urlTrackIds is empty
         var seedGenres: [String] = []
         var seedArtists: [String] = []
-        
-        // Map user genres to Spotify-compatible genres
-        let mappedGenres = profile.topGenres.compactMap { mapToSpotifyGenre($0) }
-        seedGenres = Array(Set(mappedGenres).shuffled().prefix(3)) // Remove duplicates and shuffle
-        
-        // If no valid genres, use fallback genres
-        if seedGenres.isEmpty {
-            seedGenres = ["indie", "alternative", "pop"].shuffled()
-        }
-        
-        // Randomize artist selection for variety
-        let shuffledArtists = profile.topArtists.shuffled()
-        let artistNames = Array(shuffledArtists.prefix(2))
-        
-        // Resolve artist names to IDs
-        if !artistNames.isEmpty {
-            do {
-                seedArtists = try await resolveArtistIds(artistNames: artistNames, token: token)
-            } catch {
-                ONELogger.warning("Could not resolve artist IDs: \(error)", category: .discovery)
-                // Continue with just genres
+
+        // Map user genres to Spotify-compatible genres using the weighted pool.
+        let weightedMapped = profile.weightedGenres.compactMap { mapToSpotifyGenre($0) }
+        let uniqueShuffled: [String] = {
+            var seen = Set<String>()
+            var result: [String] = []
+            for g in weightedMapped.shuffled() {
+                if seen.insert(g).inserted { result.append(g) }
+                else if result.filter({ $0 == g }).count < 2 { result.append(g) }
+            }
+            return result
+        }()
+
+        if urlTrackIds.isEmpty {
+            // No URL-based seeds — resolve artist IDs, then fetch each artist's top track.
+            // This gives real seed_tracks even when the user only searched songs by name.
+            let artistNames = Array(profile.topArtists.shuffled().prefix(2))
+            var resolvedArtistIds: [String] = []
+            if !artistNames.isEmpty {
+                do {
+                    resolvedArtistIds = try await resolveArtistIds(artistNames: artistNames, token: token)
+                } catch {
+                    ONELogger.warning("Could not resolve artist IDs: \(error)", category: .discovery)
+                }
+            }
+
+            for artistId in resolvedArtistIds.prefix(2) {
+                if let tid = await getTopTrackIdForArtist(artistId: artistId, token: token) {
+                    derivedTrackIds.append(tid)
+                }
+            }
+
+            if derivedTrackIds.isEmpty {
+                // True fallback: genre + artist seeds (original behaviour)
+                seedGenres = Array(uniqueShuffled.prefix(3))
+                if seedGenres.isEmpty { seedGenres = ["indie", "alternative", "pop"].shuffled() }
+                if seedGenres.count < 2 && uniqueShuffled.count >= 2 {
+                    seedGenres = Array(uniqueShuffled.prefix(2))
+                }
+                seedArtists = resolvedArtistIds
+                if seedGenres.isEmpty && seedArtists.isEmpty {
+                    seedGenres = ["indie", "alternative", "pop"]
+                }
+            }
+        } else {
+            // Have URL-based track seeds: fill remaining slots with genres
+            let remainingSlots = max(0, 5 - urlTrackIds.count)
+            seedGenres = Array(uniqueShuffled.prefix(remainingSlots))
+            if seedGenres.isEmpty && remainingSlots > 0 {
+                seedGenres = Array(["indie", "alternative", "pop"].prefix(remainingSlots))
             }
         }
-        
-        // Ensure we have at least some seeds
-        if seedGenres.isEmpty && seedArtists.isEmpty {
-            seedGenres = ["indie", "alternative", "pop"]
-        }
-        
+
+        // Effective track seeds: prefer URL-based, fall back to derived
+        let effectiveTrackIds = urlTrackIds.isEmpty ? derivedTrackIds : urlTrackIds
+
         // Step 2: Build URL with query parameters
         var components = URLComponents(string: "https://api.spotify.com/v1/recommendations")!
         var queryItems: [URLQueryItem] = []
-        
-        if !seedGenres.isEmpty {
-            queryItems.append(URLQueryItem(
-                name: "seed_genres",
-                value: seedGenres.joined(separator: ",")
-            ))
+
+        if !effectiveTrackIds.isEmpty {
+            queryItems.append(URLQueryItem(name: "seed_tracks", value: effectiveTrackIds.joined(separator: ",")))
+            // When using derived tracks, fill remaining 5-seed slots with genres
+            if urlTrackIds.isEmpty {
+                let genreSlots = max(0, 5 - effectiveTrackIds.count)
+                let fillGenres = Array(uniqueShuffled.prefix(genreSlots))
+                if !fillGenres.isEmpty {
+                    queryItems.append(URLQueryItem(name: "seed_genres", value: fillGenres.joined(separator: ",")))
+                }
+            }
         }
-        
+
+        if !seedGenres.isEmpty {
+            queryItems.append(URLQueryItem(name: "seed_genres", value: seedGenres.joined(separator: ",")))
+        }
+
         if !seedArtists.isEmpty {
-            queryItems.append(URLQueryItem(
-                name: "seed_artists",
-                value: seedArtists.joined(separator: ",")
-            ))
+            queryItems.append(URLQueryItem(name: "seed_artists", value: seedArtists.joined(separator: ",")))
         }
         
         queryItems.append(URLQueryItem(name: "limit", value: String(limit * 2))) // Request more for variety
         
-        // Add target parameters based on mood with slight randomization
-        let moodVariation = Double.random(in: -0.1...0.1)
-        if profile.averageMoodScore > 0.6 {
-            // User prefers upbeat/light moods
-            let valence = min(1.0, max(0.0, 0.7 + moodVariation))
-            let energy = min(1.0, max(0.0, 0.6 + moodVariation))
-            queryItems.append(URLQueryItem(name: "target_valence", value: String(format: "%.2f", valence)))
-            queryItems.append(URLQueryItem(name: "target_energy", value: String(format: "%.2f", energy)))
-        } else if profile.averageMoodScore < 0.4 {
-            // User prefers darker/calmer moods
-            let valence = min(1.0, max(0.0, 0.3 + moodVariation))
-            let energy = min(1.0, max(0.0, 0.4 + moodVariation))
-            queryItems.append(URLQueryItem(name: "target_valence", value: String(format: "%.2f", valence)))
-            queryItems.append(URLQueryItem(name: "target_energy", value: String(format: "%.2f", energy)))
+        // Add target valence/energy computed from Turkish mood label distribution (A2 fix)
+        if let features = computeTargetAudioFeatures(from: profile.moodPatterns) {
+            let jitter = Double.random(in: -0.08...0.08)
+            let v = min(1.0, max(0.0, features.valence + jitter))
+            let e = min(1.0, max(0.0, features.energy  + jitter))
+            queryItems.append(URLQueryItem(name: "target_valence", value: String(format: "%.2f", v)))
+            queryItems.append(URLQueryItem(name: "target_energy",  value: String(format: "%.2f", e)))
         }
         
         components.queryItems = queryItems
@@ -297,8 +326,59 @@ class SpotifyRecommendationService {
         }
     }
     
+    // MARK: - Helper: Get Top Track for Artist
+
+    /// Fetches the #1 track from an artist's top-tracks (market=TR).
+    /// Used to build real seed_tracks even when no spotifyURL is stored.
+    private func getTopTrackIdForArtist(artistId: String, token: String) async -> String? {
+        guard let url = URL(string: "https://api.spotify.com/v1/artists/\(artistId)/top-tracks?market=TR") else { return nil }
+        var req = URLRequest(url: url)
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        guard let (data, resp) = try? await URLSession.shared.data(for: req),
+              (resp as? HTTPURLResponse)?.statusCode == 200,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let tracks = json["tracks"] as? [[String: Any]],
+              let firstId = tracks.first?["id"] as? String else { return nil }
+        return firstId
+    }
+
+    // MARK: - Helper: Mood Label → Spotify Audio Features (A2)
+
+    /// Maps Turkish mood labels to (valence, energy) targets.
+    private static let moodAudioFeatures: [String: (valence: Double, energy: Double)] = [
+        "Ateşli":    (0.70, 0.88),
+        "Coşkulu":   (0.80, 0.75),
+        "Mutlu":     (0.85, 0.65),
+        "Doğal":     (0.60, 0.50),
+        "Huzurlu":   (0.65, 0.35),
+        "Özgür":     (0.70, 0.55),
+        "Derin":     (0.35, 0.40),
+        "Nostaljik": (0.45, 0.45),
+        "Gizemli":   (0.30, 0.50),
+        "Hassas":    (0.40, 0.30),
+        "Sessiz":    (0.30, 0.20),
+        "Nötr":      (0.50, 0.50),
+    ]
+
+    /// Weighted average of valence/energy across all mood patterns that have a mapping.
+    /// Returns nil when no known mood labels are present (caller skips target parameters).
+    private func computeTargetAudioFeatures(from moodPatterns: [MoodPattern]) -> (valence: Double, energy: Double)? {
+        var totalWeight = 0.0
+        var wValence = 0.0
+        var wEnergy  = 0.0
+        for pattern in moodPatterns {
+            guard let f = Self.moodAudioFeatures[pattern.moodKey] else { continue }
+            let w = pattern.percentage
+            wValence    += f.valence * w
+            wEnergy     += f.energy  * w
+            totalWeight += w
+        }
+        guard totalWeight > 0 else { return nil }
+        return (wValence / totalWeight, wEnergy / totalWeight)
+    }
+
     // MARK: - Helper: Resolve Artist IDs
-    
+
     private func resolveArtistIds(artistNames: [String], token: String) async throws -> [String] {
         var artistIds: [String] = []
         
@@ -339,19 +419,26 @@ class SpotifyRecommendationService {
     
     private func generateReason(_ track: SpotifyTrack, _ profile: TasteProfile?) -> String? {
         guard let profile = profile else { return nil }
-        
-        // Check if artist matches
-        if profile.topArtists.contains(where: { track.artistName.contains($0) }) {
+
+        // Artist or track seeds used → most personalised signal
+        if !profile.topArtists.isEmpty {
+            if profile.topArtists.contains(where: { track.artistName.localizedCaseInsensitiveContains($0) }) {
+                return "Sevdiğin sanatçılara benzer"
+            }
+        }
+        if !profile.topTrackIds.isEmpty {
+            return "Seçtiğin şarkılara göre"
+        }
+
+        // Fallback: artist or mood match
+        if profile.topArtists.contains(where: { track.artistName.localizedCaseInsensitiveContains($0) }) {
             return "Sevdiğin sanatçılara benzer"
         }
-        
-        // Check if mood matches
         if profile.averageMoodScore > 0.6 {
             return "Ruh haline uygun"
         } else if profile.averageMoodScore < 0.4 {
             return "Sakin anların için"
         }
-        
         return "Senin için seçtik"
     }
 }

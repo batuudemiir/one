@@ -1,0 +1,44 @@
+<svg width="1290" height="2796" viewBox="0 0 1290 2796" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1290" y2="2796" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6F3EE"/>
+      <stop offset="1" stop-color="#F0ECE5"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="182" y1="1436" x2="1108" y2="2202" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF3E7"/>
+      <stop offset="1" stop-color="#FAE8EE"/>
+    </linearGradient>
+    <clipPath id="screenClip">
+      <rect x="182" y="782" width="926" height="1526" rx="54"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1290" height="2796" fill="url(#bg)"/>
+  <circle cx="1068" cy="420" r="118" fill="#EACF78" fill-opacity="0.22"/>
+
+  <text x="112" y="172" fill="#7B756C" font-size="28" font-weight="700" letter-spacing="6" font-family="Arial, Helvetica, sans-serif">ONE / MOOD</text>
+  <text x="112" y="316" fill="#171717" font-size="92" font-weight="800" font-family="Arial, Helvetica, sans-serif">Ruh halini</text>
+  <text x="112" y="412" fill="#171717" font-size="92" font-weight="800" font-family="Arial, Helvetica, sans-serif">renkle kaydet</text>
+  <text x="112" y="500" fill="#66615A" font-size="38" font-weight="500" font-family="Arial, Helvetica, sans-serif">Mood secimi bir filtre degil. Tum deneyimin tonunu belirleyen sakin ve net bir hareket.</text>
+
+  <rect x="112" y="580" width="282" height="64" rx="32" fill="#EEE6DD"/>
+  <circle cx="154" cy="612" r="10" fill="#F5A14B"/>
+  <text x="182" y="621" fill="#5E5952" font-size="28" font-weight="700" letter-spacing="3" font-family="Arial, Helvetica, sans-serif">RENK DILI</text>
+
+  <rect x="182" y="730" width="926" height="1578" rx="58" fill="#111111"/>
+  <rect x="182" y="782" width="926" height="1526" rx="54" fill="#FBFAF7"/>
+
+  <g clip-path="url(#screenClip)">
+    <rect x="182" y="782" width="926" height="1526" fill="#FBFAF7"/>
+    <rect x="218" y="818" width="854" height="1292" rx="42" fill="#FFFFFF" stroke="#DDD6CC" stroke-width="4" stroke-dasharray="16 16"/>
+    <text x="328" y="1470" fill="#989188" font-size="42" font-weight="700" font-family="Arial, Helvetica, sans-serif">Mood secim ekranini buraya yerlestir</text>
+  </g>
+
+  <rect x="182" y="2176" width="926" height="190" rx="42" fill="url(#panel)"/>
+  <circle cx="286" cy="2270" r="36" fill="#F78D45"/>
+  <circle cx="390" cy="2270" r="36" fill="#F2C94C"/>
+  <circle cx="494" cy="2270" r="36" fill="#7EC77B"/>
+  <circle cx="598" cy="2270" r="36" fill="#67B8F7"/>
+  <circle cx="702" cy="2270" r="36" fill="#B18AE6"/>
+  <text x="768" y="2286" fill="#171717" font-size="40" font-weight="700" font-family="Arial, Helvetica, sans-serif">Her hissin kendine ait tonu var.</text>
+</svg>

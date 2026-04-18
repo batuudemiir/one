@@ -1,0 +1,43 @@
+<svg width="1290" height="2796" viewBox="0 0 1290 2796" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1290" y2="2796" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5F2EC"/>
+      <stop offset="1" stop-color="#EEE8DF"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="168" y1="834" x2="1120" y2="2328" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF3E7"/>
+      <stop offset="1" stop-color="#F2EFE8"/>
+    </linearGradient>
+    <clipPath id="screenClip">
+      <rect x="200" y="884" width="890" height="1264" rx="54"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1290" height="2796" fill="url(#bg)"/>
+  <circle cx="1016" cy="436" r="118" fill="#F2C973" fill-opacity="0.24"/>
+  <circle cx="236" cy="2408" r="164" fill="#E5DBCF"/>
+
+  <text x="112" y="172" fill="#7B756C" font-size="28" font-weight="700" letter-spacing="6" font-family="Arial, Helvetica, sans-serif">ONE / SUMMARY</text>
+  <text x="112" y="316" fill="#171717" font-size="92" font-weight="800" font-family="Arial, Helvetica, sans-serif">Ayini tek</text>
+  <text x="112" y="412" fill="#171717" font-size="92" font-weight="800" font-family="Arial, Helvetica, sans-serif">bakista gor</text>
+  <text x="112" y="500" fill="#66615A" font-size="38" font-weight="500" font-family="Arial, Helvetica, sans-serif">Baskin mood, tekrar eden sarkilar ve paylasilabilir ozet kartlariyla ayinin hikayesi netlessin.</text>
+
+  <rect x="112" y="580" width="270" height="64" rx="32" fill="#EEE6DD"/>
+  <circle cx="154" cy="612" r="10" fill="#F5A14B"/>
+  <text x="182" y="621" fill="#5E5952" font-size="28" font-weight="700" letter-spacing="3" font-family="Arial, Helvetica, sans-serif">AYLIK OZET</text>
+
+  <rect x="168" y="834" width="954" height="1312" rx="58" fill="url(#panel)"/>
+  <rect x="200" y="884" width="890" height="1264" rx="54" fill="#FBFAF7"/>
+
+  <g clip-path="url(#screenClip)">
+    <rect x="200" y="884" width="890" height="1264" fill="#FBFAF7"/>
+    <rect x="236" y="920" width="818" height="1038" rx="42" fill="#FFFFFF" stroke="#DDD6CC" stroke-width="4" stroke-dasharray="16 16"/>
+    <text x="326" y="1468" fill="#989188" font-size="42" font-weight="700" font-family="Arial, Helvetica, sans-serif">Monthly Summary capture'ini buraya yerlestir</text>
+  </g>
+
+  <rect x="200" y="2020" width="890" height="188" rx="42" fill="#F7F2EA"/>
+  <text x="252" y="2098" fill="#171717" font-size="44" font-weight="700" font-family="Arial, Helvetica, sans-serif">Mood, tekrar ve ozet. Hepsi tek ekranda.</text>
+
+  <rect x="112" y="2528" width="520" height="96" rx="32" fill="#F1ECE5"/>
+  <text x="152" y="2588" fill="#171717" font-size="42" font-weight="700" font-family="Arial, Helvetica, sans-serif">Paylasilabilir ve sakin bir kapanis.</text>
+</svg>

@@ -74,6 +74,7 @@ struct ONESettingsToggle: View {
             Toggle("", isOn: $isOn)
                 .tint(ONETokens.oneInk)
                 .labelsHidden()
+                .accessibilityLabel(title)
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 20)

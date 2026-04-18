@@ -1,0 +1,41 @@
+<svg width="1290" height="2796" viewBox="0 0 1290 2796" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1290" y2="2796" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14161A"/>
+      <stop offset="1" stop-color="#0B0D10"/>
+    </linearGradient>
+    <linearGradient id="phone" x1="184" y1="796" x2="1106" y2="2360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#242A32"/>
+      <stop offset="1" stop-color="#15191E"/>
+    </linearGradient>
+    <clipPath id="screenClip">
+      <rect x="216" y="816" width="858" height="1530" rx="72"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1290" height="2796" fill="url(#bg)"/>
+  <circle cx="1036" cy="430" r="126" fill="#5D82FF" fill-opacity="0.22"/>
+  <circle cx="236" cy="2426" r="172" fill="#CAE86F" fill-opacity="0.82"/>
+
+  <text x="112" y="172" fill="#9399A3" font-size="28" font-weight="700" letter-spacing="6" font-family="Arial, Helvetica, sans-serif">ONE / CIRCLE</text>
+  <text x="112" y="316" fill="#FFFFFF" font-size="92" font-weight="800" font-family="Arial, Helvetica, sans-serif">Cevrenle</text>
+  <text x="112" y="412" fill="#FFFFFF" font-size="92" font-weight="800" font-family="Arial, Helvetica, sans-serif">bagli kal</text>
+  <text x="112" y="500" fill="#A6ACB5" font-size="38" font-weight="500" font-family="Arial, Helvetica, sans-serif">Arkadaslarinin gununu, sarkilarini ve ruh halini tek bakista takip et.</text>
+
+  <rect x="112" y="580" width="262" height="64" rx="32" fill="#1E232A"/>
+  <circle cx="154" cy="612" r="10" fill="#84A1FF"/>
+  <text x="182" y="621" fill="#D2D7DE" font-size="28" font-weight="700" letter-spacing="3" font-family="Arial, Helvetica, sans-serif">YAKIN CEVRE</text>
+
+  <rect x="184" y="760" width="922" height="1642" rx="92" fill="#000000"/>
+  <rect x="216" y="816" width="858" height="1530" rx="72" fill="url(#phone)"/>
+  <rect x="480" y="842" width="330" height="32" rx="16" fill="#050505"/>
+
+  <g clip-path="url(#screenClip)">
+    <rect x="216" y="816" width="858" height="1530" fill="url(#phone)"/>
+    <rect x="252" y="888" width="786" height="1320" rx="40" fill="#11161B" stroke="#3E4651" stroke-width="4" stroke-dasharray="16 16"/>
+    <text x="354" y="1544" fill="#66707D" font-size="42" font-weight="700" font-family="Arial, Helvetica, sans-serif">Circle ekran capture'ini buraya yerlestir</text>
+  </g>
+
+  <rect x="112" y="2524" width="562" height="96" rx="32" fill="#171B20"/>
+  <text x="152" y="2584" fill="#FFFFFF" font-size="42" font-weight="700" font-family="Arial, Helvetica, sans-serif">Sosyal ama sakin. Sicak ama net.</text>
+</svg>

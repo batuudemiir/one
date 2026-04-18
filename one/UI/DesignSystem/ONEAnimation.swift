@@ -121,7 +121,7 @@ enum ONEAnimation {
 // MARK: - Animation View Modifiers
 
 extension View {
-    
+
     /// Apply button press animation effect
     /// - Parameter isPressed: Whether button is currently pressed
     func buttonPressEffect(isPressed: Bool) -> some View {
@@ -131,49 +131,89 @@ extension View {
                 value: isPressed
             )
     }
-    
+
     /// Apply a standard page entrance animation (opacity + scale + vertical offset)
-    /// Intended effect: Elements appear to rise gently into place from slightly below
-    /// Use for: Screen entrance animations, appeared-pattern in onAppear
+    /// Reduce Motion: offset/scale atlanır, sadece opacity geçişi yapılır.
     /// - Parameters:
     ///   - isVisible: Whether the element is visible (drive with @State appeared)
     ///   - delay: Delay before this element's entrance (default: 0)
     func pageEntrance(isVisible: Bool, delay: Double = 0) -> some View {
-        self
-            .opacity(isVisible ? 1 : 0)
-            .scaleEffect(isVisible ? 1 : 0.96)
-            .offset(y: isVisible ? 0 : 8)
-            .animation(ONEAnimation.panelSpring.delay(delay), value: isVisible)
+        modifier(PageEntranceModifier(isVisible: isVisible, delay: delay))
     }
-    
+
     /// Apply a staggered list item entrance animation (opacity + vertical offset)
-    /// Intended effect: List items cascade into view sequentially from below
-    /// Use for: Search results, friend lists, archive grids, any enumerated list
+    /// Reduce Motion: offset atlanır, sadece opacity; stagger delay = 0.
     /// - Parameters:
-    ///   - isVisible: Whether the item is visible (drive with @State appeared)
+    ///   - isVisible: Whether the item is visible
     ///   - index: Item index for stagger delay calculation
     ///   - baseDelay: Base delay before first item appears (default: 0)
     func listItemEntrance(isVisible: Bool, index: Int, baseDelay: Double = 0) -> some View {
-        self
+        modifier(ListItemEntranceModifier(isVisible: isVisible, index: index, baseDelay: baseDelay))
+    }
+
+    /// Apply a standard directional slide transition
+    /// Reduce Motion: sadece opacity transition kullanılır.
+    /// - Parameter edge: The edge from which the element enters (default: .bottom)
+    func slideTransition(edge: Edge = .bottom) -> some View {
+        modifier(SlideTransitionModifier(edge: edge))
+    }
+}
+
+// MARK: - Reduce-Motion-Aware Modifier Implementations
+
+private struct PageEntranceModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let isVisible: Bool
+    let delay: Double
+
+    func body(content: Content) -> some View {
+        content
             .opacity(isVisible ? 1 : 0)
-            .offset(y: isVisible ? 0 : 12)
+            .scaleEffect(reduceMotion ? 1 : (isVisible ? 1 : 0.96))
+            .offset(y: reduceMotion ? 0 : (isVisible ? 0 : 8))
             .animation(
-                ONEAnimation.cardSpring.delay(baseDelay + ONEAnimation.staggerDelay(index: index)),
+                reduceMotion
+                    ? .easeOut(duration: ONEAnimation.durationMicro)
+                    : ONEAnimation.panelSpring.delay(delay),
                 value: isVisible
             )
     }
-    
-    /// Apply a standard directional slide transition
-    /// Intended effect: Element slides in from the given edge with opacity fade
-    /// Use for: Sheet presentations, panel reveals, contextual menus
-    /// - Parameter edge: The edge from which the element enters (default: .bottom)
-    func slideTransition(edge: Edge = .bottom) -> some View {
-        self.transition(
-            .asymmetric(
-                insertion: .move(edge: edge).combined(with: .opacity),
-                removal: .opacity
+}
+
+private struct ListItemEntranceModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let isVisible: Bool
+    let index: Int
+    let baseDelay: Double
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(isVisible ? 1 : 0)
+            .offset(y: reduceMotion ? 0 : (isVisible ? 0 : 12))
+            .animation(
+                reduceMotion
+                    ? .easeOut(duration: ONEAnimation.durationMicro)
+                    : ONEAnimation.cardSpring.delay(baseDelay + ONEAnimation.staggerDelay(index: index)),
+                value: isVisible
             )
-        )
+    }
+}
+
+private struct SlideTransitionModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let edge: Edge
+
+    func body(content: Content) -> some View {
+        if reduceMotion {
+            content.transition(.opacity)
+        } else {
+            content.transition(
+                .asymmetric(
+                    insertion: .move(edge: edge).combined(with: .opacity),
+                    removal: .opacity
+                )
+            )
+        }
     }
 }
 
@@ -182,15 +222,18 @@ extension View {
 struct BreathingAnimation: ViewModifier {
     let delay: Double
     @State private var isAnimating = false
-    
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func body(content: Content) -> some View {
         content
-            .scaleEffect(isAnimating ? 1.05 : 1.0)
+            .scaleEffect((!reduceMotion && isAnimating) ? 1.05 : 1.0)
             .opacity(isAnimating ? 0.6 : 0.3)
             .animation(
-                Animation.easeInOut(duration: ONEAnimation.durationBreathe)
-                    .repeatForever(autoreverses: true)
-                    .delay(delay),
+                reduceMotion
+                    ? .easeOut(duration: ONEAnimation.durationMicro)
+                    : Animation.easeInOut(duration: ONEAnimation.durationBreathe)
+                        .repeatForever(autoreverses: true)
+                        .delay(delay),
                 value: isAnimating
             )
             .onAppear {

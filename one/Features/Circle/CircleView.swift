@@ -22,6 +22,7 @@ struct IdentifiableCKRecord: Identifiable {
 
 struct CircleView: View {
     @Environment(\.managedObjectContext) private var context
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var cloudKitManager = CloudKitManager.shared
     @State private var friendsShares: [CloudKitManager.FriendCircleData] = []
     @State private var userShare: CKRecord? = nil  // User's own share
@@ -39,7 +40,9 @@ struct CircleView: View {
     @State private var friendToBlock: CloudKitManager.FriendCircleData? = nil
     @State private var localCurrentStreak: Int = 0
     @State private var hasLoadedOnce: Bool = false
-    @State private var receivedEmojis: [String] = []
+    @State private var receivedReactions: [EmojiReactionItem] = []
+    @State private var isViewVisible: Bool = false
+    @State private var unseenShareCount: Int = 0
 
     // Deep Link support
     @State private var deepLinkInviteCode: String? = nil
@@ -50,6 +53,30 @@ struct CircleView: View {
     private var userHasSharedToday: Bool {
         (userShare?["songName"] as? String)?.isEmpty == false
     }
+
+    private var totalNotificationCount: Int { pendingRequestCount + CircleNotificationStore.shared.unreadCount }
+
+    private var dynamicSubtitle: String {
+        let sharedCount = friendsShares.filter {
+            !($0.share?["songName"] as? String ?? "").isEmpty
+        }.count
+        let total = friendsShares.count
+        let hour  = Calendar.current.component(.hour, from: Date())
+
+        if total == 0 {
+            return NSLocalizedString("circle.subtitle", comment: "")
+        } else if sharedCount == total {
+            return total == 1
+                ? NSLocalizedString("circle.oneShared", comment: "")
+                : NSLocalizedString("circle.allShared", comment: "")
+        } else if sharedCount > 0 {
+            return String(format: NSLocalizedString("circle.someShared", comment: ""), sharedCount, total)
+        } else if hour < 12 {
+            return NSLocalizedString("circle.morningPending", comment: "")
+        } else {
+            return NSLocalizedString("circle.subtitle", comment: "")
+        }
+    }
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -57,18 +84,15 @@ struct CircleView: View {
             
             if !cloudKitManager.isCloudKitAvailable {
                 cloudKitUnavailableView
-            } else if hasLoadedOnce && friendsShares.isEmpty && !isLoading && userShare == nil && pendingRequestCount == 0 {
-                emptyStateView
             } else {
                 VStack(alignment: .leading, spacing: 0) {
                     headerSection
-                    cloudSection
+                    if isLoading && !hasLoadedOnce {
+                        skeletonCards
+                    } else {
+                        cloudSection
+                    }
                 }
-            }
-            
-            if isLoading {
-                ProgressView()
-                    .scaleEffect(1.5)
             }
         }
         .navigationBarHidden(true)
@@ -84,19 +108,19 @@ struct CircleView: View {
         }) {
             FriendRequestsView()
         }
-        .alert("Arkadaşlıktan Çıkar", isPresented: $showRemoveConfirmation) {
-            Button("İptal", role: .cancel) { friendToRemove = nil }
-            Button("Çıkar", role: .destructive) { confirmRemoveFriend() }
+        .alert(NSLocalizedString("circle.removeFriend", comment: ""), isPresented: $showRemoveConfirmation) {
+            Button(NSLocalizedString("general.cancel", comment: ""), role: .cancel) { friendToRemove = nil }
+            Button(NSLocalizedString("circle.removeAction", comment: ""), role: .destructive) { confirmRemoveFriend() }
         } message: {
             let name = friendToRemove?.user["displayName"] as? String ?? "bu kişi"
-            Text("\(name) arkadaşlıktan çıkarılsın mı?")
+            Text("\(name) \(NSLocalizedString("circle.removeFriend", comment: ""))")
         }
-        .alert("Kullanıcıyı Engelle", isPresented: $showBlockConfirmation) {
-            Button("Vazgeç", role: .cancel) { friendToBlock = nil }
-            Button("Engelle", role: .destructive) { confirmBlockUser() }
+        .alert(NSLocalizedString("circle.blockUser", comment: ""), isPresented: $showBlockConfirmation) {
+            Button(NSLocalizedString("general.cancel", comment: ""), role: .cancel) { friendToBlock = nil }
+            Button(NSLocalizedString("circle.blockAction", comment: ""), role: .destructive) { confirmBlockUser() }
         } message: {
             let name = friendToBlock?.user["displayName"] as? String ?? "bu kişi"
-            Text("\(name) adlı kullanıcıyı engellemek istediğine emin misin? Bu işlemi geri alamazsın.")
+            Text(String(format: NSLocalizedString("circle.blockMessage", comment: ""), name))
         }
         .onAppear {
             computeLocalStreak()
@@ -105,7 +129,8 @@ struct CircleView: View {
             }
 
             // Start pulse animation for empty self bubble
-            if !userHasSharedToday {
+            // Reduce Motion: tekrar eden animasyon atlanır
+            if !userHasSharedToday && !reduceMotion {
                 withAnimation(
                     .easeInOut(duration: 2.8)
                     .repeatForever(autoreverses: true)
@@ -128,18 +153,36 @@ struct CircleView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .init("todaySongSaved"))) { _ in
             // Small delay to allow CloudKit save to propagate
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [self] in
+                guard isViewVisible else { return }
                 loadFriendsShares()
             }
             computeLocalStreak()
         }
         // CloudKit subscription pushed a change (friend shared, request arrived, accepted)
         .onReceive(NotificationCenter.default.publisher(for: .init("circleDataNeedsRefresh"))) { _ in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [self] in
+                guard isViewVisible else { return }
                 loadFriendsShares()
                 loadPendingCount()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .init("unseenSharesChanged"))) { _ in
+            computeUnseenCount()
+        }
+        // Reload when currentUser becomes available after throttle/error recovery
+        .onChange(of: cloudKitManager.currentUser) { _, newUser in
+            if newUser != nil && friendsShares.isEmpty && isViewVisible {
+                loadFriendsShares()
+                loadPendingCount()
+            }
+        }
+        .onAppear {
+            isViewVisible = true
+            // Clear tab badge as soon as the user opens the Circle screen
+            cloudKitManager.unseenFriendShareCount = 0
+        }
+        .onDisappear { isViewVisible = false }
         .sheet(isPresented: $showAddFriend, onDismiss: {
             loadFriendsShares()
             loadPendingCount()
@@ -149,51 +192,100 @@ struct CircleView: View {
         }
     }
     
+    // MARK: - Header Action Buttons
+
+    private var addFriendHeaderButton: some View {
+        Button(action: { showAddFriend = true }) {
+            HStack(spacing: 5) {
+                Image(systemName: friendsShares.isEmpty ? "person.badge.plus.fill" : "person.badge.plus")
+                    .font(.system(size: 13, weight: .medium))
+                if friendsShares.isEmpty {
+                    Text(NSLocalizedString("circle.addFriend", comment: ""))
+                        .monoSM(tracking: 0.5)
+                }
+            }
+            .foregroundColor(friendsShares.isEmpty ? ONETokens.oneCream : ONETokens.oneAsh)
+            .padding(.horizontal, friendsShares.isEmpty ? 14 : 10)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(friendsShares.isEmpty
+                          ? ONETokens.oneInk
+                          : ONETokens.oneSilver.opacity(0.9))
+            )
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .animation(ONEAnimation.micro, value: friendsShares.isEmpty)
+        .accessibilityLabel(NSLocalizedString("accessibility.circle.addFriend", comment: ""))
+    }
+
+    private var notificationsHeaderButton: some View {
+        Button(action: { showFriendRequests = true }) {
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: totalNotificationCount > 0 ? "bell.badge.fill" : "bell")
+                    .font(.system(size: 15, weight: .medium))
+                    .symbolRenderingMode(totalNotificationCount > 0 ? .hierarchical : .monochrome)
+                    .foregroundColor(totalNotificationCount > 0 ? ONETokens.oneInk : ONETokens.oneAsh)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .fill(totalNotificationCount > 0
+                                  ? ONETokens.oneCreamLow
+                                  : ONETokens.oneSilver.opacity(0.9))
+                    )
+
+                if totalNotificationCount > 0 {
+                    ZStack {
+                        Circle().fill(Color.red)
+                        Text(totalNotificationCount < 10 ? "\(totalNotificationCount)" : "9+")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    .frame(width: 16, height: 16)
+                    .offset(x: 5, y: -4)
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .animation(ONEAnimation.micro, value: totalNotificationCount)
+        .accessibilityLabel(
+            totalNotificationCount > 0
+                ? "\(totalNotificationCount) \(NSLocalizedString("friendRequests.title", comment: ""))"
+                : NSLocalizedString("friendRequests.title", comment: "")
+        )
+    }
+
     // MARK: - Header Section
-    
+
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: ONETokens.spacingSM) {
             HStack {
-                Text("Çevre · \(friendsShares.filter { ($0.share?["songName"] as? String)?.isEmpty == false }.count)/\(friendsShares.count) paylaştı")
+                Text(String(format: NSLocalizedString("circle.headerCount", comment: ""), friendsShares.filter { ($0.share?["songName"] as? String)?.isEmpty == false }.count, friendsShares.count))
                     .monoSM(tracking: 2.0)
                     .foregroundColor(ONETokens.oneAsh)
                 
                 Spacer()
-                
+
+                // Arkadaş ekle butonu
+                addFriendHeaderButton
+
                 // Bildirimler butonu
-                Button(action: { showFriendRequests = true }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: pendingRequestCount > 0 ? "bell.badge" : "bell")
-                            .font(.system(size: 15))
-                        if pendingRequestCount > 0 {
-                            Text("\(pendingRequestCount)")
-                                .monoSM(tracking: 0)
-                        }
-                    }
-                    .foregroundColor(pendingRequestCount > 0 ? ONETokens.oneInk : ONETokens.oneAsh)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule()
-                            .fill(pendingRequestCount > 0 ? ONETokens.oneCreamLow : Color.clear)
-                            .overlay(
-                                Capsule()
-                                    .stroke(ONETokens.oneAsh.opacity(0.25), lineWidth: 1)
-                            )
-                    )
-                }
+                notificationsHeaderButton
             }
             
-            Text("çevre")
+            Text(NSLocalizedString("circle.title", comment: ""))
                 .displayLG()
                 .foregroundColor(ONETokens.oneInk)
 
-            Text("Arkadaşlarının bugünkü mood'unu gör, kendi seçimini bırak, paylaşımı büyüt.")
+            Text(dynamicSubtitle)
                 .bodySM()
                 .foregroundColor(ONETokens.oneAsh)
+                .animation(ONEAnimation.micro, value: dynamicSubtitle)
 
             if !userHasSharedToday {
-                Text("Bugün senden bir paylaşım bekleniyor.")
+                Text(NSLocalizedString("circle.awaitingShare", comment: ""))
                     .bodyMD()
                     .foregroundColor(ONETokens.oneAsh)
                     .padding(.top, 2)
@@ -230,13 +322,29 @@ struct CircleView: View {
                         )
                 }
 
+                // ── BEKLEYEN İSTEKLER ─────────────────────────────
+                if pendingRequestCount > 0 {
+                    pendingRequestsTeaser
+                        .scaleEffect(bubblesVisible ? 1.0 : 0.92)
+                        .opacity(bubblesVisible ? 1.0 : 0)
+                        .animation(
+                            ONEAnimation.cardSpring
+                            .delay(ONEAnimation.staggerDelay(index: friendsShares.count + 1, baseDelay: 0.06)),
+                            value: bubblesVisible
+                        )
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
+
                 // ── DAVET SATIRI ──────────────────────────────────
                 inviteRow
                     .scaleEffect(bubblesVisible ? 1.0 : 0.92)
                     .opacity(bubblesVisible ? 1.0 : 0)
                     .animation(
                         ONEAnimation.cardSpring
-                        .delay(ONEAnimation.staggerDelay(index: friendsShares.count + 1, baseDelay: 0.06)),
+                        .delay(ONEAnimation.staggerDelay(
+                            index: friendsShares.count + (pendingRequestCount > 0 ? 2 : 1),
+                            baseDelay: 0.06)
+                        ),
                         value: bubblesVisible
                     )
             }
@@ -269,10 +377,10 @@ struct CircleView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("\(pendingRequestCount) gelen istek")
+                    Text(String(format: NSLocalizedString("circle.pendingRequests", comment: ""), pendingRequestCount))
                         .displaySM()
                         .foregroundColor(ONETokens.oneInk)
-                    Text("Onaylamak için dokun")
+                    Text(NSLocalizedString("circle.tapToApprove", comment: ""))
                         .monoSM(tracking: 0)
                         .foregroundColor(ONETokens.oneAsh)
                 }
@@ -286,7 +394,7 @@ struct CircleView: View {
             .padding(14)
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(0.55))
+                    .fill(ONETokens.onePaper.opacity(0.55))
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
                             .stroke(ONETokens.oneInk.opacity(0.15), lineWidth: 1)
@@ -315,31 +423,53 @@ struct CircleView: View {
         let initial = String(displayName.prefix(1)).uppercased()
         
         HStack(spacing: ONETokens.spacingLG) {
-            // Avatar
+            // Avatar — profil fotoğrafı > mood rengi > initial
             ZStack {
-                Circle()
-                    .fill(hasSong ? Color(hex: moodColorHex) : ONETokens.oneCreamLow)
-                    .frame(width: 52, height: 52)
-                if hasSong {
-                    Text(initial)
-                        .displaySM()
-                        .foregroundColor(.white.opacity(0.9))
+                if let profilePhoto = ProfileView.loadProfilePhotoFromDisk() {
+                    Image(uiImage: profilePhoto)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 52, height: 52)
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(
+                                    hasSong ? Color(hex: moodColorHex).opacity(0.5) : ONETokens.oneCreamLow,
+                                    lineWidth: hasSong ? 2 : 1
+                                )
+                        )
+                    if !hasSong {
+                        Circle()
+                            .stroke(ONETokens.oneAsh,
+                                    style: StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
+                            .frame(width: 52, height: 52)
+                            .opacity(selfPulseOpacity)
+                    }
                 } else {
                     Circle()
-                        .stroke(ONETokens.oneAsh,
-                                style: StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
+                        .fill(hasSong ? Color(hex: moodColorHex) : ONETokens.oneCreamLow)
                         .frame(width: 52, height: 52)
-                        .opacity(selfPulseOpacity)
-                    Text(initial)
-                        .displayXS()
-                        .foregroundColor(ONETokens.oneAsh)
+                    if hasSong {
+                        Text(initial)
+                            .displaySM()
+                            .foregroundColor(.white.opacity(0.9))
+                    } else {
+                        Circle()
+                            .stroke(ONETokens.oneAsh,
+                                    style: StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
+                            .frame(width: 52, height: 52)
+                            .opacity(selfPulseOpacity)
+                        Text(initial)
+                            .displayXS()
+                            .foregroundColor(ONETokens.oneAsh)
+                    }
                 }
             }
             
             // Info
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
-                    Text("SEN")
+                    Text(NSLocalizedString("circle.you", comment: ""))
                         .monoSM(tracking: 1.6)
                         .foregroundColor(ONETokens.oneCharcoal)
                     if hasSong && !moodWord.isEmpty {
@@ -367,22 +497,31 @@ struct CircleView: View {
                         .monoBase()
                         .foregroundColor(ONETokens.oneAsh)
                         .lineLimit(1)
-                    if !receivedEmojis.isEmpty {
-                        HStack(spacing: 4) {
-                            ForEach(Array(Set(receivedEmojis)), id: \.self) { emoji in
-                                Text(emoji)
-                                    .font(.system(size: 13))
-                                    .padding(5)
-                                    .background(Circle().fill(Color(hex: moodColorHex).opacity(0.1)))
+                    if !receivedReactions.isEmpty {
+                        HStack(spacing: 6) {
+                            ForEach(Array(receivedReactions.prefix(3))) { reaction in
+                                HStack(spacing: 3) {
+                                    Text(reaction.emoji)
+                                        .font(.system(size: 12))
+                                    Text(reaction.senderName.components(separatedBy: " ").first ?? reaction.senderName)
+                                        .monoMicro(tracking: 0)
+                                        .foregroundColor(ONETokens.oneAsh)
+                                        .lineLimit(1)
+                                }
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(Capsule().fill(Color(hex: moodColorHex).opacity(0.09)))
                             }
-                            Text("\(receivedEmojis.count)")
-                                .monoMicro(tracking: 0)
-                                .foregroundColor(ONETokens.oneAsh)
+                            if receivedReactions.count > 3 {
+                                Text("+\(receivedReactions.count - 3)")
+                                    .monoMicro(tracking: 0)
+                                    .foregroundColor(ONETokens.oneAsh)
+                            }
                         }
                         .padding(.top, 2)
                     }
                 } else {
-                    Text("Bugünü paylaş ve çevrende görün")
+                    Text(NSLocalizedString("circle.shareToday", comment: ""))
                         .bodySM()
                         .foregroundColor(ONETokens.oneAsh)
                         .padding(.top, 2)
@@ -392,7 +531,7 @@ struct CircleView: View {
         .padding(ONETokens.spacingLG)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.7))
+                .fill(ONETokens.onePaper.opacity(0.7))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
                         .stroke(
@@ -408,7 +547,7 @@ struct CircleView: View {
     }
     
     // MARK: - Friend Card
-    
+
     private func friendCard(data: CloudKitManager.FriendCircleData, index: Int) -> some View {
         let hasSong = data.share != nil && !(data.share!["songName"] as? String ?? "").isEmpty
         let moodColorHex = data.share?["moodColor"] as? String ?? data.user["avatarColor"] as? String ?? "#888888"
@@ -417,13 +556,23 @@ struct CircleView: View {
         let moodWord = (data.share?["moodWord"] as? String ?? "").uppercased()
         let name = data.user["displayName"] as? String ?? "?"
         let initial = String(name.prefix(1)).uppercased()
+
+        // Çevre Yankısı — kullanıcının bugünkü rengiyle karşılaştır
+        let myMoodColorHex = userShare?["moodColor"] as? String ?? ""
+        let isResonant = hasSong && !myMoodColorHex.isEmpty
+            && Color.hsbHueDifference(hex1: myMoodColorHex, hex2: moodColorHex) <= 20.0
         let time = getTimeString(from: data.share?["createdAt"] as? Date)
         let friendStreak = data.share?["currentStreak"] as? Int ?? 0
         let photoAsset = data.share?["photoAsset"] as? CKAsset
         let photoFileURL = photoAsset?.fileURL
+        let profilePhotoAsset = data.user["profilePhoto"] as? CKAsset
+        let profilePhotoURL = profilePhotoAsset?.fileURL
+
+        let isUnseen = isUnseenShare(data)
+        let friendIsPremium = data.user["isPremium"] as? Int64 == 1
 
         return HStack(spacing: ONETokens.spacingLG) {
-            // Avatar: show today's photo if available, else mood color circle
+            // Avatar: daily photo > profile photo > mood color circle
             Group {
                 if let photoURL = photoFileURL,
                    let uiImg = UIImage(contentsOfFile: photoURL.path) {
@@ -436,6 +585,17 @@ struct CircleView: View {
                             Circle()
                                 .stroke(Color(hex: moodColorHex).opacity(0.5), lineWidth: 1.5)
                         )
+                } else if let profileURL = profilePhotoURL,
+                          let uiImg = UIImage(contentsOfFile: profileURL.path) {
+                    Image(uiImage: uiImg)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 44, height: 44)
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(Color(hex: moodColorHex).opacity(0.3), lineWidth: 1)
+                        )
                 } else {
                     Circle()
                         .fill(hasSong ? Color(hex: moodColorHex) : ONETokens.oneStone)
@@ -445,6 +605,33 @@ struct CircleView: View {
                                 .displayXS()
                                 .foregroundColor(.white.opacity(hasSong ? 0.9 : 0.5))
                         )
+                }
+            }
+            .overlay(alignment: .topTrailing) {
+                if isUnseen {
+                    Circle()
+                        .fill(Color(hex: moodColorHex))
+                        .frame(width: 11, height: 11)
+                        .overlay(Circle().stroke(ONETokens.oneCream, lineWidth: 2))
+                        .offset(x: 2, y: -2)
+                } else if friendIsPremium {
+                    // ONE+ premium crown badge
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(3)
+                        .background(
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [ONETokens.oneBrand, ONETokens.oneBrandLight],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
+                        .overlay(Circle().stroke(ONETokens.oneCream, lineWidth: 1.5))
+                        .offset(x: 3, y: -3)
                 }
             }
 
@@ -460,6 +647,10 @@ struct CircleView: View {
                         Text(moodWord)
                             .monoSM(tracking: 1.0)
                             .foregroundColor(Color(hex: moodColorHex).opacity(0.85))
+                    }
+                    // Çevre Yankısı rozeti
+                    if isResonant {
+                        resonancePill(myHex: myMoodColorHex, friendHex: moodColorHex)
                     }
                     Spacer()
                     if hasSong { streakBadge(days: friendStreak, colorHex: moodColorHex) }
@@ -479,7 +670,7 @@ struct CircleView: View {
                         .foregroundColor(ONETokens.oneAsh)
                         .lineLimit(1)
                 } else {
-                    Text("Bugün henüz paylaşmadı")
+                    Text(NSLocalizedString("circle.notSharedYet", comment: ""))
                         .bodySM()
                         .foregroundColor(ONETokens.oneAsh)
                         .padding(.top, 1)
@@ -490,10 +681,26 @@ struct CircleView: View {
         .opacity(hasSong ? 1.0 : 0.55)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(hasSong ? 0.55 : 0.3))
+                .fill(ONETokens.onePaper.opacity(hasSong ? 0.55 : 0.3))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(ONETokens.oneCreamLow.opacity(0.7), lineWidth: 1)
+                        .stroke(
+                            isResonant
+                                ? LinearGradient(
+                                    colors: [
+                                        Color(hex: myMoodColorHex).opacity(0.55),
+                                        Color(hex: moodColorHex).opacity(0.55)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                                : LinearGradient(
+                                    colors: [ONETokens.oneCreamLow.opacity(0.7)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                            lineWidth: isResonant ? 1.5 : 1
+                        )
                 )
         )
         .contentShape(Rectangle())
@@ -506,48 +713,127 @@ struct CircleView: View {
                 friendToRemove = data
                 showRemoveConfirmation = true
             } label: {
-                Label("Arkadaşlıktan Çıkar", systemImage: "person.badge.minus")
+                Label(NSLocalizedString("circle.removeAction", comment: ""), systemImage: "person.badge.minus")
             }
             Button(role: .destructive) {
                 friendToBlock = data
                 showBlockConfirmation = true
             } label: {
-                Label("Engelle", systemImage: "nosign")
+                Label(NSLocalizedString("circle.blockAction", comment: ""), systemImage: "nosign")
             }
         }
     }
     
     // MARK: - Invite Row (inside scroll list)
 
+    // MARK: - Skeleton Loading Cards
+    private var skeletonCards: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 10) {
+                ForEach(0..<4, id: \.self) { index in
+                    skeletonCard(widths: skeletonWidths[index])
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                        .animation(
+                            ONEAnimation.cardSpring.delay(Double(index) * 0.08),
+                            value: isLoading
+                        )
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, ONETokens.spacingLG)
+            .padding(.bottom, 100)
+        }
+    }
+
+    private let skeletonWidths: [(name: CGFloat, sub: CGFloat)] = [
+        (140, 90), (120, 110), (160, 70), (130, 100)
+    ]
+
+    private func skeletonCard(widths: (name: CGFloat, sub: CGFloat)) -> some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(ONETokens.oneCreamMid)
+                .frame(width: 44, height: 44)
+
+            VStack(alignment: .leading, spacing: 6) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(ONETokens.oneCreamMid)
+                    .frame(width: widths.name, height: 12)
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(ONETokens.oneSilver)
+                    .frame(width: widths.sub, height: 10)
+            }
+
+            Spacer()
+
+            RoundedRectangle(cornerRadius: 6)
+                .fill(ONETokens.oneSilver)
+                .frame(width: 48, height: 48)
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: ONETokens.radiusFriend)
+                .fill(ONETokens.onePaper)
+        )
+        .shimmeringCircle()
+    }
+
     private var inviteRow: some View {
         Button(action: { showAddFriend = true }) {
-            HStack(spacing: 12) {
+            HStack(spacing: 14) {
+                // İkon
                 ZStack {
                     Circle()
+                        .fill(friendsShares.isEmpty ? ONETokens.oneInk.opacity(0.06) : Color.clear)
+                        .frame(width: 44, height: 44)
+                    Circle()
                         .strokeBorder(
-                            ONETokens.oneStone,
+                            friendsShares.isEmpty ? ONETokens.oneInk.opacity(0.18) : ONETokens.oneStone,
                             style: StrokeStyle(lineWidth: 1.5, dash: [2, 3])
                         )
                         .frame(width: 44, height: 44)
-                    Image(systemName: "plus")
-                        .font(.system(size: 16, weight: .light))
-                        .foregroundColor(ONETokens.oneAsh)
+                    Image(systemName: friendsShares.isEmpty ? "person.badge.plus.fill" : "plus")
+                        .font(.system(size: friendsShares.isEmpty ? 15 : 16, weight: .light))
+                        .foregroundColor(friendsShares.isEmpty ? ONETokens.oneInk : ONETokens.oneAsh)
                 }
-                Text("Bir arkadaşını çevrene çağır")
-                    .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(NSLocalizedString("circle.addFriend", comment: ""))
+                        .bodySM()
+                        .foregroundColor(friendsShares.isEmpty ? ONETokens.oneInk : ONETokens.oneAsh)
+                    if friendsShares.isEmpty {
+                        Text(NSLocalizedString("circle.inviteHint", comment: ""))
+                            .monoLabel(tracking: 0.3)
+                            .foregroundColor(ONETokens.oneMist)
+                    }
+                }
+
                 Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(ONETokens.oneMist)
             }
             .padding(14)
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(0.2))
+                    .fill(friendsShares.isEmpty
+                          ? ONETokens.onePaper.opacity(0.7)
+                          : ONETokens.onePaper.opacity(0.4))
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
-                            .stroke(ONETokens.oneCreamLow.opacity(0.8), lineWidth: 1)
+                            .stroke(
+                                friendsShares.isEmpty
+                                    ? ONETokens.oneInk.opacity(0.1)
+                                    : ONETokens.oneCreamLow.opacity(0.8),
+                                lineWidth: friendsShares.isEmpty ? 1.5 : 1
+                            )
                     )
             )
         }
+        .buttonStyle(ScaleButtonStyle())
+        .accessibilityLabel(NSLocalizedString("accessibility.circle.addFriend", comment: ""))
+        .accessibilityHint(NSLocalizedString("accessibility.circle.addFriendHint", comment: ""))
     }
     
     // MARK: - Empty State
@@ -568,7 +854,7 @@ struct CircleView: View {
                 VStack(spacing: 12) {
                     // Davet et
                     Button(action: { showAddFriend = true }) {
-                        Text("Çevreni kur")
+                        Text(NSLocalizedString("circle.setupCTA", comment: ""))
                             .bodySMMedium()
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -582,6 +868,7 @@ struct CircleView: View {
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
+                    .accessibilityLabel(NSLocalizedString("accessibility.circle.setupCircle", comment: ""))
                     .padding(.horizontal, 40)
                 }
             }
@@ -605,11 +892,11 @@ struct CircleView: View {
                     .foregroundColor(ONETokens.oneAsh)
                 
                 VStack(spacing: ONETokens.spacingSM) {
-                    Text("iCloud erişimi gerekli")
+                    Text(NSLocalizedString("circle.iCloudRequired", comment: ""))
                         .displayMD()
                         .foregroundColor(ONETokens.oneInk)
-                    
-                    Text("Çevre özelliği için iCloud\nhesabınızla giriş yapmalısınız.")
+
+                    Text(NSLocalizedString("circle.iCloudMessage", comment: ""))
                         .monoSM(tracking: 0)
                         .multilineTextAlignment(.center)
                         .foregroundColor(ONETokens.oneCharcoal)
@@ -635,7 +922,7 @@ struct CircleView: View {
                         }
                     }
                 }) {
-                    Text("Tekrar Dene")
+                    Text(NSLocalizedString("circle.tryAgain", comment: ""))
                         .monoBase(tracking: 1.0)
                         .foregroundColor(ONETokens.oneInk)
                         .frame(maxWidth: .infinity)
@@ -647,7 +934,7 @@ struct CircleView: View {
                 }
                 
                 Button(action: openSettings) {
-                    Text("Ayarlar'a Git")
+                    Text(NSLocalizedString("circle.goToSettings", comment: ""))
                         .monoBase(tracking: 1.0)
                         .foregroundColor(ONETokens.oneCream)
                         .frame(maxWidth: .infinity)
@@ -664,6 +951,45 @@ struct CircleView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
+    // MARK: - Resonance Pill
+
+    @ViewBuilder
+    private func resonancePill(myHex: String, friendHex: String) -> some View {
+        HStack(spacing: 3) {
+            Circle().fill(Color(hex: myHex)).frame(width: 5, height: 5)
+            Circle().fill(Color(hex: friendHex)).frame(width: 5, height: 5)
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(
+            Capsule()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(hex: myHex).opacity(0.12),
+                            Color(hex: friendHex).opacity(0.12)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color(hex: myHex).opacity(0.3),
+                                    Color(hex: friendHex).opacity(0.3)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ),
+                            lineWidth: 0.75
+                        )
+                )
+        )
+    }
+
     // MARK: - Streak Badge
 
     @ViewBuilder
@@ -687,6 +1013,25 @@ struct CircleView: View {
                     )
             )
         }
+    }
+
+    // MARK: - Unseen Share Tracking
+
+    private func unseenShareKey(for userID: String) -> String {
+        let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"
+        return "seenShare_\(userID)_\(f.string(from: Date()))"
+    }
+
+    private func isUnseenShare(_ data: CloudKitManager.FriendCircleData) -> Bool {
+        guard let share = data.share,
+              !(share["songName"] as? String ?? "").isEmpty,
+              let uid = data.user["userID"] as? String else { return false }
+        return !UserDefaults.standard.bool(forKey: unseenShareKey(for: uid))
+    }
+
+    private func computeUnseenCount() {
+        unseenShareCount = friendsShares.filter { isUnseenShare($0) }.count
+        cloudKitManager.unseenFriendShareCount = unseenShareCount
     }
 
     // MARK: - Helper Functions
@@ -732,23 +1077,23 @@ struct CircleView: View {
         if cloudKitManager.currentUser != nil {
             loadFriendsShares()
             loadPendingCount()
-            cloudKitManager.registerAllSubscriptions()
+            // Subscription kaydı oneApp.swift'teki .onChange(of: currentUser) tarafından yapılır.
             return
         }
-        
+
         if cloudKitManager.isFetchingUser {
             ONELogger.debug("Still fetching user, deferring initialization...", category: .circle)
             return
         }
-        
+
         cloudKitManager.createOrFetchUser(displayName: "ONE User") { result in
             switch result {
             case .success:
                 ONELogger.debug("User initialized successfully", category: .circle)
                 self.loadFriendsShares()
                 self.loadPendingCount()
-                // Register CloudKit subscriptions for real-time push notifications
-                self.cloudKitManager.registerAllSubscriptions()
+                // Subscription kaydı oneApp.swift'teki .onChange(of: currentUser) üstlenir;
+                // burada tekrar çağırmak race condition yaratırdı.
             case .failure(let error):
                 ONELogger.debug("Error initializing user: \(error)", category: .circle)
                 DispatchQueue.main.async {
@@ -777,7 +1122,18 @@ struct CircleView: View {
     }
 
     private func performLoadFriendsShares() {
-        isLoading = true
+        // ── Serve cache instantly ────────────────────────────────────────
+        if cloudKitManager.isCircleCacheValid, let cached = cloudKitManager.cachedCircleData {
+            self.friendsShares = cached
+            if !self.bubblesVisible {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    withAnimation(ONEAnimation.cardSpring) { self.bubblesVisible = true }
+                }
+            }
+            // Still refresh in background (cache will be updated silently)
+        }
+
+        isLoading = self.friendsShares.isEmpty
 
         // Load user's own share first
         cloudKitManager.fetchUserDailyShare(for: Date()) { result in
@@ -787,15 +1143,15 @@ struct CircleView: View {
                     self.userShare = share
                     ONELogger.success("Loaded user's own share", category: .circle)
                     // Load emoji reactions others sent to this share
-                    self.cloudKitManager.fetchReceivedEmojiReactions(shareRecordName: share.recordID.recordName) { emojis in
+                    self.cloudKitManager.fetchReceivedEmojiReactions(shareRecordName: share.recordID.recordName) { reactions in
                         withAnimation(ONEAnimation.micro) {
-                            self.receivedEmojis = emojis
+                            self.receivedReactions = reactions
                         }
                     }
                 case .failure(let error):
                     ONELogger.info("User hasn't shared today: \(error)", category: .circle)
                     self.userShare = nil
-                    self.receivedEmojis = []
+                    self.receivedReactions = []
                 }
             }
         }
@@ -808,9 +1164,14 @@ struct CircleView: View {
                 switch result {
                 case .success(let shares):
                     self.friendsShares = shares
-                    self.bubblesVisible = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        self.bubblesVisible = true
+                    self.computeUnseenCount()
+                    self.cloudKitManager.friendsSharedTodayCount = shares.filter { $0.share != nil }.count
+                    if !self.bubblesVisible {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            withAnimation(ONEAnimation.cardSpring) {
+                                self.bubblesVisible = true
+                            }
+                        }
                     }
                 case .failure(let error):
                     ONELogger.debug("Error loading shares: \(error)", category: .circle)
@@ -885,5 +1246,40 @@ struct CircleView: View {
             CircleView()
                 .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
         }
+    }
+}
+
+// MARK: - Circle Shimmer
+private struct CircleShimmerModifier: ViewModifier {
+    @State private var phase: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.clear,
+                        ONETokens.oneCreamMid.opacity(0.4),
+                        Color.clear
+                    ]),
+                    startPoint: .init(x: phase - 0.5, y: 0.5),
+                    endPoint: .init(x: phase + 0.5, y: 0.5)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusFriend))
+            )
+            .onAppear {
+                // Reduce Motion: shimmer atlanır
+                guard !reduceMotion else { return }
+                withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                    phase = 1.5
+                }
+            }
+    }
+}
+
+extension View {
+    func shimmeringCircle() -> some View {
+        modifier(CircleShimmerModifier())
     }
 }

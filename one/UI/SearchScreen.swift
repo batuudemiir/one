@@ -19,7 +19,7 @@ struct SearchScreen: View {
         let now = Date()
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM, EEEE"
-        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.locale = LanguageManager.shared.currentLocale
         
         let todaysSong = vm.getTodaysSong(context: viewContext)
         
@@ -32,7 +32,7 @@ struct SearchScreen: View {
             if let saved = todaysSong {
                 // Show saved song
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Bugünün şarkısı\nzaten seçildi.")
+                    Text(NSLocalizedString("search.alreadySelected", comment: ""))
                         .displayLG()
                         .foregroundColor(ONETokens.oneInk)
                         .lineSpacing(4)
@@ -59,7 +59,7 @@ struct SearchScreen: View {
                     }
                     .padding(.top, 20)
                     
-                    Text("Yarın yeni bir şarkı seçebilirsin.")
+                    Text(NSLocalizedString("search.canPickTomorrow", comment: ""))
                         .displaySM()
                         .foregroundColor(ONETokens.oneAsh)
                         .padding(.top, 16)
@@ -68,7 +68,7 @@ struct SearchScreen: View {
                 Spacer()
             } else {
                 // Normal search flow
-                Text("Bugün nasıl\nbir şarkı?")
+                Text(NSLocalizedString("search.todayQuestion", comment: ""))
                     .displayLG()
                     .foregroundColor(ONETokens.oneInk)
                     .padding(.top, 14)
@@ -97,7 +97,9 @@ struct SearchScreen: View {
                         .clipShape(Capsule())
                         .animation(ONEAnimation.cardSpring, value: vm.selectedPlatform)
                     }
-                    
+                    .accessibilityLabel("Apple Music")
+                    .accessibilityAddTraits(vm.selectedPlatform == .appleMusic ? .isSelected : [])
+
                     Button(action: {
                         withAnimation(ONEAnimation.cardSpring) {
                             vm.selectedPlatform = .spotify
@@ -118,7 +120,10 @@ struct SearchScreen: View {
                         .clipShape(Capsule())
                         .animation(ONEAnimation.cardSpring, value: vm.selectedPlatform)
                     }
+                    .accessibilityLabel("Spotify")
+                    .accessibilityAddTraits(vm.selectedPlatform == .spotify ? .isSelected : [])
                 }
+                .accessibilityLabel(NSLocalizedString("accessibility.search.platformPicker", comment: ""))
                 .background(ONETokens.oneCreamLow.opacity(0.5))
                 .clipShape(Capsule())
                 .padding(.top, 24)
@@ -130,7 +135,7 @@ struct SearchScreen: View {
                     }) {
                         HStack(spacing: 8) {
                             Image(systemName: "link")
-                            Text("Spotify'a Bağlan")
+                            Text(NSLocalizedString("search.connectSpotify", comment: ""))
                         }
                         .monoSM(tracking: 0)
                         .foregroundColor(.white)
@@ -146,7 +151,7 @@ struct SearchScreen: View {
                         Task {
                             let status = await MusicAuthorization.request()
                             if status != .authorized {
-                                vm.errorMessage = "Apple Music izni gerekli. Lütfen Ayarlar'dan izin verin."
+                                vm.errorMessage = NSLocalizedString("search.appleMusicPermission", comment: "")
                             } else {
                                 vm.errorMessage = nil
                             }
@@ -154,7 +159,7 @@ struct SearchScreen: View {
                     }) {
                         HStack(spacing: 8) {
                             Image(systemName: "link")
-                            Text("Apple Music'e Bağlan")
+                            Text(NSLocalizedString("search.connectAppleMusic", comment: ""))
                         }
                         .monoSM(tracking: 0)
                         .foregroundColor(.white)
@@ -179,7 +184,7 @@ struct SearchScreen: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(ONETokens.oneAsh)
                         .padding(.leading, 12)
-                    TextField("şarkı veya sanatçı...", text: $vm.searchQuery)
+                    TextField(NSLocalizedString("search.searchPlaceholder", comment: ""), text: $vm.searchQuery)
                         .monoSM(tracking: 0)
                         .padding(.vertical, 14)
                         .focused($isFocused)
@@ -187,7 +192,7 @@ struct SearchScreen: View {
                             vm.performSearch(query: newValue)
                         }
                 }
-                .background(isFocused ? Color.white : ONETokens.oneCreamMid)
+                .background(isFocused ? ONETokens.onePaper : ONETokens.oneCreamMid)
                 .overlay(
                     RoundedRectangle(cornerRadius: 13)
                         .stroke(isFocused ? ONETokens.oneCreamLow : Color.clear, lineWidth: 1.5)

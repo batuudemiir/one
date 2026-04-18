@@ -66,7 +66,7 @@ struct MonthlyPosterShareCard: View {
                         .fill(ONETokens.oneIvory)
                         .frame(width: 80, height: 1)
                     
-                    Text("ONE · Bir Ayın Yankısı")
+                    Text(NSLocalizedString("monthly.echoTagline", comment: ""))
                         .font(.custom("GeistMono-Regular", size: 12))
                         .tracking(1.5)
                         .foregroundColor(ONETokens.oneMist)

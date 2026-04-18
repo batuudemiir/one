@@ -52,6 +52,7 @@ struct RecommendationCardView: View {
                         .foregroundColor(ONETokens.oneShadow)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, minHeight: 34, alignment: .topLeading)
 
                     Text(recommendation.artist)
                         .monoSM(tracking: 0.4)

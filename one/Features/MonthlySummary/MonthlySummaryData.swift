@@ -30,6 +30,9 @@ struct MonthlySummaryData {
     let dailyMoods: [Color]                        // 28 element
     let emotionBreakdown: [(name: String, percentage: Double, color: Color)]
     let topTracks: [TrackEntry]
+    let totalEntries: Int                          // Tüm DailySong kayıtları (multi-entry dahil)
+    let daysLogged: Int                            // Giriş yapılan benzersiz gün sayısı
+    let monthStreak: Int                           // Ay içindeki en uzun ardışık gün serisi
 }
 
 // MARK: - Mock Data
@@ -76,7 +79,10 @@ extension MonthlySummaryData {
                            days: 3, gradientColors: [red, orange], emoji: "🔥"),
                 TrackEntry(rank: 5, name: "Yüksek Sadakat", artist: "Yüksek Sadakat",
                            days: 2, gradientColors: [teal, blue], emoji: "⚡️")
-            ]
+            ],
+            totalEntries: 28,
+            daysLogged:   22,
+            monthStreak:  9
         )
     }
 }

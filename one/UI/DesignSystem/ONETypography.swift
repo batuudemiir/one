@@ -25,23 +25,35 @@
 
 import SwiftUI
 
+// MARK: — Dynamic Type Helpers
+
+/// SF Pro için UIFontMetrics tabanlı ölçekleme.
+/// Varsayılan boyutu korur, erişilebilirlik font boyutlarında ölçekler.
+private func scaledSystemFont(size: CGFloat, weight: UIFont.Weight, textStyle: UIFont.TextStyle) -> Font {
+    let baseFont = UIFont.systemFont(ofSize: size, weight: weight)
+    let scaledFont = UIFontMetrics(forTextStyle: textStyle).scaledFont(for: baseFont)
+    return Font(scaledFont)
+}
+
 // MARK: — DM Sans Font Helper
+// Dynamic Type desteği: Font.custom(_:size:relativeTo:) ile her font
+// kullanıcının sistem font boyutuna göre ölçeklenir (iOS 14+).
 
 private enum DMSans {
-    static func regular(_ size: CGFloat) -> Font {
-        Font.custom("DMSans24pt-Regular", size: size)
+    static func regular(_ size: CGFloat, relativeTo textStyle: Font.TextStyle = .body) -> Font {
+        Font.custom("DMSans24pt-Regular", size: size, relativeTo: textStyle)
     }
-    static func medium(_ size: CGFloat) -> Font {
-        Font.custom("DMSans24pt-Medium", size: size)
+    static func medium(_ size: CGFloat, relativeTo textStyle: Font.TextStyle = .body) -> Font {
+        Font.custom("DMSans24pt-Medium", size: size, relativeTo: textStyle)
     }
-    static func semibold(_ size: CGFloat) -> Font {
-        Font.custom("DMSans24pt-SemiBold", size: size)
+    static func semibold(_ size: CGFloat, relativeTo textStyle: Font.TextStyle = .caption) -> Font {
+        Font.custom("DMSans24pt-SemiBold", size: size, relativeTo: textStyle)
     }
-    static func bold(_ size: CGFloat) -> Font {
-        Font.custom("DMSans-Bold", size: size)
+    static func bold(_ size: CGFloat, relativeTo textStyle: Font.TextStyle = .body) -> Font {
+        Font.custom("DMSans-Bold", size: size, relativeTo: textStyle)
     }
-    static func italic(_ size: CGFloat) -> Font {
-        Font.custom("DMSans18pt-LightItalic", size: size)
+    static func italic(_ size: CGFloat, relativeTo textStyle: Font.TextStyle = .body) -> Font {
+        Font.custom("DMSans18pt-LightItalic", size: size, relativeTo: textStyle)
     }
 }
 
@@ -52,62 +64,63 @@ enum ONETypography {
     // ── Display — SF Pro (büyük başlıklar, hero metinler) ─────────────────
     // Ekran başlıkları, hero metinler, bölüm başlıkları
     // SF Pro: iOS native güç, büyük boyutlarda editorial ve güçlü
+    // Dynamic Type: relativeTo ile kullanıcının font büyüklüğüne göre ölçeklenir
 
     /// 40pt · Bold · Tight tracking  →  Splash, hero, wordmark
-    static let displayXL = Font.system(size: 40, weight: .bold, design: .default)
+    static let displayXL = scaledSystemFont(size: 40, weight: .bold, textStyle: .largeTitle)
 
     /// 30pt · Semibold  →  Ana ekran başlığı (Yankı, Arşiv, Çevre…)
-    static let displayLG = Font.system(size: 30, weight: .semibold, design: .default)
+    static let displayLG = scaledSystemFont(size: 30, weight: .semibold, textStyle: .title1)
 
     /// 24pt · Semibold  →  Bölüm başlıkları, modal başlıklar
-    static let displayMD = Font.system(size: 24, weight: .semibold, design: .default)
+    static let displayMD = scaledSystemFont(size: 24, weight: .semibold, textStyle: .title2)
 
     /// 20pt · Medium  →  Kart başlığı, sayfa içi başlık
-    static let displaySM = Font.system(size: 20, weight: .medium, design: .default)
+    static let displaySM = scaledSystemFont(size: 20, weight: .medium, textStyle: .title3)
 
     /// 17pt · Medium  →  Alt başlık, navigation title
-    static let displayXS = Font.system(size: 17, weight: .medium, design: .default)
+    static let displayXS = scaledSystemFont(size: 17, weight: .medium, textStyle: .headline)
 
     // ── Body — DM Sans (okunabilir UI metni) ──────────────────────────────
     // DM Sans: sıcak geometrik sans, markaya kişilik katar
     // Body hiyerarşisinin tamamı DM Sans kullanır
 
     /// 16pt · Regular  →  Birincil body metni, açıklama
-    static let bodyLG = DMSans.regular(16)
+    static let bodyLG = DMSans.regular(16, relativeTo: .body)
 
     /// 15pt · Regular  →  Standart body, kart içeriği
-    static let bodyMD = DMSans.regular(15)
+    static let bodyMD = DMSans.regular(15, relativeTo: .callout)
 
     /// 14pt · Regular  →  İkincil body, liste itemları
-    static let bodySM = DMSans.regular(14)
+    static let bodySM = DMSans.regular(14, relativeTo: .subheadline)
 
     /// 13pt · Regular  →  Küçük gövde, ipucu, yardım metni
-    static let bodyXS = DMSans.regular(13)
+    static let bodyXS = DMSans.regular(13, relativeTo: .footnote)
 
     /// 15pt · Medium  →  Güçlü body, öne çıkan bilgi
-    static let bodyMDMedium = DMSans.medium(15)
+    static let bodyMDMedium = DMSans.medium(15, relativeTo: .callout)
 
     /// 14pt · Medium  →  Güçlü secondary, etiket içeriği
-    static let bodySMMedium = DMSans.medium(14)
+    static let bodySMMedium = DMSans.medium(14, relativeTo: .subheadline)
 
     /// 13pt · Medium  →  Küçük güçlü metin
-    static let bodyXSMedium = DMSans.medium(13)
+    static let bodyXSMedium = DMSans.medium(13, relativeTo: .footnote)
 
     // ── Mono / Label — DM Sans (meta veriler, etiketler) ──────────────────
     // Buton etiketleri, bölüm başlıkları, meta bilgi
     // Monospaced yerine DM Sans Medium + letter-spacing kullanılır
 
     /// 12pt · SemiBold + tracking  →  Buton etiketi, büyük harf etiket
-    static let monoBase = DMSans.semibold(12)
+    static let monoBase = DMSans.semibold(12, relativeTo: .caption)
 
     /// 11pt · Medium + tracking  →  Meta bilgi, sayaç
-    static let monoSM = DMSans.medium(11)
+    static let monoSM = DMSans.medium(11, relativeTo: .caption)
 
     /// 10pt · Medium + tracking  →  Küçük etiket, badge
-    static let monoLabel = DMSans.medium(10)
+    static let monoLabel = DMSans.medium(10, relativeTo: .caption2)
 
     /// 9pt · Regular + tracking  →  Mikro açıklama (mümkünse kaçın)
-    static let monoMicro = DMSans.regular(9)
+    static let monoMicro = DMSans.regular(9, relativeTo: .caption2)
 }
 
 // MARK: — View Modifier'lar

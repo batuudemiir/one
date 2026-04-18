@@ -58,6 +58,9 @@ struct FilledDayCell: View {
             )
         }
         .aspectRatio(1, contentMode: .fit)
+        // VoiceOver: describe cell as "Song name — mood, date"
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(entry.songName) — \(entry.moodLabel)")
     }
 }
 

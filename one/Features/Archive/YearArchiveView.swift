@@ -53,7 +53,7 @@ struct YearArchiveView: View {
                 Text(String(yearData.first?.year ?? Calendar.current.component(.year, from: Date())))
                     .displayLG()
                     .foregroundColor(ONETokens.oneInk)
-                Text("Müzik yılın")
+                Text(NSLocalizedString("archive.musicYear", comment: ""))
                     .bodyXS()
                     .foregroundColor(ONETokens.oneAsh)
             }
@@ -62,8 +62,8 @@ struct YearArchiveView: View {
 
             // Görünüm toggle
             HStack(spacing: 6) {
-                toggleBtn("AY",  active: false) { onAyTap() }
-                toggleBtn("YIL", active: true,  action: nil)
+                toggleBtn(NSLocalizedString("archive.month", comment: ""),  active: false) { onAyTap() }
+                toggleBtn(NSLocalizedString("archive.year", comment: ""), active: true,  action: nil)
             }
         }
     }
@@ -91,15 +91,15 @@ struct YearArchiveView: View {
         let activMonths  = yearData.filter { $0.filledDays > 0 }.count
 
         return HStack(spacing: 0) {
-            statCell(val: "\(totalFilled)", lbl: "Toplam seçim")
+            statCell(val: "\(totalFilled)", lbl: NSLocalizedString("archive.totalSelections", comment: ""))
             Divider().frame(height: 28)
-            statCell(val: "\(activMonths)", lbl: "Aktif ay")
+            statCell(val: "\(activMonths)", lbl: NSLocalizedString("archive.activeMonths", comment: ""))
             Divider().frame(height: 28)
             let pct = totalDays > 0 ? Int(Double(totalFilled) / Double(totalDays) * 100) : 0
-            statCell(val: "%\(pct)", lbl: "Yıl doluluk")
+            statCell(val: "%\(pct)", lbl: NSLocalizedString("archive.yearCompletion", comment: ""))
         }
         .padding(.vertical, 12)
-        .background(Color.white.opacity(0.75))
+        .background(ONETokens.onePaper.opacity(0.75))
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(ONETokens.oneSilver, lineWidth: 1))
     }
@@ -152,8 +152,10 @@ struct MonthMiniCard: View {
 
                 // Gün adları mini başlık
                 HStack(spacing: 0) {
-                    ForEach(["P","S","Ç","P","C","C","P"], id: \.self) { d in
-                        Text(d)
+                    ForEach(Array(["calendar.day.mon", "calendar.day.tue", "calendar.day.wed",
+                                   "calendar.day.thu", "calendar.day.fri", "calendar.day.sat",
+                                   "calendar.day.sun"].enumerated()), id: \.offset) { _, key in
+                        Text(String(NSLocalizedString(key, comment: "").prefix(1)))
                             .monoMicro()
                             .foregroundColor(ONETokens.oneStone)
                             .frame(maxWidth: .infinity)
@@ -183,7 +185,7 @@ struct MonthMiniCard: View {
                 .frame(height: 3)
             }
             .padding(12)
-            .background(Color.white.opacity(isCurrentMonth ? 0.92 : 0.72))
+            .background(ONETokens.onePaper.opacity(isCurrentMonth ? 0.92 : 0.72))
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
@@ -192,6 +194,7 @@ struct MonthMiniCard: View {
                         lineWidth: isCurrentMonth ? 1.5 : 1
                     )
             )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -199,7 +202,7 @@ struct MonthMiniCard: View {
     @ViewBuilder
     private func miniCell(for date: Date?) -> some View {
         if let date {
-            if let entry = summary.entries[date] {
+            if let entry = summary.primaryEntry(for: date) {
                 // Dolu gün — mood rengi
                 RoundedRectangle(cornerRadius: 2)
                     .fill(Color(hex: entry.moodColorHex))

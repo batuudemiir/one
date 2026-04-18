@@ -29,6 +29,7 @@ struct SaveRitualParticles: View {
     let color: Color
 
     @State private var startDate = Date()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let particles: [RParticle]
 
@@ -39,15 +40,23 @@ struct SaveRitualParticles: View {
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { context in
-            Canvas { ctx, size in
-                let elapsed = context.date.timeIntervalSince(startDate)
-                let center = CGPoint(x: size.width / 2, y: size.height / 2)
-                drawParticles(ctx: &ctx, center: center, elapsed: elapsed)
+        // Reduce Motion: 60fps parçacık animasyonu yerine statik sparkle ikonu
+        if reduceMotion {
+            Image(systemName: mood.icon)
+                .font(.system(size: 32))
+                .foregroundColor(color.opacity(0.5))
+                .allowsHitTesting(false)
+        } else {
+            TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { context in
+                Canvas { ctx, size in
+                    let elapsed = context.date.timeIntervalSince(startDate)
+                    let center = CGPoint(x: size.width / 2, y: size.height / 2)
+                    drawParticles(ctx: &ctx, center: center, elapsed: elapsed)
+                }
             }
+            .allowsHitTesting(false)
+            .ignoresSafeArea()
         }
-        .allowsHitTesting(false)
-        .ignoresSafeArea()
     }
 
     // MARK: - Particle Factory

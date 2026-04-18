@@ -18,12 +18,14 @@ struct FriendDetailView: View {
 
     // Live state — başta friendData'dan geliyor, sonra canlı güncellenebilir
     @State private var share: CKRecord?
-    @State private var isPolling   = false
-    @State private var appeared    = false
+    @State private var isPolling       = false
+    @State private var appeared        = false
     @State private var sentEmoji: String? = nil
     @State private var showPhotoViewer = false
     @State private var showRemoveAlert = false
-    @State private var showBlockAlert = false
+    @State private var showBlockAlert  = false
+    @State private var showProfileZoom = false
+    @State private var profilePhotoPressed = false
 
     private var displayName: String {
         friendData.user["displayName"] as? String ?? "Arkadaş"
@@ -33,6 +35,14 @@ struct FriendDetailView: View {
         share?["moodColor"] as? String
             ?? friendData.user["avatarColor"] as? String
             ?? "#888888"
+    }
+
+    /// Friend's profile photo loaded from their CKAsset, if available.
+    private var friendProfileImage: UIImage? {
+        guard let asset = friendData.user["profilePhoto"] as? CKAsset,
+              let url = asset.fileURL,
+              let data = try? Data(contentsOf: url) else { return nil }
+        return UIImage(data: data)
     }
     private var hasSong: Bool {
         guard let s = share else { return false }
@@ -52,6 +62,7 @@ struct FriendDetailView: View {
                     } else {
                         waitingSection
                     }
+
                     closeBtn
                 }
             }
@@ -64,22 +75,42 @@ struct FriendDetailView: View {
                 PhotoDataViewerSheet(image: img, isPresented: $showPhotoViewer)
             }
         }
-        .alert("Arkadaşlıktan Çıkar", isPresented: $showRemoveAlert) {
-            Button("Çıkar", role: .destructive) { removeFriend() }
-            Button("Vazgeç", role: .cancel) { }
-        } message: {
-            Text("\(displayName) adlı kişiyi çevrenden çıkarmak istiyor musun?")
+        .overlay {
+            if profilePhotoPressed, let img = friendProfileImage {
+                ZStack {
+                    Color.black.opacity(0.72)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+
+                    Image(uiImage: img)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 280, height: 280)
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.4), radius: 60, x: 0, y: 20)
+                        .transition(.scale(scale: 0.45).combined(with: .opacity))
+                }
+                .allowsHitTesting(false)
+            }
         }
-        .alert("Kullanıcıyı Engelle", isPresented: $showBlockAlert) {
-            Button("Engelle", role: .destructive) { blockUser() }
-            Button("Vazgeç", role: .cancel) { }
+        .animation(.spring(response: 0.28, dampingFraction: 0.72), value: profilePhotoPressed)
+        .alert(NSLocalizedString("circle.removeFriend", comment: ""), isPresented: $showRemoveAlert) {
+            Button(NSLocalizedString("circle.removeAction", comment: ""), role: .destructive) { removeFriend() }
+            Button(NSLocalizedString("general.cancel", comment: ""), role: .cancel) { }
         } message: {
-            Text("\(displayName) adlı kullanıcıyı engellemek istediğine emin misin? Bu işlemi geri alamazsın.")
+            Text(String(format: NSLocalizedString("circle.removeConfirmMessage", comment: ""), displayName))
+        }
+        .alert(NSLocalizedString("circle.blockUser", comment: ""), isPresented: $showBlockAlert) {
+            Button(NSLocalizedString("circle.blockAction", comment: ""), role: .destructive) { blockUser() }
+            Button(NSLocalizedString("general.cancel", comment: ""), role: .cancel) { }
+        } message: {
+            Text(String(format: NSLocalizedString("circle.blockConfirmMessage", comment: ""), displayName))
         }
         .onAppear {
             share = friendData.share
             withAnimation(ONEAnimation.screenTransition) { appeared = true }
             loadSentEmoji()
+            markShareAsSeen()
             // Eğer şarkı henüz seçilmemişse polling başlat
             if !hasSong { startPolling() }
         }
@@ -92,40 +123,95 @@ struct FriendDetailView: View {
 
     // MARK: - Header
 
+    private var friendUsername: String? {
+        friendData.user["username"] as? String
+    }
+    private var friendStreak: Int {
+        friendData.share?["currentStreak"] as? Int ?? 0
+    }
+
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                HStack(spacing: 10) {
-                    Circle()
-                        .fill(Color(hex: avatarColorHex))
-                        .frame(width: 28, height: 28)
-                        .overlay(
-                            Text(initial)
-                                .monoSM(tracking: 0)
-                                .foregroundColor(.white.opacity(0.9))
-                        )
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                // Avatar + isim
+                HStack(spacing: 12) {
+                    ZStack {
+                        if let img = friendProfileImage {
+                            Image(uiImage: img)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 46, height: 46)
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color(hex: avatarColorHex).opacity(0.4), lineWidth: 1.5)
+                                )
+                        } else {
+                            Circle()
+                                .fill(Color(hex: avatarColorHex))
+                                .frame(width: 46, height: 46)
+                                .overlay(
+                                    Text(initial)
+                                        .font(.system(size: 18, weight: .regular, design: .serif))
+                                        .italic()
+                                        .foregroundColor(.white.opacity(0.9))
+                                )
+                        }
+                    }
+                    .onLongPressGesture(minimumDuration: 0.2, pressing: { isPressing in
+                        withAnimation(.spring(response: 0.28, dampingFraction: 0.72)) {
+                            profilePhotoPressed = isPressing
+                        }
+                        if isPressing, friendProfileImage != nil { ONEHaptics.feelingSelected() }
+                    }, perform: {})
+
                     Text(displayName.uppercased())
                         .monoSM(tracking: 1.6)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(ONETokens.oneCharcoal)
                 }
+
                 Spacer()
-                Menu {
-                    Button(role: .destructive) { showRemoveAlert = true } label: {
-                        Label("Çıkar", systemImage: "person.fill.xmark")
+
+                HStack(spacing: 10) {
+                    // Streak rozeti
+                    if friendStreak >= 2 {
+                        HStack(spacing: 4) {
+                            Text("🔥")
+                                .font(.system(size: 11))
+                            Text("\(friendStreak)")
+                                .monoSM(tracking: 0.5)
+                                .foregroundColor(Color(hex: avatarColorHex))
+                        }
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule()
+                                .fill(Color(hex: avatarColorHex).opacity(0.1))
+                                .overlay(Capsule().stroke(Color(hex: avatarColorHex).opacity(0.2), lineWidth: 1))
+                        )
                     }
-                    Button(role: .destructive) { showBlockAlert = true } label: {
-                        Label("Engelle", systemImage: "nosign")
+
+                    // Menü
+                    Menu {
+                        Button(role: .destructive) { showRemoveAlert = true } label: {
+                            Label(NSLocalizedString("circle.removeAction", comment: ""), systemImage: "person.fill.xmark")
+                        }
+                        Button(role: .destructive) { showBlockAlert = true } label: {
+                            Label(NSLocalizedString("circle.blockAction", comment: ""), systemImage: "nosign")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(ONETokens.oneStone)
+                            .frame(width: 32, height: 32)
+                            .contentShape(Rectangle())
                     }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(ONETokens.oneStone)
-                        .frame(width: 32, height: 32)
-                        .contentShape(Rectangle())
                 }
             }
 
-            Text(hasSong ? "Bugün ne\nhissediyor?" : "Bugün henüz\nseçmedi.")
+            Text(hasSong
+                 ? NSLocalizedString("circle.todayFeeling", comment: "")
+                 : NSLocalizedString("circle.notSelectedYet", comment: ""))
                 .displayLG()
                 .foregroundColor(ONETokens.oneInk)
                 .lineSpacing(2)
@@ -141,49 +227,85 @@ struct FriendDetailView: View {
     // MARK: - Waiting section (no song yet)
 
     private var waitingSection: some View {
-        VStack(spacing: 20) {
-            ZStack {
-                Circle()
-                    .stroke(ONETokens.oneStone.opacity(0.4),
-                            style: StrokeStyle(lineWidth: 1.5, dash: [4, 5]))
-                    .frame(width: 80, height: 80)
-                Text(initial)
-                    .displayLG()
-                    .foregroundColor(ONETokens.oneAsh)
-            }
-            .padding(.top, 12)
+        WaitingView(initial: initial, displayName: displayName, isPolling: isPolling, appeared: appeared)
+    }
 
-            Text("Seçimini bekliyoruz…")
-                .displayMD()
-                .foregroundColor(ONETokens.oneAsh)
+    private struct WaitingView: View {
+        let initial: String
+        let displayName: String
+        let isPolling: Bool
+        let appeared: Bool
 
-            Text("Şarkı seçtiğinde burada görünecek")
-                .monoSM(tracking: 0.3)
-                .foregroundColor(ONETokens.oneStone)
+        @State private var pulseScale: CGFloat = 1.0
+        @State private var pulseOpacity: Double = 0.35
+
+        var body: some View {
+            VStack(spacing: 24) {
+                // Avatar ile pulse halkaları
+                ZStack {
+                    // Dış halka 2
+                    Circle()
+                        .stroke(Color.gray.opacity(0.08 * pulseOpacity * 3), lineWidth: 1)
+                        .frame(width: 100 * pulseScale, height: 100 * pulseScale)
+                    // Dış halka 1
+                    Circle()
+                        .stroke(Color.gray.opacity(0.12 * pulseOpacity * 3), lineWidth: 1)
+                        .frame(width: 84 * pulseScale, height: 84 * pulseScale)
+                    // Ana daire
+                    Circle()
+                        .stroke(Color.gray.opacity(0.25),
+                                style: StrokeStyle(lineWidth: 1.5, dash: [4, 5]))
+                        .frame(width: 72, height: 72)
+                    Text(initial)
+                        .font(.system(size: 26, weight: .regular, design: .serif))
+                        .italic()
+                        .foregroundColor(Color.gray.opacity(0.4))
+                }
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+                        pulseScale   = 1.08
+                        pulseOpacity = 0.8
+                    }
+                }
+                .padding(.top, 8)
+
+                VStack(spacing: 8) {
+                    Text(NSLocalizedString("circle.waitingPick", comment: ""))
+                        .displayMD()
+                        .foregroundColor(ONETokens.oneAsh)
+
+                    Text(
+                        (displayName.components(separatedBy: " ").first ?? displayName)
+                        + " "
+                        + NSLocalizedString("circle.willAppear", comment: "")
+                    )
+                    .monoSM(tracking: 0.3)
+                    .foregroundColor(ONETokens.oneMist)
+                }
                 .multilineTextAlignment(.center)
 
-            if isPolling {
-                HStack(spacing: 6) {
-                    ProgressView().scaleEffect(0.7)
-                    Text("Güncelleniyor…")
-                        .monoSM(tracking: 0)
-                        .foregroundColor(ONETokens.oneStone)
+                if isPolling {
+                    HStack(spacing: 6) {
+                        ProgressView().scaleEffect(0.65).tint(ONETokens.oneMist)
+                        Text(NSLocalizedString("circle.updating", comment: ""))
+                            .monoLabel(tracking: 0.3)
+                            .foregroundColor(ONETokens.oneMist)
+                    }
                 }
-                .padding(.top, 4)
             }
+            .padding(.horizontal, 40)
+            .padding(.vertical, 36)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.white.opacity(0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(ONETokens.oneCreamLow, lineWidth: 1))
+            )
+            .padding(.horizontal, 20)
+            .scaleEffect(appeared ? 1 : 0.94)
+            .opacity(appeared ? 1 : 0)
+            .animation(ONEAnimation.panelSpring.delay(0.15), value: appeared)
         }
-        .padding(.horizontal, 40)
-        .padding(.vertical, 32)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.6))
-                .overlay(RoundedRectangle(cornerRadius: 20).stroke(ONETokens.oneCreamLow, lineWidth: 1))
-        )
-        .padding(.horizontal, 20)
-        .scaleEffect(appeared ? 1 : 0.94)
-        .opacity(appeared ? 1 : 0)
-        .animation(ONEAnimation.panelSpring.delay(0.15), value: appeared)
     }
 
     // MARK: - Song card
@@ -222,6 +344,7 @@ struct FriendDetailView: View {
                             .aspectRatio(contentMode: .fill)
                             .frame(height: 180)
                             .clipped()
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 } else {
@@ -238,12 +361,40 @@ struct FriendDetailView: View {
 
             // Info
             VStack(alignment: .leading, spacing: ONETokens.spacingLG) {
-                Text(songName)
-                    .displayMD()
-                    .foregroundColor(ONETokens.oneInk).tracking(-0.8).lineLimit(2)
-                Text("\(artistName) · \(genre.isEmpty ? platform : genre)")
-                    .monoSM(tracking: 0)
-                    .foregroundColor(ONETokens.oneCharcoal)
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(songName)
+                            .displayMD()
+                            .foregroundColor(ONETokens.oneInk).tracking(-0.8).lineLimit(2)
+                        Text(artistName)
+                            .monoSM(tracking: 0)
+                            .foregroundColor(ONETokens.oneCharcoal)
+                    }
+                    Spacer()
+                    // Platform rozeti
+                    if !platform.isEmpty {
+                        HStack(spacing: 4) {
+                            Image(systemName: platform.lowercased().contains("spotify")
+                                  ? "music.note" : "music.note.list")
+                                .font(.system(size: 9, weight: .medium))
+                            Text(platform.contains("Spotify") ? "Spotify" : "Apple")
+                                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                .tracking(0.3)
+                        }
+                        .foregroundColor(ONETokens.oneAsh)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(ONETokens.oneSilver.opacity(0.8))
+                        )
+                    }
+                }
+                if !genre.isEmpty {
+                    Text(genre)
+                        .monoLabel(tracking: 0.5)
+                        .foregroundColor(ONETokens.oneMist)
+                }
 
                 Rectangle().fill(ONETokens.oneCreamLow).frame(height: 1).padding(.vertical, 4)
 
@@ -267,7 +418,7 @@ struct FriendDetailView: View {
 
                 if let note = dailyNote {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("NOT").monoSM(tracking: 1.5).foregroundColor(ONETokens.oneAsh)
+                        Text(NSLocalizedString("circle.note", comment: "")).monoSM(tracking: 1.5).foregroundColor(ONETokens.oneAsh)
                         Text(note).bodySM().foregroundColor(ONETokens.oneInk).lineSpacing(2)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -278,7 +429,7 @@ struct FriendDetailView: View {
             }
             .padding(20).frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color.white)
+        .background(ONETokens.onePaper)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.06), radius: 20, x: 0, y: 8)
         .padding(.horizontal, 20)
@@ -291,7 +442,7 @@ struct FriendDetailView: View {
             let _ = { t.dateFormat = "HH:mm" }()
             HStack(spacing: 6) {
                 Circle().fill(Color.white.opacity(0.9)).frame(width: 6, height: 6)
-                Text("\(t.string(from: createdAt))'de")
+                Text(String(format: NSLocalizedString("today.timeSelected", comment: ""), t.string(from: createdAt)))
                     .monoSM(tracking: 1)
                     .foregroundColor(.white.opacity(0.85))
             }
@@ -320,7 +471,7 @@ struct FriendDetailView: View {
                 .animation(ONEAnimation.micro, value: sentEmoji)
             }
             Spacer()
-            Text("duydum")
+            Text(NSLocalizedString("circle.heard", comment: ""))
                 .monoSM(tracking: 1.4)
                 .foregroundColor(ONETokens.oneStone)
         }
@@ -335,7 +486,7 @@ struct FriendDetailView: View {
         Button { dismiss() } label: {
             HStack(spacing: 8) {
                 Image(systemName: "chevron.down").font(.system(size: 10))
-                Text("Kapat").monoSM(tracking: 1)
+                Text(NSLocalizedString("general.close", comment: "")).monoSM(tracking: 1)
             }
             .foregroundColor(ONETokens.oneCharcoal)
             .padding(.horizontal, 20).padding(.vertical, ONETokens.spacingMD)
@@ -374,6 +525,7 @@ struct FriendDetailView: View {
                             share = record
                         }
                         isPolling = false
+                        markShareAsSeen()
                         onRefresh?()
                         // Yeni şarkı geldi — haptic
                         UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -411,6 +563,19 @@ struct FriendDetailView: View {
 
     private func dateKey() -> String {
         let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"; return f.string(from: Date())
+    }
+
+    // MARK: - Seen Tracking
+
+    private func markShareAsSeen() {
+        guard let uid = friendData.user["userID"] as? String,
+              let s = share,
+              !(s["songName"] as? String ?? "").isEmpty else { return }
+        let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"
+        let key = "seenShare_\(uid)_\(f.string(from: Date()))"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        NotificationCenter.default.post(name: .init("unseenSharesChanged"), object: nil)
     }
 
     // MARK: - Actions

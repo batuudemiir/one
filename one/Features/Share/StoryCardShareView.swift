@@ -79,13 +79,13 @@ struct StoryCardShareButton: View {
                 }
             }
         }
-        .alert("Hata", isPresented: $showError) {
-            Button("Tamam", role: .cancel) {}
-            Button("Tekrar Dene") {
+        .alert(NSLocalizedString("general.error", comment: ""), isPresented: $showError) {
+            Button(NSLocalizedString("general.ok", comment: ""), role: .cancel) {}
+            Button(NSLocalizedString("general.retry", comment: "")) {
                 handleShareTap()
             }
         } message: {
-            Text(errorMessage ?? "Bir hata oluştu")
+            Text(errorMessage ?? NSLocalizedString("general.error", comment: ""))
         }
         .sheet(isPresented: $showShareSheet) {
             if let image = generatedImage {

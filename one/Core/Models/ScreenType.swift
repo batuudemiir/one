@@ -16,6 +16,7 @@ enum ScreenType {
     case profile
     case circle
     case echo
+    case discover
     // legacy — kept for internal song-search flow within confirm
     case search
 }

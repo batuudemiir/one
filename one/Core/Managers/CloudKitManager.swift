@@ -26,7 +26,41 @@ class CloudKitManager: ObservableObject {
     @Published var isCloudKitAvailable = false
     @Published var currentUser: CKRecord?
     @Published var isFetchingUser = false
+    @Published var userLoadFailed = false
+    @Published var throttleRetryAfter: Date? = nil
     @Published var syncStatus: SyncStatus = .idle
+    @Published var friendsSharedTodayCount: Int = 0
+    /// Unseen friend shares — drives the Circle tab badge dot.
+    /// Updated by CircleView whenever the unseen count changes.
+    @Published var unseenFriendShareCount: Int = 0
+
+    /// True if we're still within a CloudKit throttle window.
+    var isThrottled: Bool {
+        guard let retryAfter = throttleRetryAfter else { return false }
+        return Date() < retryAfter
+    }
+
+    // MARK: - Circle cache
+    /// In-memory cache for today's friends' shares. Invalidated at midnight or after 5 min.
+    var cachedCircleData: [FriendCircleData]?
+    var circleDataLastFetched: Date?
+    private let circleCacheTTL: TimeInterval = 5 * 60 // 5 minutes
+
+    var isCircleCacheValid: Bool {
+        guard let last = circleDataLastFetched,
+              let cached = cachedCircleData else { return false }
+        // Invalidate at midnight
+        let cacheDay  = Calendar.current.startOfDay(for: last)
+        let today     = Calendar.current.startOfDay(for: Date())
+        guard cacheDay == today else { return false }
+        _ = cached
+        return Date().timeIntervalSince(last) < circleCacheTTL
+    }
+
+    func invalidateCircleCache() {
+        cachedCircleData = nil
+        circleDataLastFetched = nil
+    }
     
     enum SyncStatus {
         case idle
@@ -39,7 +73,14 @@ class CloudKitManager: ObservableObject {
         container = CKContainer(identifier: "iCloud.com.batu.ones")
         privateDatabase = container.privateCloudDatabase
         publicDatabase = container.publicCloudDatabase
-        
+
+        // Restore throttle window from previous session
+        if let saved = UserDefaults.standard.object(forKey: "cloudKitThrottleRetryAfter") as? Date,
+           saved > Date() {
+            throttleRetryAfter = saved
+            ONELogger.warning("CloudKit throttle restored — retry after \(saved)", category: .cloudkit)
+        }
+
         checkCloudKitAvailability()
         loadCurrentUser()
     }
@@ -47,36 +88,54 @@ class CloudKitManager: ObservableObject {
     // MARK: - Load Current User
     
     func loadCurrentUser() {
+        // Don't retry while server-side throttle is still active
+        if isThrottled {
+            ONELogger.warning("loadCurrentUser skipped — throttle active until \(throttleRetryAfter!)", category: .cloudkit)
+            return
+        }
+
+        // Throttle window has passed — clear persisted date
+        if throttleRetryAfter != nil {
+            throttleRetryAfter = nil
+            UserDefaults.standard.removeObject(forKey: "cloudKitThrottleRetryAfter")
+        }
+
         DispatchQueue.main.async {
             self.isFetchingUser = true
+            self.userLoadFailed = false
         }
-        
+
         container.fetchUserRecordID { [weak self] recordID, error in
             guard let self = self else { return }
-            
+
             guard let recordID = recordID else {
                 ONELogger.error("Could not fetch user record ID: \(error?.localizedDescription ?? "unknown")", category: .cloudkit)
                 DispatchQueue.main.async {
                     self.isFetchingUser = false
+                    self.userLoadFailed = true
                 }
                 return
             }
-            
+
             let userID = recordID.recordName
-            
+
             // Check if custom User record exists in PUBLIC database
             let predicate = NSPredicate(format: "userID == %@", userID)
             let query = CKQuery(recordType: "AppUser", predicate: predicate)
-            
+            // Sort by createdDate ascending so the original profile is always picked first
+            query.sortDescriptors = [NSSortDescriptor(key: "createdDate", ascending: true)]
+
             self.publicDatabase.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { result in
                 switch result {
                 case .success(let (matchResults, _)):
                     let records = matchResults.compactMap { try? $0.1.get() }
+                    // Pick the oldest record — the user's real profile
                     if let existingUser = records.first {
                         ONELogger.success("Loaded existing user profile", category: .cloudkit)
                         DispatchQueue.main.async {
                             self.currentUser = existingUser
                             self.isFetchingUser = false
+                            self.userLoadFailed = false
                         }
                     } else {
                         ONELogger.info("No user profile found, will create one", category: .cloudkit)
@@ -87,12 +146,19 @@ class CloudKitManager: ObservableObject {
                 case .failure(let error):
                     let nsError = error as NSError
                     if nsError.domain == CKErrorDomain && nsError.code == 12 {
+                        // Schema not yet indexed — treat as "no user found" (new install)
                         ONELogger.info("User profile not found (this is normal for new users)", category: .cloudkit)
+                        DispatchQueue.main.async {
+                            self.isFetchingUser = false
+                        }
                     } else {
+                        // Real error (throttle, network, etc.) — do NOT proceed to profile creation
                         ONELogger.error("Failed to load user", error: error, category: .cloudkit)
-                    }
-                    DispatchQueue.main.async {
-                        self.isFetchingUser = false
+                        self.handleThrottleError(error)
+                        DispatchQueue.main.async {
+                            self.isFetchingUser = false
+                            self.userLoadFailed = true
+                        }
                     }
                 }
             }
@@ -108,19 +174,32 @@ class CloudKitManager: ObservableObject {
         // Already loaded
         if currentUser != nil { return true }
 
+        // Don't wait if CloudKit is throttled or already errored — fail fast
+        if isThrottled || userLoadFailed {
+            ONELogger.warning("ensureCurrentUser: skipped — throttled or load failed", category: .cloudkit)
+            return false
+        }
+
         // Trigger a load if not already fetching
         if !isFetchingUser {
             loadCurrentUser()
         }
 
-        // Wait for currentUser to become non-nil, with timeout
-        let timeoutDate = Date().addingTimeInterval(10)
-        while currentUser == nil && Date() < timeoutDate {
-            try? await Task.sleep(nanoseconds: 200_000_000) // 0.2s polling
+        // Wait for currentUser using exponential backoff instead of busy-loop
+        let maxWait: TimeInterval = 10
+        var elapsed: TimeInterval = 0
+        var interval: UInt64 = 500_000_000 // Start at 0.5s
+
+        while currentUser == nil && elapsed < maxWait {
+            // Bail early if throttle or error becomes known while waiting
+            if isThrottled || userLoadFailed { break }
+            try? await Task.sleep(nanoseconds: interval)
+            elapsed += Double(interval) / 1_000_000_000
+            interval = min(interval * 2, 2_000_000_000) // Cap at 2s
         }
 
         if currentUser == nil {
-            ONELogger.error("ensureCurrentUser timed out — currentUser is still nil", category: .cloudkit)
+            ONELogger.warning("ensureCurrentUser: user unavailable (throttled=\(isThrottled) failed=\(userLoadFailed))", category: .cloudkit)
         }
         return currentUser != nil
     }
@@ -152,6 +231,35 @@ class CloudKitManager: ObservableObject {
         }
     }
     
+    /// Parses a CKError.requestRateLimited / 503 throttle error and stores the retry-after date.
+    func handleThrottleError(_ error: Error) {
+        let nsError = error as NSError
+        // CKError.Code.requestRateLimited = 7, serverRejectedRequest = 15
+        // Retry-after comes in userInfo under CKErrorRetryAfterKey
+        if let retryInterval = nsError.userInfo[CKErrorRetryAfterKey] as? TimeInterval {
+            let retryDate = Date().addingTimeInterval(retryInterval)
+            DispatchQueue.main.async {
+                self.throttleRetryAfter = retryDate
+                UserDefaults.standard.set(retryDate, forKey: "cloudKitThrottleRetryAfter")
+            }
+            ONELogger.warning("CloudKit throttled — retry after \(Int(retryInterval))s (\(retryDate))", category: .cloudkit)
+            return
+        }
+        // Fallback: parse seconds from the error description string
+        let desc = nsError.localizedDescription
+        if let range = desc.range(of: #"Retry after (\d+(\.\d+)?) seconds"#, options: .regularExpression),
+           let secsRange = desc.range(of: #"\d+(\.\d+)?"#, options: .regularExpression, range: range) {
+            if let secs = TimeInterval(desc[secsRange]) {
+                let retryDate = Date().addingTimeInterval(secs)
+                DispatchQueue.main.async {
+                    self.throttleRetryAfter = retryDate
+                    UserDefaults.standard.set(retryDate, forKey: "cloudKitThrottleRetryAfter")
+                }
+                ONELogger.warning("CloudKit throttled (parsed) — retry after \(Int(secs))s", category: .cloudkit)
+            }
+        }
+    }
+
     private func statusDescription(_ status: CKAccountStatus) -> String {
         switch status {
         case .available:
@@ -183,13 +291,14 @@ class CloudKitManager: ObservableObject {
             // Check if custom User record exists in PUBLIC database
             let predicate = NSPredicate(format: "userID == %@", userID)
             let query = CKQuery(recordType: "AppUser", predicate: predicate)
-            
+            query.sortDescriptors = [NSSortDescriptor(key: "createdDate", ascending: true)]
+
             self.publicDatabase.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { result in
                 switch result {
                 case .success(let (matchResults, _)):
                     let records = matchResults.compactMap { try? $0.1.get() }
                     if let existingUser = records.first {
-                        // User exists
+                        // User exists — pick oldest (real profile, not a duplicate)
                         DispatchQueue.main.async {
                             self.currentUser = existingUser
                         }
@@ -198,9 +307,11 @@ class CloudKitManager: ObservableObject {
                         // Create new user in PUBLIC database
                         self.createNewUser(userID: userID, displayName: displayName, completion: completion)
                     }
-                case .failure(_):
-                    // Create new user in PUBLIC database
-                    self.createNewUser(userID: userID, displayName: displayName, completion: completion)
+                case .failure(let queryError):
+                    // Query failed — do NOT create a new user; propagate the error
+                    // Creating on error risks duplicate AppUser records for the same iCloud account
+                    ONELogger.error("createOrFetchUser query failed, not creating new user", error: queryError, category: .cloudkit)
+                    completion(.failure(queryError))
                 }
             }
         }
@@ -341,32 +452,40 @@ class CloudKitManager: ObservableObject {
         publicDatabase.add(operation)
     }
     
-    private func fetchAndRetryUpdate(displayName: String, avatarColor: String, username: String?, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+    private func fetchAndRetryUpdate(displayName: String, avatarColor: String, username: String?, retryCount: Int = 0, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        guard retryCount < 3 else {
+            completion(.failure(NSError(domain: "CloudKit", code: 14, userInfo: [NSLocalizedDescriptionKey: "Server conflict persisted after 3 retries"])))
+            return
+        }
         guard let currentUser = currentUser else {
             completion(.failure(NSError(domain: "CloudKit", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user"])))
             return
         }
-        
-        publicDatabase.fetch(withRecordID: currentUser.recordID) { [weak self] fetchedRecord, error in
-            guard let self = self, let fetchedRecord = fetchedRecord else {
-                completion(.failure(error ?? NSError(domain: "CloudKit", code: -1)))
-                return
+
+        // Exponential backoff delay before retry
+        let delay = Double(retryCount) * 0.5
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            self?.publicDatabase.fetch(withRecordID: currentUser.recordID) { [weak self] fetchedRecord, error in
+                guard let self = self, let fetchedRecord = fetchedRecord else {
+                    completion(.failure(error ?? NSError(domain: "CloudKit", code: -1)))
+                    return
+                }
+
+                // Update fetched record
+                fetchedRecord["displayName"] = displayName as CKRecordValue
+                fetchedRecord["avatarColor"] = avatarColor as CKRecordValue
+                if let username = username {
+                    fetchedRecord["username"] = username.lowercased() as CKRecordValue
+                }
+
+                // Update currentUser reference
+                DispatchQueue.main.async {
+                    self.currentUser = fetchedRecord
+                }
+
+                // Save again
+                self.saveRecordWithOperation(fetchedRecord, completion: completion)
             }
-            
-            // Update fetched record
-            fetchedRecord["displayName"] = displayName as CKRecordValue
-            fetchedRecord["avatarColor"] = avatarColor as CKRecordValue
-            if let username = username {
-                fetchedRecord["username"] = username.lowercased() as CKRecordValue
-            }
-            
-            // Update currentUser reference
-            DispatchQueue.main.async {
-                self.currentUser = fetchedRecord
-            }
-            
-            // Save again
-            self.saveRecordWithOperation(fetchedRecord, completion: completion)
         }
     }
     
@@ -546,8 +665,8 @@ class CloudKitManager: ObservableObject {
                     completion(.success(true))
                 } else {
                     ONELogger.error("Username check error", error: error, category: .cloudkit)
-                    // On error, allow the username (fail open for better UX)
-                    completion(.success(true))
+                    // On error, fail closed to prevent duplicate usernames
+                    completion(.failure(error))
                 }
             }
         }
@@ -592,6 +711,22 @@ class CloudKitManager: ObservableObject {
             DispatchQueue.main.async {
                 self?.currentUser = nil
             }
+        }
+    }
+
+    // MARK: - Premium Status Sync
+
+    /// Writes the user's ONE+ premium status to their public AppUser record in CloudKit
+    /// so that friends can display the premium badge when viewing their profile/today card.
+    func updatePremiumStatus(_ isPremium: Bool) async {
+        guard let record = currentUser else { return }
+        record["isPremium"] = Int64(isPremium ? 1 : 0) as CKRecordValue
+        do {
+            let updated = try await publicDatabase.save(record)
+            await MainActor.run { self.currentUser = updated }
+            ONELogger.success("CloudKit premium status synced: \(isPremium)", category: .cloudkit)
+        } catch {
+            ONELogger.error("Failed to sync premium status to CloudKit", error: error, category: .cloudkit)
         }
     }
 

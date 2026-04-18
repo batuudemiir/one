@@ -9,7 +9,6 @@ import SwiftUI
 import CoreData
 import CloudKit
 import UserNotifications
-
 // MARK: - App Delegate for Push Notifications
 
 class AppDelegate: NSObject, UIApplicationDelegate {
@@ -67,36 +66,113 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     // MARK: - Notification Categories
     
     private func setupNotificationCategories() {
+        // Arkadaşlık isteği
         let acceptAction = UNNotificationAction(
             identifier: "ACCEPT_FRIEND",
-            title: "Kabul Et",
+            title: NSLocalizedString("notification.acceptFriend", comment: ""),
             options: [.foreground]
         )
-        
         let declineAction = UNNotificationAction(
             identifier: "DECLINE_FRIEND",
-            title: "Reddet",
+            title: NSLocalizedString("notification.declineFriend", comment: ""),
             options: [.destructive]
         )
-        
         let friendRequestCategory = UNNotificationCategory(
             identifier: "FRIEND_REQUEST",
             actions: [acceptAction, declineAction],
             intentIdentifiers: [],
             options: []
         )
-        
-        UNUserNotificationCenter.current().setNotificationCategories([friendRequestCategory])
+
+        // Streak tehlikede
+        let openTodayAction = UNNotificationAction(
+            identifier: "OPEN_TODAY",
+            title: NSLocalizedString("notification.openToday", comment: ""),
+            options: [.foreground]
+        )
+        let streakCategory = UNNotificationCategory(
+            identifier: "STREAK_WARNING",
+            actions: [openTodayAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        // Haftalık özet
+        let openEchoAction = UNNotificationAction(
+            identifier: "OPEN_ECHO",
+            title: NSLocalizedString("notification.openEcho", comment: ""),
+            options: [.foreground]
+        )
+        let weeklySummaryCategory = UNNotificationCategory(
+            identifier: "WEEKLY_SUMMARY",
+            actions: [openEchoAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        // Keşfet hatırlatıcısı
+        let openDiscoveryAction = UNNotificationAction(
+            identifier: "OPEN_DISCOVERY",
+            title: NSLocalizedString("notification.openDiscovery", comment: ""),
+            options: [.foreground]
+        )
+        let discoveryCategory = UNNotificationCategory(
+            identifier: "DISCOVERY_REMINDER",
+            actions: [openDiscoveryAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        // Arkadaş paylaşımı — "Keşfet" aksiyonu ile Discover'a yönlendir
+        let openDiscoverAction = UNNotificationAction(
+            identifier: "OPEN_DISCOVER",
+            title: NSLocalizedString("notification.openDiscovery", comment: ""),
+            options: [.foreground]
+        )
+        let friendSharedCategory = UNNotificationCategory(
+            identifier: "FRIEND_SHARED",
+            actions: [openDiscoverAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        // Çevre Yankısı — mood rezonans bildirimi
+        let openCircleAction = UNNotificationAction(
+            identifier: "OPEN_CIRCLE",
+            title: NSLocalizedString("notification.openCircle", comment: ""),
+            options: [.foreground]
+        )
+        let moodResonanceCategory = UNNotificationCategory(
+            identifier: "MOOD_RESONANCE",
+            actions: [openCircleAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        UNUserNotificationCenter.current().setNotificationCategories([
+            friendRequestCategory,
+            streakCategory,
+            weeklySummaryCategory,
+            discoveryCategory,
+            friendSharedCategory,
+            moodResonanceCategory
+        ])
     }
 }
 
 @main
 struct oneApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
+
     let persistenceController = PersistenceController.shared
     @StateObject private var cloudKitManager = CloudKitManager.shared
-    
+    @StateObject private var languageManager = LanguageManager.shared
+    @StateObject private var updateChecker = AppUpdateChecker.shared
+    @StateObject private var premiumManager = PremiumManager.shared
+    @AppStorage("isDarkMode") private var isDarkMode = false
+    /// Invite code from a deep link that arrived before currentUser was loaded.
+    @State private var pendingDeepLinkCode: String? = nil
+
     init() {
         // Register background task for midnight reset
         MidnightResetManager.shared.registerBackgroundTask()
@@ -105,16 +181,49 @@ struct oneApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(languageManager)
+                .environmentObject(premiumManager)
+                // Rebuild the entire SwiftUI tree when the language changes
+                .id(languageManager.refreshToken)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .preferredColorScheme(isDarkMode ? .dark : .light)
                 .onAppear {
                     // Check CloudKit availability on app launch
                     cloudKitManager.checkCloudKitAvailability()
+
+                    // Uygulama açılışında kalmış eski Live Activity'leri temizle
+                    if #available(iOS 16.1, *) {
+                        Task {
+                            await LiveActivityManager.shared.endAllActivities()
+                        }
+                    }
                     
                     // Schedule midnight reset
                     MidnightResetManager.shared.scheduleMidnightReset()
                     
                     // Request notification permission & register CloudKit subscription
                     setupPushNotifications()
+
+                    // Akıllı hatırlatma: geçmiş kayıt saatlerine göre optimize et
+                    NotificationManager.shared.scheduleSmartDailyReminder(
+                        context: persistenceController.container.viewContext
+                    )
+
+                    // Ay-sonu özet bildirimi planla
+                    NotificationManager.shared.scheduleMonthEndNotification()
+
+                    // App Store güncelleme kontrolü
+                    updateChecker.check()
+                }
+                .sheet(isPresented: $updateChecker.updateAvailable) {
+                    AppUpdateSheet(
+                        currentVersion: updateChecker.currentVersion,
+                        newVersion: updateChecker.appStoreVersion,
+                        onUpdate: { updateChecker.openAppStore() },
+                        onDismiss: { updateChecker.updateAvailable = false }
+                    )
+                    .presentationDetents([.height(340)])
+                    .presentationDragIndicator(.visible)
                 }
                 .onOpenURL { url in
                     // 1. Handle Spotify callback
@@ -137,18 +246,14 @@ struct oneApp: App {
                             }
 
                             ONELogger.info("Received valid invitation deep link", category: .circle)
-
-                            NotificationCenter.default.post(
-                                name: NSNotification.Name("HandleAddFriendDeepLink"),
-                                object: nil,
-                                userInfo: ["code": uppercased]
-                            )
+                            handleInviteCode(uppercased)
                         }
                     }
                 }
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
                     guard let url = userActivity.webpageURL else { return }
-                    // expected format: https://onedaily.app/invite?code=ABC123
+                    // Desteklenen domainler: one.forvibe.app ve onedaily.app (eski)
+                    // Beklenen format: https://one.forvibe.app/invite?code=ABC123
                     if url.path == "/invite" || url.path.hasPrefix("/invite"),
                        let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
                        let queryItems = components.queryItems,
@@ -163,32 +268,52 @@ struct oneApp: App {
                         }
 
                         ONELogger.info("Received valid invitation universal link", category: .circle)
-
-                        NotificationCenter.default.post(
-                            name: NSNotification.Name("HandleAddFriendDeepLink"),
-                            object: nil,
-                            userInfo: ["code": uppercased]
-                        )
+                        handleInviteCode(uppercased)
                     }
                 }
                 .onChange(of: cloudKitManager.currentUser?.recordID.recordName) { _, newValue in
                     if newValue != nil {
-                        cloudKitManager.registerFriendRequestSubscription()
+                        cloudKitManager.registerAllSubscriptions()
+                        // Fire any deep link that arrived before currentUser was ready
+                        if let code = pendingDeepLinkCode {
+                            pendingDeepLinkCode = nil
+                            ONELogger.info("Firing pending deep link code after user loaded", category: .circle)
+                            NotificationCenter.default.post(
+                                name: NSNotification.Name("HandleAddFriendDeepLink"),
+                                object: nil,
+                                userInfo: ["code": code]
+                            )
+                        }
                     }
                 }
         }
     }
     
+    private func handleInviteCode(_ code: String) {
+        if cloudKitManager.currentUser != nil {
+            NotificationCenter.default.post(
+                name: NSNotification.Name("HandleAddFriendDeepLink"),
+                object: nil,
+                userInfo: ["code": code]
+            )
+        } else {
+            // currentUser not ready yet — store and fire once it loads
+            ONELogger.warning("currentUser nil, storing pending deep link code", category: .circle)
+            pendingDeepLinkCode = code
+        }
+    }
+
     private func setupPushNotifications() {
         NotificationManager.shared.requestAuthorization { granted in
             if granted {
                 ONELogger.success("Notification permission granted", category: .notification)
             }
         }
-        
-        // Subscription will be registered via onChange(of: cloudKitManager.currentUser)
+
+        // Dönen kullanıcı için immediate kayıt.
+        // İlk yüklemede currentUser henüz nil; .onChange(of: currentUser) bu durumu yakalar.
         if cloudKitManager.currentUser != nil {
-            cloudKitManager.registerFriendRequestSubscription()
+            cloudKitManager.registerAllSubscriptions()
         }
     }
 }

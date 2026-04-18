@@ -24,10 +24,13 @@ struct ConfirmScreen: View {
                     // Header
                     HStack {
                         Button(action: { vm.currentScreen = .search }) {
-                            Text("← GERİ")
+                            Text(NSLocalizedString("confirm.back", comment: ""))
                                 .monoBase(tracking: 1.5)
                                 .foregroundColor(ONETokens.oneAsh)
                         }
+                        .accessibilityLabel(NSLocalizedString("general.back", comment: ""))
+                        .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
+                        .contentShape(Rectangle())
                         Spacer()
                     }
                     .padding(.horizontal, 26)
@@ -67,12 +70,18 @@ struct ConfirmScreen: View {
                                 height: vm.selectedPhoto != nil ? 90 : 160
                             )
                             .animation(ONEAnimation.cardSpring, value: vm.selectedPhoto != nil)
+                            .accessibilityHidden(true)
 
                             // Sağ: Fotoğraf alanı
                             PhotoHeroButton(selectedPhoto: $vm.selectedPhoto)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 160)
                                 .animation(ONEAnimation.cardSpring, value: vm.selectedPhoto != nil)
+                                .accessibilityLabel(
+                                    vm.selectedPhoto != nil
+                                        ? NSLocalizedString("accessibility.today.removePhoto", comment: "")
+                                        : NSLocalizedString("accessibility.today.addPhoto", comment: "")
+                                )
                         }
                         .padding(.horizontal, 26)
                         .padding(.top, 28)
@@ -94,7 +103,7 @@ struct ConfirmScreen: View {
 
                         // ── Mood seçimi ──────────────────────────────────────
                         HStack {
-                            Text("ŞU AN NASIL HİSSEDİYORSUN?")
+                            Text(NSLocalizedString("confirm.moodQuestion", comment: ""))
                                 .monoBase(tracking: 1.5)
                                 .foregroundColor(ONETokens.oneAsh)
                             Spacer()
@@ -118,7 +127,7 @@ struct ConfirmScreen: View {
                         // ── Feeling seçimi (mood seçilince) ─────────────────
                         if vm.selectedMood != nil {
                             HStack {
-                                Text("BU ŞARKI SENDE NE UYANDIRIYOR?")
+                                Text(NSLocalizedString("confirm.question", comment: ""))
                                     .monoBase(tracking: 1.5)
                                     .foregroundColor(ONETokens.oneAsh)
                                 Spacer()
@@ -190,7 +199,7 @@ struct ConfirmScreen: View {
                         vm.saveTodaysSong(context: viewContext)
                         vm.currentScreen = .done
                     }) {
-                        Text("Bugünün şarkısı bu")
+                        Text(NSLocalizedString("confirm.todaySong", comment: ""))
                             .displayXS()
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 18)
@@ -206,13 +215,17 @@ struct ConfirmScreen: View {
                     }
                     .disabled(vm.selectedMood == nil || vm.selectedFeeling == nil)
                     .animation(ONEAnimation.micro, value: vm.selectedMood != nil && vm.selectedFeeling != nil)
+                    .accessibilityLabel(NSLocalizedString("today.saveButton", comment: ""))
 
                     // İkincil buton
                     Button(action: { vm.currentScreen = .search }) {
-                        Text("DEĞİŞTİR")
+                        Text(NSLocalizedString("today.photoChange", comment: ""))
                             .monoBase(tracking: 1.5)
                             .foregroundColor(ONETokens.oneAsh)
                     }
+                    .accessibilityLabel(NSLocalizedString("general.back", comment: ""))
+                    .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
+                    .contentShape(Rectangle())
                 }
                 .padding(.horizontal, 26)
                 .padding(.bottom, 28)
@@ -271,7 +284,7 @@ struct PhotoHeroButton: View {
                         Image(systemName: "camera")
                             .font(.system(size: 22, weight: .light))
                             .foregroundColor(ONETokens.oneAsh)
-                        Text("Fotoğraf ekle")
+                        Text(NSLocalizedString("confirm.addPhoto", comment: ""))
                             .monoSM(tracking: 0.5)
                             .foregroundColor(ONETokens.oneAsh)
                     }
@@ -279,7 +292,7 @@ struct PhotoHeroButton: View {
             }
         }
         .buttonStyle(PlainButtonStyle())
-        .sheet(isPresented: $showCamera) {
+        .fullScreenCover(isPresented: $showCamera) {
             CameraPicker(selectedImage: $selectedPhoto)
                 .ignoresSafeArea()
         }
@@ -298,7 +311,7 @@ struct InlineNoteField: View {
                 .font(.system(size: 15, weight: .light))
                 .foregroundColor(ONETokens.oneAsh)
 
-            TextField("Bugün ne hissediyorsun?", text: $noteText)
+            TextField(NSLocalizedString("today.notePlaceholder", comment: ""), text: $noteText)
                 .monoBase(tracking: 0.2)
                 .foregroundColor(ONETokens.oneInk)
                 .focused($isFocused)
@@ -317,7 +330,7 @@ struct InlineNoteField: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                .fill(isFocused ? Color.white : ONETokens.oneCreamMid)
+                .fill(isFocused ? ONETokens.onePaper : ONETokens.oneCreamMid)
                 .shadow(
                     color: isFocused ? Color.black.opacity(0.07) : Color.clear,
                     radius: 10, x: 0, y: 3

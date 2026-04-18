@@ -54,11 +54,11 @@ struct InviteShareSheet: View {
         .presentationDetents([.height(560), .large])
         .presentationDragIndicator(.hidden)
         .task { await generateCard() }
-        .alert("Hata", isPresented: $showError) {
-            Button("Tamam", role: .cancel) {}
-            Button("Tekrar Dene") { Task { await generateCard() } }
+        .alert(NSLocalizedString("general.error", comment: ""), isPresented: $showError) {
+            Button(NSLocalizedString("general.ok", comment: ""), role: .cancel) {}
+            Button(NSLocalizedString("general.retry", comment: "")) { Task { await generateCard() } }
         } message: {
-            Text(errorMessage ?? "Bir hata oluştu")
+            Text(errorMessage ?? NSLocalizedString("general.error", comment: ""))
         }
         .onChange(of: selectedFormat) { _, _ in
             Task { await generateCard() }
@@ -78,10 +78,10 @@ struct InviteShareSheet: View {
     private var titleRow: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("ÇEVRENE KATIL")
+                Text(NSLocalizedString("invite.joinCircle", comment: ""))
                     .monoLabel(tracking: 2.0)
                     .foregroundColor(ONETokens.oneAsh)
-                Text("Davet Gönder")
+                Text(NSLocalizedString("invite.sendInvite", comment: ""))
                     .displaySM()
                     .foregroundColor(ONETokens.oneInk)
                     .lineLimit(1)
@@ -100,9 +100,9 @@ struct InviteShareSheet: View {
     }
     
     private var formatPicker: some View {
-        Picker("Format Seçimi", selection: $selectedFormat) {
-            Text("Hikaye (9:16)").tag(ShareFormat.story)
-            Text("Gönderi / X (16:9)").tag(ShareFormat.post)
+        Picker(NSLocalizedString("invite.formatPicker", comment: ""), selection: $selectedFormat) {
+            Text(NSLocalizedString("invite.story", comment: "")).tag(ShareFormat.story)
+            Text(NSLocalizedString("invite.post", comment: "")).tag(ShareFormat.post)
         }
         .pickerStyle(.segmented)
     }
@@ -119,7 +119,7 @@ struct InviteShareSheet: View {
                         breathe = true
                     }
                 }
-            Text("Davet kartı hazırlanıyor...")
+            Text(NSLocalizedString("invite.preparing", comment: ""))
                 .monoSM(tracking: 0.5)
                 .foregroundColor(ONETokens.oneAsh)
         }
@@ -143,8 +143,8 @@ struct InviteShareSheet: View {
             let instaInstalled = ShareManager.shared.isInstagramInstalled()
             ActionRow(
                 icon: "camera.viewfinder",
-                label: "Instagram Story",
-                sublabel: instaInstalled ? "Doğrudan Stories'e gönder" : "Instagram yüklü değil",
+                label: NSLocalizedString("invite.instagramStory", comment: ""),
+                sublabel: instaInstalled ? NSLocalizedString("invite.instagramInstalled", comment: "") : NSLocalizedString("invite.instagramNotInstalled", comment: ""),
                 style: .filled(ONETokens.oneInk),
                 isEnabled: generatedImage != nil && instaInstalled,
                 action: shareToInstagramStory
@@ -153,8 +153,8 @@ struct InviteShareSheet: View {
             // ── Diğer uygulamalar ────────────────────────────
             ActionRow(
                 icon: "square.and.arrow.up",
-                label: "Diğer Uygulamalar",
-                sublabel: "Davet linki dahil",
+                label: NSLocalizedString("invite.otherApps", comment: ""),
+                sublabel: NSLocalizedString("invite.otherAppsHint", comment: ""),
                 style: .bordered,
                 isEnabled: generatedImage != nil,
                 action: shareViaSystem
@@ -165,7 +165,7 @@ struct InviteShareSheet: View {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(ONETokens.oneGreen)
-                    Text("Fotoğraflara kaydedildi")
+                    Text(NSLocalizedString("invite.savedToPhotos", comment: ""))
                         .monoSM(tracking: 0)
                         .foregroundColor(ONETokens.oneGreen)
                 }
@@ -175,8 +175,8 @@ struct InviteShareSheet: View {
             } else {
                 ActionRow(
                     icon: "square.and.arrow.down",
-                    label: "Fotoğraflara Kaydet",
-                    sublabel: "Galeriye PNG olarak ekle",
+                    label: NSLocalizedString("invite.saveToPhotos", comment: ""),
+                    sublabel: NSLocalizedString("invite.saveToPhotosHint", comment: ""),
                     style: .ghost,
                     isEnabled: generatedImage != nil,
                     action: saveToPhotos
@@ -208,7 +208,7 @@ struct InviteShareSheet: View {
         if let image = renderer.uiImage {
             withAnimation { generatedImage = image }
         } else {
-            errorMessage = "Davet kartı oluşturulamadı"
+            errorMessage = NSLocalizedString("invite.generateFailed", comment: "")
             showError = true
         }
         isGenerating = false
@@ -234,7 +234,7 @@ struct InviteShareSheet: View {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         
         var items: [Any] = [image]
-        let inviteText = "ONE'da çevreme katıl. Hisset, keşfet, paylaş.\n\(inviteLinkURL?.absoluteString ?? "")"
+        let inviteText = String(format: NSLocalizedString("invite.shareText", comment: ""), inviteLinkURL?.absoluteString ?? "")
         items.append(inviteText)
         
         ShareManager.shared.shareViaActivityController(items: items)

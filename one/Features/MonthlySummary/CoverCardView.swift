@@ -15,6 +15,7 @@ import SwiftUI
 
 struct CoverCardView: View {
     let data: MonthlySummaryData
+    var showWatermark: Bool = false
 
     // Gradient animasyonu
     @State private var gradientPulse = false
@@ -72,7 +73,7 @@ struct CoverCardView: View {
                             .lineLimit(1)
                             .minimumScaleFactor(0.5)
 
-                        Text("özetin.")
+                        Text(NSLocalizedString("monthly.summary", comment: ""))
                             // Gerçek font: Font.custom("BebasNeue-Regular", size: 88)
                             .font(.system(size: 88, weight: .black))
                             .foregroundColor(.white)
@@ -80,7 +81,7 @@ struct CoverCardView: View {
                     .padding(.bottom, 16)
 
                     // Alt yazı
-                    Text("\(data.totalDays) gün · \(data.topTracks.count) şarkı · 1 sen")
+                    Text(String(format: NSLocalizedString("monthly.stats", comment: ""), data.totalDays, data.topTracks.count))
                         // Gerçek font: Font.custom("Syne-Regular", size: 14)
                         .font(.system(size: 14, weight: .light))
                         .foregroundColor(.white.opacity(0.50))
@@ -107,7 +108,7 @@ struct CoverCardView: View {
                         HStack(spacing: 6) {
                             Text("→")
                                 .font(.system(size: 13))
-                            Text("kaydır")
+                            Text(NSLocalizedString("monthly.swipe", comment: ""))
                                 // Gerçek font: Font.custom("SyneMono-Regular", size: 11)
                                 .font(.system(size: 11, weight: .regular, design: .monospaced))
                         }
@@ -125,7 +126,7 @@ struct CoverCardView: View {
                         Spacer()
 
                         // Watermark
-                        Text("one mood")
+                        Text(NSLocalizedString("monthly.oneMood", comment: ""))
                             // Gerçek font: Font.custom("SyneMono-Regular", size: 9)
                             .font(.system(size: 9, weight: .regular, design: .monospaced))
                             .foregroundColor(.white.opacity(0.18))
@@ -135,6 +136,9 @@ struct CoverCardView: View {
                 }
                 .frame(width: size.width)
             }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if showWatermark { watermarkView }
         }
         .background(Color.black)
         .ignoresSafeArea()
@@ -146,6 +150,27 @@ struct CoverCardView: View {
                 gradientPulse.toggle()
             }
         }
+    }
+
+    // MARK: — Watermark
+    private var watermarkView: some View {
+        Group {
+            if let _ = UIImage(named: "ONE_Watermark") {
+                Image("ONE_Watermark")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(.white.opacity(0.85))
+                    .frame(width: 80, height: 28)
+            } else {
+                Text("ONE")
+                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .foregroundColor(.white.opacity(0.7))
+                    .tracking(3)
+            }
+        }
+        .padding(.trailing, 20)
+        .padding(.bottom, 32)
     }
 
     // MARK: — Gradient Background
@@ -197,7 +222,7 @@ struct CoverCardView: View {
                 .font(.system(size: 14, weight: .bold))
                 .foregroundColor(.white)
 
-            Text("baskın ruh hali")
+            Text(NSLocalizedString("monthly.dominantMood", comment: ""))
                 .font(.system(size: 12, weight: .light))
                 .foregroundColor(.white.opacity(0.45))
         }
@@ -212,9 +237,9 @@ struct CoverCardView: View {
     // MARK: — Stats Grid
     private var statsGrid: some View {
         HStack(spacing: 1) {
-            statBox(value: "\(data.totalDays)", label: "GÜN")
-            statBox(value: "\(data.uniqueArtists)", label: "SANATÇI")
-            statBox(value: "\(data.maxRepeat)×", label: "EN FAZLA")
+            statBox(value: "\(data.daysLogged)", label: NSLocalizedString("monthly.statLogged", comment: ""))
+            statBox(value: "\(data.uniqueArtists)", label: NSLocalizedString("monthly.statArtists", comment: ""))
+            statBox(value: "\(data.monthStreak)", label: NSLocalizedString("monthly.statStreak", comment: ""), highlight: data.monthStreak >= 7)
         }
         .background(Color.white.opacity(0.04))
         .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -224,17 +249,15 @@ struct CoverCardView: View {
         )
     }
 
-    private func statBox(value: String, label: String) -> some View {
+    private func statBox(value: String, label: String, highlight: Bool = false) -> some View {
         VStack(alignment: .center, spacing: 4) {
             Text(value)
-                // Gerçek font: Font.custom("BebasNeue-Regular", size: 36)
                 .font(.system(size: 36, weight: .black))
-                .foregroundColor(.white)
+                .foregroundColor(highlight ? Color(red: 0.95, green: 0.65, blue: 0.15) : .white)
             Text(label)
-                // Gerçek font: Font.custom("SyneMono-Regular", size: 9)
                 .font(.system(size: 9, weight: .regular, design: .monospaced))
                 .tracking(1.5)
-                .foregroundColor(.white.opacity(0.45))
+                .foregroundColor(.white.opacity(highlight ? 0.65 : 0.45))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 18)

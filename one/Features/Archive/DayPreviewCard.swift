@@ -116,7 +116,7 @@ struct FullScreenPhotoView: View {
                         Image(systemName: "photo")
                             .font(.system(size: 40))
                             .foregroundColor(.white.opacity(0.4))
-                        Text("Fotoğraf yüklenemedi")
+                        Text(NSLocalizedString("archive.photoLoadFailed", comment: ""))
                             .monoBase()
                             .foregroundColor(.white.opacity(0.4))
                     }
@@ -229,6 +229,7 @@ struct DayPreviewCard: View {
                         Text(entry.moodLabel.uppercased())
                             .monoMicro(tracking: 0.8)
                             .foregroundColor(ONETokens.oneCharcoal)
+                            .lineLimit(1)
                     }
 
                     if !entry.feelingLabel.isEmpty {
@@ -271,7 +272,7 @@ struct DayPreviewCard: View {
             HStack(spacing: 8) {
                 // Sol: Saat ve Aç butonu
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("\(entry.time)'te seçildi")
+                    Text(String(format: NSLocalizedString("archive.selectedAt", comment: ""), entry.time))
                         .monoLabel(tracking: 0.5)
                         .foregroundColor(ONETokens.oneAsh)
                     
@@ -279,7 +280,7 @@ struct DayPreviewCard: View {
                         HStack(spacing: 4) {
                             Image(systemName: "play.circle.fill")
                                 .font(.system(size: 10))
-                            Text("Şarkıyı Aç")
+                            Text(NSLocalizedString("archive.openSong", comment: ""))
                                 .monoLabel(tracking: 0.4)
                         }
                         .foregroundColor(ONETokens.oneCharcoal)
@@ -302,7 +303,7 @@ struct DayPreviewCard: View {
                     HStack(spacing: 6) {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: 12, weight: .semibold))
-                        Text("Paylaş")
+                        Text(NSLocalizedString("general.share", comment: ""))
                             .monoBase(tracking: 0.6)
                     }
                     .foregroundColor(ONETokens.oneCream)
@@ -341,7 +342,7 @@ struct DayPreviewCard: View {
 
     private var dayText: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "tr_TR")
+        f.locale = LanguageManager.shared.currentLocale
         f.dateFormat = "d MMMM yyyy"
         return f.string(from: entry.date)
     }
@@ -349,31 +350,27 @@ struct DayPreviewCard: View {
     private func openSong() {
         let rawQuery = "\(entry.songName) \(entry.artistName)"
         let query = rawQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        
-        if entry.platform.lowercased().contains("spotify") {
-            if SpotifyManager.shared.isAuthenticated {
-                SpotifyManager.shared.search(query: rawQuery) { result in
-                    DispatchQueue.main.async {
-                        switch result {
-                        case .success(let tracks):
-                            if let firstTrack = tracks.first {
-                                if let customUrl = URL(string: "spotify:track:\(firstTrack.id):play"), UIApplication.shared.canOpenURL(customUrl) {
-                                    UIApplication.shared.open(customUrl)
-                                } else if let trackUrl = URL(string: "https://open.spotify.com/track/\(firstTrack.id)?go=1") {
-                                    UIApplication.shared.open(trackUrl)
-                                } else {
-                                    fallbackSpotifySearch(query: query)
-                                }
+
+        if SpotifyManager.shared.isAuthenticated {
+            SpotifyManager.shared.search(query: rawQuery) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let tracks):
+                        if let firstTrack = tracks.first {
+                            if let customUrl = URL(string: "spotify:track:\(firstTrack.id):play"), UIApplication.shared.canOpenURL(customUrl) {
+                                UIApplication.shared.open(customUrl)
+                            } else if let trackUrl = URL(string: "https://open.spotify.com/track/\(firstTrack.id)?go=1") {
+                                UIApplication.shared.open(trackUrl)
                             } else {
                                 fallbackSpotifySearch(query: query)
                             }
-                        case .failure(_):
+                        } else {
                             fallbackSpotifySearch(query: query)
                         }
+                    case .failure(_):
+                        fallbackSpotifySearch(query: query)
                     }
                 }
-            } else {
-                fallbackSpotifySearch(query: query)
             }
         } else {
             Task {
@@ -495,7 +492,7 @@ struct DayShareCard: View {
                         .font(ONETypography.monoMicro)
                         .foregroundColor(.white.opacity(0.6))
 
-                    Text("ONE · Daily Mood")
+                    Text(NSLocalizedString("share.brandWatermark", comment: ""))
                         .font(ONETypography.monoMicro)
                         .foregroundColor(.white.opacity(0.3))
                         .padding(.top, 1)
@@ -554,7 +551,7 @@ struct DayShareCard: View {
                             .tracking(1.0)
                             .foregroundColor(.white.opacity(0.8))
 
-                        Text("ONE · DAILY MOOD")
+                        Text(NSLocalizedString("share.brandWatermarkUpper", comment: ""))
                             .font(ONETypography.monoMicro)
                             .tracking(1.5)
                             .foregroundColor(.white.opacity(0.6))
@@ -570,7 +567,7 @@ struct DayShareCard: View {
 
     private var dayText: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "tr_TR")
+        f.locale = LanguageManager.shared.currentLocale
         f.dateFormat = "d MMMM yyyy"
         return f.string(from: entry.date)
     }

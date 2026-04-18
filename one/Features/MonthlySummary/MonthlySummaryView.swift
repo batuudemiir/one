@@ -56,7 +56,7 @@ struct MonthlySummaryView: View {
     }
 
     private var emptyData: MonthlySummaryData {
-        let fmt = DateFormatter(); fmt.locale = Locale(identifier: "tr_TR"); fmt.dateFormat = "MMMM"
+        let fmt = DateFormatter(); fmt.locale = LanguageManager.shared.currentLocale; fmt.dateFormat = "MMMM"
         let days = Calendar.current.range(of: .day, in: .month, for: Date())?.count ?? 30
         return MonthlySummaryData(
             month:             fmt.string(from: Date()).capitalized,
@@ -68,7 +68,10 @@ struct MonthlySummaryView: View {
             dominantMoodColor: .gray,
             dailyMoods:        Array(repeating: Color.gray.opacity(0.2), count: days),
             emotionBreakdown:  [(name: "—", percentage: 1.0, color: .gray.opacity(0.3))],
-            topTracks:         []
+            topTracks:         [],
+            totalEntries:      0,
+            daysLogged:        0,
+            monthStreak:       0
         )
     }
 
@@ -105,10 +108,10 @@ struct MonthlySummaryView: View {
                     }
                     Spacer()
 
-                    // Paylaş
+                    // Paylaş — tek tık: aktif sayfa, uzun baskı: kart seçici
                     Button {
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        showPicker = true
+                        shareCard(page: currentPage)
                     } label: {
                         HStack(spacing: 6) {
                             if isSharing {
@@ -118,7 +121,7 @@ struct MonthlySummaryView: View {
                                     .bodyXS()
                                     .fontWeight(.semibold)
                             }
-                            Text("Paylaş")
+                            Text(NSLocalizedString("monthly.share", comment: ""))
                                 .bodyXS()
                                 .fontWeight(.semibold)
                         }
@@ -131,6 +134,12 @@ struct MonthlySummaryView: View {
                         )
                     }
                     .disabled(isSharing)
+                    .simultaneousGesture(
+                        LongPressGesture(minimumDuration: 0.4).onEnded { _ in
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            showPicker = true
+                        }
+                    )
                 }
                 .padding(.top, 56)
                 .padding(.horizontal, 20)
@@ -140,11 +149,11 @@ struct MonthlySummaryView: View {
         }
         .ignoresSafeArea()
         // ── Kart seçici sheet ──
-        .confirmationDialog("Hangi kartı hikayene ekleyeceksin?", isPresented: $showPicker, titleVisibility: .visible) {
-            Button("Kapak kartı")          { shareCard(page: 0) }
-            Button("Ruh hali haritası")    { shareCard(page: 1) }
-            Button("Top şarkılar")         { shareCard(page: 2) }
-            Button("İptal", role: .cancel) { }
+        .confirmationDialog(NSLocalizedString("monthly.whichCard", comment: ""), isPresented: $showPicker, titleVisibility: .visible) {
+            Button(NSLocalizedString("monthly.coverCard", comment: ""))       { shareCard(page: 0) }
+            Button(NSLocalizedString("monthly.moodMapCard", comment: ""))     { shareCard(page: 1) }
+            Button(NSLocalizedString("monthly.topTracksCard", comment: ""))   { shareCard(page: 2) }
+            Button(NSLocalizedString("general.cancel", comment: ""), role: .cancel) { }
         }
         .onAppear {
             if context != nil { vm.load() }
@@ -180,21 +189,55 @@ struct MonthlySummaryView: View {
         }
     }
 
+    /// UIHostingController tabanlı render — GeometryReader içeren kartları da
+    /// doğru boyutla render eder (ImageRenderer GeometryReader'ı çözemez).
     @MainActor
     private func renderCard(page: Int) async -> UIImage? {
         let d = displayData
-        let content: AnyView
+        let cardSize   = CGSize(width: 390, height: 844)
+        let topPad: CGFloat    = 60
+        let bottomPad: CGFloat = 60
+        let canvasSize = CGSize(width: 390, height: cardSize.height + topPad + bottomPad) // 390×964
+        let scale = UIScreen.main.scale
+
+        // 1. Build card view with watermark baked in
+        let view: AnyView
         switch page {
-        case 0:  content = AnyView(CoverCardView(data: d)
-                    .frame(width: 390, height: 844).background(Color.black))
-        case 1:  content = AnyView(MoodMapCardView(data: d, isExport: true)
-                    .frame(width: 390, height: 844).background(Color.black))
-        default: content = AnyView(TopTracksCardView(data: d, isExport: true)
-                    .frame(width: 390, height: 844).background(Color.black))
+        case 0:  view = AnyView(CoverCardView(data: d, showWatermark: true)
+                    .frame(width: cardSize.width, height: cardSize.height)
+                    .background(Color.black))
+        case 1:  view = AnyView(MoodMapCardView(data: d, isExport: true, showWatermark: true)
+                    .frame(width: cardSize.width, height: cardSize.height)
+                    .background(Color.black))
+        default: view = AnyView(TopTracksCardView(data: d, isExport: true, showWatermark: true)
+                    .frame(width: cardSize.width, height: cardSize.height)
+                    .background(Color.black))
         }
-        let renderer = ImageRenderer(content: content)
-        renderer.scale = 3.0
-        return renderer.uiImage
+
+        // 2. Render card at cardSize via UIHostingController
+        let host = UIHostingController(rootView: view)
+        host.view.frame = CGRect(origin: .zero, size: cardSize)
+        host.view.backgroundColor = .black
+        host.view.setNeedsLayout()
+        host.view.layoutIfNeeded()
+
+        // Give animations a moment to settle on export pass
+        try? await Task.sleep(nanoseconds: 50_000_000) // 0.05s
+
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = scale
+        let cardImage = UIGraphicsImageRenderer(size: cardSize, format: format).image { _ in
+            host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true)
+        }
+
+        // 3. Composite card onto a larger black canvas with top/bottom padding
+        let finalImage = UIGraphicsImageRenderer(size: canvasSize, format: format).image { ctx in
+            UIColor.black.setFill()
+            ctx.fill(CGRect(origin: .zero, size: canvasSize))
+            cardImage.draw(at: CGPoint(x: 0, y: topPad))
+        }
+
+        return finalImage
     }
 
     private func shareToInstagramStory(image: UIImage) {

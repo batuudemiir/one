@@ -1,10 +1,16 @@
 import SwiftUI
+import Combine
+import CloudKit
 
 struct ContentView: View {
     @State private var isActive = false
-    @State private var hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+    @State private var hasCompletedOnboarding = KeychainHelper.bool(forKey: "hasCompletedOnboarding")
     @State private var showProfileSetup = false
     @StateObject private var cloudKitManager = CloudKitManager.shared
+    /// Number of times we've retried loading the user with no result and no error.
+    /// Profile setup is only shown after exhausting all retries.
+    @State private var userCheckRetryCount = 0
+    private let maxUserCheckRetries = 3
     
     var body: some View {
         ZStack {
@@ -28,6 +34,13 @@ struct ContentView: View {
             }
         }
         .animation(ONEAnimation.screenTransition, value: isActive)
+        .overlay {
+            if hasCompletedOnboarding && cloudKitManager.userLoadFailed && !cloudKitManager.isFetchingUser && cloudKitManager.currentUser == nil {
+                CloudKitRetryOverlay {
+                    cloudKitManager.loadCurrentUser()
+                }
+            }
+        }
         .overlay { ONEToastOverlay() }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("resetToOnboarding"))) { _ in
             withAnimation(ONEAnimation.screenTransition) {
@@ -51,21 +64,55 @@ struct ContentView: View {
                 checkProfileStatus()
             }
         }
+        .onChange(of: cloudKitManager.currentUser) { _, newUser in
+            if newUser != nil && !KeychainHelper.bool(forKey: "hasCreatedProfile") {
+                ONELogger.success("currentUser appeared, setting hasCreatedProfile flag", category: .general)
+                KeychainHelper.set(true, forKey: "hasCreatedProfile")
+                userCheckRetryCount = 0
+                showProfileSetup = false
+            }
+        }
         .onChange(of: cloudKitManager.isFetchingUser) { _, isFetching in
-            if !isFetching && !UserDefaults.standard.bool(forKey: "hasCreatedProfile") {
-                if cloudKitManager.currentUser == nil {
-                    ONELogger.warning("finished fetching, no user found, showing profile setup", category: .general)
-                    showProfileSetup = true
+            if !isFetching && !KeychainHelper.bool(forKey: "hasCreatedProfile") {
+                if cloudKitManager.userLoadFailed {
+                    ONELogger.warning("finished fetching with error, not showing profile setup", category: .general)
+                } else if let user = cloudKitManager.currentUser {
+                    ONELogger.success("finished fetching, found user \(user["userID"] as? String ?? ""), setting flag", category: .general)
+                    KeychainHelper.set(true, forKey: "hasCreatedProfile")
+                    userCheckRetryCount = 0
                 } else {
-                    ONELogger.success("finished fetching, found user, setting flag", category: .general)
-                    UserDefaults.standard.set(true, forKey: "hasCreatedProfile")
+                    // No user found — retry a few times before concluding this is a new user
+                    userCheckRetryCount += 1
+                    if userCheckRetryCount < maxUserCheckRetries {
+                        ONELogger.warning("no user found (attempt \(userCheckRetryCount)/\(maxUserCheckRetries)), retrying...", category: .general)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            cloudKitManager.loadCurrentUser()
+                        }
+                    } else {
+                        ONELogger.warning("no user found after \(maxUserCheckRetries) attempts, showing profile setup", category: .general)
+                        showProfileSetup = true
+                    }
                 }
             }
         }
         .onAppear {
+            // One-time migration: move hasCompletedOnboarding from UserDefaults → Keychain
+            if UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") && !KeychainHelper.bool(forKey: "hasCompletedOnboarding") {
+                KeychainHelper.set(true, forKey: "hasCompletedOnboarding")
+                UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
+                hasCompletedOnboarding = true
+                ONELogger.info("Migrated hasCompletedOnboarding to Keychain", category: .general)
+            }
+            // One-time migration: move hasCreatedProfile from UserDefaults → Keychain
+            if UserDefaults.standard.bool(forKey: "hasCreatedProfile") && !KeychainHelper.bool(forKey: "hasCreatedProfile") {
+                KeychainHelper.set(true, forKey: "hasCreatedProfile")
+                UserDefaults.standard.removeObject(forKey: "hasCreatedProfile")
+                ONELogger.info("Migrated hasCreatedProfile to Keychain", category: .general)
+            }
+
             ONELogger.debug("ContentView appeared", category: .general)
             ONELogger.debug("hasCompletedOnboarding: \(hasCompletedOnboarding)", category: .general)
-            ONELogger.debug("hasCreatedProfile: \(UserDefaults.standard.bool(forKey: "hasCreatedProfile"))", category: .general)
+            ONELogger.debug("hasCreatedProfile: \(KeychainHelper.bool(forKey: "hasCreatedProfile"))", category: .general)
             ONELogger.debug("currentUser exists: \(cloudKitManager.currentUser != nil)", category: .general)
             ONELogger.debug("isFetchingUser: \(cloudKitManager.isFetchingUser)", category: .general)
             
@@ -76,17 +123,17 @@ struct ContentView: View {
     }
     
     private func checkProfileStatus() {
-        // Check UserDefaults flag first - this is the source of truth
-        let hasCreatedProfile = UserDefaults.standard.bool(forKey: "hasCreatedProfile")
-        
+        // Keychain is the source of truth — survives app deletion and reinstall
+        let hasCreatedProfile = KeychainHelper.bool(forKey: "hasCreatedProfile")
+
         ONELogger.debug("Checking profile status:", category: .general)
         ONELogger.debug("hasCreatedProfile flag: \(hasCreatedProfile)", category: .general)
         ONELogger.debug("currentUser exists: \(cloudKitManager.currentUser != nil)", category: .general)
-        
+
         if hasCreatedProfile {
             // Profile already created, no need to show setup
             ONELogger.success("Profile already created (flag is set)", category: .general)
-            
+
             // If flag is set but currentUser is nil, try to load it
             if cloudKitManager.currentUser == nil && !cloudKitManager.isFetchingUser {
                 ONELogger.warning("Flag is set but currentUser is nil, loading from CloudKit...", category: .general)
@@ -94,23 +141,72 @@ struct ContentView: View {
             }
             return
         }
-        
+
         // No profile flag, check if user exists in CloudKit
         ONELogger.warning("No profile flag, checking CloudKit...", category: .general)
-        
+
         if cloudKitManager.currentUser != nil {
             // User exists in CloudKit but flag not set - fix the flag
             ONELogger.success("Found user in CloudKit, setting flag", category: .general)
-            UserDefaults.standard.set(true, forKey: "hasCreatedProfile")
+            KeychainHelper.set(true, forKey: "hasCreatedProfile")
         } else {
             // Wait for CloudKit to finish fetching, then check again
             if cloudKitManager.isFetchingUser {
                 ONELogger.debug("CloudKit is currently fetching user, waiting...", category: .general)
                 // We will handle the result when isFetchingUser changes via the onChange below
+            } else if cloudKitManager.userLoadFailed {
+                // Load errored (throttle/network) — do not show profile setup
+                ONELogger.warning("CloudKit load failed, not showing profile setup", category: .general)
             } else {
-                // Not fetching and no user, safe to show profile setup
-                ONELogger.warning("No user found, showing profile setup", category: .general)
-                self.showProfileSetup = true
+                // Not fetching, no error, no user — retry before concluding new user
+                userCheckRetryCount += 1
+                if userCheckRetryCount < maxUserCheckRetries {
+                    ONELogger.warning("no user found (attempt \(userCheckRetryCount)/\(maxUserCheckRetries)), retrying...", category: .general)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        cloudKitManager.loadCurrentUser()
+                    }
+                } else {
+                    ONELogger.warning("no user found after \(maxUserCheckRetries) attempts, showing profile setup", category: .general)
+                    self.showProfileSetup = true
+                }
+            }
+        }
+    }
+}
+
+private struct CloudKitRetryOverlay: View {
+    let onRetry: () -> Void
+    @ObservedObject private var cloudKit = CloudKitManager.shared
+    @State private var now = Date()
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    private var secondsLeft: Int {
+        guard let retryAfter = cloudKit.throttleRetryAfter else { return 0 }
+        return max(0, Int(retryAfter.timeIntervalSince(now)))
+    }
+
+    private var message: String {
+        if secondsLeft > 0 {
+            let mins = secondsLeft / 60
+            let secs = secondsLeft % 60
+            return String(format: NSLocalizedString("cloudkit.throttleWait", comment: ""), mins, secs)
+        }
+        return NSLocalizedString("cloudkit.connectionError", comment: "")
+    }
+
+    var body: some View {
+        ZStack {
+            Color(UIColor.systemBackground).ignoresSafeArea()
+            ONEErrorView(
+                message: message,
+                onRetry: secondsLeft == 0 ? onRetry : nil
+            )
+        }
+        .onReceive(timer) { t in
+            now = t
+            // Auto-retry once throttle window expires
+            if secondsLeft == 0 && cloudKit.userLoadFailed {
+                onRetry()
             }
         }
     }

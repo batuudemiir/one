@@ -11,27 +11,27 @@ import Foundation
 
 func canonicalMoodLabel(_ moodLabel: String) -> String {
     switch moodLabel.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
-    case "atesli", "tutkulu":
+    case "atesli", "tutkulu", "ateş", "ates":
         return "Ateşli"
-    case "enerjik", "coşkulu", "coskulu", "heyecanli", "heyecanlı", "canli", "canlı":
+    case "enerjik", "coşkulu", "coskulu", "heyecanli", "heyecanlı", "canli", "canlı", "enerji":
         return "Coşkulu"
-    case "isikli", "ışıklı", "mutlu", "neşeli":
+    case "isikli", "ışıklı", "mutlu", "neşeli", "ışık", "isik":
         return "Mutlu"
     case "taze", "doğal", "dogal":
         return "Doğal"
-    case "sakin", "huzurlu", "dingin":
+    case "sakin", "huzurlu", "dingin", "huzur":
         return "Huzurlu"
     case "ozgur", "özgür":
         return "Özgür"
     case "derin":
         return "Derin"
-    case "nostaljik":
+    case "nostaljik", "özlem", "ozlem":
         return "Nostaljik"
-    case "gizemli":
+    case "gizemli", "büyü", "buyu", "loş", "los":
         return "Gizemli"
-    case "hassas":
+    case "hassas", "kırılgan", "kirilgan":
         return "Hassas"
-    case "bos", "boş", "sessiz":
+    case "bos", "boş", "sessiz", "boşluk", "bosluk":
         return "Sessiz"
     case "temiz", "sade", "notr", "nötr":
         return "Nötr"
@@ -42,7 +42,7 @@ func canonicalMoodLabel(_ moodLabel: String) -> String {
 
 // MARK: - Event Category
 
-enum EventCategory: String, CaseIterable, Identifiable {
+enum EventCategory: String, CaseIterable, Identifiable, Codable {
     case aktivite = "Aktivite"
     case konser   = "Konser"
     case spor     = "Spor"
@@ -64,7 +64,7 @@ enum EventCategory: String, CaseIterable, Identifiable {
     }
 }
 
-enum RecommendationKind: Equatable {
+enum RecommendationKind: String, Equatable, Codable {
     case microActivity
     case liveEvent
     case artistConcert
@@ -73,7 +73,7 @@ enum RecommendationKind: Equatable {
 
 // MARK: - Mood Event Model
 
-struct MoodEvent: Identifiable {
+struct MoodEvent: Identifiable, Codable {
     let id: String
     let category: EventCategory
     let title: String
@@ -86,6 +86,11 @@ struct MoodEvent: Identifiable {
     let kind: RecommendationKind
     let reason: String?
     let sourceLabel: String?
+    /// true → event is from a nearby-city API fallback, not the user's preferred city
+    let isNearbyCity: Bool
+    /// true → sourceURL is a Biletix category search page (never 404s)
+    ///         false / nil → direct event page (can 404 for minor cities)
+    let isFallbackURL: Bool
 
     init(
         id: String = UUID().uuidString,
@@ -99,7 +104,9 @@ struct MoodEvent: Identifiable {
         sourceURL: URL? = nil,
         kind: RecommendationKind = .liveEvent,
         reason: String? = nil,
-        sourceLabel: String? = nil
+        sourceLabel: String? = nil,
+        isNearbyCity: Bool = false,
+        isFallbackURL: Bool = false
     ) {
         self.id = id
         self.category = category
@@ -113,6 +120,8 @@ struct MoodEvent: Identifiable {
         self.kind = kind
         self.reason = reason
         self.sourceLabel = sourceLabel
+        self.isNearbyCity = isNearbyCity
+        self.isFallbackURL = isFallbackURL
     }
 }
 
@@ -235,22 +244,30 @@ func mockEvents(for moodLabel: String, city: String = "İstanbul") -> [MoodEvent
         ]
         }
     }()
-    // Attach Biletix search URL to every event that lacks one → "Detay" button always visible
+    // Biletix URL'ini SADECE gerçek bilet gerektiren kategorilere (konser, tiyatro, sergi) ekle.
+    // Aktivite ve yürüyüş noktaları ücretsiz olduğu için Biletix'e yönlendirilmez —
+    // bunlar için EventCardView harita CTA'sı üretir.
+    // Gerçek TM API etkinlikleri event.url alanından kendi Biletix linkini zaten taşır.
+    let ticketedCategories: Set<EventCategory> = [.konser, .tiyatro, .sergi]
     return base
         .filter { ![.spor, .sinema].contains($0.category) }
         .map { event in
-        guard event.sourceURL == nil else { return event }
-        return MoodEvent(
-            id: event.id,
-            category: event.category,
-            title: event.title,
-            venue: event.venue,
-            city: event.city,
-            timing: event.timing,
-            price: event.price,
-            matchPercent: event.matchPercent,
-            sourceURL: biletixFallbackURL(city: city, category: event.category)
-        )
+            guard event.sourceURL == nil else { return event }
+            guard ticketedCategories.contains(event.category) else { return event }
+            return MoodEvent(
+                id: event.id,
+                category: event.category,
+                title: event.title,
+                venue: event.venue,
+                city: event.city,
+                timing: event.timing,
+                price: event.price,
+                matchPercent: event.matchPercent,
+                sourceURL: biletixFallbackURL(city: city, category: event.category),
+                kind: event.kind,
+                reason: event.reason,
+                sourceLabel: event.sourceLabel
+            )
         }
 }
 
@@ -480,14 +497,116 @@ func citySportsEvents(for city: String, mood: String) -> [MoodEvent] {
     }
 }
 
-// MARK: - Biletix Fallback URL
-// Mock events link to Biletix city pages so users can browse real tickets.
-// Real TM API events already have their own Biletix ticket URL from event.url.
+// MARK: - Biletix Browse Cards (honest fallback — no fictional event names)
+// Used when the Ticketmaster API key is missing or all API calls return empty.
+// Returns real cityWalkingSpots + direct Biletix category search links.
+// These URLs are always valid and never 404.
+func biletixBrowseCards(for moodLabel: String, city: String = "İstanbul") -> [MoodEvent] {
+    let normalizedMood = canonicalMoodLabel(moodLabel)
+
+    let preferred: [EventCategory] = {
+        switch normalizedMood {
+        case "Ateşli", "Coşkulu": return [.konser, .tiyatro, .sergi]
+        case "Mutlu":             return [.sergi, .konser, .tiyatro]
+        case "Doğal", "Özgür":   return [.konser, .sergi, .tiyatro]
+        case "Huzurlu":          return [.tiyatro, .sergi, .konser]
+        case "Derin":            return [.tiyatro, .sergi, .konser]
+        case "Nostaljik":        return [.konser, .tiyatro, .sergi]
+        case "Gizemli":          return [.sergi, .tiyatro, .konser]
+        case "Hassas":           return [.konser, .sergi, .tiyatro]
+        case "Sessiz":           return [.sergi, .tiyatro, .konser]
+        default:                 return [.konser, .sergi, .tiyatro]
+        }
+    }()
+
+    var cards: [MoodEvent] = []
+
+    // Real outdoor spots for calm/nature moods — Apple Maps links, always work
+    if ["Doğal", "Özgür", "Huzurlu", "Nötr"].contains(normalizedMood),
+       let walk = cityWalkingSpots(for: city).first {
+        cards.append(walk)
+    }
+
+    // Biletix category search cards — honest "browse" links, never 404
+    for (i, category) in preferred.prefix(3).enumerated() {
+        guard let url = biletixFallbackURL(city: city, category: category) else { continue }
+        let title: String
+        switch category {
+        case .konser:  title = "\(city) Konserleri"
+        case .tiyatro: title = "\(city) Tiyatro & Sahne"
+        case .sergi:   title = "\(city) Sergi & Müze"
+        default:       title = "\(city) \(category.rawValue) Etkinlikleri"
+        }
+        cards.append(MoodEvent(
+            category: category,
+            title: title,
+            venue: "Biletix",
+            city: city,
+            timing: "Güncel etkinlikleri gör",
+            price: "",
+            matchPercent: max(80 - i * 10, 55),
+            sourceURL: url,
+            kind: .liveEvent,
+            isFallbackURL: true
+        ))
+    }
+
+    return cards
+}
+
+// MARK: - Biletix URL Builder
+// Real TM API events use event.url which is a direct Biletix ticket link.
+// Browse cards use category search pages that are always valid.
 
 func biletixFallbackURL(city: String, category: EventCategory) -> URL? {
-    // Biletix Turkey homepage — city-specific pages don't exist as static routes.
-    // Real TM API events use their own direct ticket URL (event.url from the API).
-    return URL(string: "https://www.biletix.com/anasayfa/TURKIYE/tr")
+    let cityCode = biletixCityCode(for: city)
+    let categoryParam = biletixCategoryParam(for: category)
+    let urlString = "https://www.biletix.com/arama/\(cityCode)/tr#!\(categoryParam)"
+    return URL(string: urlString)
+}
+
+/// Maps Turkish city names to Biletix city code slugs (uppercase, ASCII).
+private func biletixCityCode(for city: String) -> String {
+    let normalized = city.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+    switch normalized {
+    case "istanbul":   return "ISTANBUL"
+    case "ankara":     return "ANKARA"
+    case "izmir":      return "IZMIR"
+    case "bursa":      return "BURSA"
+    case "antalya":    return "ANTALYA"
+    case "adana":      return "ADANA"
+    case "gaziantep":  return "GAZIANTEP"
+    case "konya":      return "KONYA"
+    case "mersin":     return "MERSIN"
+    case "eskisehir":  return "ESKISEHIR"
+    case "kayseri":    return "KAYSERI"
+    case "samsun":     return "SAMSUN"
+    case "diyarbakir": return "DIYARBAKIR"
+    case "trabzon":    return "TRABZON"
+    case "kocaeli":    return "KOCAELI"
+    case "sakarya":    return "SAKARYA"
+    case "alanya":     return "ALANYA"
+    case "manisa":     return "MANISA"
+    case "mugla":      return "MUGLA"
+    case "denizli":    return "DENIZLI"
+    case "aydin":      return "AYDIN"
+    case "hatay":      return "HATAY"
+    case "sanlıurfa", "sanliurfa": return "SANLIURFA"
+    case "mardin":     return "MARDIN"
+    default:           return "TURKIYE"
+    }
+}
+
+/// Maps EventCategory to Biletix category filter slug.
+private func biletixCategoryParam(for category: EventCategory) -> String {
+    switch category {
+    case .konser:          return "categoryName=M%C3%BCzik"
+    case .tiyatro:         return "categoryName=Tiyatro"
+    case .sergi:           return "categoryName=Sergi%20%26%20M%C3%BCze"
+    case .aktivite:        return "categoryName=Spor%20%26%20Aktivite"
+    case .spor:            return "categoryName=Spor%20%26%20Aktivite"
+    case .sinema:          return "categoryName=Festival"
+    }
 }
 
 // MARK: - Main Sheet View
@@ -586,7 +705,7 @@ struct MoodEventsSheet: View {
                         }
 
                         // Headline — bold italic serif
-                        Text("Bu his için\nseçtiklerimiz.")
+                        Text(NSLocalizedString("moodEvents.ourPicks", comment: ""))
                             .font(.system(size: 32, weight: .black, design: .default))
                             .italic()
                             .foregroundColor(ONETokens.oneInk)
@@ -599,7 +718,7 @@ struct MoodEventsSheet: View {
                     // Category filter pills
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
-                            EventFilterPill(label: "Tümü", isSelected: selectedCategory == nil) {
+                            EventFilterPill(label: NSLocalizedString("discover.all", comment: ""), isSelected: selectedCategory == nil) {
                                 withAnimation(ONEAnimation.micro) { selectedCategory = nil }
                             }
                             ForEach(visibleCategories) { cat in
@@ -621,7 +740,7 @@ struct MoodEventsSheet: View {
                                 .padding(.top, 40)
                                 .tint(ONETokens.oneInk)
                         } else if filteredItemCount == 0 {
-                            Text("Bu kategori için uygun etkinlik bulunamadı.")
+                            Text(NSLocalizedString("moodEvents.noEvents", comment: ""))
                                 .font(.system(size: 16, weight: .medium, design: .default))
                                 .foregroundColor(ONETokens.oneAsh)
                                 .padding(.top, 40)
@@ -682,7 +801,7 @@ private struct EventFilterPill: View {
                 .padding(.horizontal, 18)
                 .padding(.vertical, 9)
                 .background(
-                    Capsule().fill(isSelected ? ONETokens.oneInk : Color.white)
+                    Capsule().fill(isSelected ? ONETokens.oneInk : ONETokens.onePaper)
                 )
                 .overlay(
                     isSelected ? nil :
@@ -724,9 +843,23 @@ private struct MoodEventCard: View {
                         }
                     }
                     Spacer()
-                    Text("%\(event.matchPercent) eşleşme")
+                    Text(String(format: NSLocalizedString("moodEvents.matchPercent", comment: ""), event.matchPercent))
                         .monoLabel(tracking: 0.8)
                         .foregroundColor(ONETokens.moodOrange)
+                }
+
+                // Nearby city badge
+                if event.isNearbyCity {
+                    HStack(spacing: 4) {
+                        Image(systemName: "location.circle.fill")
+                            .font(.system(size: 9))
+                        Text(String(format: NSLocalizedString("moodEvents.nearbyCity", comment: ""), event.city))
+                            .monoLabel(tracking: 0.5)
+                    }
+                    .foregroundColor(ONETokens.oneStone)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(ONETokens.oneCreamMid))
                 }
 
                 // Event title
@@ -762,26 +895,68 @@ private struct MoodEventCard: View {
                         .foregroundColor(ONETokens.oneInk)
                 }
 
-                if let sourceURL = event.sourceURL {
-                    HStack {
-                        Spacer()
-                        Link(destination: sourceURL) {
-                            Text(event.kind == .microActivity ? "Detay" : "Bilete bak")
-                                .monoSM(tracking: 0.6)
-                                .foregroundColor(ONETokens.oneInk)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(Capsule().fill(ONETokens.oneCreamMid))
-                        }
-                    }
-                }
+                // Smart CTA: bilet gerektiren → Biletix, aktivite/micro → Harita, diğer → gizle
+                eventCTA(for: event)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 16)
         }
-        .background(Color.white)
+        .background(ONETokens.onePaper)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+    }
+
+    // MARK: - Smart CTA
+    // Bilet gerektiren (konser/tiyatro/sergi) → Biletix butonu
+    // Aktivite / micro-activity → Apple Haritalar butonu
+    // sourceURL yoksa ve harita da üretilemiyorsa → hiçbir şey
+
+    @ViewBuilder
+    private func eventCTA(for event: MoodEvent) -> some View {
+        let isTicketed = event.kind != .microActivity && event.category != .aktivite
+
+        if isTicketed, let url = event.sourceURL {
+            HStack {
+                Spacer()
+                Link(destination: url) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "ticket.fill")
+                            .font(.system(size: 10, weight: .semibold))
+                        // "Ara" for search pages (never 404), "Bak" for direct event pages
+                        Text(event.isFallbackURL ? NSLocalizedString("discover.buyOnBiletix", comment: "") : NSLocalizedString("discover.viewOnBiletix", comment: ""))
+                            .monoSM(tracking: 0.6)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Capsule().fill(Color(hex: "#E63946")))
+                }
+            }
+        } else if !isTicketed, let url = appleMapsURL(venue: event.venue, city: event.city) {
+            HStack {
+                Spacer()
+                Link(destination: url) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "map.fill")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(NSLocalizedString("discover.showOnMap", comment: ""))
+                            .monoSM(tracking: 0.6)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Capsule().fill(ONETokens.oneBlue))
+                }
+            }
+        }
+    }
+
+    private func appleMapsURL(venue: String, city: String) -> URL? {
+        let parts = [venue, city].filter { !$0.isEmpty }
+        guard !parts.isEmpty,
+              let encoded = parts.joined(separator: ", ")
+                .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return nil }
+        return URL(string: "https://maps.apple.com/?q=\(encoded)")
     }
 }
 
@@ -796,6 +971,12 @@ class TicketmasterManager {
     private var cachedEventsByKey: [String: (events: [MoodEvent], createdAt: Date)] = [:]
     private let cacheTTL: TimeInterval = 24 * 60 * 60  // 24 saat — günde bir yenileme
     private var didLogMissingKey = false
+
+    /// Tier-1: cities where Biletix has active event pages and direct TM→Biletix links work reliably.
+    /// All other cities use the Biletix category search page URL which never returns 404.
+    private let biletixTier1Cities: Set<String> = [
+        "istanbul", "ankara", "izmir", "bursa", "antalya", "adana", "gaziantep"
+    ]
 
     private init() {
         let possibleKeys = [
@@ -835,39 +1016,44 @@ class TicketmasterManager {
                 ONELogger.warning("Ticketmaster API key missing. Using mock events.", category: .general)
                 didLogMissingKey = true
             }
-            return cacheAndReturn(mockEvents(for: entry.moodLabel, city: city), key: cacheKey)
+            return cacheAndReturn([], key: cacheKey)
         }
 
         async let tmMusic = fetchMusicMatches(entry: entry, city: city)
-        async let tmArts = fetchForSegment(entry: entry, city: city, category: .tiyatro, size: 6)
-        async let tmExpo = fetchForSegment(entry: entry, city: city, category: .sergi, size: 6)
+        async let tmArts  = fetchForSegment(entry: entry, city: city, category: .tiyatro, size: 6)
+        async let tmExpo  = fetchForSegment(entry: entry, city: city, category: .sergi,   size: 6)
+        async let tmSport = fetchForSegment(entry: entry, city: city, category: .spor,    size: 5)
 
         let e1 = (try? await tmMusic) ?? []
         let e2 = (try? await tmArts) ?? []
         let e3 = (try? await tmExpo) ?? []
-        var apiEvents = e1 + e2 + e3
+        let e4 = (try? await tmSport) ?? []
+        var apiEvents = e1 + e2 + e3 + e4
 
-        // If primary city returned nothing, try nearby cities before falling to mock
+        // If primary city returned nothing, try nearby cities before falling to mock.
+        // Events from nearby cities are marked with isNearbyCity=true so the UI can
+        // label them clearly (e.g. "Yakın şehir: İstanbul").
         if apiEvents.isEmpty {
             for altCity in nearbyCities(for: city) {
                 async let alt1 = fetchMusicMatches(entry: entry, city: altCity)
                 async let alt2 = fetchForSegment(entry: entry, city: altCity, category: .tiyatro, size: 5)
                 async let alt3 = fetchForSegment(entry: entry, city: altCity, category: .sergi, size: 4)
                 let altMusic = (try? await alt1) ?? []
-                let altArts = (try? await alt2) ?? []
-                let altExpo = (try? await alt3) ?? []
+                let altArts  = (try? await alt2) ?? []
+                let altExpo  = (try? await alt3) ?? []
                 let altEvents = altMusic + altArts + altExpo
                 if !altEvents.isEmpty {
-                    apiEvents = altEvents
-                    ONELogger.info("No TM events in \(city) — showing nearby: \(altCity).", category: .general)
+                    // Tag every event so the card layer can show "Yakın şehir: X"
+                    apiEvents = altEvents.map { markNearby($0) }
+                    ONELogger.info("No TM events in \(city) — showing nearby \(altCity) (\(altEvents.count) events).", category: .general)
                     break
                 }
             }
         }
 
-        // Fall back to full mock only if every parallel call came back empty
-        let source = (apiEvents.isEmpty ? mockEvents(for: entry.moodLabel, city: city) : apiEvents)
-            .filter { ![.spor, .sinema].contains($0.category) }
+        // Merge API results — sinema excluded (not on Biletix); spor/aktivite welcome
+        let source = apiEvents
+            .filter { $0.category != .sinema }
 
         let merged = deduplicateKeepingBest(source)
 
@@ -881,7 +1067,7 @@ class TicketmasterManager {
                 .prefix(24)
         )
 
-        return cacheAndReturn(sorted.isEmpty ? mockEvents(for: entry.moodLabel, city: city) : sorted, key: cacheKey)
+        return cacheAndReturn(sorted, key: cacheKey)
     }
 
     func fetchEvents(for entry: DailyEntry, city: String) async throws -> [MoodEvent] {
@@ -1002,6 +1188,53 @@ class TicketmasterManager {
         return events
     }
 
+    /// Resolves the best Biletix URL for an event.
+    ///
+    /// Strategy:
+    /// • Tier-1 cities (İstanbul, Ankara, İzmir, Bursa, Antalya, Adana, Gaziantep):
+    ///   Use the direct TM event.url → goes to the specific Biletix event page.
+    /// • All other cities: Use the Biletix category search page (biletix.com/arama/CITY/tr#!...)
+    ///   which is always valid and never returns 404.
+    ///
+    /// Returns (url, isFallback) — isFallback=true means it's a search page, not a direct event page.
+    private func resolvedBiletixURL(
+        tmURL: String?,
+        eventCity: String,
+        category: EventCategory
+    ) -> (url: URL?, isFallback: Bool) {
+        // Only use a direct URL if it's actually a biletix.com link —
+        // Ticketmaster API returns ticketmaster.com URLs that 404 on Biletix.
+        if let urlStr = tmURL,
+           urlStr.lowercased().contains("biletix.com"),
+           let url = URL(string: urlStr) {
+            return (url, false)
+        }
+
+        // Any other URL (ticketmaster.com, nil) → category search page (never 404s)
+        let fallback = biletixFallbackURL(city: eventCity, category: category)
+        return (fallback, true)
+    }
+
+    /// Creates a copy of a MoodEvent with isNearbyCity = true.
+    private func markNearby(_ event: MoodEvent) -> MoodEvent {
+        MoodEvent(
+            id: event.id,
+            category: event.category,
+            title: event.title,
+            venue: event.venue,
+            city: event.city,
+            timing: event.timing,
+            price: event.price,
+            matchPercent: max(event.matchPercent - 8, 50), // slight penalty for nearby
+            sourceURL: event.sourceURL,
+            kind: event.kind,
+            reason: event.reason,
+            sourceLabel: event.sourceLabel,
+            isNearbyCity: true,
+            isFallbackURL: event.isFallbackURL
+        )
+    }
+
     private func buildMoodEvent(
         from event: TMEvent,
         entry: DailyEntry,
@@ -1024,6 +1257,13 @@ class TicketmasterManager {
             priceString = currency.uppercased() == "TRY" ? "₺\(Int(min))+" : "\(currency) \(Int(min))+"
         }
 
+        // Smart URL resolution: direct link for major cities, search page for others
+        let (resolvedURL, isFallback) = resolvedBiletixURL(
+            tmURL: event.url,
+            eventCity: eventCity,
+            category: category
+        )
+
         return MoodEvent(
             id: event.id,
             category: category,
@@ -1033,10 +1273,12 @@ class TicketmasterManager {
             timing: timing,
             price: priceString,
             matchPercent: score(event: event, category: category, entry: entry, city: city, kind: kind, keyword: keyword),
-            sourceURL: event.url.flatMap { URL(string: $0) },
+            sourceURL: resolvedURL,
             kind: kind,
             reason: reason ?? liveReason(for: category, entry: entry, city: eventCity),
-            sourceLabel: sourceLabel ?? defaultSourceLabel(for: kind, category: category)
+            sourceLabel: sourceLabel ?? defaultSourceLabel(for: kind, category: category),
+            isNearbyCity: false,
+            isFallbackURL: isFallback
         )
     }
 
@@ -1363,7 +1605,7 @@ class TicketmasterManager {
 
         let dateFmt = DateFormatter()
         dateFmt.dateFormat = "yyyy-MM-dd"
-        dateFmt.locale = Locale(identifier: "tr_TR")
+        dateFmt.locale = LanguageManager.shared.currentLocale
 
         let timeStr = time.flatMap { t -> String? in
             t.count >= 5 ? " · \(t.prefix(5))" : nil
@@ -1385,7 +1627,7 @@ class TicketmasterManager {
         default:
             let dayFmt = DateFormatter()
             dayFmt.dateFormat = "EEEE"
-            dayFmt.locale = Locale(identifier: "tr_TR")
+            dayFmt.locale = LanguageManager.shared.currentLocale
             let dayName = dayFmt.string(from: eventDate).prefix(1).uppercased()
                         + dayFmt.string(from: eventDate).dropFirst()
             return "\(dayName)\(timeStr)"
@@ -1393,7 +1635,7 @@ class TicketmasterManager {
     }
 
     private func fallbackToMock(for moodLabel: String, city: String) -> [MoodEvent] {
-        mockEvents(for: moodLabel, city: city)
+        []
     }
 
     @discardableResult

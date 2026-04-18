@@ -59,22 +59,47 @@ class MidnightResetManager {
     }
     
     // MARK: - Handle Reset
-    
+
     private func handleMidnightReset(task: BGAppRefreshTask) {
         // Schedule next reset
         scheduleMidnightReset()
-        
+
         // Perform reset
         let context = PersistenceController.shared.container.newBackgroundContext()
-        
+
         task.expirationHandler = {
-            // Clean up if task expires
             context.reset()
         }
-        
+
         context.perform {
             self.resetExpiredShares(context: context)
-            
+            self.scheduleStreakNotificationsIfNeeded()
+
+            // Ayın son günüyse ay-sonu özet bildirimi planla
+            let cal = Calendar.current
+            let today = cal.startOfDay(for: Date())
+            if let lastDayOfMonth = cal.date(
+                byAdding: .day, value: -1,
+                to: cal.date(byAdding: .month, value: 1,
+                             to: cal.date(from: cal.dateComponents([.year, .month], from: today))!)!
+            ), cal.isDate(today, inSameDayAs: lastDayOfMonth) {
+                NotificationManager.shared.scheduleMonthEndNotification()
+            }
+
+            // Subscription sağlamlık kontrolü — Apple belirli koşullarda CKSubscription'ları
+            // silebiliyor; gece yarısı sıfırlamasında eksik olanları yeniden kayıt et.
+            CloudKitManager.shared.verifySubscriptions()
+
+            // Lock Screen widget'ı günlük sıfırla (yeni gün = yeni seçim)
+            WidgetDataWriter.clear()
+
+            // Gece yarısında tüm Live Activity'leri kapat
+            if #available(iOS 16.1, *) {
+                Task {
+                    await LiveActivityManager.shared.endAllActivities()
+                }
+            }
+
             do {
                 try context.save()
                 task.setTaskCompleted(success: true)
@@ -84,6 +109,41 @@ class MidnightResetManager {
                 task.setTaskCompleted(success: false)
             }
         }
+    }
+
+    // MARK: - Streak & Discovery Notifications
+
+    private func scheduleStreakNotificationsIfNeeded() {
+        let context  = PersistenceController.shared.container.viewContext
+        let calendar = Calendar.current
+        let today    = calendar.startOfDay(for: Date())
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+
+        let todayEntry     = PersistenceController.shared.fetchDailySong(for: today, context: context)
+        let yesterdayEntry = PersistenceController.shared.fetchDailySong(for: yesterday, context: context)
+
+        if todayEntry == nil, yesterdayEntry != nil {
+            // Streak tehlikede — ardışık gün sayısını hesapla
+            let streak = calculateStreakCount(context: context, upTo: yesterday)
+            if streak > 1 {
+                NotificationManager.shared.scheduleStreakWarning(streakDays: streak)
+            }
+        } else {
+            NotificationManager.shared.cancelStreakWarning()
+        }
+    }
+
+    private func calculateStreakCount(context: NSManagedObjectContext, upTo date: Date) -> Int {
+        let calendar = Calendar.current
+        var streak = 0
+        var checkDay = calendar.startOfDay(for: date)
+        while true {
+            guard PersistenceController.shared.fetchDailySong(for: checkDay, context: context) != nil else { break }
+            streak += 1
+            guard let prev = calendar.date(byAdding: .day, value: -1, to: checkDay) else { break }
+            checkDay = prev
+        }
+        return streak
     }
     
     // MARK: - Reset Logic

@@ -19,39 +19,20 @@ struct OnboardingView: View {
                 .ignoresSafeArea()
             
             TabView(selection: $currentPage) {
-                // Page 1: Main Question
+                // Page 1: Hoş Geldin
                 MainQuestionPage(goToNext: { currentPage = 1 }, skip: completeOnboarding)
                     .tag(0)
-                
-                // Page 2: Music Info
-                FeatureInfoPage(
-                    title: "Müzik Ekle",
-                    desc: "Seni bugün en iyi anlatan\nşarkıyı seç ve anı başlat.",
-                    buttonText: "BİR SONRAKİ ADIM",
-                    pose: .oneMusic,
+
+                // Page 2: Özellikler — Müzik + Fotoğraf + Sosyal
+                FeaturesOverviewPage(
                     goBack: { currentPage = 0 },
                     goToNext: { currentPage = 2 }
                 )
                 .tag(1)
-                
-                // Page 3: Photo Info
-                FeatureInfoPage(
-                    title: "Fotoğraf Ekle",
-                    desc: "Bugünün mood'unu bir fotoğrafla\ndaha görünür hale getir.",
-                    buttonText: "SERVİS BAĞLANTILARI",
-                    pose: .onePicture,
-                    goBack: { currentPage = 1 },
-                    goToNext: { currentPage = 3 }
-                )
-                .tag(2)
-                
-                // Page 4: Music Service Connection
-                MusicConnectionPage(goBack: { currentPage = 2 }, goToNext: { currentPage = 4 })
-                    .tag(3)
 
-                // Page 5: Apple Music
-                AppleMusicConnectionPage(goBack: { currentPage = 3 }, complete: completeOnboarding)
-                    .tag(4)
+                // Page 3: İzinler — Apple Music + Bildirimler
+                PermissionsPage(goBack: { currentPage = 1 }, complete: completeOnboarding)
+                    .tag(2)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
         }
@@ -68,26 +49,30 @@ struct OnboardingView: View {
         NotificationManager.shared.requestAuthorization { granted in
             DispatchQueue.main.async {
                 if granted {
-                    UserDefaults.standard.set(true, forKey: "notificationsEnabled")
-                    
-                    // Create default 20:00 time
+                    let defaults = UserDefaults.standard
+                    defaults.set(true, forKey: "notificationsEnabled")
+                    defaults.set(true, forKey: "streakNotificationsEnabled")
+                    defaults.set(true, forKey: "weeklySummaryEnabled")
+                    defaults.set(true, forKey: "discoveryNotificationsEnabled")
+
+                    // Varsayılan hatırlatıcı saati 20:00
                     var components = DateComponents()
-                    components.hour = UserDefaults.standard.integer(forKey: "dailyReminderHour") == 0 ? 20 : UserDefaults.standard.integer(forKey: "dailyReminderHour")
-                    components.minute = UserDefaults.standard.integer(forKey: "dailyReminderMinute")
-                    
+                    components.hour   = defaults.integer(forKey: "dailyReminderHour") == 0 ? 20 : defaults.integer(forKey: "dailyReminderHour")
+                    components.minute = defaults.integer(forKey: "dailyReminderMinute")
                     if components.hour == 0 { components.hour = 20 }
-                    
+
                     if let defaultTime = Calendar.current.date(from: components) {
-                        UserDefaults.standard.set(components.hour, forKey: "dailyReminderHour")
-                        UserDefaults.standard.set(components.minute, forKey: "dailyReminderMinute")
+                        defaults.set(components.hour,   forKey: "dailyReminderHour")
+                        defaults.set(components.minute, forKey: "dailyReminderMinute")
                         NotificationManager.shared.scheduleDailyReminder(at: defaultTime)
+                        NotificationManager.shared.scheduleWeeklySummary()
                     }
                 }
                 
                 withAnimation(.easeInOut(duration: ONEAnimation.durationMedium)) {
                     isCompleted = true
                 }
-                UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+                KeychainHelper.set(true, forKey: "hasCompletedOnboarding")
             }
         }
     }
@@ -113,7 +98,7 @@ struct MainQuestionPage: View {
             Spacer()
             
             // Hero question
-            Text("Bugün nasıl\nbir şarkı?")
+            Text(NSLocalizedString("onboarding.searchPlaceholder", comment: ""))
                 .displayLG()
                 .foregroundColor(ONETokens.oneInk)
                 .lineSpacing(4)
@@ -121,7 +106,7 @@ struct MainQuestionPage: View {
                 .opacity(questionOpacity)
             
             // Sub text
-            Text("Hisset. Keşfet. Paylaş.\nŞarkını seç, mood'unu bırak, çevrenle bağ kur.")
+            Text(NSLocalizedString("onboarding.slogan", comment: ""))
                 .monoBase(tracking: 0.1)
                 .foregroundColor(ONETokens.oneAsh)
                 .lineSpacing(6)
@@ -133,7 +118,7 @@ struct MainQuestionPage: View {
             // CTA group
             VStack(spacing: 10) {
                 Button(action: goToNext) {
-                    Text("Müzik servisine bağlan")
+                    Text(NSLocalizedString("onboarding.connectMusic", comment: ""))
                         .tracking(-0.3)
                         .bodySMMedium()
                         .foregroundColor(.white)
@@ -150,13 +135,13 @@ struct MainQuestionPage: View {
                 }
                 
                 Button(action: skip) {
-                    Text("DAHA SONRA")
+                    Text(NSLocalizedString("onboarding.later", comment: ""))
                         .monoSM(tracking: 1.4)
                         .foregroundColor(ONETokens.oneAsh)
                         .padding(.vertical, 12)
                 }
                 
-                Text("Günde bir bildirim gönderebiliriz.\nBugünkü şarkını ve çevreni kaçırma.")
+                Text(NSLocalizedString("onboarding.notificationDesc", comment: ""))
                     .monoLabel()
                     .foregroundColor(ONETokens.oneStone)
                     .multilineTextAlignment(.center)
@@ -184,58 +169,74 @@ struct MainQuestionPage: View {
     }
 }
 
-// MARK: - Feature Info Page
-struct FeatureInfoPage: View {
-    let title: String
-    let desc: String
-    let buttonText: String
-    let pose: MascotPose
+// MARK: - Features Overview Page (Müzik + Fotoğraf + Sosyal)
+struct FeaturesOverviewPage: View {
     let goBack: () -> Void
     let goToNext: () -> Void
-    
+
     @State private var opacity: Double = 0
     @State private var contentOffset: CGFloat = 20
-    
+
+    private var features: [(icon: String, title: String, desc: String)] {
+        [
+            ("music.note", NSLocalizedString("onboarding.feature.dailySong", comment: ""), NSLocalizedString("onboarding.feature.dailySongDesc", comment: "")),
+            ("camera.fill", NSLocalizedString("onboarding.feature.photoMood", comment: ""), NSLocalizedString("onboarding.feature.photoMoodDesc", comment: "")),
+            ("person.2.fill", NSLocalizedString("onboarding.feature.circle", comment: ""), NSLocalizedString("onboarding.feature.circleDesc", comment: "")),
+            ("sparkles", NSLocalizedString("onboarding.feature.discover", comment: ""), NSLocalizedString("onboarding.feature.discoverDesc", comment: ""))
+        ]
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Back button
             Button(action: goBack) {
-                Text("← GERI")
+                Text(NSLocalizedString("onboarding.back", comment: ""))
                     .monoSM(tracking: 1.4)
                     .foregroundColor(ONETokens.oneAsh)
                     .padding(.vertical, 4)
             }
             .padding(.top, 14)
-            
+
             Spacer()
-            
-            VStack(spacing: 32) {
-                // Mascot
-                OneMascotView(pose: pose, size: 160)
-                    .padding(.bottom, 16)
-                
-                // Title
-                Text(title)
+
+            VStack(alignment: .leading, spacing: 28) {
+                OneMascotView(pose: .oneMusic, size: 100)
+
+                Text(NSLocalizedString("onboarding.howItWorks", comment: ""))
                     .displayLG()
                     .foregroundColor(ONETokens.oneInk)
-                    .tracking(-0.5)
-                
-                // Subtext
-                Text(desc)
-                    .monoBase(tracking: 0.5)
-                    .foregroundColor(ONETokens.oneAsh)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(6)
-                    .padding(.horizontal, 16)
+                    .lineSpacing(4)
+                    .tracking(-0.75)
+
+                VStack(alignment: .leading, spacing: 16) {
+                    ForEach(Array(features.enumerated()), id: \.offset) { index, feature in
+                        HStack(spacing: 14) {
+                            ZStack {
+                                Circle()
+                                    .fill(ONETokens.oneCreamMid)
+                                    .frame(width: 40, height: 40)
+                                Image(systemName: feature.icon)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(ONETokens.oneInk)
+                            }
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(feature.title)
+                                    .bodySMMedium()
+                                    .foregroundColor(ONETokens.oneInk)
+                                Text(feature.desc)
+                                    .monoSM()
+                                    .foregroundColor(ONETokens.oneAsh)
+                            }
+                        }
+                    }
+                }
             }
-            .frame(maxWidth: .infinity)
             .offset(y: contentOffset)
-            
+
             Spacer()
-            
-            // Continue button
+
             Button(action: goToNext) {
-                Text(buttonText)
+                Text(NSLocalizedString("onboarding.serviceConnections", comment: ""))
                     .monoSM(tracking: 1.4)
                     .foregroundColor(ONETokens.oneCream)
                     .frame(maxWidth: .infinity)
@@ -256,173 +257,21 @@ struct FeatureInfoPage: View {
     }
 }
 
-// MARK: - Music Connection Page
-struct MusicConnectionPage: View {
-    let goBack: () -> Void
-    let goToNext: () -> Void
-    
-    @State private var opacity: Double = 0
-    @State private var isConnecting = false
-    @State private var showAlert = false
-    @State private var alertMessage = ""
-    @State private var connectedService: String? = nil
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Back button
-            Button(action: goBack) {
-                Text("← GERI")
-                    .monoSM(tracking: 1.4)
-                    .foregroundColor(ONETokens.oneAsh)
-                    .padding(.vertical, 4)
-            }
-            .padding(.top, 14)
-            
-            // Title
-            Text("Nereden\ndinliyorsun?")
-                .displayLG()
-                .foregroundColor(ONETokens.oneInk)
-                .lineSpacing(4)
-                .tracking(-0.75)
-                .padding(.top, 28)
-            
-            // Sub
-            Text("Bağlanırsan daha hızlı seçer, daha kolay keşfeder, daha rahat paylaşırsın.")
-                .monoBase()
-                .foregroundColor(ONETokens.oneAsh)
-                .lineSpacing(6)
-                .padding(.top, 12)
-            
-            // Services
-            VStack(spacing: 10) {
-                ServiceButton(
-                    icon: "♪",
-                    iconBg: "#FC3C44",
-                    name: "Apple Music",
-                    desc: connectedService == "AppleMusic" ? "✓ Bağlandı" : "Arama ve şarkı geçmişi",
-                    action: connectAppleMusic,
-                    isConnected: connectedService == "AppleMusic"
-                )
-            }
-            .padding(.top, 36)
-            
-            Spacer()
-            
-            // Continue or Skip button
-            if connectedService != nil {
-                Button(action: goToNext) {
-                    Text("DEVAM ET")
-                        .monoSM(tracking: 1.4)
-                        .foregroundColor(ONETokens.oneCream)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 17)
-                        .background(ONETokens.oneInk)
-                        .cornerRadius(16)
-                }
-            } else {
-                Button(action: goToNext) {
-                    Text("BAĞLAMADAN DEVAM ET")
-                        .monoSM(tracking: 1.4)
-                        .foregroundColor(ONETokens.oneAsh)
-                        .padding(.vertical, 12)
-                }
-                .frame(maxWidth: .infinity)
-            }
-            
-            Text("Verilerini satmıyoruz.\nHer şey cihazında saklanır.")
-                .monoLabel()
-                .foregroundColor(ONETokens.oneStone)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 4)
-        }
-        .padding(.horizontal, 28)
-        .padding(.vertical, 56)
-        .opacity(opacity)
-        .onAppear {
-            withAnimation(.easeOut(duration: ONEAnimation.durationMedium)) {
-                opacity = 1
-            }
-            
-            // Check if already connected
-            if let service = UserDefaults.standard.string(forKey: "preferredMusicService") {
-                connectedService = service
-            }
-            
-        }
-        .alert("Bilgi", isPresented: $showAlert) {
-            Button("Tamam", role: .cancel) { }
-        } message: {
-            Text(alertMessage)
-        }
-        .overlay(
-            Group {
-                if isConnecting {
-                    ZStack {
-                        Color.black.opacity(0.3)
-                            .ignoresSafeArea()
-                        
-                        VStack(spacing: 16) {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                .scaleEffect(1.5)
-                            
-                            Text("Bağlanıyor...")
-                                .monoBase()
-                                .foregroundColor(.white)
-                        }
-                        .padding(32)
-                        .background(ONETokens.oneInk)
-                        .cornerRadius(16)
-                    }
-                }
-            }
-        )
-    }
-    
-    private func connectAppleMusic() {
-        isConnecting = true
-        
-        Task {
-            let status = await MusicAuthorization.request()
-            
-            await MainActor.run {
-                isConnecting = false
-                
-                if status == .authorized {
-                    // Save preference
-                    UserDefaults.standard.set("AppleMusic", forKey: "preferredMusicService")
-                    connectedService = "AppleMusic"
-                    
-                    alertMessage = "Apple Music başarıyla bağlandı!"
-                    showAlert = true
-                } else {
-                    alertMessage = "Apple Music erişimi reddedildi. Ayarlardan izin verebilirsin."
-                    showAlert = true
-                }
-            }
-        }
-    }
-}
-
-
-// MARK: - Apple Music Connection Page
-struct AppleMusicConnectionPage: View {
+// MARK: - Permissions Page (Apple Music + Bildirimler)
+struct PermissionsPage: View {
     let goBack: () -> Void
     let complete: () -> Void
 
     @State private var opacity: Double = 0
     @State private var contentOffset: CGFloat = 20
-    @State private var isConnecting = false
-    @State private var isConnected = false
+    @State private var isConnectingMusic = false
+    @State private var musicConnected = false
     @State private var showDeniedAlert = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Back button
             Button(action: goBack) {
-                Text("← GERI")
+                Text(NSLocalizedString("onboarding.back", comment: ""))
                     .monoSM(tracking: 1.4)
                     .foregroundColor(ONETokens.oneAsh)
                     .padding(.vertical, 4)
@@ -432,86 +281,68 @@ struct AppleMusicConnectionPage: View {
             Spacer()
 
             VStack(alignment: .leading, spacing: 0) {
-                // Icon
-                ZStack {
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(Color(hex: "#FC3C44"))
-                        .frame(width: 64, height: 64)
-                    Text("♪")
-                        .font(.system(size: 32))
-                        .foregroundColor(.white)
-                }
-                .padding(.bottom, 28)
-
-                // Title
-                Text("Apple Music\nbağlansın mı?")
+                Text(NSLocalizedString("onboarding.lastStep", comment: ""))
                     .displayLG()
                     .foregroundColor(ONETokens.oneInk)
                     .lineSpacing(4)
                     .tracking(-0.75)
 
+                Text(NSLocalizedString("onboarding.connectDesc", comment: ""))
+                    .monoBase()
+                    .foregroundColor(ONETokens.oneAsh)
+                    .lineSpacing(6)
+                    .padding(.top, 12)
+
+                // Apple Music
+                VStack(alignment: .leading, spacing: 16) {
+                    ServiceButton(
+                        icon: "♪",
+                        iconBg: "#FC3C44",
+                        name: "Apple Music",
+                        desc: musicConnected ? NSLocalizedString("onboarding.connected", comment: "") : NSLocalizedString("onboarding.noSubscriptionHint", comment: ""),
+                        action: connectAppleMusic,
+                        isConnected: musicConnected
+                    )
+                }
+                .padding(.top, 28)
+
                 // Info pills
                 VStack(alignment: .leading, spacing: 10) {
                     InfoPill(icon: "checkmark.circle.fill", color: Color(hex: "#FC3C44"),
-                             text: "Abonelik gerekmez")
-                    InfoPill(icon: "sparkles", color: Color(hex: "#FC3C44"),
-                             text: "Sadece şarkı önerileri için kullanılır")
+                             text: NSLocalizedString("onboarding.noSubscriptionRequired", comment: ""))
                     InfoPill(icon: "lock.fill", color: ONETokens.oneAsh,
-                             text: "Müzik kütüphanen paylaşılmaz")
+                             text: NSLocalizedString("onboarding.noDataSelling", comment: ""))
                 }
-                .padding(.top, 24)
+                .padding(.top, 20)
             }
             .offset(y: contentOffset)
 
             Spacer()
 
-            // Buttons
             VStack(spacing: 10) {
-                if isConnected {
-                    Button(action: complete) {
-                        Text("HARIKA, DEVAM ET")
-                            .monoSM(tracking: 1.4)
-                            .foregroundColor(ONETokens.oneCream)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 17)
-                            .background(Color(hex: "#FC3C44"))
-                            .cornerRadius(16)
-                    }
-                } else {
-                    Button(action: connectAppleMusic) {
-                        HStack(spacing: 8) {
-                            if isConnecting {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: ONETokens.oneCream))
-                                    .scaleEffect(0.85)
-                            }
-                            Text(isConnecting ? "Bağlanıyor..." : "Apple Music'e İzin Ver")
-                                .monoSM(tracking: 1.4)
-                                .foregroundColor(ONETokens.oneCream)
-                        }
+                Button(action: complete) {
+                    Text(musicConnected ? NSLocalizedString("onboarding.startConnected", comment: "") : NSLocalizedString("onboarding.start", comment: ""))
+                        .monoSM(tracking: 1.4)
+                        .foregroundColor(ONETokens.oneCream)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 17)
-                        .background(ONETokens.oneInk)
+                        .background(
+                            musicConnected
+                                ? Color(hex: "#FC3C44")
+                                : ONETokens.oneInk
+                        )
                         .cornerRadius(16)
-                    }
-                    .disabled(isConnecting)
-
-                    Button(action: complete) {
-                        Text("ŞIMDILIK GEÇ")
-                            .monoSM(tracking: 1.4)
-                            .foregroundColor(ONETokens.oneAsh)
-                            .padding(.vertical, 12)
-                    }
-                    .frame(maxWidth: .infinity)
                 }
 
-                Text("İzni istediğin zaman ayarlardan değiştirebilirsin.")
-                    .monoLabel()
-                    .foregroundColor(ONETokens.oneStone)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 4)
+                if !musicConnected {
+                    Text(NSLocalizedString("onboarding.spotifySettings", comment: ""))
+                        .monoLabel()
+                        .foregroundColor(ONETokens.oneStone)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 4)
+                }
             }
         }
         .padding(.horizontal, 28)
@@ -522,28 +353,27 @@ struct AppleMusicConnectionPage: View {
                 opacity = 1
                 contentOffset = 0
             }
-            // Already connected?
             if UserDefaults.standard.string(forKey: "preferredMusicService") == "AppleMusic" {
-                isConnected = true
+                musicConnected = true
             }
         }
-        .alert("Apple Music Erişimi", isPresented: $showDeniedAlert) {
-            Button("Tamam", role: .cancel) { }
+        .alert("Apple Music", isPresented: $showDeniedAlert) {
+            Button(NSLocalizedString("general.ok", comment: ""), role: .cancel) { }
         } message: {
-            Text("Apple Music erişimi reddedildi. Ayarlar → Gizlilik → Medya ve Apple Music'ten izin verebilirsin.")
+            Text(NSLocalizedString("onboarding.appleMusicDenied", comment: ""))
         }
     }
 
     private func connectAppleMusic() {
-        isConnecting = true
+        isConnectingMusic = true
         Task {
             let status = await MusicAuthorization.request()
             await MainActor.run {
-                isConnecting = false
+                isConnectingMusic = false
                 if status == .authorized {
                     UserDefaults.standard.set("AppleMusic", forKey: "preferredMusicService")
                     withAnimation(.easeOut(duration: ONEAnimation.durationShort)) {
-                        isConnected = true
+                        musicConnected = true
                     }
                 } else {
                     showDeniedAlert = true

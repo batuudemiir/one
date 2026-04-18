@@ -21,12 +21,15 @@ struct ONEToggleStyle: ToggleStyle {
                 Capsule()
                     .fill(configuration.isOn ? ONETokens.oneBlue : ONETokens.oneStone)
                     .frame(width: 44, height: 26)
-                
+
                 Circle()
                     .fill(Color.white)
                     .frame(width: 22, height: 22)
                     .offset(x: configuration.isOn ? 9 : -9)
             }
+            // Minimum 44×44pt hit target per Apple HIG
+            .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
+            .contentShape(Rectangle())
             .onTapGesture {
                 withAnimation(ONEAnimation.micro) {
                     configuration.isOn.toggle()
