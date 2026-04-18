@@ -52,6 +52,7 @@ struct DiscoverView: View {
         }
         .navigationBarHidden(true)
         .task {
+            AppAnalytics.shared.track(.discoverOpened)
             await vm.fetchContent()
             withAnimation(ONEAnimation.cardSpring) { appeared = true }
         }

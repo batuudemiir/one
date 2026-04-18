@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UIKit
+import CloudKit
 
 @MainActor
 class StoryCardGenerator {
@@ -27,16 +28,16 @@ class StoryCardGenerator {
         guard !isGenerating else {
             throw StoryCardError.renderFailed
         }
-        
+
         isGenerating = true
         defer { isGenerating = false }
-        
+
         StoryCardLogger.log("Starting card generation", level: .info)
         let startTime = Date()
-        
+
         do {
             // 1. Prepare view model
-            let viewModel = try prepareViewModel(from: dailySong)
+            let viewModel = try prepareViewModel(from: dailySong, inviteCode: Self.currentInviteCode())
             
             // 2. Create SwiftUI view
             let cardView = StoryCardView(viewModel: viewModel)
@@ -82,7 +83,8 @@ class StoryCardGenerator {
             let viewModel = try StoryCardViewModel.from(
                 dailyEntry: dailyEntry,
                 defaultImage: defaultImage,
-                watermark: watermark
+                watermark: watermark,
+                inviteCode: Self.currentInviteCode()
             )
             
             // 2. Create SwiftUI view
@@ -112,12 +114,18 @@ class StoryCardGenerator {
         }
     }
     
-    private func prepareViewModel(from dailySong: DailySong) throws -> StoryCardViewModel {
+    private func prepareViewModel(from dailySong: DailySong, inviteCode: String?) throws -> StoryCardViewModel {
         return try StoryCardViewModel.from(
             dailySong: dailySong,
             defaultImage: defaultImage,
-            watermark: watermark
+            watermark: watermark,
+            inviteCode: inviteCode
         )
+    }
+
+    /// Current user's invite code from CloudKit, or nil before login.
+    static func currentInviteCode() -> String? {
+        CloudKitManager.shared.currentUser?["inviteCode"] as? String
     }
     
     private func renderView(_ view: StoryCardView) async throws -> UIImage {

@@ -21,6 +21,7 @@ struct StoryCardViewModel {
     
     // Optional fields
     let userNote: String?
+    let inviteCode: String?
     
     // Computed properties
     var hasNote: Bool {
@@ -39,7 +40,8 @@ struct StoryCardViewModel {
     static func from(
         dailySong: DailySong,
         defaultImage: UIImage,
-        watermark: UIImage
+        watermark: UIImage,
+        inviteCode: String? = nil
     ) throws -> StoryCardViewModel {
         // Extract cover image
         let coverImage = dailySong.coverImage ?? defaultImage
@@ -73,15 +75,17 @@ struct StoryCardViewModel {
             moodColor: moodColor,
             dateString: dateString,
             brandWatermark: watermark,
-            userNote: userNote
+            userNote: userNote,
+            inviteCode: inviteCode
         )
     }
-    
+
     // Factory method from DailyEntry
     static func from(
         dailyEntry: DailyEntry,
         defaultImage: UIImage,
-        watermark: UIImage
+        watermark: UIImage,
+        inviteCode: String? = nil
     ) throws -> StoryCardViewModel {
         // Extract cover image from photoURL
         let coverImage: UIImage
@@ -122,7 +126,8 @@ struct StoryCardViewModel {
             moodColor: moodColor,
             dateString: dateString,
             brandWatermark: watermark,
-            userNote: userNote
+            userNote: userNote,
+            inviteCode: inviteCode
         )
     }
 }

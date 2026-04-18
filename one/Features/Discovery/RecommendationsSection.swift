@@ -114,6 +114,7 @@ struct RecommendationsSection: View {
                 RecommendationCardView(
                     recommendation: recommendation,
                     onTap: {
+                        AppAnalytics.shared.track(.recommendationTapped(source: recommendation.source == .spotify ? "spotify" : "apple"))
                         onSelectSong(recommendation)
                     }
                 )

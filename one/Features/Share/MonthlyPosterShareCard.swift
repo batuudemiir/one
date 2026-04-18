@@ -12,6 +12,7 @@ struct MonthlyPosterShareCard: View {
     let colors: [Color?]
     let monthName: String
     let year: String
+    var inviteCode: String? = nil
     
     // Wabi-Sabi grid of up to 30 colors (or recent 30 days)
     var body: some View {
@@ -60,16 +61,20 @@ struct MonthlyPosterShareCard: View {
                 
                 Spacer()
                 
-                // MARK: Bottom Section (App Branding)
-                VStack(spacing: 8) {
+                // MARK: Bottom Section (App Branding + Viral Footer)
+                VStack(spacing: 16) {
                     Rectangle()
                         .fill(ONETokens.oneIvory)
                         .frame(width: 80, height: 1)
-                    
+
                     Text(NSLocalizedString("monthly.echoTagline", comment: ""))
                         .font(.custom("GeistMono-Regular", size: 12))
                         .tracking(1.5)
                         .foregroundColor(ONETokens.oneMist)
+
+                    ShareViralFooter(inviteCode: inviteCode, tint: ONETokens.oneShadow, qrPixelSize: 220)
+                        .padding(.horizontal, 60)
+                        .padding(.top, 8)
                 }
                 .padding(.bottom, 60)
             }

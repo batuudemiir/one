@@ -117,6 +117,7 @@ struct StoryCardShareButton: View {
                     generatedImage = image
                     isGeneratingCard = false
                     showShareSheet = true
+                    AppAnalytics.shared.track(.storyCardShared(surface: "system_sheet"))
                 }
                 
             } catch {

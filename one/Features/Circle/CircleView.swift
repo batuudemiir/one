@@ -123,6 +123,7 @@ struct CircleView: View {
             Text(String(format: NSLocalizedString("circle.blockMessage", comment: ""), name))
         }
         .onAppear {
+            AppAnalytics.shared.track(.circleOpened)
             computeLocalStreak()
             if !cloudKitManager.isFetchingUser {
                 initializeUser()

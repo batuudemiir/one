@@ -75,6 +75,10 @@ struct StoryCardView: View {
                             .font(ONETypography.displayXS)
                             .foregroundColor(.white.opacity(0.7))
                         
+                        // Viral footer — QR + invite code + domain for organic install
+                        ShareViralFooter(inviteCode: viewModel.inviteCode, qrPixelSize: 220)
+                            .padding(.top, 12)
+
                         // Watermark
                         HStack {
                             Spacer()
@@ -102,13 +106,14 @@ struct StoryCardView: View {
 struct StoryCardView_Previews: PreviewProvider {
     static var previews: some View {
         let viewModel = StoryCardViewModel(
-            coverImage: UIImage(systemName: "music.note")!,
+            coverImage: UIImage(systemName: "music.note") ?? UIImage(),
             songTitle: "Test Song",
             artistName: "Test Artist",
             moodColor: ONETokens.oneCreamLow,
             dateString: "1 Ocak 2024",
-            brandWatermark: UIImage(systemName: "circle")!,
-            userNote: "This is a test note"
+            brandWatermark: UIImage(systemName: "circle") ?? UIImage(),
+            userNote: "This is a test note",
+            inviteCode: "ABC123"
         )
         
         StoryCardView(viewModel: viewModel)

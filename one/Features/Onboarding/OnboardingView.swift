@@ -38,6 +38,7 @@ struct OnboardingView: View {
         }
         .opacity(opacity)
         .onAppear {
+            AppAnalytics.shared.track(.onboardingStarted)
             withAnimation(.easeIn(duration: 0.5)) {
                 opacity = 1
             }
