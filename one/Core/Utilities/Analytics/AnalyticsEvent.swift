@@ -42,6 +42,9 @@ enum AnalyticsEvent {
     case storyCardShared(surface: String)            // "ig_story" | "system_sheet" | "save"
     case monthlyPosterShared
 
+    // ── Badges ─────────────────────────────────────────────────────
+    case badgeUnlocked(id: String)
+
     // ── Name + properties for dispatch ─────────────────────────────
 
     /// Stable event name emitted to analytics backends.
@@ -67,6 +70,7 @@ enum AnalyticsEvent {
         case .playlistOpened:            return "playlist_opened"
         case .storyCardShared:           return "story_card_shared"
         case .monthlyPosterShared:       return "monthly_poster_shared"
+        case .badgeUnlocked:             return "badge_unlocked"
         }
     }
 
@@ -100,6 +104,8 @@ enum AnalyticsEvent {
             return ["category": category]
         case .storyCardShared(let surface):
             return ["surface": surface]
+        case .badgeUnlocked(let id):
+            return ["badge_id": id]
         }
     }
 }

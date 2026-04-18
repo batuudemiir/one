@@ -847,3 +847,35 @@
 /* Month-End Summary Notification */
 "notification.monthEnd.title" = "Bu ayın özeti hazır 🎵";
 "notification.monthEnd.body" = "Bu ay kaydettiklerini görmeye hazır mısın?";
+
+/* Badges */
+"badges.title" = "Rozetler";
+"badges.subtitle" = "Küçük anlar, kalıcı izler";
+"badges.unlocked" = "AÇILDI";
+"badges.firstShare.title" = "İlk Paylaşım";
+"badges.firstShare.desc" = "Bir kartı paylaştın";
+"badges.streak7.title" = "7 Gün";
+"badges.streak7.desc" = "Bir hafta boyunca üst üste";
+"badges.streak30.title" = "30 Gün";
+"badges.streak30.desc" = "Bir ay boyunca üst üste";
+"badges.streak100.title" = "100 Gün";
+"badges.streak100.desc" = "Yüz günü geride bıraktın";
+"badges.firstFriend.title" = "İlk Arkadaş";
+"badges.firstFriend.desc" = "Çevren genişliyor";
+"badges.fiveFriends.title" = "5 Arkadaş";
+"badges.fiveFriends.desc" = "Küçük bir topluluk";
+"badges.monthlyPoster.title" = "Ay Özeti";
+"badges.monthlyPoster.desc" = "Aylık posterini paylaştın";
+
+/* Yearly Summary */
+"yearly.title" = "Yıl Özeti";
+"yearly.subtitle" = "12 ayın sesi";
+"yearly.monthlyMoods" = "AYLARA GÖRE";
+"yearly.topTracks" = "EN ÇOK DİNLENEN";
+"yearly.topArtists" = "EN ÇOK SANATÇI";
+"yearly.daysLogged" = "KAYIT GÜNÜ";
+"yearly.totalEntries" = "TOPLAM KAYIT";
+"yearly.uniqueArtists" = "BENZERSİZ SANATÇI";
+"yearly.uniqueSongs" = "BENZERSİZ ŞARKI";
+"yearly.longestStreak" = "EN UZUN SERİ";
+"yearly.dominantMood" = "BASKIN MOOD";

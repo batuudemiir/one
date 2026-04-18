@@ -845,3 +845,35 @@
 /* Month-End Summary Notification */
 "notification.monthEnd.title" = "Your monthly summary is ready 🎵";
 "notification.monthEnd.body" = "Ready to see what this month sounded like?";
+
+/* Badges */
+"badges.title" = "Badges";
+"badges.subtitle" = "Small moments, lasting marks";
+"badges.unlocked" = "UNLOCKED";
+"badges.firstShare.title" = "First Share";
+"badges.firstShare.desc" = "You shared your first card";
+"badges.streak7.title" = "7 Days";
+"badges.streak7.desc" = "A week in a row";
+"badges.streak30.title" = "30 Days";
+"badges.streak30.desc" = "A month straight";
+"badges.streak100.title" = "100 Days";
+"badges.streak100.desc" = "One hundred days in";
+"badges.firstFriend.title" = "First Friend";
+"badges.firstFriend.desc" = "Your circle is growing";
+"badges.fiveFriends.title" = "5 Friends";
+"badges.fiveFriends.desc" = "A small crew";
+"badges.monthlyPoster.title" = "Month Poster";
+"badges.monthlyPoster.desc" = "You shared your monthly poster";
+
+/* Yearly Summary */
+"yearly.title" = "Year in Review";
+"yearly.subtitle" = "12 months in sound";
+"yearly.monthlyMoods" = "BY MONTH";
+"yearly.topTracks" = "MOST PLAYED";
+"yearly.topArtists" = "TOP ARTISTS";
+"yearly.daysLogged" = "DAYS LOGGED";
+"yearly.totalEntries" = "TOTAL ENTRIES";
+"yearly.uniqueArtists" = "UNIQUE ARTISTS";
+"yearly.uniqueSongs" = "UNIQUE SONGS";
+"yearly.longestStreak" = "LONGEST STREAK";
+"yearly.dominantMood" = "DOMINANT MOOD";

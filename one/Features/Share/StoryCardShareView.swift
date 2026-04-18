@@ -118,6 +118,7 @@ struct StoryCardShareButton: View {
                     isGeneratingCard = false
                     showShareSheet = true
                     AppAnalytics.shared.track(.storyCardShared(surface: "system_sheet"))
+                    BadgeManager.shared.unlock(.firstShare)
                 }
                 
             } catch {

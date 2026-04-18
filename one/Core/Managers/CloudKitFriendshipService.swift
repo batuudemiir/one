@@ -417,7 +417,11 @@ extension CloudKitManager {
             switch result {
             case .success(let r):
                 let friends = r.values.filter { ($0["status"] as? String) == "accepted" }
-                DispatchQueue.main.async { completion(.success(Array(friends))) }
+                let count = friends.count
+                DispatchQueue.main.async {
+                    BadgeManager.shared.evaluateFriendCount(count)
+                    completion(.success(Array(friends)))
+                }
             case .failure(let e):
                 DispatchQueue.main.async { completion(.failure(e)) }
             }

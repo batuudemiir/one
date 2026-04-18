@@ -46,6 +46,8 @@ struct ProfileView: View {
     @EnvironmentObject private var languageManager: LanguageManager
     @State private var showLanguagePicker = false
     @State private var showEcho = false
+    @State private var showBadges = false
+    @State private var showYearlySummary = false
     
     var isFromTab: Bool = false
     
@@ -462,7 +464,7 @@ struct ProfileView: View {
                         iconColor: ONETokens.moodPurple,
                         title: NSLocalizedString("premium.monthlySummary.title", comment: ""),
                         subtitle: NSLocalizedString("premium.feature.monthlySummary.desc", comment: ""),
-                        showDivider: false,
+                        showDivider: true,
                         trailing: {
                             HStack(spacing: 6) {
                                 if isMonthlySummaryReady {
@@ -481,6 +483,49 @@ struct ProfileView: View {
                 .fullScreenCover(isPresented: $showMonthlySummary) {
                     MonthlySummaryView(context: viewContext)
                         .onAppear { markMonthlySummaryViewed() }
+                }
+
+                // Badges
+                Button(action: { showBadges = true }) {
+                    featureRow(
+                        icon: "rosette",
+                        iconColor: ONETokens.oneBrand,
+                        title: NSLocalizedString("badges.title", comment: ""),
+                        subtitle: NSLocalizedString("badges.subtitle", comment: ""),
+                        showDivider: true,
+                        trailing: {
+                            HStack(spacing: 6) {
+                                Text("\(BadgeManager.shared.unlocked.count)/\(BadgeCatalog.all.count)")
+                                    .font(.custom("GeistMono-Regular", size: 11))
+                                    .foregroundColor(ONETokens.oneAsh)
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(ONETokens.oneStone)
+                            }
+                        }
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .sheet(isPresented: $showBadges) {
+                    NavigationStack { BadgeGalleryView() }
+                }
+
+                // Yearly Summary
+                Button(action: { showYearlySummary = true }) {
+                    featureRow(
+                        icon: "calendar",
+                        iconColor: ONETokens.moodTeal,
+                        title: NSLocalizedString("yearly.title", comment: ""),
+                        subtitle: NSLocalizedString("yearly.subtitle", comment: ""),
+                        showDivider: false,
+                        trailing: { Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(ONETokens.oneStone) }
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .fullScreenCover(isPresented: $showYearlySummary) {
+                    YearlySummaryView(context: viewContext)
                 }
             }
             .background(cardBG)

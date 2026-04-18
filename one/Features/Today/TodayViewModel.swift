@@ -220,6 +220,7 @@ class TodayViewModel: ObservableObject {
         if Self.streakMilestones.contains(streak) {
             streakMilestone = streak
         }
+        BadgeManager.shared.evaluateStreak(streak)
         let savedMoodColorHex = mood.color.toHex()
         CloudKitManager.shared.shareDailySong(
             songName: song.name,
