@@ -90,7 +90,8 @@ class CloudKitManager: ObservableObject {
     func loadCurrentUser() {
         // Don't retry while server-side throttle is still active
         if isThrottled {
-            ONELogger.warning("loadCurrentUser skipped — throttle active until \(throttleRetryAfter!)", category: .cloudkit)
+            let until = throttleRetryAfter.map { "\($0)" } ?? "unknown"
+            ONELogger.warning("loadCurrentUser skipped — throttle active until \(until)", category: .cloudkit)
             return
         }
 

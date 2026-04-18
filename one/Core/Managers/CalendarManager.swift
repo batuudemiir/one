@@ -77,14 +77,15 @@ class CalendarManager: ObservableObject {
         
         // Set event details
         event.title = "🎵 \(songName)"
+        let noteLine = (note?.isEmpty == false) ? "\nNot: \(note ?? "")" : ""
         event.notes = """
         Sanatçı: \(artistName)
         Ruh Hali: \(moodWord)
-        \(note != nil && !note!.isEmpty ? "\nNot: \(note!)" : "")
-        
+        \(noteLine)
+
         ONE ile kaydedildi
         """
-        
+
         // Set all-day event for the selected date
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)
@@ -119,11 +120,12 @@ class CalendarManager: ObservableObject {
         }
         
         event.title = "🎵 \(songName)"
+        let noteLine = (note?.isEmpty == false) ? "\nNot: \(note ?? "")" : ""
         event.notes = """
         Sanatçı: \(artistName)
         Ruh Hali: \(moodWord)
-        \(note != nil && !note!.isEmpty ? "\nNot: \(note!)" : "")
-        
+        \(noteLine)
+
         ONE ile kaydedildi
         """
         

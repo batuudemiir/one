@@ -204,9 +204,8 @@ struct ConfirmScreen: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 18)
                             .background(
-                                vm.selectedMood != nil && vm.selectedFeeling != nil
-                                    ? vm.selectedMood!.color
-                                    : ONETokens.oneStone
+                                (vm.selectedFeeling != nil ? vm.selectedMood?.color : nil)
+                                    ?? ONETokens.oneStone
                             )
                             .foregroundColor(
                                 vm.selectedMood?.isDark == false ? .black : ONETokens.oneCream

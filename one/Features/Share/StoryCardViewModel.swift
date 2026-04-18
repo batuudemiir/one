@@ -24,7 +24,7 @@ struct StoryCardViewModel {
     
     // Computed properties
     var hasNote: Bool {
-        userNote != nil && !userNote!.isEmpty
+        userNote?.isEmpty == false
     }
     
     var gradientColors: [Color] {
@@ -45,12 +45,10 @@ struct StoryCardViewModel {
         let coverImage = dailySong.coverImage ?? defaultImage
         
         // Extract or default song info
-        let songTitle = dailySong.songName?.isEmpty == false 
-            ? dailySong.songName! 
-            : NSLocalizedString("untitled_song", comment: "Untitled")
-        let artistName = dailySong.artistName?.isEmpty == false 
-            ? dailySong.artistName! 
-            : NSLocalizedString("unknown_artist", comment: "Unknown Artist")
+        let songTitle = dailySong.songName.flatMap { $0.isEmpty ? nil : $0 }
+            ?? NSLocalizedString("untitled_song", comment: "Untitled")
+        let artistName = dailySong.artistName.flatMap { $0.isEmpty ? nil : $0 }
+            ?? NSLocalizedString("unknown_artist", comment: "Unknown Artist")
         
         // Extract mood color
         let moodColor: Color

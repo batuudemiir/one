@@ -1,91 +1,50 @@
-# ONETypography Migration Status
+# ONETypography Migration — Accurate Status (Phase 1 audit)
 
-## Completed Files ✅
+Audited 2026-04-18 during Phase 1 code hygiene pass.
 
-### 1. DayPreviewCard.swift
-**Status:** ✅ Complete  
-**Changes:**
-- Song name: `.displayXS()` (was 17pt serif)
-- Artist name: `.monoSM(tracking: 0.4)` (was GeistMono 10pt)
-- Mood/feeling labels: `.monoMicro(tracking: 0.8)` (was GeistMono 7.5pt)
-- Time label: `.monoLabel(tracking: 0.5)` (was GeistMono 9pt)
-- Button text: `.monoLabel()` and `.monoBase()` (was GeistMono 9-11pt)
-- Instagram story: `.displayXL()` and `.displayXS()` (was 48pt and 18pt serif)
+## Design system API
 
-## In Progress 🔄
+`UI/DesignSystem/ONETypography.swift` exposes:
 
-### 2. RecommendationCardView.swift
-**Priority:** High  
-**Reason:** User-facing, frequently used
+- **Display (SF Pro)** — `displayXL/LG/MD/SM/XS` via `.displayXL()` … `.displayXS()` modifiers
+- **Body (DM Sans)** — `bodyLG/MD/SM/XS` + `bodyMDMedium/bodySMMedium/bodyXSMedium`
+- **Mono/Label (DM Sans + tracking)** — `.monoBase(tracking:)`, `.monoSM(tracking:)`, `.monoLabel(tracking:)`, `.monoMicro(tracking:)`
 
-### 3. TodayEmptyView.swift
-**Priority:** High  
-**Reason:** Main user interaction screen
+Rule: icon sizing with `.font(.system(size:))` on `Image(systemName:)` stays. Only text uses of `.font(.system(…))` / `Font.custom(…)` should migrate.
 
-### 4. MonthArchiveView.swift
-**Priority:** High  
-**Reason:** Archive navigation
+## Current state (49 files touched, 304 call sites remaining)
 
-## Pending ⏳
+The earlier status file implied many views were "pending" — audit shows a mixed picture:
 
-### Phase 1: Core Views
-- [ ] YearArchiveView.swift
-- [ ] ProfileView.swift
-- [ ] CircleView.swift
-- [ ] ArchiveView.swift
+### Already fully migrated (verified 2026-04-18)
+- [RecommendationCardView.swift](../../one/one/Features/Discovery/RecommendationCardView.swift) — all text uses `.bodyXS/.monoSM/.monoMicro/.monoLabel`; remaining `.font(.system(size:))` calls are `Image` sizing only.
+- [RecommendationsSection.swift](../../one/one/Features/Discovery/RecommendationsSection.swift) — 1 remaining site is icon sizing (`Image(systemName: "arrow.clockwise")`).
+- [DayPreviewCard.swift](../../one/one/Features/Archive/DayPreviewCard.swift) — original Phase 1 completion target.
+- Interactive primitives (MoodButton, FeelingButton) in [ONEColorPickerView.swift](../../one/one/UI/ONEColorPickerView.swift) use `.monoSM/.monoLabel`.
 
-### Phase 2: Onboarding
-- [ ] OnboardingView.swift
-- [ ] SplashScreen.swift
-- [ ] AddFriendView.swift
+### Genuinely pending — text uses remain
+Ordered by user-facing weight:
 
-### Phase 3: Components
-- [ ] RecommendationsSection.swift
-- [ ] StoryCardView.swift
-- [ ] StoryCardShareView.swift
-- [ ] ONEColorPickerView.swift
-- [ ] WaveStrip.swift
+- [ProfileView.swift](../../one/one/Features/Profile/ProfileView.swift) — **24 sites**, many are clearly text (weight `.medium/.bold`).
+- [TodayEmptyView.swift](../../one/one/Features/Today/TodayEmptyView.swift) — **10 sites** mixed icon/text.
+- [OnboardingView.swift](../../one/one/Features/Onboarding/OnboardingView.swift) — **5 sites** including headline weights.
+- [CircleView.swift](../../one/one/Features/Circle/CircleView.swift) — **11 sites** (friend cards, badges).
+- [AddFriendView.swift](../../one/one/Features/Circle/AddFriendView.swift) — **21 sites**.
+- [CameraView.swift](../../one/one/Features/Camera/CameraView.swift) — **21 sites**.
+- Discovery module: [DiscoverView](../../one/one/Features/Discovery/DiscoverView.swift) (8), [WeeklyPlaylistView](../../one/one/Features/Discovery/WeeklyPlaylistView.swift) (31), [FeaturedSongCard](../../one/one/Features/Discovery/FeaturedSongCard.swift) (4), etc.
+- MonthlySummary module: [CoverCardView](../../one/one/Features/MonthlySummary/CoverCardView.swift) (13), [TopTracksCardView](../../one/one/Features/MonthlySummary/TopTracksCardView.swift) (11), [MoodMapCardView](../../one/one/Features/MonthlySummary/MoodMapCardView.swift) (9).
 
-### Phase 4: Supporting
-- [ ] PhotoPickerView.swift
-- [ ] CircleShareToggle.swift
-- [ ] Other utility views
+Full list: `grep -RnE '\.font\((\.system|Font\.custom)' one/one/` → 304 sites across 49 files.
 
-## Migration Guidelines
+## Recommended next pass
 
-### Display Scale (Serif)
-Use for emotional, expressive content:
-- Hero text, main headings → `.displayXL()` or `.displayLG()`
-- Subheadings → `.displayMD()`
-- Card titles → `.displaySM()` or `.displayXS()`
-- Body text → `.displayBody()`
+1. Audit each site: text vs icon. Icon sizing retains `.font(.system(size: …))` — do not touch.
+2. Map text sizes to the nearest ONETypography token. Custom tracking is preserved via `.tracking()` or modifier arg.
+3. Migrate per feature area: Profile → Today → Circle → Discovery → MonthlySummary → remaining.
+4. Visual QA per screen (Dynamic Type XL + dark mode).
 
-### Mono Scale (Technical)
-Use for labels, metadata, technical info:
-- Buttons, primary labels → `.monoBase(tracking:)`
-- Metadata, timestamps → `.monoSM(tracking:)`
-- Small labels, tags → `.monoLabel(tracking:)`
-- Micro text, captions → `.monoMicro(tracking:)`
+Target: 0 text-use `.font(.system(size:))` in Feature views. Icon uses remain as-is.
 
-## Benefits Achieved
+## Typography API reference
 
-✅ Consistent typography across migrated files  
-✅ Easier to maintain and update  
-✅ Better semantic meaning  
-✅ Reduced code duplication  
-✅ Design system adherence  
-
-## Next Steps
-
-1. Continue migrating high-priority files
-2. Test visual consistency across screens
-3. Update any custom tracking values
-4. Document any edge cases or exceptions
-5. Create before/after screenshots for documentation
-
-## Notes
-
-- Some custom sizes (like 17pt) map to closest match (displayXS = 18pt)
-- Custom tracking values are preserved where specified
-- Icon sizes remain unchanged (they use `.font(.system(size:))` for icons)
-- Some monospaced fonts at 28pt remain unchanged (no exact match in system)
+See [ONETypography.swift](../../one/one/UI/DesignSystem/ONETypography.swift) — self-documenting with SwiftUI View modifiers.

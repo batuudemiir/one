@@ -122,8 +122,7 @@ extension DailySong {
     }
     
     var isValidForCard: Bool {
-        // At minimum, we need a song name
-        return songName != nil && !songName!.isEmpty
+        songName?.isEmpty == false
     }
 }
 
@@ -141,7 +140,7 @@ struct StoryCardLogger {
         if let error = error {
             ONELogger.debug("\(logMessage) - Error: \(error)", category: .share)
         } else {
-            print(logMessage)
+            ONELogger.debug(logMessage, category: .share)
         }
         
         // In production, send to analytics/crash reporting
