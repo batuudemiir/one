@@ -16,6 +16,10 @@ enum AnalyticsEvent {
     case onboardingStarted
     case onboardingCompleted(musicPlatform: String)
     case platformSelected(platform: String)          // "apple" | "spotify"
+    case onboardingStepViewed(step: String)          // "welcome" | "mood_pick" | "reveal" | "permissions" | "notif_soft_ask"
+    case onboardingMoodPicked(mood: String)
+    case onboardingMusicConnected(granted: Bool)
+    case onboardingNotifSoftAsk(optIn: Bool)
 
     // ── Today / daily entry ────────────────────────────────────────
     case songSearched(query: String, source: String) // source: "apple" | "spotify"
@@ -24,6 +28,7 @@ enum AnalyticsEvent {
     case photoAdded(method: String)                  // "camera" | "library"
     case noteAdded(length: Int)
     case entrySaved(hasPhoto: Bool, hasNote: Bool)
+    case streakFreezeConsumed                        // B1 — soft streak freeze devreye girdi
 
     // ── Circle (social) ────────────────────────────────────────────
     case circleOpened
@@ -31,6 +36,16 @@ enum AnalyticsEvent {
     case friendRequestSent
     case friendRequestAccepted
     case friendShareViewed
+    case firstEntryInviteHookShown                                // A4 — first-entry invite kancası gösterildi
+    case firstEntryInviteHookAction(action: String)               // "invite" | "skip"
+    // ── Comments (v2.5) ────────────────────────────────────────────
+    case commentCreated
+    case commentEdited
+    case commentDeleted
+    case commentReported
+    case commentAuthorProfileOpened
+    case userBlocked
+    case userUnblocked
 
     // ── Discovery ──────────────────────────────────────────────────
     case discoverOpened
@@ -53,17 +68,31 @@ enum AnalyticsEvent {
         case .onboardingStarted:         return "onboarding_started"
         case .onboardingCompleted:       return "onboarding_completed"
         case .platformSelected:          return "platform_selected"
+        case .onboardingStepViewed:      return "onboarding_step_viewed"
+        case .onboardingMoodPicked:      return "onboarding_mood_picked"
+        case .onboardingMusicConnected:  return "onboarding_music_connected"
+        case .onboardingNotifSoftAsk:    return "onboarding_notif_soft_ask"
         case .songSearched:              return "song_searched"
         case .songSelected:              return "song_selected"
         case .moodSelected:              return "mood_selected"
         case .photoAdded:                return "photo_added"
         case .noteAdded:                 return "note_added"
         case .entrySaved:                return "entry_saved"
+        case .streakFreezeConsumed:      return "streak_freeze_consumed"
         case .circleOpened:              return "circle_opened"
         case .friendInviteSent:          return "friend_invite_sent"
         case .friendRequestSent:         return "friend_request_sent"
         case .friendRequestAccepted:     return "friend_request_accepted"
         case .friendShareViewed:         return "friend_share_viewed"
+        case .firstEntryInviteHookShown: return "first_entry_invite_hook_shown"
+        case .firstEntryInviteHookAction:return "first_entry_invite_hook_action"
+        case .commentCreated:            return "comment_created"
+        case .commentEdited:             return "comment_edited"
+        case .commentDeleted:            return "comment_deleted"
+        case .commentReported:           return "comment_reported"
+        case .commentAuthorProfileOpened:return "comment_author_profile_opened"
+        case .userBlocked:               return "user_blocked"
+        case .userUnblocked:             return "user_unblocked"
         case .discoverOpened:            return "discover_opened"
         case .recommendationTapped:      return "recommendation_tapped"
         case .eventTapped:               return "event_tapped"
@@ -80,12 +109,26 @@ enum AnalyticsEvent {
         switch self {
         case .onboardingStarted, .circleOpened, .discoverOpened,
              .friendRequestSent, .friendRequestAccepted, .friendShareViewed,
-             .playlistOpened, .monthlyPosterShared, .songSelected:
+             .playlistOpened, .monthlyPosterShared, .songSelected,
+             .commentCreated, .commentEdited, .commentDeleted, .commentReported,
+             .commentAuthorProfileOpened, .userBlocked, .userUnblocked,
+             .firstEntryInviteHookShown,
+             .streakFreezeConsumed:
             return [:]
+        case .firstEntryInviteHookAction(let action):
+            return ["action": action]
         case .onboardingCompleted(let musicPlatform):
             return ["music_platform": musicPlatform]
         case .platformSelected(let platform):
             return ["platform": platform]
+        case .onboardingStepViewed(let step):
+            return ["step": step]
+        case .onboardingMoodPicked(let mood):
+            return ["mood": mood]
+        case .onboardingMusicConnected(let granted):
+            return ["granted": granted]
+        case .onboardingNotifSoftAsk(let optIn):
+            return ["opt_in": optIn]
         case .songSearched(let query, let source):
             return ["query_length": query.count, "source": source]
         case .moodSelected(let mood):

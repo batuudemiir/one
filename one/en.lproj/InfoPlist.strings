@@ -1,0 +1,12 @@
+/* App Store + system-wide display name — EN */
+"CFBundleDisplayName" = "ONE+ Mood Tracker";
+"CFBundleName" = "ONE+ Mood Tracker";
+
+/* Privacy strings — EN reviewer + user permission alerts */
+"NSAppleMusicUsageDescription" = "Used to attach a song to your daily mood. Works without a paid subscription.";
+"NSCameraUsageDescription" = "Used to add a photo to your day card and to scan invite QR codes.";
+"NSContactsUsageDescription" = "Used to let you pick people from your address book to invite to ONE.";
+"NSPhotoLibraryUsageDescription" = "Used to pick a profile photo and add images to your daily card.";
+"NSPhotoLibraryAddUsageDescription" = "Used to save your monthly poster or share card to your photo library.";
+"NSLocationWhenInUseUsageDescription" = "Used to surface events and weather-aware suggestions in your city.";
+"NSUserTrackingUsageDescription" = "Optional permission for more relevant recommendations and shareable cards.";

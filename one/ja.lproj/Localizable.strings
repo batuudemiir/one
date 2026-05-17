@@ -34,6 +34,7 @@
 "today.title" = "今日の曲を選ぶ";
 "today.subtitle" = "ここから気分と一日を始めよう。";
 "today.moodSection" = "今どんな気持ち？";
+"today.feelingSection" = "この曲はあなたに何を残しましたか？";
 "today.noteSection" = "メモを残す";
 "today.notePlaceholder" = "この曲はあなたに何を残しましたか？";
 "today.photoChange" = "変更";
@@ -507,6 +508,16 @@
 "mood.bos" = "静か";
 "mood.temiz" = "ニュートラル";
 
+/* --- MOOD MEANINGS (v2.5) --- */
+"mood.meaning.atesli"    = "tutkulu";
+"mood.meaning.isikli"    = "mutlu";
+"mood.meaning.enerjik"   = "enerjik";
+"mood.meaning.taze"      = "doğal";
+"mood.meaning.sakin"     = "huzurlu";
+"mood.meaning.nostaljik" = "heyecanlı";
+"mood.meaning.gizemli"   = "sakin";
+"mood.meaning.bos"       = "stabil";
+
 /* --- FEELING LABELS --- */
 "feeling.calm" = "穏やか";
 "feeling.happy" = "嬉しい";
@@ -660,3 +671,5 @@
 
 /* --- GENRE FALLBACK --- */
 "genre.music" = "音楽";
+"notification.appUpdate.title" = "新しいバージョンが利用可能 🚀";
+"notification.appUpdate.body" = "ONE %@ が公開されました！タップして今すぐ更新。";

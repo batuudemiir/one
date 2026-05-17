@@ -17,7 +17,7 @@ struct FilledDayCell: View {
             ZStack(alignment: .topLeading) {
                 if let photoURL = entry.photoURL {
                     // Photo background when available - scaledToFill for fixed size
-                    AsyncImage(url: photoURL) { phase in
+                    CachedAsyncImagePhase(url: photoURL) { phase in
                         switch phase {
                         case .success(let image):
                             image
@@ -39,7 +39,7 @@ struct FilledDayCell: View {
                 
                 // Gün numarası - kutunun içinde sol üstte
                 Text("\(Calendar.current.component(.day, from: entry.date))")
-                    .font(.custom("GeistMono-Regular", size: 9))
+                    .monoMicro()
                     .foregroundColor(Color.white.opacity(0.9))
                     .padding(4)
             }
@@ -58,9 +58,16 @@ struct FilledDayCell: View {
             )
         }
         .aspectRatio(1, contentMode: .fit)
-        // VoiceOver: describe cell as "Song name — mood, date"
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(entry.songName) — \(entry.moodLabel)")
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel({
+            let dayNum = Calendar.current.component(.day, from: entry.date)
+            let photo  = entry.photoURL != nil
+                ? NSLocalizedString("accessibility.dayCell.hasPhoto", comment: "fotoğraflı")
+                : ""
+            let base   = "\(dayNum). \(entry.songName), \(entry.normalizedMoodLabel)"
+            return photo.isEmpty ? base : "\(base), \(photo)"
+        }())
+        .accessibilityHint(NSLocalizedString("accessibility.dayCell.hint", comment: "Detayı görmek için çift dokun"))
     }
 }
 
@@ -84,11 +91,12 @@ struct EmptyDayCell: View {
             // Gün numarası - kutunun içinde sol üstte
             if let day = dayNumber {
                 Text("\(day)")
-                    .font(.custom("GeistMono-Regular", size: 9))
+                    .monoMicro()
                     .foregroundColor(ONETokens.oneMist.opacity(0.5))
                     .padding(4)
             }
         }
         .aspectRatio(1, contentMode: .fit)
+        .accessibilityHidden(true)   // boş hücre — VoiceOver'ın okuyacak içeriği yok
     }
 }

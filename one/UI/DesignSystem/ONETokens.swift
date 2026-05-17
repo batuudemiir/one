@@ -97,38 +97,38 @@ enum ONETokens {
     
     // MARK: - Mood Palette
 
-    /// Mood: Energetic orange (#FF8C42)
-    static let moodOrange = Color(hex: "#FF8C42")
+    /// Mood: Enerjik vivid orange (#FB6F3B)
+    static let moodOrange = Color(hex: "#FB6F3B")
 
-    // MARK: - Pastel Mood Palette (Gen Z)
+    // MARK: - Pastel Mood Palette
 
-    /// Pastel coral — ateş (atesli) #FFB5A7
-    static let moodPastelRed      = Color(hex: "#FFB5A7")
-    /// Pastel peach — enerji (enerjik) #FFCBA4
-    static let moodPastelOrange   = Color(hex: "#FFCBA4")
-    /// Pastel yellow — ışık (isikli) #FFF0B3
-    static let moodPastelYellow   = Color(hex: "#FFF0B3")
-    /// Pastel mint — taze (taze) #B8F0D4
-    static let moodPastelMint     = Color(hex: "#B8F0D4")
-    /// Pastel sage — huzur (sakin) #A8D5B5
-    static let moodPastelGreen    = Color(hex: "#A8D5B5")
-    /// Pastel sky — özgür (ozgur) #A8D4F5
-    static let moodPastelBlue     = Color(hex: "#A8D4F5")
-    /// Pastel periwinkle — derin (derin) #B8C5F0
-    static let moodPastelIndigo   = Color(hex: "#B8C5F0")
-    /// Pastel lavender — özlem (nostaljik) #C5B8F0
-    static let moodPastelLavender = Color(hex: "#C5B8F0")
-    /// Pastel violet — büyü (gizemli) #D4B8F0
+    /// Pastel rose — tutkulu (atesli)
+    static let moodPastelRed      = Color(hex: "#FFCDD2")
+    /// Pastel peach — enerjik
+    static let moodPastelOrange   = Color(hex: "#FFE0B2")
+    /// Pastel yellow — mutlu (isikli)
+    static let moodPastelYellow   = Color(hex: "#FFF9C4")
+    /// Pastel green — doğal (taze)
+    static let moodPastelMint     = Color(hex: "#C8E6C9")
+    /// Pastel teal — huzurlu (sakin)
+    static let moodPastelGreen    = Color(hex: "#B2DFDB")
+    /// Pastel blue — sakin (ozgur)
+    static let moodPastelBlue     = Color(hex: "#BBDEFB")
+    /// Pastel indigo — stabil (derin)
+    static let moodPastelIndigo   = Color(hex: "#C5CAE9")
+    /// Pastel blue-grey — üzgün (uzgun)
+    static let moodPastelLavender = Color(hex: "#CFD8DC")
+    /// Pastel violet — (legacy)
     static let moodPastelViolet   = Color(hex: "#D4B8F0")
-    /// Pastel rose — kırılgan (hassas) #FFB8CC
-    static let moodPastelRose     = Color(hex: "#FFB8CC")
-    /// Pastel slate — boşluk (bos) #CDD5E8
-    static let moodPastelSlate    = Color(hex: "#CDD5E8")
-    /// Pastel cream — sessiz (temiz) #F0EDE8
+    /// Pastel pink — heyecanlı (nostaljik)
+    static let moodPastelRose     = Color(hex: "#FCE4EC")
+    /// Pastel grey — yorgun
+    static let moodPastelSlate    = Color(hex: "#ECEFF1")
+    /// Pastel cream — (legacy)
     static let moodPastelCream    = Color(hex: "#F0EDE8")
-    
-    /// Mood: Bright/Light yellow (#F5C842)
-    static let moodYellow = Color(hex: "#F5C842")
+
+    /// Mood: Mutlu sunny yellow (#FDD835)
+    static let moodYellow = Color(hex: "#FDD835")
     
     /// Mood: Mysterious purple (#9B7FD4)
     static let moodPurple = Color(hex: "#9B7FD4")
@@ -189,17 +189,51 @@ enum ONETokens {
     /// Usage: Monthly summary dominant color fallback
     static let moodAmber = Color(hex: "#C97840")
 
-    /// Mood: Fresh lime green (#7CC874) — taze mood
-    static let moodLime = Color(hex: "#7CC874")
+    /// Mood: Doğal natural green (#4CAF50) — taze mood
+    static let moodLime = Color(hex: "#4CAF50")
 
-    /// Mood: Open teal (#3BBFCF) — özgür mood
-    static let moodTeal = Color(hex: "#3BBFCF")
+    /// Mood: Sakin sky blue (#42A5F5) — ozgur mood
+    static let moodTeal = Color(hex: "#42A5F5")
 
-    /// Mood: Nostalgic indigo (#5560B8) — nostaljik mood
-    static let moodIndigo = Color(hex: "#5560B8")
+    /// Mood: Üzgün muted blue-grey (#78909C) — uzgun mood
+    static let moodIndigo = Color(hex: "#78909C")
 
-    /// Mood: Sensitive rose (#E8829C) — hassas mood
+    /// Mood: Sensitive rose (#E8829C) — legacy
     static let moodRose = Color(hex: "#E8829C")
+
+    /// Mood: Heyecanlı hot pink (#EC407A) — nostaljik mood
+    static let moodExcited = Color(hex: "#EC407A")
+
+    /// Mood: Stresli burning orange (#FF7043) — stresli mood
+    static let moodStress = Color(hex: "#FF7043")
+
+    /// Mood: Sinirli dark crimson (#B71C1C) — sinirli mood
+    static let moodAngry = Color(hex: "#B71C1C")
+
+    /// Mood: Tutkulu passion red (#E53935) — atesli mood
+    static let moodTutkulu = Color(hex: "#E53935")
+
+    /// Mood: Huzurlu peaceful teal (#26A69A) — sakin mood
+    static let moodHuzurlu = Color(hex: "#26A69A")
+
+    /// Mood: Stabil deep indigo (#3F51B5) — derin mood
+    static let moodStabil = Color(hex: "#3F51B5")
+
+    /// Pastel: Stresli (#FFCCBC) — stresli pastel
+    static let moodPastelStress = Color(hex: "#FFCCBC")
+
+    /// Pastel: Sinirli (#EF9A9A) — sinirli pastel
+    static let moodPastelAngry = Color(hex: "#EF9A9A")
+
+    /// Activity teal (#2D7C68) — etkinlik/aktivite kategorisi
+    /// Purpose: Event category color for activity-type recommendations
+    /// Usage: MoodEventsSheet activity category badges
+    static let categoryActivity = Color(hex: "#2D7C68")
+
+    /// System-style red (#FC3C44) — Apple-paralel sistem kırmızısı
+    /// Purpose: Onboarding accents, alert-toned UI when oneBrand is occupied
+    /// Usage: Onboarding info pills, secondary alerts
+    static let oneSystemRed = Color(hex: "#FC3C44")
     
     /// Spotify dark green (#0A7A30)
     /// Purpose: Darker green for Spotify gradient endpoints
@@ -215,7 +249,79 @@ enum ONETokens {
     /// Purpose: Warm orange for CTA gradients - dark end
     /// Usage: Spotify connect button gradient, action button gradients
     static let accentOrangeDark = Color(hex: "#FF6B3D")
-    
+
+    // MARK: - Monthly Summary Palette
+
+    /// Summary gradient start (#E65A1A) — MonthlySummary mood map hero LinearGradient başlangıç
+    /// Purpose: CoverCard ay hero LinearGradient start
+    /// Usage: `summaryGradientStart` → `summaryGradientEnd` gradient pair (MonthlySummary CoverCard)
+    static let summaryGradientStart = Color(hex: "#E65A1A")
+
+    /// Summary gradient end (#F29919) — MonthlySummary mood map hero LinearGradient bitişi
+    /// Purpose: CoverCard ay hero LinearGradient end
+    /// Usage: `summaryGradientStart` → `summaryGradientEnd` gradient pair (MonthlySummary CoverCard)
+    static let summaryGradientEnd = Color(hex: "#F29919")
+
+    /// Summary fire spark (#D8401A) — CoverCard arka plan RadialGradient sol-üst kıvılcım
+    /// Purpose: MonthlySummary CoverCard background top-left radial accent
+    /// Usage: CoverCard RadialGradient top-left stop
+    static let summaryFireSpark = Color(hex: "#D8401A")
+
+    /// Summary amber glow (#E69919) — CoverCard orta radial + TopTracks amber vurgusu
+    /// Purpose: MonthlySummary CoverCard mid-radial warmth + TopTracks amber accent
+    /// Usage: CoverCard RadialGradient mid stop, TopTracks highlight
+    static let summaryAmberGlow = Color(hex: "#E69919")
+
+    /// Summary sunshine (#F2CC26) — CoverCard alt radial parlaklık
+    /// Purpose: MonthlySummary CoverCard bottom radial highlight
+    /// Usage: CoverCard RadialGradient bottom stop
+    static let summarySunshine = Color(hex: "#F2CC26")
+
+    /// Summary highlight amber (#F2A626) — CoverCard istatistik kartı vurgusu
+    /// Purpose: MonthlySummary stat card accent highlight
+    /// Usage: CoverCard stat card highlight color
+    static let summaryHighlightAmber = Color(hex: "#F2A626")
+
+    /// Summary fire gradient start (#D85A1A) — MonthlySummary ViewModel mood gradient pair #1 başlangıç
+    /// Purpose: MonthlySummary ViewModel mood gradient pair #1 start
+    /// Usage: `summaryFireStart` → `summaryFireEnd` gradient pair (MonthlySummaryViewModel)
+    static let summaryFireStart = Color(hex: "#D85A1A")
+
+    /// Summary fire gradient end (#E6A61A) — MonthlySummary ViewModel mood gradient pair #1 bitişi
+    /// Purpose: MonthlySummary ViewModel mood gradient pair #1 end
+    /// Usage: `summaryFireStart` → `summaryFireEnd` gradient pair (MonthlySummaryViewModel)
+    static let summaryFireEnd = Color(hex: "#E6A61A")
+
+    /// Summary ember amber (#D8801A) — MonthlySummary ViewModel mood gradient pair #4 bitişi
+    /// Purpose: MonthlySummary ViewModel mood gradient pair #4 end
+    /// Usage: MonthlySummaryViewModel mood gradient leg #4 end stop
+    static let summaryEmberAmber = Color(hex: "#D8801A")
+
+    /// Summary mock red (#C94040) — Mock MonthlySummaryData kırmızı + VM konsolide kırmızı (#C74040)
+    /// Purpose: MonthlySummary mock data red + ViewModel consolidated red leg
+    /// Usage: MonthlySummaryData.mock red stop, ViewModel mood gradient red leg
+    static let summaryMockRed = Color(hex: "#C94040")
+
+    /// Summary mock yellow (#C9A840) — Mock MonthlySummaryData sarı stop
+    /// Purpose: MonthlySummary mock data yellow accent
+    /// Usage: MonthlySummaryData.mock yellow stop
+    static let summaryMockYellow = Color(hex: "#C9A840")
+
+    /// Summary mock teal (#40A89C) — Mock teal + ViewModel gradient leg (konsolide #40A89B)
+    /// Purpose: MonthlySummary mock data teal + ViewModel gradient teal leg
+    /// Usage: MonthlySummaryData.mock teal stop, ViewModel mood gradient teal leg
+    static let summaryMockTeal = Color(hex: "#40A89C")
+
+    /// Summary mock blue (#4070C9) — Mock mavi + ViewModel gradient leg (konsolide #4070CC)
+    /// Purpose: MonthlySummary mock data blue + ViewModel gradient blue leg
+    /// Usage: MonthlySummaryData.mock blue stop, ViewModel mood gradient blue leg
+    static let summaryMockBlue = Color(hex: "#4070C9")
+
+    /// Summary mock purple (#7840C9) — Mock mor + ViewModel gradient leg (konsolide #7840CC)
+    /// Purpose: MonthlySummary mock data purple + ViewModel gradient purple leg
+    /// Usage: MonthlySummaryData.mock purple stop, ViewModel mood gradient purple leg
+    static let summaryMockPurple = Color(hex: "#7840C9")
+
     // MARK: - Spacing Scale
     
     /// Extra small spacing - 4pt (tight padding, small gaps)

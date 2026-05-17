@@ -26,6 +26,11 @@ struct FriendDetailView: View {
     @State private var showBlockAlert  = false
     @State private var showProfileZoom = false
     @State private var profilePhotoPressed = false
+    @State private var showFriendProfile = false  // v2.6 — public profile sheet
+    @State private var showCommentSheet  = false
+    @State private var commentCount: Int? = nil
+    @State private var friendProfileImageCache: UIImage? = nil
+    @State private var cardPhotoCache: UIImage? = nil  // sync I/O'yu pre-load eder; tap anında jank olmaz
 
     private var displayName: String {
         friendData.user["displayName"] as? String ?? "Arkadaş"
@@ -37,16 +42,49 @@ struct FriendDetailView: View {
             ?? "#888888"
     }
 
-    /// Friend's profile photo loaded from their CKAsset, if available.
-    private var friendProfileImage: UIImage? {
-        guard let asset = friendData.user["profilePhoto"] as? CKAsset,
-              let url = asset.fileURL,
-              let data = try? Data(contentsOf: url) else { return nil }
-        return UIImage(data: data)
-    }
     private var hasSong: Bool {
         guard let s = share else { return false }
         return !((s["songName"] as? String) ?? "").isEmpty
+    }
+
+    private var friendMusicTasteVisible: Bool {
+        let raw = friendData.user["musicTasteVisible"] as? Int64
+        return raw.map { $0 != 0 } ?? true
+    }
+
+    private var friendMoodHistoryVisible: Bool {
+        let raw = friendData.user["moodHistoryVisible"] as? Int64
+        return raw.map { $0 != 0 } ?? true
+    }
+
+    private var commentButtonLabel: String {
+        if let count = commentCount { return "\(count) Yorum" }
+        return "Yorumlar"
+    }
+
+    private var commentButtonDisabled: Bool {
+        guard let name = share?.recordID.recordName else { return true }
+        return name.isEmpty
+    }
+
+    private var commentButton: some View {
+        Button { showCommentSheet = true } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "bubble.left.fill").font(.system(size: 14))
+                Text(commentButtonLabel).monoBase(tracking: 0.5)
+                Spacer()
+                Image(systemName: "chevron.up").font(.system(size: 12, weight: .semibold))
+            }
+            .foregroundColor(ONETokens.oneCharcoal)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(RoundedRectangle(cornerRadius: 16).fill(ONETokens.oneCreamLow))
+        }
+        .buttonStyle(.plain)
+        .disabled(commentButtonDisabled)
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
     }
 
     var body: some View {
@@ -57,8 +95,17 @@ struct FriendDetailView: View {
                 VStack(spacing: 0) {
                     headerSection
                     if hasSong {
-                        songCard
-                        emojiRow
+                        if friendMusicTasteVisible {
+                            songCard
+                        } else {
+                            privacyPlaceholder(label: "Müzik Paylaşımı")
+                        }
+                        if CommentsFeatureFlag.isEnabled,
+                           let _ = friendData.user["userID"] as? String {
+                            commentButton
+                        } else if friendMoodHistoryVisible {
+                            emojiRow
+                        }
                     } else {
                         waitingSection
                     }
@@ -66,17 +113,33 @@ struct FriendDetailView: View {
                     closeBtn
                 }
             }
-        }
-        .fullScreenCover(isPresented: $showPhotoViewer) {
-            if let asset = share?["photoAsset"] as? CKAsset,
-               let url   = asset.fileURL,
-               let data  = try? Data(contentsOf: url),
-               let img   = UIImage(data: data) {
+
+            if showPhotoViewer, let img = cardPhotoCache {
                 PhotoDataViewerSheet(image: img, isPresented: $showPhotoViewer)
+                    .transition(.opacity)
+                    .zIndex(999)
+            }
+        }
+        .liquidGlassSheetBackground()
+        .sheet(isPresented: $showFriendProfile) {
+            // v2.6 — Arkadaşın aggregate profili
+            PublicProfileView(userID: friendData.user["userID"] as? String ?? "")
+        }
+        .sheet(isPresented: $showCommentSheet) {
+            if let recordName = share?.recordID.recordName,
+               let ownerID = friendData.user["userID"] as? String {
+                CommentThreadView(
+                    shareRecordName: recordName,
+                    shareOwnerID: ownerID,
+                    showComposer: true
+                )
+                .id(recordName)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
             }
         }
         .overlay {
-            if profilePhotoPressed, let img = friendProfileImage {
+            if profilePhotoPressed, let img = friendProfileImageCache {
                 ZStack {
                     Color.black.opacity(0.72)
                         .ignoresSafeArea()
@@ -113,11 +176,59 @@ struct FriendDetailView: View {
             markShareAsSeen()
             // Eğer şarkı henüz seçilmemişse polling başlat
             if !hasSong { startPolling() }
+
+            if let recordName = share?.recordID.recordName {
+                CloudKitManager.shared.fetchCommentCount(shareRecordName: recordName) { count in
+                    self.commentCount = count
+                }
+            }
+
+            DispatchQueue.global(qos: .userInitiated).async {
+                guard let asset = friendData.user["profilePhoto"] as? CKAsset,
+                      let url = asset.fileURL,
+                      let data = try? Data(contentsOf: url),
+                      let img = UIImage(data: data) else { return }
+                DispatchQueue.main.async { friendProfileImageCache = img }
+            }
+
+            // Kart fotoğrafını background thread'de pre-load et — tap anında sync
+            // I/O olmasın (60fps tap-to-open) ve dismiss yumuşak kalsın.
+            DispatchQueue.global(qos: .userInitiated).async {
+                guard let asset = (share ?? friendData.share)?["photoAsset"] as? CKAsset,
+                      let url = asset.fileURL,
+                      let data = try? Data(contentsOf: url),
+                      let img = UIImage(data: data) else { return }
+                DispatchQueue.main.async { cardPhotoCache = img }
+            }
+        }
+        .onChange(of: share?.recordID.recordName) { _, newName in
+            guard let recordName = newName else { return }
+            CloudKitManager.shared.fetchCommentCount(shareRecordName: recordName) { count in
+                self.commentCount = count
+            }
+            // Yeni share geldiğinde foto cache'ini yenile
+            if let asset = share?["photoAsset"] as? CKAsset {
+                DispatchQueue.global(qos: .userInitiated).async {
+                    guard let url = asset.fileURL,
+                          let data = try? Data(contentsOf: url),
+                          let img = UIImage(data: data) else { return }
+                    DispatchQueue.main.async { cardPhotoCache = img }
+                }
+            }
         }
         .onDisappear { isPolling = false }
         // CircleView'den gelen canlı güncelleme sinyali
         .onReceive(NotificationCenter.default.publisher(for: .init("circleDataNeedsRefresh"))) { _ in
             fetchLatestShare()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .commentCountChanged)) { notif in
+            guard let name = notif.object as? String,
+                  let recordName = share?.recordID.recordName,
+                  name == recordName else { return }
+            CloudKitManager.shared.commentCountCache.removeValue(forKey: recordName)
+            CloudKitManager.shared.fetchCommentCount(shareRecordName: recordName) { count in
+                self.commentCount = count
+            }
         }
     }
 
@@ -136,7 +247,7 @@ struct FriendDetailView: View {
                 // Avatar + isim
                 HStack(spacing: 12) {
                     ZStack {
-                        if let img = friendProfileImage {
+                        if let img = friendProfileImageCache {
                             Image(uiImage: img)
                                 .resizable()
                                 .scaledToFill()
@@ -152,7 +263,8 @@ struct FriendDetailView: View {
                                 .frame(width: 46, height: 46)
                                 .overlay(
                                     Text(initial)
-                                        .font(.system(size: 18, weight: .regular, design: .serif))
+                                        .editorialMD()
+                                        .fontWeight(.regular)
                                         .italic()
                                         .foregroundColor(.white.opacity(0.9))
                                 )
@@ -162,7 +274,7 @@ struct FriendDetailView: View {
                         withAnimation(.spring(response: 0.28, dampingFraction: 0.72)) {
                             profilePhotoPressed = isPressing
                         }
-                        if isPressing, friendProfileImage != nil { ONEHaptics.feelingSelected() }
+                        if isPressing, friendProfileImageCache != nil { ONEHaptics.feelingSelected() }
                     }, perform: {})
 
                     Text(displayName.uppercased())
@@ -193,6 +305,11 @@ struct FriendDetailView: View {
 
                     // Menü
                     Menu {
+                        Button {
+                            showFriendProfile = true
+                        } label: {
+                            Label("Profili gör", systemImage: "person.crop.circle")
+                        }
                         Button(role: .destructive) { showRemoveAlert = true } label: {
                             Label(NSLocalizedString("circle.removeAction", comment: ""), systemImage: "person.fill.xmark")
                         }
@@ -257,7 +374,8 @@ struct FriendDetailView: View {
                                 style: StrokeStyle(lineWidth: 1.5, dash: [4, 5]))
                         .frame(width: 72, height: 72)
                     Text(initial)
-                        .font(.system(size: 26, weight: .regular, design: .serif))
+                        .editorialMD()
+                        .fontWeight(.regular)
                         .italic()
                         .foregroundColor(Color.gray.opacity(0.4))
                 }
@@ -480,6 +598,23 @@ struct FriendDetailView: View {
         .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.3), value: appeared)
     }
 
+    // MARK: - Privacy placeholder
+
+    private func privacyPlaceholder(label: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "lock")
+                .font(.system(size: 14, weight: .light))
+                .foregroundColor(ONETokens.oneAsh)
+            Text("\(label) bu kişinin gizlilik tercihi nedeniyle görüntülenemiyor")
+                .monoSM(tracking: 0.3)
+                .foregroundColor(ONETokens.oneAsh)
+                .lineLimit(2)
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 20)
+    }
+
     // MARK: - Close button
 
     private var closeBtn: some View {
@@ -528,7 +663,7 @@ struct FriendDetailView: View {
                         markShareAsSeen()
                         onRefresh?()
                         // Yeni şarkı geldi — haptic
-                        UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        ONEHaptics.songSaved()
                     } else {
                         scheduleNextPoll()
                     }
@@ -546,19 +681,15 @@ struct FriendDetailView: View {
         withAnimation(ONEAnimation.micro) { sentEmoji = emoji }
         let key = "emoji_\(s.recordID.recordName)_\(dateKey())"
         UserDefaults.standard.set(emoji, forKey: key)
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        cloudKitManager.sendEmojiReaction(shareRecordName: s.recordID.recordName, emoji: emoji) { _ in }
+        ONEHaptics.moodSelected()
+        // CloudKit sync removed — legacy emoji path; comment system is the active path.
     }
 
     private func loadSentEmoji() {
         guard let s = share else { return }
         let key = "emoji_\(s.recordID.recordName)_\(dateKey())"
-        if let local = UserDefaults.standard.string(forKey: key) { sentEmoji = local; return }
-        cloudKitManager.fetchEmojiReaction(shareRecordName: s.recordID.recordName) { e in
-            guard let e else { return }
-            sentEmoji = e
-            UserDefaults.standard.set(e, forKey: key)
-        }
+        if let local = UserDefaults.standard.string(forKey: key) { sentEmoji = local }
+        // CloudKit fetch removed — legacy path only reads local cache.
     }
 
     private func dateKey() -> String {

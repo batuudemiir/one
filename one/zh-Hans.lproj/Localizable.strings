@@ -34,6 +34,7 @@
 "today.title" = "选择今天的歌曲";
 "today.subtitle" = "从这里开始你的心情和一天。";
 "today.moodSection" = "你感觉怎么样？";
+"today.feelingSection" = "这首歌给你留下了什么？";
 "today.noteSection" = "留下备注";
 "today.notePlaceholder" = "这首歌给你留下了什么？";
 "today.photoChange" = "更换";
@@ -505,6 +506,16 @@
 "mood.bos" = "安静";
 "mood.temiz" = "中性";
 
+/* --- MOOD MEANINGS (v2.5) --- */
+"mood.meaning.atesli"    = "tutkulu";
+"mood.meaning.isikli"    = "mutlu";
+"mood.meaning.enerjik"   = "enerjik";
+"mood.meaning.taze"      = "doğal";
+"mood.meaning.sakin"     = "huzurlu";
+"mood.meaning.nostaljik" = "heyecanlı";
+"mood.meaning.gizemli"   = "sakin";
+"mood.meaning.bos"       = "stabil";
+
 /* --- FEELING LABELS --- */
 "feeling.calm" = "平静";
 "feeling.happy" = "快乐";
@@ -658,3 +669,5 @@
 
 /* --- GENRE FALLBACK --- */
 "genre.music" = "音乐";
+"notification.appUpdate.title" = "新版本可用 🚀";
+"notification.appUpdate.body" = "ONE %@ 已上线！点击立即更新。";

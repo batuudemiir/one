@@ -10,53 +10,73 @@ import Combine
 class ArchiveStore: ObservableObject {
     @Published var currentMonth: MonthSummary
     @Published var yearData: [MonthSummary]
-    
+    @Published var isLoading: Bool = false
+
     private let context: NSManagedObjectContext
-    
+
     init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
         self.context = context
-        
-        // Başlangıç değerleri
         self.currentMonth = MonthSummary(year: 2025, month: 2, entries: [:], totalDays: 28)
         self.yearData = []
-        
-        // Veriyi yükle
-        loadData()
     }
-    
+
     func loadData() {
+        Task { await loadDataAsync() }
+    }
+
+    func loadDataAsync() async {
+        await MainActor.run { isLoading = true }
+
         let calendar = Calendar.current
         let now = Date()
         let currentYear = calendar.component(.year, from: now)
         let currentMonthNum = calendar.component(.month, from: now)
-        
-        // Mevcut ayı yükle
-        currentMonth = loadMonth(year: currentYear, month: currentMonthNum)
-        
-        // Tüm yılı yükle (12 ay)
-        yearData = (1...12).map { month in
-            loadMonth(year: currentYear, month: month)
+
+        let bg = PersistenceController.shared.container.newBackgroundContext()
+        let (newCurrentMonth, newYearData) = await bg.perform {
+            let month = self.loadMonth(year: currentYear, month: currentMonthNum, context: bg)
+            let year  = (1...12).map { self.loadMonth(year: currentYear, month: $0, context: bg) }
+            return (month, year)
+        }
+
+        await MainActor.run {
+            self.currentMonth = newCurrentMonth
+            self.yearData = newYearData
+            self.isLoading = false
         }
     }
-    
+
     /// Yıl görünümünden seçilen aya geçiş için: o aya ait veriyi yükler.
     func loadSpecificMonth(month: Int) {
-        let calendar = Calendar.current
-        let year = calendar.component(.year, from: Date())
-        currentMonth = loadMonth(year: year, month: month)
+        Task { await loadSpecificMonthAsync(month: month) }
+    }
+
+    @MainActor
+    private func loadSpecificMonthAsync(month: Int) async {
+        let year = Calendar.current.component(.year, from: Date())
+        let bg = PersistenceController.shared.container.newBackgroundContext()
+        let result = await bg.perform { self.loadMonth(year: year, month: month, context: bg) }
+        currentMonth = result
     }
 
     /// ← → navigasyon: offset = -1 (önceki ay), +1 (sonraki ay)
     func navigateMonth(by offset: Int) {
+        Task { await navigateMonthAsync(by: offset) }
+    }
+
+    @MainActor
+    private func navigateMonthAsync(by offset: Int) async {
         let calendar = Calendar.current
         guard let first = calendar.date(from: DateComponents(year: currentMonth.year, month: currentMonth.month, day: 1)),
               let target = calendar.date(byAdding: .month, value: offset, to: first) else { return }
         let y = calendar.component(.year,  from: target)
         let m = calendar.component(.month, from: target)
-        currentMonth = loadMonth(year: y, month: m)
-        // yearData'yı doğru yıl için güncelle
+        let bg = PersistenceController.shared.container.newBackgroundContext()
+        let newMonth = await bg.perform { self.loadMonth(year: y, month: m, context: bg) }
+        currentMonth = newMonth
         if y != yearData.first?.year {
-            yearData = (1...12).map { loadMonth(year: y, month: $0) }
+            let newYear = await bg.perform { (1...12).map { self.loadMonth(year: y, month: $0, context: bg) } }
+            yearData = newYear
         }
     }
 
@@ -87,28 +107,23 @@ class ArchiveStore: ObservableObject {
         return []
     }
     
-    private func loadMonth(year: Int, month: Int) -> MonthSummary {
+    private func loadMonth(year: Int, month: Int, context ctx: NSManagedObjectContext) -> MonthSummary {
         let calendar = Calendar.current
-        
-        // Ayın gün sayısını hesapla
+
         guard let firstDay = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
               let range = calendar.range(of: .day, in: .month, for: firstDay) else {
-            // Tarih hesaplama hatası - varsayılan 30 gün kullan
             ONELogger.warning("Tarih hesaplama hatası: year=\(year), month=\(month)", category: .persistence)
             return MonthSummary(year: year, month: month, entries: [:], totalDays: 30)
         }
-        
+
         let totalDays = range.count
-        
-        // CoreData'dan entry'leri çek
-        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        
-        // Sonraki ayın ilk gününü güvenli şekilde hesapla
+
         guard let nextMonthFirstDay = calendar.date(byAdding: .month, value: 1, to: firstDay) else {
             ONELogger.warning("Sonraki ay hesaplama hatası", category: .persistence)
             return MonthSummary(year: year, month: month, entries: [:], totalDays: totalDays)
         }
-        
+
+        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
         fetchRequest.predicate = NSPredicate(
             format: "date >= %@ AND date < %@",
             firstDay as NSDate,
@@ -118,7 +133,7 @@ class ArchiveStore: ObservableObject {
         var entries: [Date: [DailyEntry]] = [:]
 
         do {
-            let items = try context.fetch(fetchRequest)
+            let items = try ctx.fetch(fetchRequest)
 
             for item in items {
                 guard let timestamp = item.date else { continue }
@@ -157,10 +172,11 @@ class ArchiveStore: ObservableObject {
         // Fotoğraf URL'sini oluştur (photoData'dan)
         var photoURL: URL? = nil
         if let photoData = item.photoData, !photoData.isEmpty {
-            // Temp dizine kaydet ve URL oluştur
             let tempURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent("\(item.id?.uuidString ?? UUID().uuidString).jpg")
-            try? photoData.write(to: tempURL)
+            if !FileManager.default.fileExists(atPath: tempURL.path) {
+                try? photoData.write(to: tempURL)
+            }
             photoURL = tempURL
             ONELogger.debug("Fotoğraf yüklendi: \(item.songName ?? "?") - \(photoData.count) bytes", category: .persistence)
         } else if let photoURLString = item.photoURL {

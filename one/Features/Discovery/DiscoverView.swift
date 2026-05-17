@@ -13,7 +13,7 @@ struct DiscoverView: View {
     @StateObject private var vm: DiscoverViewModel
     @AppStorage(ONETokens.cityPreferenceKey) private var preferredCity: String = ONETokens.defaultCity
     @Namespace private var tabNamespace
-    @State private var appeared = false
+    @State private var appeared = true
     private let context: NSManagedObjectContext
 
     init(context: NSManagedObjectContext) {
@@ -41,6 +41,11 @@ struct DiscoverView: View {
                 moodContextStrip
                     .padding(.horizontal, 24)
                     .padding(.top, 18)
+
+                // C1 — Mood DNA durum şeridi (D7 unlock affordance)
+                moodDNABanner
+                    .padding(.horizontal, 24)
+                    .padding(.top, 14)
 
                 // ── Tab switcher ─────────────────────────────────────────
                 tabSwitcher
@@ -78,18 +83,17 @@ struct DiscoverView: View {
     private var cityPill: some View {
         HStack(spacing: 5) {
             Image(systemName: "location.fill")
-                .font(.system(size: 9, weight: .semibold))
+                .monoMicro()
+                .fontWeight(.semibold)
             Text(preferredCity)
                 .monoSM(tracking: 0.5)
         }
         .foregroundColor(ONETokens.oneStone)
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
-        .background(
-            Capsule()
-                .fill(.regularMaterial)
-                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 2)
-        )
+        .background(Capsule().fill(ONETokens.oneIvory))
+        .overlay(Capsule().stroke(ONETokens.oneMist, lineWidth: 1))
+        .accessibilityLabel(String(format: NSLocalizedString("accessibility.discover.city", comment: ""), preferredCity))
     }
 
     private var greetingText: String {
@@ -97,6 +101,89 @@ struct DiscoverView: View {
         if h < 12 { return NSLocalizedString("discover.greeting.morning", comment: "") }
         if h < 18 { return NSLocalizedString("discover.greeting.afternoon", comment: "") }
         return NSLocalizedString("discover.greeting.evening", comment: "")
+    }
+
+    // MARK: - C1 — Mood DNA banner (D7 unlock)
+
+    /// 7 entry'den az: ilerleme şeridi. >= 7 ve henüz kutlanmadı: bir
+    /// kez "Mood DNA'n hazır" rozeti.
+    @ViewBuilder
+    private var moodDNABanner: some View {
+        let target = 7
+        let total = vm.totalEntries
+        if total < target {
+            HStack(spacing: 12) {
+                Image(systemName: "circle.dotted")
+                    .bodyLG()
+                    .fontWeight(.light)
+                    .foregroundColor(ONETokens.oneAsh)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(NSLocalizedString("discover.moodDNA.shaping", comment: ""))
+                        .bodySMMedium()
+                        .foregroundColor(ONETokens.oneInk)
+                    // Progress shred
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(ONETokens.oneSilver)
+                            Capsule()
+                                .fill(moodColor.opacity(0.85))
+                                .frame(width: geo.size.width * CGFloat(min(total, target)) / CGFloat(target))
+                        }
+                    }
+                    .frame(height: 4)
+                    Text(String(format: NSLocalizedString("discover.moodDNA.progress", comment: ""), total, target))
+                        .monoLabel(tracking: 0.6)
+                        .foregroundColor(ONETokens.oneAsh)
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(ONETokens.oneCreamMid.opacity(0.45))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(ONETokens.oneSilver, lineWidth: 1)
+                    )
+            )
+        } else if !UserDefaults.standard.bool(forKey: "discoveryUnlockCelebrated") {
+            HStack(spacing: 12) {
+                Image(systemName: "sparkle")
+                    .bodyLG()
+                    .fontWeight(.medium)
+                    .foregroundColor(moodColor)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(NSLocalizedString("discover.moodDNA.ready", comment: ""))
+                        .bodySMMedium()
+                        .foregroundColor(ONETokens.oneInk)
+                    Text(NSLocalizedString("discover.moodDNA.readyBody", comment: ""))
+                        .monoSM(tracking: 0.4)
+                        .foregroundColor(ONETokens.oneAsh)
+                }
+                Spacer()
+                Button {
+                    UserDefaults.standard.set(true, forKey: "discoveryUnlockCelebrated")
+                } label: {
+                    Image(systemName: "xmark")
+                        .monoSM()
+                        .fontWeight(.semibold)
+                        .foregroundColor(ONETokens.oneStone)
+                        .frame(width: 28, height: 28)
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(moodColor.opacity(0.10))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(moodColor.opacity(0.35), lineWidth: 1)
+                    )
+            )
+        } else {
+            EmptyView()
+        }
     }
 
     // MARK: - Mood Context Strip
@@ -127,8 +214,8 @@ struct DiscoverView: View {
 
                 Spacer(minLength: 8)
 
-                if !entry.moodLabel.isEmpty {
-                    Text(entry.moodLabel)
+                if !entry.normalizedMoodLabel.isEmpty {
+                    Text(entry.normalizedMoodLabel)
                         .monoLabel(tracking: 0.8)
                         .foregroundColor(entry.moodColor)
                         .padding(.horizontal, 10)
@@ -136,6 +223,8 @@ struct DiscoverView: View {
                         .background(Capsule().fill(entry.moodColor.opacity(0.12)))
                 }
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(entry.songName), \(entry.artistName), \(entry.normalizedMoodLabel)")
         }
         // todayEntry yoksa strip gösterilmez
     }
@@ -176,12 +265,15 @@ struct DiscoverView: View {
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .accessibilityLabel(tab.rawValue)
+                    .accessibilityAddTraits(vm.selectedTab == tab ? [.isSelected] : [])
                 }
             }
             .padding(.horizontal, 24)
 
             Divider()
                 .background(ONETokens.oneCreamMid)
+                .accessibilityHidden(true)
         }
     }
 
@@ -344,7 +436,8 @@ private struct EtkinliklerTabView: View {
     private var emptyMoodState: some View {
         VStack(spacing: 12) {
             Image(systemName: "sparkles")
-                .font(.system(size: 32, weight: .light))
+                .displayMD()
+                .fontWeight(.light)
                 .foregroundColor(ONETokens.oneAsh)
             Text(NSLocalizedString("discover.selectMood", comment: ""))
                 .displayXS()
@@ -354,6 +447,18 @@ private struct EtkinliklerTabView: View {
                 .foregroundColor(ONETokens.oneAsh)
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
+            // A5 — Next-action: kullanıcıyı bugünü kaydetmeye yönlendir
+            Button {
+                NotificationCenter.default.post(name: .init("switchToTodayTab"), object: nil)
+            } label: {
+                Text(NSLocalizedString("discover.emptyCta", comment: ""))
+                    .monoSM(tracking: 0.8)
+                    .foregroundColor(ONETokens.oneCream)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 11)
+                    .background(Capsule().fill(ONETokens.oneInk))
+            }
+            .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)
     }
@@ -361,7 +466,8 @@ private struct EtkinliklerTabView: View {
     private var emptyEventsState: some View {
         VStack(spacing: 16) {
             Image(systemName: "calendar.badge.exclamationmark")
-                .font(.system(size: 32, weight: .light))
+                .displayMD()
+                .fontWeight(.light)
                 .foregroundColor(ONETokens.oneAsh)
             VStack(spacing: 6) {
                 Text(NSLocalizedString("discover.noEvents", comment: ""))
@@ -380,11 +486,13 @@ private struct EtkinliklerTabView: View {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "ticket.fill")
-                            .font(.system(size: 11, weight: .semibold))
+                            .monoSM()
+                            .fontWeight(.semibold)
                         Text(NSLocalizedString("discover.searchBiletix", comment: ""))
                             .monoBase(tracking: 0.5)
                         Image(systemName: "arrow.up.right")
-                            .font(.system(size: 10, weight: .semibold))
+                            .monoMicro()
+                            .fontWeight(.semibold)
                     }
                     .foregroundColor(ONETokens.oneBrand)
                     .padding(.horizontal, 20)
@@ -440,7 +548,8 @@ private struct DiscoverGridEventCard: View {
                         .fill(event.category.accentColor.opacity(0.10))
                         .frame(height: 52)
                     Image(systemName: categoryIcon(event.category))
-                        .font(.system(size: 22, weight: .light))
+                        .displaySM()
+                        .fontWeight(.light)
                         .foregroundColor(event.category.accentColor.opacity(0.8))
                 }
                 .frame(maxWidth: .infinity)
@@ -448,7 +557,8 @@ private struct DiscoverGridEventCard: View {
                 // ── Text content ──────────────────────────────────────────
                 VStack(alignment: .leading, spacing: 4) {
                     Text(event.title)
-                        .font(.system(size: 13, weight: .semibold))
+                        .bodySM()
+                        .fontWeight(.semibold)
                         .foregroundColor(ONETokens.oneInk)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -487,14 +597,14 @@ private struct DiscoverGridEventCard: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
             }
-            .background(
-                RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                    .fill(ONETokens.onePaper)
-                    .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusCard))
+            .liquidGlass(.clear, in: RoundedRectangle(cornerRadius: ONETokens.radiusCard))
+            .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(event.title), \(event.venue), \(event.timing), \(event.price)")
+        .accessibilityHint(NSLocalizedString("accessibility.discover.eventHint", comment: ""))
+        .accessibilityAddTraits(.isButton)
     }
 
     private func appleMapsURL(venue: String, city: String) -> URL? {
@@ -624,7 +734,8 @@ private struct MuzikTabView: View {
     private var emptyMusicState: some View {
         VStack(spacing: 14) {
             Image(systemName: "waveform.badge.magnifyingglass")
-                .font(.system(size: 34, weight: .light))
+                .displayMD()
+                .fontWeight(.light)
                 .foregroundColor(ONETokens.oneAsh)
             Text(NSLocalizedString("discover.music.connect", comment: ""))
                 .displayXS()

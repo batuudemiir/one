@@ -46,7 +46,9 @@ final class BadgeManager: ObservableObject {
     // MARK: - Event evaluators
 
     func evaluateStreak(_ streak: Int) {
+        if streak >= 3   { unlock(.streak3) }
         if streak >= 7   { unlock(.streak7) }
+        if streak >= 14  { unlock(.streak14) }
         if streak >= 30  { unlock(.streak30) }
         if streak >= 100 { unlock(.streak100) }
     }
@@ -54,6 +56,23 @@ final class BadgeManager: ObservableObject {
     func evaluateFriendCount(_ count: Int) {
         if count >= 1 { unlock(.firstFriend) }
         if count >= 5 { unlock(.fiveFriends) }
+    }
+
+    func evaluateTimeBasedBadges(hour: Int) {
+        // Gece kuşu: 00:00 - 04:00 arası giriş (0, 1, 2, 3)
+        if hour >= 0 && hour < 4 {
+            unlock(.nightOwl)
+        }
+        // Erken kuş: 05:00 - 08:00 arası giriş (5, 6, 7)
+        if hour >= 5 && hour < 8 {
+            unlock(.earlyBird)
+        }
+    }
+
+    func evaluateEntryCount(_ total: Int) {
+        if total >= 1  { unlock(.firstShare) }
+        if total >= 7  { unlock(.totalEntry7) }
+        if total >= 30 { unlock(.totalEntry30) }
     }
 
     // MARK: - Persistence

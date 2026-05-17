@@ -34,8 +34,9 @@
 "today.title" = "Bugünün şarkısını seç";
 "today.subtitle" = "Mood'unu ve gününü buradan başlat.";
 "today.moodSection" = "nasıl hissediyorsun?";
+"today.feelingSection" = "bu şarkı sende ne bıraktı?";
 "today.noteSection" = "bir not bırak";
-"today.notePlaceholder" = "bu şarkı sende ne bıraktı?";
+"today.notePlaceholder" = "düşüncelerini yaz...";
 "today.photoChange" = "değiştir";
 "today.saveButton" = "Kaydet";
 "today.continueButton" = "Devam Et";
@@ -90,6 +91,47 @@
 "onboarding.slogan" = "Hisset. Keşfet. Paylaş.";
 "onboarding.connectMusic" = "Müzik servisine bağlan";
 "onboarding.later" = "DAHA SONRA";
+"onboarding.startMagic" = "Başlayalım";
+"onboarding.continueShort" = "DEVAM ET";
+
+/* Welcome */
+"onboarding.welcome.cta" = "Başlayalım";
+"onboarding.welcome.subnote" = "30 saniyeden kısa sürer";
+
+/* Promise */
+"onboarding.promise.title" = "Her gün\ntek bir his.";
+"onboarding.promise.sub" = "ONE bugününü bir renk, bir şarkı, bir an ile özetler. Hızlı, sade, sana özel.";
+
+/* Tutorial */
+"onboarding.tutorial.intro.title" = "Nasıl\nçalışır?";
+"onboarding.tutorial.intro.sub" = "ONE'da bir günü kaydetmek 3 adım sürer. Hadi birlikte deneyelim.";
+"onboarding.tutorial.intro.cta" = "HADİ DENE";
+"onboarding.tutorial.step1.title" = "Hissini seç";
+"onboarding.tutorial.step1.body" = "12 renkten bugünün rengini seç.";
+"onboarding.tutorial.step2.title" = "Bir şarkıyla eşle";
+"onboarding.tutorial.step2.body" = "Bu hisse bir şarkı bırak — Apple Music ya da Spotify.";
+"onboarding.tutorial.step3.title" = "Kartını gör, paylaş";
+"onboarding.tutorial.step3.body" = "Günün kartı oluşur — istersen çevrenle paylaş.";
+"onboarding.tutorial.stepBadge.1" = "1 / 2 — HİSSİNİ SEÇ";
+"onboarding.tutorial.stepBadge.2" = "2 / 2 — KARTIN HAZIR";
+
+/* Magic moment — mood pick & reveal */
+"onboarding.moodPick.title" = "Bugün nasıl\nhissediyorsun?";
+"onboarding.moodPick.sub" = "Bir renk seç. ONE bunu sana özel kılıyor.";
+"onboarding.moodPick.continue" = "DEVAM ET";
+"onboarding.reveal.title" = "İşte\nbugünün kartı.";
+"onboarding.reveal.sub" = "Her akşam tek bir his, tek bir renk. ONE bu kartı senin için hazırlıyor.";
+"onboarding.reveal.continue" = "HARİKA, DEVAM";
+
+/* Music */
+"onboarding.music.title" = "Müziği\nbağlayalım.";
+"onboarding.music.sub" = "Hissine bir şarkı eşlemek için Apple Music veya Spotify gerekli. Abonelik şart değil.";
+
+/* Soft notification ask */
+"onboarding.notif.title" = "Günün sonunda\nseni hatırlayalım mı?";
+"onboarding.notif.sub" = "21:00'de tek bir nazik bildirim. Reklam yok, baskı yok.";
+"onboarding.notif.yes" = "Tabii ki";
+"onboarding.notif.no" = "Şimdi değil";
 
 /* ── SPLASH ── */
 "splash.slogan" = "hisset · keşfet · paylaş";
@@ -137,6 +179,56 @@
 "accessibility.discovery.openEvent" = "%@ etkinliğini aç";
 "accessibility.discovery.eventHint" = "Etkinlik detaylarını açar";
 "accessibility.settings.notificationToggle" = "Bildirimleri etkinleştir";
+
+/* ── ERİŞİLEBİLİRLİK — Faz 2 ── */
+/* CircleView */
+"accessibility.circle.senCardShared" = "Senin paylaşımın: %@, %@, %@ mood";
+"accessibility.circle.senCardEmpty" = "Bugün henüz paylaşım yapmadın";
+"accessibility.circle.senCardHint" = "Bugünün şarkısını seçmek için Bugün sekmesine git";
+"accessibility.circle.friendCardHint" = "Detayları görmek için dokun";
+"accessibility.circle.unseen" = "Yeni paylaşım";
+"accessibility.circle.resonant" = "Seninle aynı histe";
+"accessibility.circle.premium" = "ONE+ üyesi";
+
+/* ProfileView */
+"accessibility.profile.editButton" = "Profili düzenle";
+"accessibility.profile.avatar" = "Profil fotoğrafı";
+"accessibility.profile.avatarHint" = "Büyük görmek için dokun";
+"accessibility.profile.stats" = "Profil istatistikleri";
+
+/* TodayEmptyView */
+"accessibility.today.lastYear" = "365 gün önce: %@, %@, %@ mood";
+"accessibility.today.searchResult" = "%@, %@";
+"accessibility.today.searchResultHint" = "Bugünün şarkısı olarak seç";
+"accessibility.today.changeSong" = "Seçimi değiştir";
+"accessibility.today.photoPreview" = "Eklenen fotoğraf";
+"accessibility.today.photoPreviewHint" = "Tam ekran görmek için dokun";
+"accessibility.today.retakePhoto" = "Fotoğrafı yeniden çek";
+"today.moodSaved.a11y" = "Bugünün mood'u kaydedildi";
+
+/* CameraView */
+"accessibility.camera.shutter" = "Fotoğraf çek";
+"accessibility.camera.shutterHint" = "Deklanşöre bas";
+"accessibility.camera.cancelTimer" = "Zamanlayıcıyı iptal et";
+"accessibility.camera.flip" = "Kamerayı çevir";
+"accessibility.camera.flash" = "Flaş";
+"accessibility.camera.timer" = "Zamanlayıcı";
+"accessibility.camera.grid" = "Izgara";
+"accessibility.camera.filmFilter" = "Film filtresi";
+
+/* DiscoverView & MoodEventsSheet */
+"accessibility.discover.city" = "Şehir: %@";
+"accessibility.discover.eventHint" = "Etkinlik detaylarını görmek için dokun";
+
+/* AddFriendView */
+"accessibility.addFriend.profileCard" = "%@, davet kodu: %@";
+"accessibility.addFriend.foundUser" = "%@ bulundu, eklemek için dokun";
+"accessibility.addFriend.qrCode" = "QR kodu: %@";
+
+/* TodayCompletedView */
+"accessibility.today.photoPreviewHint" = "Tam ekran görmek için dokun";
+"accessibility.today.changeEntry" = "Değiştir";
+
 
 /* Discover redesign */
 "discover.biletixEvents" = "YAKLAŞAN ETKİNLİKLER";
@@ -259,6 +351,8 @@
 "profile.appName" = "One — Günlük Mood";
 "profile.echoTitle" = "Yankı";
 "profile.echoDesc" = "Dinleme kalıplarını ve tekrarlarını keşfet";
+"profile.features.lockedTitle" = "Analizler Hazırlanıyor";
+"profile.features.lockedDesc" = "Yankı ve Aylık Özet kilidini açmak için %d gün daha hislerini kaydet!";
 "profile.spotifyDisconnect" = "Spotify Bağlantısını Kes";
 "profile.spotifyDisconnectMsg" = "Spotify bağlantısını kesmek istediğinize emin misiniz? Öneriler ve önbellek temizlenecek.";
 "profile.appleMusicTitle" = "Apple Music İzni";
@@ -353,6 +447,13 @@
 "friendRequests.notifications" = "Etkinlik";
 "friendRequests.noNotifications" = "Henüz etkinlik yok";
 "friendRequests.noNotificationsHint" = "Arkadaşlık kabulleri, paylaşımlar ve\nreaksiyonlar burada görünür.";
+"friendRequests.requestsSection" = "Arkadaşlık İstekleri";
+"friendRequests.activitySection" = "Aktivite Akışı";
+"friendRequests.markAllRead" = "Tümünü Okundu İşaretle";
+"friendRequests.accept" = "Kabul Et";
+"friendRequests.withdraw" = "Geri Çek";
+"friendRequests.pending" = "Bekliyor";
+"friendRequests.sentYouRequest" = "%@ sana arkadaşlık isteği gönderdi";
 
 /* --- ARCHIVE EXTRA --- */
 "archive.selectedDays" = "Seçilen gün";
@@ -591,6 +692,16 @@
 "mood.bos" = "boşluk";
 "mood.temiz" = "sessiz";
 
+/* --- MOOD MEANINGS (v2.5) --- */
+"mood.meaning.atesli"    = "tutkulu";
+"mood.meaning.isikli"    = "mutlu";
+"mood.meaning.enerjik"   = "enerjik";
+"mood.meaning.taze"      = "doğal";
+"mood.meaning.sakin"     = "huzurlu";
+"mood.meaning.nostaljik" = "heyecanlı";
+"mood.meaning.gizemli"   = "sakin";
+"mood.meaning.bos"       = "stabil";
+
 /* --- FEELING LABELS --- */
 "feeling.calm" = "Dingin";
 "feeling.happy" = "Neşeli";
@@ -668,6 +779,8 @@
 "nav.circle" = "çevre";
 "nav.profile" = "profil";
 "nav.tabAccessibility" = "%@ sekmesi";
+"nav.todayHint" = "Bugünün mood'unu kaydet";
+"nav.expandBarA11y" = "Tab barını aç";
 
 /* --- DISCOVER CTA LABELS --- */
 "discover.ctaMap" = "Harita";
@@ -870,6 +983,7 @@
 /* Yearly Summary */
 "yearly.title" = "Yıl Özeti";
 "yearly.subtitle" = "12 ayın sesi";
+"yearly.availableInDecember" = "Yıl sonunda açılır";
 "yearly.monthlyMoods" = "AYLARA GÖRE";
 "yearly.topTracks" = "EN ÇOK DİNLENEN";
 "yearly.topArtists" = "EN ÇOK SANATÇI";
@@ -879,3 +993,142 @@
 "yearly.uniqueSongs" = "BENZERSİZ ŞARKI";
 "yearly.longestStreak" = "EN UZUN SERİ";
 "yearly.dominantMood" = "BASKIN MOOD";
+"notification.appUpdate.title" = "Yeni sürüm mevcut 🚀";
+"notification.appUpdate.body" = "ONE %@ yayında! Güncellemek için dokun.";
+
+/* First entry — Çevre davet kancası (A4) */
+"firstEntryInvite.eyebrow" = "İLK ADIMI ATTIN";
+"firstEntryInvite.title" = "ONE çevrenle daha güzel.";
+"firstEntryInvite.body" = "Akşam bir yakının da bugünün rengini bıraksın. Birlikte ne hissettiğinizi görmek farklı bir his.";
+"firstEntryInvite.invite" = "1 yakınımı davet et";
+"firstEntryInvite.skip" = "Şimdi değil";
+
+/* A5 — Empty state next-action prompts */
+"echo.empty.title" = "Yankı henüz sessiz.";
+"echo.empty.body" = "Bir kayıt yaptığında haftan, ritmin ve renk paletin burada belirir.";
+"echo.empty.cta" = "Bugünü kaydet";
+"discover.emptyCta" = "Bugünkü mood'unu seç";
+
+/* B1 — Streak / freeze (soft streak) */
+"streak.freezeUsed.toast" = "Bir günü atladın, ama serin korundu — haftada 1 freeze ❄️";
+"badges.streak3.title" = "3 Gün";
+"badges.streak3.desc" = "İlk halka kapandı";
+"badges.streak14.title" = "14 Gün";
+"badges.streak14.desc" = "İki hafta üst üste";
+
+/* B5 — Widget kurulum nudge */
+"widget.nudge.title" = "Tek dokunuşla mood";
+"widget.nudge.body" = "Ana ekranına ONE widget'ı ekle, uygulamayı açmadan rengini bırak.";
+
+/* C1 — Discovery Mood DNA */
+"discover.moodDNA.shaping" = "Mood DNA'n şekilleniyor";
+"discover.moodDNA.progress" = "%d / %d gün";
+"discover.moodDNA.ready" = "Mood DNA'n hazır 🧬";
+"discover.moodDNA.readyBody" = "Keşfet artık sana göre konuşuyor.";
+
+/* D2 — Loss aversion loyalty card */
+"profile.loyalty.title" = "ANILARIN BURADA";
+"profile.loyalty.subtitle" = "ONE ile birikenler";
+"profile.loyalty.daysWithONE" = "ONE GÜNÜ";
+"profile.loyalty.entries" = "KAYIT";
+"profile.loyalty.streak" = "GÜNCEL SERİ";
+"profile.loyalty.badges" = "ROZET";
+
+/* Profile footer */
+"profile.madeWithLove" = "Sevgiyle ve anılarla yapıldı.";
+
+/* Profile invite code chip */
+"profile.inviteCode.shareHint" = "Kodunu paylaş, çevreni büyüt";
+"profile.inviteCode.copy" = "Kodu kopyala";
+"profile.inviteCode.share" = "Kodu paylaş";
+
+/* Add Friend redesign — iki niyet mimarisi */
+"addFriend.hero.title" = "Çevreni büyüt";
+"addFriend.hero.subtitle" = "Bir yakınınla bugünün rengini paylaş.";
+"addFriend.section.beAdded" = "Seni eklesinler";
+"addFriend.section.addSomeone" = "Birini ekle";
+"addFriend.or" = "ya da";
+"addFriend.yourCode" = "DAVET KODU";
+"addFriend.shareSMS" = "Mesajla";
+"addFriend.searchPrompt" = "Birinin kodunu veya @kullanıcı adını yaz.";
+"addFriend.scanQRCta" = "Bunun yerine QR tara";
+"addFriend.codeA11y" = "Davet kodun: %@";
+"addFriend.codeA11yHint" = "Kopyalamak için iki kez dokun";
+
+/* Profile redesign — BeReal-style hero */
+"profile.friendsCount" = "%d Arkadaş";
+"profile.shareProfile" = "Profili Paylaş";
+"profile.badges.section" = "ROZETLERİN";
+"profile.badges.locked" = "Açılmadı";
+"profile.badges.unlockedA11y" = "kazanıldı";
+"profile.addFriend.a11y" = "Arkadaş ekle";
+"profile.settings.a11y" = "Ayarlar";
+"profile.editProfile.a11y" = "Profili düzenle";
+
+/* Profile settings sheet */
+"profile.settings.title" = "Ayarlar";
+
+/* Profile redesign — share button + recent mood strip */
+"profile.shareProfile.hint" = "Davet kodunu yolla, çevreni büyüt";
+"profile.recentWeek.title" = "SON 7 GÜN";
+"profile.recentWeek.subtitle" = "Renklerinin haritası";
+"profile.recentWeek.todayShort" = "Bugün";
+
+/* Profile friends list */
+"profile.friendsList.a11y" = "Arkadaş listesini aç";
+"profile.changePhoto" = "Foto değiştir";
+
+/* My Friends list (profile sekmesi) */
+"myFriends.title" = "Arkadaşlarım";
+"myFriends.today" = "BUGÜN";
+"myFriends.empty.title" = "Henüz arkadaşın yok";
+"myFriends.empty.body" = "Çevreni büyütmek için davet kodunu paylaş ya da birinin kodunu ekle.";
+"myFriends.loading" = "Arkadaşların yükleniyor...";
+"myFriends.dailyShare" = "Günlük paylaşım";
+
+/* Time-based Badges */
+"badges.nightOwl.title" = "Gece Kuşu";
+"badges.nightOwl.desc" = "Geceleri düşüncelere dalan";
+"badges.earlyBird.title" = "Erken Kuş";
+"badges.earlyBird.desc" = "Sabahın ilk ışıklarında";
+
+/* Viral Sharing */
+"share.xTemplate" = "Benim bugünkü ONE mood'um: %@. Senin günün nasıl geçti? 🎧✨\n\n#OneApp #DailyMood";
+"share.tiktok" = "TikTok'ta Paylaş";
+"share.tiktokHint" = "O günü nasıl geçirdiğini göster";
+
+/* Storytelling */
+"monthly.storyTitle" = "%@ Müziklerin Ayı";
+"monthly.storySubtitle" = "En çok %@'da düşüncelere daldın.";
+"monthly.expectationTitle" = "Gelecek Ay Görüşürüz";
+"monthly.expectationBody" = "Yeni özetini şekillendirmek için her gün\nşarkılarını kaydetmeye devam et.";
+
+/* Resonance (v2.6) */
+"resonance.title" = "Rezonans";
+"resonance.send" = "Rezonans Gönder";
+"resonance.sent" = "Rezonansın gönderildi ✨";
+"resonance.sheetTitle" = "Rezonans Gönder";
+"resonance.sheetSubtitle" = "Şu anki ruh halini paylaş, arkadaşına hissettir.";
+"resonance.pickMood" = "Rengini seç";
+"resonance.sendCTA" = "Rezonansı Gönder";
+"resonance.rateLimit" = "Bugün için rezonans limitine ulaştın (maks. 5/gün).";
+"resonance.received" = "%@ sana %@ rezonansı gönderdi";
+
+/* P1.1 — Onboarding music optional */
+"onboarding.music.connectAndStart" = "Bağla ve Başla";
+"onboarding.music.skipForNow" = "Şimdilik geç · Profil'den bağlayabilirsin";
+
+/* P1.6 — Onboarding streak freeze hint */
+"onboarding.notif.freezeHint" = "Bir gün kaçırırsan serin sıfırlanmaz — haftada bir freeze hediye.";
+
+/* Accessibility — DayCell */
+"accessibility.dayCell.hasPhoto" = "fotoğraflı";
+"accessibility.dayCell.hint" = "Detayı görmek için çift dokun";
+
+/* Accessibility — WaveStrip */
+"wavestrip.bar.hint" = "günün detayını aç";
+
+/* Accessibility — MoodBarStrip (Req 13) */
+"moodbarstrip.empty" = "Aylık mood dağılımı: kayıt yok";
+"moodbarstrip.summary" = "Aylık mood dağılımı: %@";
+"profile.monthlySummary.lockedDesc" = "%d gün sonra açılır";

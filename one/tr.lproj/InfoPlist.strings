@@ -1,0 +1,12 @@
+/* App Store + sistem geneli görünür isim — TR */
+"CFBundleDisplayName" = "ONE+ Mood Tracker";
+"CFBundleName" = "ONE+ Mood Tracker";
+
+/* Privacy strings — TR App Store reviewer + kullanıcı izin alert'leri */
+"NSAppleMusicUsageDescription" = "Hissine bir şarkı eşlemek için Apple Music'e erişim gerekli. Aboneliğin olmasa bile çalışır.";
+"NSCameraUsageDescription" = "Günün anlarını kartına eklemek ve davet QR'ı taramak için kamera erişimi gerekli.";
+"NSContactsUsageDescription" = "Yakınlarını ONE'a davet etmek için rehberinden seçim yapabilmen için erişim gerekli.";
+"NSPhotoLibraryUsageDescription" = "Profil fotoğrafı seçmen ve günlük kartına fotoğraf eklemen için galeri erişimi gerekli.";
+"NSPhotoLibraryAddUsageDescription" = "Hazırladığın aylık posteri ya da paylaşım kartını galerine kaydetmek için izin gerekli.";
+"NSLocationWhenInUseUsageDescription" = "Şehrindeki etkinlikleri ve hava durumuna uygun ipuçlarını göstermek için konum gerekli.";
+"NSUserTrackingUsageDescription" = "Sana daha alakalı öneriler ve davet kartları gösterebilmek için isteğe bağlı izin.";

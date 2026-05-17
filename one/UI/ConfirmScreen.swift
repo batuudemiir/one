@@ -11,6 +11,7 @@ import CoreData
 struct ConfirmScreen: View {
     @ObservedObject var vm: ColorPickerViewModel
     let viewContext: NSManagedObjectContext
+    let moodCoreNS: Namespace.ID
 
     // CTA bar fixed height for scroll padding
     private let ctaBarHeight: CGFloat = 120
@@ -44,7 +45,7 @@ struct ConfirmScreen: View {
                             // Sol: Albüm kapağı (küçülür fotoğraf seçilince)
                             ZStack {
                                 if let artworkURL = song.artworkURL {
-                                    AsyncImage(url: artworkURL) { phase in
+                                    CachedAsyncImagePhase(url: artworkURL) { phase in
                                         if let image = phase.image {
                                             image.resizable().aspectRatio(contentMode: .fill)
                                         } else {
@@ -116,8 +117,20 @@ struct ConfirmScreen: View {
                             spacing: 20
                         ) {
                             ForEach(ONEMood.allCases) { mood in
-                                MoodButton(mood: mood, isSelected: vm.selectedMood?.id == mood.id) {
-                                    withAnimation(ONEAnimation.micro) { vm.selectedMood = mood }
+                                let isSelected = vm.selectedMood?.id == mood.id
+                                ZStack {
+                                    MoodButton(mood: mood, isSelected: isSelected) {
+                                        ONEHaptics.moodSelected()
+                                        withAnimation(ONEAnimation.micro) { vm.selectedMood = mood }
+                                    }
+                                    // matchedGeometryEffect source — mood circle "travels" to DoneScreen
+                                    if isSelected {
+                                        Circle()
+                                            .fill(mood.color)
+                                            .frame(width: 56, height: 56)
+                                            .matchedGeometryEffect(id: "moodCore", in: moodCoreNS)
+                                            .allowsHitTesting(false)
+                                    }
                                 }
                             }
                         }
@@ -193,38 +206,36 @@ struct ConfirmScreen: View {
                 .frame(height: 24)
 
                 VStack(spacing: 12) {
-                    // Ana buton
-                    Button(action: {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        vm.saveTodaysSong(context: viewContext)
-                        vm.currentScreen = .done
-                    }) {
-                        Text(NSLocalizedString("confirm.todaySong", comment: ""))
-                            .displayXS()
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 18)
-                            .background(
-                                (vm.selectedFeeling != nil ? vm.selectedMood?.color : nil)
-                                    ?? ONETokens.oneStone
-                            )
-                            .foregroundColor(
-                                vm.selectedMood?.isDark == false ? .black : ONETokens.oneCream
-                            )
-                            .cornerRadius(20)
-                    }
-                    .disabled(vm.selectedMood == nil || vm.selectedFeeling == nil)
-                    .animation(ONEAnimation.micro, value: vm.selectedMood != nil && vm.selectedFeeling != nil)
-                    .accessibilityLabel(NSLocalizedString("today.saveButton", comment: ""))
+                        Button(action: {
+                            ONEHaptics.saveRitual(mood: vm.selectedMood)
+                            vm.saveTodaysSong(context: viewContext)
+                            vm.currentScreen = .done
+                        }) {
+                            Text(NSLocalizedString("confirm.todaySong", comment: ""))
+                                .displayXS()
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 18)
+                                .background(
+                                    (vm.selectedFeeling != nil ? vm.selectedMood?.color : nil)
+                                        ?? ONETokens.oneStone
+                                )
+                                .foregroundColor(
+                                    vm.selectedMood?.isDark == false ? .black : ONETokens.oneCream
+                                )
+                                .cornerRadius(20)
+                        }
+                        .disabled(vm.selectedMood == nil || vm.selectedFeeling == nil)
+                        .animation(ONEAnimation.micro, value: vm.selectedMood != nil && vm.selectedFeeling != nil)
+                        .accessibilityLabel(NSLocalizedString("today.saveButton", comment: ""))
 
-                    // İkincil buton
-                    Button(action: { vm.currentScreen = .search }) {
-                        Text(NSLocalizedString("today.photoChange", comment: ""))
-                            .monoBase(tracking: 1.5)
-                            .foregroundColor(ONETokens.oneAsh)
-                    }
-                    .accessibilityLabel(NSLocalizedString("general.back", comment: ""))
-                    .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
-                    .contentShape(Rectangle())
+                        Button(action: { vm.currentScreen = .search }) {
+                            Text(NSLocalizedString("today.photoChange", comment: ""))
+                                .monoBase(tracking: 1.5)
+                                .foregroundColor(ONETokens.oneAsh)
+                        }
+                        .accessibilityLabel(NSLocalizedString("general.back", comment: ""))
+                        .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
+                        .contentShape(Rectangle())
                 }
                 .padding(.horizontal, 26)
                 .padding(.bottom, 28)
@@ -258,12 +269,11 @@ struct PhotoHeroButton: View {
 
                     // Değiştir rozeti
                     ZStack {
-                        Circle()
-                            .fill(.ultraThinMaterial)
-                            .frame(width: 32, height: 32)
                         Image(systemName: "pencil")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(ONETokens.oneInk)
+                            .frame(width: 32, height: 32)
+                            .liquidGlass(in: Circle())
                     }
                     .padding(8)
 

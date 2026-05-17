@@ -132,7 +132,8 @@ struct TasteProfileAnalyzer {
         var moodFrequency: [String: Int] = [:]
         
         for entry in entries {
-            if let moodLabel = entry.moodLabel, !moodLabel.isEmpty {
+            if let raw = entry.moodLabel, !raw.isEmpty {
+                let moodLabel = DailyEntry.moodLabelMigrationMap[raw] ?? raw
                 moodFrequency[moodLabel, default: 0] += 1
             }
         }

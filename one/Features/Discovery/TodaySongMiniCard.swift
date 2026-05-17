@@ -40,7 +40,7 @@ struct TodaySongMiniCard: View {
                     Circle()
                         .fill(entry.moodColor)
                         .frame(width: 6, height: 6)
-                    Text(entry.moodLabel)
+                    Text(entry.normalizedMoodLabel)
                         .monoLabel(tracking: 0.6)
                         .foregroundColor(entry.moodColor)
                 }

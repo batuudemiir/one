@@ -3,6 +3,7 @@ import UserNotifications
 import Combine
 import SwiftUI
 import CoreData
+import CloudKit
 
 class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationManager()
@@ -181,31 +182,14 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
 
     /// Bugün zaten şarkı seçilmişse bildirimi iptal eder.
     /// TodayViewModel tarafından kayıt sonrası çağrılır.
+    /// Race fix: önceki sürümde 1sn `asyncAfter` içinde yeniden schedule
+    /// ediliyordu; Orchestrator bunu `onSongSaved` içinde deterministik
+    /// seed ile tek adımda yapar.
     func cancelTodayReminderIfNeeded() {
-        let center = UNUserNotificationCenter.current()
-        // Pending listesinde varsa kaldır, delivered'da bırak (zaten görünmüş)
-        center.getPendingNotificationRequests { requests in
-            let ids = requests
-                .filter { $0.identifier == "daily_reminder" }
-                .map { $0.identifier }
-            if !ids.isEmpty {
-                center.removePendingNotificationRequests(withIdentifiers: ids)
-                ONELogger.debug("Daily reminder cancelled — today's entry saved.", category: .notification)
-                // Bir sonraki gün için yeniden schedule et
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    let defaults = UserDefaults.standard
-                    guard defaults.bool(forKey: "notificationsEnabled") else { return }
-                    let hour   = defaults.integer(forKey: "dailyReminderHour")
-                    let minute = defaults.integer(forKey: "dailyReminderMinute")
-                    var comps  = DateComponents()
-                    comps.hour   = hour == 0 ? 20 : hour
-                    comps.minute = minute
-                    if let date = Calendar.current.date(from: comps) {
-                        self.scheduleDailyReminder(at: date)
-                    }
-                }
-            }
-        }
+        NotificationOrchestrator.shared.onSongSaved(
+            moodLabel: EngagementTracker.lastMoodLabel,
+            moodColorHex: EngagementTracker.lastMoodColorHex
+        )
     }
     
     func disableDailyReminder() {
@@ -231,7 +215,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
 
         var dateComponents = DateComponents()
         dateComponents.hour   = 20
-        dateComponents.minute = 30
+        dateComponents.minute = 0
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
         let request = UNNotificationRequest(identifier: "streak_warning", content: content, trigger: trigger)
 
@@ -296,7 +280,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) else { return }
         fetchRequest.predicate = NSPredicate(format: "createdAt >= %@", thirtyDaysAgo as NSDate)
 
-        guard let songs = try? context.fetch(fetchRequest), songs.count >= 5 else { return }
+        guard let songs = try? context.fetch(fetchRequest), songs.count >= 3 else { return }
 
         var hourCounts = [Int: Int]()
         for song in songs {
@@ -364,13 +348,15 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        NotificationOrchestrator.shared.recordDelivered(notification)
         completionHandler([.banner, .sound])
     }
-    
+
     // Handle notification tap / action
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
+        NotificationOrchestrator.shared.recordOpened(response)
         let userInfo   = response.notification.request.content.userInfo
         let actionID   = response.actionIdentifier
         let categoryID = response.notification.request.content.categoryIdentifier
@@ -400,6 +386,21 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             case "FRIEND_ACCEPTED", "EMOJI_REACTION":
                 self.shouldNavigateToCircle = true
 
+            case "COMMENT_NOTIFICATION":
+                switch actionID {
+                case "REPLY_ACTION":
+                    if let textResp = response as? UNTextInputNotificationResponse {
+                        self.handleQuickReply(
+                            text: textResp.userText,
+                            userInfo: userInfo
+                        )
+                    }
+                case "OPEN_COMMENTS":
+                    self.shouldNavigateToCircle = true
+                default:
+                    self.shouldNavigateToCircle = true
+                }
+
             case "STREAK_WARNING":
                 self.shouldNavigateToToday = true
 
@@ -409,6 +410,9 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             case "DISCOVERY_REMINDER":
                 self.shouldNavigateToDiscovery = true
 
+            case "APP_UPDATE":
+                AppUpdateChecker.shared.openAppStore()
+
             default:
                 // Eski "type" tabanlı yönlendirme (geriye uyumluluk)
                 switch type {
@@ -416,6 +420,8 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
                     self.shouldNavigateToCircle = true
                 case "daily_reminder":
                     self.shouldNavigateToToday = true
+                case "app_update":
+                    AppUpdateChecker.shared.openAppStore()
                 default:
                     break
                 }
@@ -423,6 +429,93 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         }
 
         completionHandler()
+    }
+
+    // MARK: - Quick Reply (v2.5)
+
+    /// Push üzerinden "Yanıtla" aksiyonuyla gelen inline text'i yorum olarak gönderir.
+    /// Rate-limit + içerik guard'ları CloudKitCommentService'in içinde; burası sadece
+    /// userInfo'dan shareRecordName + shareOwnerID çözer.
+    private func handleQuickReply(text rawText: String, userInfo: [AnyHashable: Any]) {
+        let text = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        guard let shareRecordName = userInfo["shareRecordName"] as? String else {
+            ONELogger.error("QuickReply: shareRecordName eksik", category: .notification)
+            return
+        }
+        // parentCommentID — yanıtlanan comment
+        let parentCommentID = userInfo["commentID"] as? String
+
+        // Rate limiter
+        let rl = CommentRateLimiter.shared.check()
+        guard rl.isAllowed else {
+            ONELogger.info("QuickReply rate-limited", category: .notification)
+            return
+        }
+
+        // shareOwnerID — yorum paylaşımın sahibini bilmek zorunda. Push'tan gelmiyorsa
+        // önce CKRecord fetch et.
+        if let ownerID = userInfo["shareOwnerID"] as? String {
+            sendQuickReply(body: text, shareRecordName: shareRecordName,
+                           shareOwnerID: ownerID, parentCommentID: parentCommentID)
+        } else {
+            let recID = CKRecord.ID(recordName: shareRecordName)
+            CloudKitManager.shared.publicDatabase.fetch(withRecordID: recID) { [weak self] rec, _ in
+                guard let ownerID = rec?["userID"] as? String else { return }
+                self?.sendQuickReply(body: text, shareRecordName: shareRecordName,
+                                     shareOwnerID: ownerID, parentCommentID: parentCommentID)
+            }
+        }
+    }
+
+    private func sendQuickReply(body: String, shareRecordName: String,
+                                shareOwnerID: String, parentCommentID: String?) {
+        CloudKitManager.shared.createComment(
+            body: body,
+            shareRecordName: shareRecordName,
+            shareOwnerID: shareOwnerID,
+            parentCommentID: parentCommentID
+        ) { result in
+            switch result {
+            case .success:
+                CommentRateLimiter.shared.record()
+                ONELogger.success("QuickReply yorum gönderildi", category: .notification)
+            case .failure(let err):
+                ONELogger.error("QuickReply yorum gönderimi başarısız", error: err, category: .notification)
+            }
+        }
+    }
+
+    // MARK: - App Update Notification
+
+    /// Yeni sürüm tespit edildiğinde bildirim gönderir.
+    /// Bildirime tıklandığında App Store açılır.
+    /// Aynı sürüm için yalnızca bir kez gönderilir.
+    func scheduleAppUpdateNotification(newVersion: String) {
+        let alreadyNotifiedKey = "appUpdateNotified_\(newVersion)"
+        guard !UserDefaults.standard.bool(forKey: alreadyNotifiedKey) else { return }
+
+        let center = UNUserNotificationCenter.current()
+        let content = UNMutableNotificationContent()
+        content.title = NSLocalizedString("notification.appUpdate.title", comment: "")
+        content.body  = String(format: NSLocalizedString("notification.appUpdate.body", comment: ""), newVersion)
+        content.sound = .default
+        content.categoryIdentifier = "APP_UPDATE"
+        content.userInfo = ["type": "app_update"]
+
+        let request = UNNotificationRequest(
+            identifier: "app_update_available",
+            content: content,
+            trigger: nil  // anlık gönderim
+        )
+        center.add(request) { error in
+            if let error {
+                ONELogger.error("Failed to schedule app update notification", error: error, category: .notification)
+            } else {
+                UserDefaults.standard.set(true, forKey: alreadyNotifiedKey)
+                ONELogger.success("App update notification sent for v\(newVersion)", category: .notification)
+            }
+        }
     }
 
     // MARK: - Month-End Summary Notification

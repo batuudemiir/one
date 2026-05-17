@@ -24,7 +24,7 @@ struct MonthlyPosterShareCard: View {
                 // MARK: Top Section (Title)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(monthName.uppercased())
-                        .font(.system(size: 64, design: .serif))
+                        .editorialXXL()
                         .italic()
                         .fontWeight(.ultraLight)
                         .foregroundColor(ONETokens.oneShadow)

@@ -42,6 +42,10 @@ enum ONEHaptics {
         try? engine?.start()
     }
 
+    private static var isEnabled: Bool {
+        UserDefaults.standard.object(forKey: "hapticFeedbackEnabled") as? Bool ?? true
+    }
+
     /// CoreHaptics ile özel bir titreşim dizisi çalar.
     /// - Parameter events: (relativeTime, intensity, sharpness) tuple dizisi
     private static func playPattern(_ events: [(time: Double, intensity: Float, sharpness: Float)]) {
@@ -79,6 +83,7 @@ enum ONEHaptics {
     /// Fired once when a daily entry is successfully saved.
     /// Strong, celebratory — the "ONE moment" confirmation.
     static func songSaved() {
+        guard isEnabled else { return }
         let gen = UINotificationFeedbackGenerator()
         gen.prepare()
         gen.notificationOccurred(.success)
@@ -90,6 +95,7 @@ enum ONEHaptics {
     /// intensity: 0.0–1.0 (güç)
     /// sharpness: 0.0 yumuşak/küt, 1.0 keskin/mekanik
     static func saveRitual(mood: ONEMood?) {
+        guard isEnabled else { return }
         switch mood {
 
         case .atesli:
@@ -125,22 +131,29 @@ enum ONEHaptics {
                 (time: 0.30, intensity: 0.30, sharpness: 0.20),
             ])
 
-        case .gizemli:
-            // Ağır tek darbe — orta güç, yüksek sharpness (rigid hissi)
+        case .sinirli:
+            // Ağır tek darbe — orta güç, yüksek sharpness
             playPattern([
                 (time: 0.00, intensity: 0.55, sharpness: 0.85),
             ])
 
-        case .bos:
+        case .yorgun:
             // Minimal — barely there
             playPattern([
                 (time: 0.00, intensity: 0.22, sharpness: 0.15),
             ])
 
-        case .temiz:
+        case .uzgun:
             // Sade, hafif tık
             playPattern([
                 (time: 0.00, intensity: 0.40, sharpness: 0.50),
+            ])
+
+        case .stresli:
+            // Hızlı çift darbe — gergin hissi
+            playPattern([
+                (time: 0.00, intensity: 0.70, sharpness: 0.75),
+                (time: 0.15, intensity: 0.50, sharpness: 0.60),
             ])
 
         default:
@@ -155,6 +168,7 @@ enum ONEHaptics {
     /// Fired when a mood color is selected.
     /// Medium impact — meaningful but not jarring.
     static func moodSelected() {
+        guard isEnabled else { return }
         let gen = UIImpactFeedbackGenerator(style: .medium)
         gen.prepare()
         gen.impactOccurred(intensity: 0.65)
@@ -163,6 +177,7 @@ enum ONEHaptics {
     /// Fired when a feeling/emotion is selected.
     /// Softer than mood — a gentle acknowledgment.
     static func feelingSelected() {
+        guard isEnabled else { return }
         let gen = UIImpactFeedbackGenerator(style: .soft)
         gen.prepare()
         gen.impactOccurred(intensity: 0.6)
@@ -173,6 +188,7 @@ enum ONEHaptics {
     /// Fired on bottom tab switch.
     /// Light selection feedback — non-intrusive.
     static func tabSwitch() {
+        guard isEnabled else { return }
         let gen = UISelectionFeedbackGenerator()
         gen.prepare()
         gen.selectionChanged()
@@ -183,6 +199,7 @@ enum ONEHaptics {
     /// Fired when a friend is successfully connected.
     /// Strong, meaningful — marks a social connection.
     static func friendConnected() {
+        guard isEnabled else { return }
         let gen = UIImpactFeedbackGenerator(style: .rigid)
         gen.prepare()
         gen.impactOccurred(intensity: 0.8)
@@ -193,6 +210,7 @@ enum ONEHaptics {
     /// Fired on midnight day reset (if app is open).
     /// Very soft — ambient, barely noticeable.
     static func dayReset() {
+        guard isEnabled else { return }
         let gen = UIImpactFeedbackGenerator(style: .soft)
         gen.prepare()
         gen.impactOccurred(intensity: 0.3)
@@ -200,6 +218,7 @@ enum ONEHaptics {
 
     /// Fired on error or invalid action.
     static func error() {
+        guard isEnabled else { return }
         let gen = UINotificationFeedbackGenerator()
         gen.prepare()
         gen.notificationOccurred(.error)
@@ -210,8 +229,28 @@ enum ONEHaptics {
     /// Fired at the moment a photo is captured.
     /// Heavy — mimics a physical shutter press.
     static func photoCapture() {
+        guard isEnabled else { return }
         let gen = UIImpactFeedbackGenerator(style: .heavy)
         gen.prepare()
         gen.impactOccurred(intensity: 0.9)
+    }
+
+    // MARK: - Mood Bloom Reward
+
+    /// Peak haptic pulse mid-ritual — light selection tick at ~0.35s.
+    static func saveRitualPeak() {
+        guard isEnabled else { return }
+        UISelectionFeedbackGenerator().selectionChanged()
+    }
+
+    /// Fired when the streak count-up reveals the new number.
+    /// Milestone (e.g. 7, 30, 100 days) gets a stronger success notification.
+    static func streakRevealed(isMilestone: Bool) {
+        guard isEnabled else { return }
+        if isMilestone {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        } else {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
     }
 }

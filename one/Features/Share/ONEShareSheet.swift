@@ -42,16 +42,16 @@ struct ONEShareSheet: View {
                     cardPreview(image)
                 }
             }
-            .frame(height: 160)
-
-            Spacer(minLength: 12)
+            .frame(height: 280)
+            
+            Spacer(minLength: 24)
 
             actionButtons
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
         }
         .background(ONETokens.oneCream.ignoresSafeArea())
-        .presentationDetents([.height(560), .large])
+        .presentationDetents([.height(640), .large])
         .presentationDragIndicator(.hidden)
         .task { await generateCard() }
         .alert(NSLocalizedString("general.error", comment: ""), isPresented: $showError) {
@@ -122,82 +122,93 @@ struct ONEShareSheet: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .shadow(color: Color.black.opacity(0.14), radius: 14, x: 0, y: 6)
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, 120)
+            .padding(.horizontal, 80)
             .transition(.opacity.combined(with: .scale(scale: 0.96)))
     }
 
     private var actionButtons: some View {
-        VStack(spacing: 10) {
-            // ── Instagram Story ──────────────────────────────
-            let instaInstalled = ShareManager.shared.isInstagramInstalled()
-            ActionRow(
-                icon: "camera.viewfinder",
-                label: "Instagram Story",
-                sublabel: instaInstalled ? NSLocalizedString("share.instagramSend", comment: "") : NSLocalizedString("share.instagramNotInstalled", comment: ""),
-                style: .filled(ONETokens.oneInk),
-                isEnabled: storyImage != nil && instaInstalled,
-                action: shareToInstagramStory
-            )
-
-            // ── Diğer uygulamalar ────────────────────────────
-            ActionRow(
-                icon: "square.and.arrow.up",
-                label: NSLocalizedString("share.otherApps", comment: ""),
-                sublabel: platformSublabel,
-                style: .bordered,
-                isEnabled: storyImage != nil && xImage != nil,
-                action: shareViaSystem
-            )
-
-            // ── Story kartını kaydet ──────────────────────────
-            if isSaved {
-                HStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(ONETokens.oneGreen)
-                    Text(NSLocalizedString("share.cardSaved", comment: ""))
-                        .monoSM(tracking: 0)
-                        .foregroundColor(ONETokens.oneGreen)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .transition(.opacity)
-            } else {
-                ActionRow(
-                    icon: "square.and.arrow.down",
-                    label: NSLocalizedString("share.saveCard", comment: ""),
-                    sublabel: NSLocalizedString("share.saveCardHint", comment: ""),
-                    style: .ghost,
+        VStack(spacing: 24) {
+            // Social Sharing Grid
+            HStack(spacing: 16) {
+                let instaInstalled = ShareManager.shared.isInstagramInstalled()
+                
+                ShareAppButton(
+                    title: "Instagram",
+                    icon: "camera.viewfinder",
+                    gradient: [Color(hex: "#F58529"), Color(hex: "#DD2A7B"), Color(hex: "#8134AF")],
+                    isEnabled: storyImage != nil && instaInstalled,
+                    action: shareToInstagramStory
+                )
+                
+                ShareAppButton(
+                    title: "TikTok",
+                    icon: "music.note",
+                    gradient: [Color.black, Color(white: 0.15)],
                     isEnabled: storyImage != nil,
-                    action: saveToPhotos
+                    action: shareToTikTok
+                )
+                
+                ShareAppButton(
+                    title: NSLocalizedString("share.otherApps", comment: ""),
+                    icon: "ellipsis",
+                    gradient: [ONETokens.oneAsh, ONETokens.oneStone],
+                    isEnabled: storyImage != nil && xImage != nil,
+                    action: shareViaSystem
                 )
             }
-
-            // ── Ham fotoğrafı kaydet ────────────────────────
-            if entry.photoURL != nil {
-                if isRawPhotoSaved {
-                    HStack(spacing: 8) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(ONETokens.oneGreen)
-                        Text(NSLocalizedString("share.photoSaved", comment: ""))
-                            .monoSM(tracking: 0)
-                            .foregroundColor(ONETokens.oneGreen)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .transition(.opacity)
+            .padding(.top, 8)
+            
+            // Other Actions
+            VStack(spacing: 10) {
+                if isSaved {
+                    ActionRow(
+                        icon: "checkmark.circle.fill",
+                        label: NSLocalizedString("share.cardSaved", comment: ""),
+                        sublabel: "",
+                        style: .ghost,
+                        isEnabled: false,
+                        iconColorOverride: ONETokens.oneGreen,
+                        action: {}
+                    )
                 } else {
                     ActionRow(
-                        icon: "photo.on.rectangle",
-                        label: NSLocalizedString("share.savePhoto", comment: ""),
-                        sublabel: NSLocalizedString("share.savePhotoHint", comment: ""),
+                        icon: "square.and.arrow.down",
+                        label: NSLocalizedString("share.saveCard", comment: ""),
+                        sublabel: NSLocalizedString("share.saveCardHint", comment: ""),
                         style: .ghost,
-                        isEnabled: true,
-                        action: saveRawPhotoToGallery
+                        isEnabled: storyImage != nil,
+                        iconColorOverride: nil,
+                        action: saveToPhotos
                     )
+                }
+
+                if entry.photoURL != nil {
+                    if isRawPhotoSaved {
+                        ActionRow(
+                            icon: "checkmark.circle.fill",
+                            label: NSLocalizedString("share.photoSaved", comment: ""),
+                            sublabel: "",
+                            style: .ghost,
+                            isEnabled: false,
+                            iconColorOverride: ONETokens.oneGreen,
+                            action: {}
+                        )
+                    } else {
+                        ActionRow(
+                            icon: "photo.on.rectangle",
+                            label: NSLocalizedString("share.savePhoto", comment: ""),
+                            sublabel: NSLocalizedString("share.savePhotoHint", comment: ""),
+                            style: .ghost,
+                            isEnabled: true,
+                            iconColorOverride: nil,
+                            action: saveRawPhotoToGallery
+                        )
+                    }
                 }
             }
         }
         .animation(.easeInOut(duration: 0.2), value: isSaved)
+        .animation(.easeInOut(duration: 0.2), value: isRawPhotoSaved)
     }
 
     // MARK: - Helpers
@@ -263,7 +274,7 @@ struct ONEShareSheet: View {
 
     private func shareToInstagramStory() {
         guard let image = storyImage else { return }
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        ONEHaptics.feelingSelected()
 
         // 1. Dismiss the sheet FIRST so there is no SwiftUI presentation layering
         //    when Instagram becomes the active app.
@@ -273,7 +284,10 @@ struct ONEShareSheet: View {
         //    enough time for the sheet dismissal animation to begin,
         //    but the pasteboard data is written before Instagram reads it.
         DispatchQueue.main.async {
-            ShareManager.shared.shareToInstagramStories(image: image) { result in
+            // v2.6 — Attribution sticker: Story'nin üstünde "Uygulamada aç" linki çıkar.
+            // Ana sayfa URL'i; uygulama yüklüyse Universal Link akışına düşer.
+            let attributionURL = URL(string: "https://one.forvibe.app")
+            ShareManager.shared.shareToInstagramStories(image: image, contentURL: attributionURL) { result in
                 if case .failure(let err) = result {
                     ONELogger.error("Instagram story share failed: \(err.localizedDescription)", category: .share)
                 }
@@ -281,10 +295,32 @@ struct ONEShareSheet: View {
         }
     }
 
+    private func shareToTikTok() {
+        guard let story = storyImage else { return }
+        ONEHaptics.moodSelected()
+        
+        ShareManager.shared.shareToTikTok(image: story) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    // TikTok açıldı
+                    break
+                case .failure:
+                    // Eğer TikTok açılamazsa fallback olarak standart iOS Share Sheet göster
+                    ShareManager.shared.shareViaActivityController(items: [story])
+                }
+            }
+        }
+    }
+
     private func shareViaSystem() {
         guard let story = storyImage, let xPost = xImage else { return }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        let xText = "ONE uygulamasından günün ruh hali.\n\n#OneApp"
+        ONEHaptics.moodSelected()
+        
+        let mood = entry.normalizedMoodLabel.uppercased()
+        let template = NSLocalizedString("share.xTemplate", comment: "ONE uygulamasından günün ruh hali: %@\\n\\n#OneApp")
+        let xText = String(format: template, mood)
+        
         ShareManager.shared.shareViaActivityControllerAdaptive(
             storyImage: story,
             xPostImage: xPost,
@@ -295,11 +331,11 @@ struct ONEShareSheet: View {
 
     private func saveToPhotos() {
         guard let image = storyImage else { return }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        ONEHaptics.moodSelected()
         ShareManager.shared.saveToPhotoLibrary(image: image) { result in
             switch result {
             case .success:
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                ONEHaptics.songSaved()
                 withAnimation { isSaved = true }
             case .failure(let err):
                 errorMessage = err.localizedDescription
@@ -316,11 +352,11 @@ struct ONEShareSheet: View {
             showError = true
             return
         }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        ONEHaptics.moodSelected()
         ShareManager.shared.saveToPhotoLibrary(image: image) { result in
             switch result {
             case .success:
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                ONEHaptics.songSaved()
                 withAnimation { isRawPhotoSaved = true }
             case .failure(let err):
                 errorMessage = err.localizedDescription
@@ -344,6 +380,7 @@ private struct ActionRow: View {
     let sublabel: String
     let style: ActionRowStyle
     let isEnabled: Bool
+    var iconColorOverride: Color? = nil
     let action: () -> Void
 
     var body: some View {
@@ -386,7 +423,7 @@ private struct ActionRow: View {
         }
     }
 
-    private var iconColor: Color { labelColor }
+    private var iconColor: Color { iconColorOverride ?? labelColor }
 
     @ViewBuilder
     private var background: some View {
@@ -401,5 +438,45 @@ private struct ActionRow: View {
             RoundedRectangle(cornerRadius: 14)
                 .fill(ONETokens.oneSilver.opacity(0.6))
         }
+    }
+}
+
+// MARK: - ShareAppButton
+
+private struct ShareAppButton: View {
+    let title: String
+    let icon: String
+    let gradient: [Color]
+    let isEnabled: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 10) {
+                ZStack {
+                    LinearGradient(
+                        colors: gradient,
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .frame(width: 62, height: 62)
+                    .clipShape(Circle())
+                    .shadow(color: gradient.first?.opacity(0.3) ?? .clear, radius: 8, x: 0, y: 4)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 26, weight: .medium))
+                        .foregroundColor(.white)
+                }
+                
+                Text(title)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(ONETokens.oneInk)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .disabled(!isEnabled)
+        .opacity(isEnabled ? 1.0 : 0.4)
     }
 }

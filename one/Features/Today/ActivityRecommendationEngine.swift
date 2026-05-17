@@ -78,7 +78,7 @@ final class ActivityRecommendationEngine {
     func fetchSections(for entry: DailyEntry, city: String) async -> [RecommendationSection] {
         let microActivities = buildMicroActivities(for: entry, city: city)
         let liveEvents = (try? await TicketmasterManager.shared.fetchLiveEvents(for: entry, city: city))
-            ?? biletixBrowseCards(for: entry.moodLabel, city: city)
+            ?? biletixBrowseCards(for: entry.normalizedMoodLabel, feelingLabel: entry.feelingLabel, city: city)
 
         let artistConcerts = Array(
             liveEvents
@@ -163,7 +163,7 @@ final class ActivityRecommendationEngine {
 
     private func buildContext(for entry: DailyEntry) -> ActivityContext {
         ActivityContext(
-            moodLabel: canonicalMoodLabel(entry.moodLabel),
+            moodLabel: canonicalMoodLabel(entry.normalizedMoodLabel),
             timeBucket: currentTimeBucket(),
             weather: detectWeather(from: entry),
             preferredEnergy: preferredEnergy(for: entry),
@@ -172,7 +172,7 @@ final class ActivityRecommendationEngine {
     }
 
     private func preferredEnergy(for entry: DailyEntry) -> Int {
-        let moodEnergy: Int = switch canonicalMoodLabel(entry.moodLabel) {
+        let moodEnergy: Int = switch canonicalMoodLabel(entry.normalizedMoodLabel) {
         case "Ateşli", "Coşkulu": 5
         case "Mutlu", "Özgür": 4
         case "Doğal", "Nötr": 3
@@ -182,18 +182,18 @@ final class ActivityRecommendationEngine {
         }
 
         let feelingDelta: Int = switch entry.feeling {
-        case .excited, .happy: 1
-        case .angry: 2
-        case .tired, .sad: -1
-        case .anxious: 0
-        case .calm, .peaceful: -1
+        case .excited, .happy, .happierThanEver, .manifest, .dance: 1
+        case .angry, .hype: 2
+        case .tired, .sad, .alone: -1
+        case .anxious, .overthink: 0
+        case .calm, .peaceful, .chill: -1
         }
 
         return min(max(moodEnergy + feelingDelta, 1), 5)
     }
 
     private func preferredSocial(for entry: DailyEntry) -> Int {
-        let moodSocial: Int = switch canonicalMoodLabel(entry.moodLabel) {
+        let moodSocial: Int = switch canonicalMoodLabel(entry.normalizedMoodLabel) {
         case "Ateşli", "Coşkulu": 4
         case "Mutlu", "Özgür": 3
         case "Doğal", "Nostaljik": 2
@@ -203,9 +203,9 @@ final class ActivityRecommendationEngine {
         }
 
         let feelingDelta: Int = switch entry.feeling {
-        case .happy, .excited: 1
-        case .anxious, .sad, .tired: -1
-        case .angry, .calm, .peaceful: 0
+        case .happy, .excited, .happierThanEver, .hype, .dance, .manifest: 1
+        case .anxious, .sad, .tired, .overthink, .alone: -1
+        case .angry, .calm, .peaceful, .chill: 0
         }
 
         return min(max(moodSocial + feelingDelta, 1), 5)
@@ -284,17 +284,17 @@ final class ActivityRecommendationEngine {
     private func microReason(for template: MicroActivityTemplate, context: ActivityContext, feeling: FeelingType) -> String {
         if template.feelings.contains(feeling) {
             switch feeling {
-            case .anxious:
+            case .anxious, .overthink:
                 return NSLocalizedString("activity.reason.anxious", comment: "")
-            case .tired:
+            case .tired, .alone:
                 return NSLocalizedString("activity.reason.tired", comment: "")
-            case .happy, .excited:
+            case .happy, .excited, .happierThanEver, .manifest, .dance:
                 return NSLocalizedString("activity.reason.happyExcited", comment: "")
             case .sad:
                 return NSLocalizedString("activity.reason.sad", comment: "")
-            case .calm, .peaceful:
+            case .calm, .peaceful, .chill:
                 return NSLocalizedString("activity.reason.calmPeaceful", comment: "")
-            case .angry:
+            case .angry, .hype:
                 return NSLocalizedString("activity.reason.angry", comment: "")
             }
         }
@@ -349,7 +349,7 @@ final class ActivityRecommendationEngine {
             timingLabel: NSLocalizedString("activity.walkSoft.timing", comment: ""),
             price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Huzurlu", "Hassas", "Sessiz", "Derin", "Nötr"],
-            feelings: [.calm, .peaceful, .sad, .anxious],
+            feelings: [.calm, .peaceful, .sad, .anxious, .chill, .alone, .overthink],
             energy: 1,
             social: 1,
             isOutdoor: true,
@@ -366,7 +366,7 @@ final class ActivityRecommendationEngine {
             timingLabel: NSLocalizedString("activity.bikeRide.timing", comment: ""),
             price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Özgür", "Coşkulu", "Ateşli", "Doğal"],
-            feelings: [.excited, .happy, .angry],
+            feelings: [.excited, .happy, .angry, .hype, .dance, .happierThanEver],
             energy: 4,
             social: 2,
             isOutdoor: true,
@@ -383,7 +383,7 @@ final class ActivityRecommendationEngine {
             timingLabel: NSLocalizedString("activity.swimSea.timing", comment: ""),
             price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Doğal", "Mutlu", "Özgür", "Coşkulu"],
-            feelings: [.happy, .excited, .calm],
+            feelings: [.happy, .excited, .calm, .happierThanEver, .chill, .manifest],
             energy: 3,
             social: 2,
             isOutdoor: true,
@@ -400,7 +400,7 @@ final class ActivityRecommendationEngine {
             timingLabel: NSLocalizedString("activity.coffeeBreak.timing", comment: ""),
             price: "₺",
             moods: ["Hassas", "Derin", "Nostaljik", "Sessiz", "Nötr"],
-            feelings: [.tired, .sad, .calm],
+            feelings: [.tired, .sad, .calm, .alone, .overthink, .chill],
             energy: 1,
             social: 1,
             isOutdoor: false,
@@ -417,7 +417,7 @@ final class ActivityRecommendationEngine {
             timingLabel: NSLocalizedString("activity.bookstore.timing", comment: ""),
             price: "₺",
             moods: ["Nostaljik", "Derin", "Sessiz", "Gizemli"],
-            feelings: [.calm, .sad, .peaceful],
+            feelings: [.calm, .sad, .peaceful, .chill, .alone, .overthink],
             energy: 1,
             social: 1,
             isOutdoor: false,
@@ -434,7 +434,7 @@ final class ActivityRecommendationEngine {
             timingLabel: NSLocalizedString("activity.museumHop.timing", comment: ""),
             price: "₺₺",
             moods: ["Derin", "Huzurlu", "Gizemli", "Hassas", "Mutlu"],
-            feelings: [.peaceful, .calm, .sad],
+            feelings: [.peaceful, .calm, .sad, .chill, .alone],
             energy: 2,
             social: 1,
             isOutdoor: false,
@@ -451,7 +451,7 @@ final class ActivityRecommendationEngine {
             timingLabel: NSLocalizedString("activity.sunsetWalk.timing", comment: ""),
             price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Mutlu", "Özgür", "Nostaljik", "Huzurlu"],
-            feelings: [.happy, .calm, .peaceful],
+            feelings: [.happy, .calm, .peaceful, .happierThanEver, .manifest, .chill],
             energy: 2,
             social: 2,
             isOutdoor: true,
@@ -468,7 +468,7 @@ final class ActivityRecommendationEngine {
             timingLabel: NSLocalizedString("activity.yogaBreath.timing", comment: ""),
             price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Huzurlu", "Sessiz", "Hassas", "Doğal"],
-            feelings: [.anxious, .calm, .peaceful, .tired],
+            feelings: [.anxious, .calm, .peaceful, .tired, .overthink, .chill, .alone],
             energy: 1,
             social: 1,
             isOutdoor: false,
@@ -485,7 +485,7 @@ final class ActivityRecommendationEngine {
             timingLabel: NSLocalizedString("activity.photoWalk.timing", comment: ""),
             price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Gizemli", "Doğal", "Derin", "Nostaljik"],
-            feelings: [.calm, .peaceful, .happy],
+            feelings: [.calm, .peaceful, .happy, .chill, .manifest, .overthink],
             energy: 2,
             social: 1,
             isOutdoor: true,
@@ -502,7 +502,7 @@ final class ActivityRecommendationEngine {
             timingLabel: NSLocalizedString("activity.nightRun.timing", comment: ""),
             price: NSLocalizedString("discover.free", comment: ""),
             moods: ["Ateşli", "Coşkulu", "Gizemli"],
-            feelings: [.angry, .excited],
+            feelings: [.angry, .excited, .hype, .dance],
             energy: 5,
             social: 1,
             isOutdoor: true,
@@ -519,7 +519,7 @@ final class ActivityRecommendationEngine {
             timingLabel: NSLocalizedString("activity.friendDinner.timing", comment: ""),
             price: "₺₺",
             moods: ["Mutlu", "Coşkulu", "Nostaljik"],
-            feelings: [.happy, .excited, .peaceful],
+            feelings: [.happy, .excited, .peaceful, .happierThanEver, .manifest, .dance],
             energy: 2,
             social: 4,
             isOutdoor: false,

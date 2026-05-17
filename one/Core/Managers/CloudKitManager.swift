@@ -24,7 +24,15 @@ class CloudKitManager: ObservableObject {
     let publicDatabase: CKDatabase
     
     @Published var isCloudKitAvailable = false
-    @Published var currentUser: CKRecord?
+    @Published var currentUser: CKRecord? {
+        didSet {
+            guard let record = currentUser,
+                  let profile = PublicUserProfile(record: record) else { return }
+            Task { @MainActor in
+                UserProfileStore.shared.upsert(profile)
+            }
+        }
+    }
     @Published var isFetchingUser = false
     @Published var userLoadFailed = false
     @Published var throttleRetryAfter: Date? = nil
@@ -46,6 +54,30 @@ class CloudKitManager: ObservableObject {
     var circleDataLastFetched: Date?
     private let circleCacheTTL: TimeInterval = 5 * 60 // 5 minutes
 
+    // MARK: - Weekly circle cache (last 7 days, not tied to daily cache)
+    var cachedWeeklyCircleData: [FriendCircleData]?
+    var weeklyCircleDataLastFetched: Date?
+    private let weeklyCircleCacheTTL: TimeInterval = 10 * 60 // 10 minutes
+
+    var isWeeklyCircleCacheValid: Bool {
+        guard let last = weeklyCircleDataLastFetched,
+              cachedWeeklyCircleData != nil else { return false }
+        return Date().timeIntervalSince(last) < weeklyCircleCacheTTL
+    }
+
+    func invalidateWeeklyCircleCache() {
+        cachedWeeklyCircleData = nil
+        weeklyCircleDataLastFetched = nil
+    }
+
+    // MARK: - Comment count cache (prevents N+1 CloudKit queries in circle list)
+    var commentCountCache: [String: Int] = [:]
+
+    // MARK: - Friend ID cache (for push notification fast-path)
+    var cachedFriendIDs: Set<String> = []
+    var cachedFriendIDsTimestamp: Date = .distantPast
+    let friendCacheTTL: TimeInterval = 5 * 60 // 5 minutes
+
     var isCircleCacheValid: Bool {
         guard let last = circleDataLastFetched,
               let cached = cachedCircleData else { return false }
@@ -60,6 +92,12 @@ class CloudKitManager: ObservableObject {
     func invalidateCircleCache() {
         cachedCircleData = nil
         circleDataLastFetched = nil
+        commentCountCache.removeAll()
+    }
+
+    func invalidateFriendCache() {
+        cachedFriendIDs.removeAll()
+        cachedFriendIDsTimestamp = .distantPast
     }
     
     enum SyncStatus {
@@ -616,11 +654,17 @@ class CloudKitManager: ObservableObject {
         findUserByInviteCode(code) { result in
             switch result {
             case .success:
-                // Code already exists
                 completion(false)
-            case .failure:
-                // Code doesn't exist, it's unique
-                completion(true)
+            case .failure(let error):
+                let nsError = error as NSError
+                if nsError.domain == "CloudKit" && nsError.code == 404 {
+                    // Record not found — code is genuinely unique
+                    completion(true)
+                } else {
+                    // Real network/CloudKit error — treat as not unique to prevent duplicate codes
+                    ONELogger.warning("isInviteCodeUnique: CloudKit error, defaulting to not-unique for safety", category: .cloudkit)
+                    completion(false)
+                }
             }
         }
     }
@@ -701,18 +745,41 @@ class CloudKitManager: ObservableObject {
     
     // MARK: - Account Deletion
 
-    /// Kullanıcının CloudKit'teki public kayıtlarını siler ve yerel state'i temizler.
-    /// App Store Privacy guidelines — kullanıcı verilerini silme hakkı.
-    func deleteCurrentUserRecord() {
-        guard let record = currentUser else {
-            DispatchQueue.main.async { self.currentUser = nil }
-            return
-        }
-        publicDatabase.delete(withRecordID: record.recordID) { [weak self] _, _ in
-            DispatchQueue.main.async {
-                self?.currentUser = nil
+    /// App Store Privacy 5.1.1 + KVKK: Kullanıcıya ait tüm CloudKit kayıtlarını siler.
+    /// DailyShare, Friendship, UserBlock, Comment, AppUser — tüm record type'lar temizlenir.
+    func deleteAllUserData(userID: String) async {
+        let recordTypes: [(type: String, field: String)] = [
+            ("DailyShare",  "userID"),
+            ("Friendship",  "user1ID"),
+            ("Friendship",  "user2ID"),
+            ("UserBlock",   "blockerUserID"),
+            ("UserBlock",   "blockedUserID"),
+            ("Comment",     "authorUserID"),
+        ]
+
+        for (recordType, field) in recordTypes {
+            let predicate = NSPredicate(format: "%K == %@", field, userID)
+            let query = CKQuery(recordType: recordType, predicate: predicate)
+            do {
+                let (results, _) = try await publicDatabase.records(matching: query, desiredKeys: [])
+                let ids = results.compactMap { try? $0.1.get().recordID }
+                if ids.isEmpty { continue }
+                let batchSize = 400
+                for batch in stride(from: 0, to: ids.count, by: batchSize) {
+                    let chunk = Array(ids[batch..<min(batch + batchSize, ids.count)])
+                    _ = try? await publicDatabase.modifyRecords(saving: [], deleting: chunk)
+                }
+                ONELogger.success("Deleted \(ids.count) \(recordType)(\(field)) records", category: .cloudkit)
+            } catch {
+                ONELogger.error("Failed to delete \(recordType)(\(field))", error: error, category: .cloudkit)
             }
         }
+
+        // Son olarak AppUser kaydını sil
+        if let record = currentUser {
+            _ = try? await publicDatabase.deleteRecord(withID: record.recordID)
+        }
+        await MainActor.run { currentUser = nil }
     }
 
     // MARK: - Premium Status Sync
@@ -720,6 +787,7 @@ class CloudKitManager: ObservableObject {
     /// Writes the user's ONE+ premium status to their public AppUser record in CloudKit
     /// so that friends can display the premium badge when viewing their profile/today card.
     func updatePremiumStatus(_ isPremium: Bool) async {
+        guard PremiumManager.premiumEnabled else { return }
         guard let record = currentUser else { return }
         record["isPremium"] = Int64(isPremium ? 1 : 0) as CKRecordValue
         do {

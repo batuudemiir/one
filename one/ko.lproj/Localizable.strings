@@ -34,6 +34,7 @@
 "today.title" = "오늘의 노래 선택";
 "today.subtitle" = "여기서 기분과 하루를 시작하세요.";
 "today.moodSection" = "지금 어떤 기분이에요?";
+"today.feelingSection" = "이 곡이 당신에게 무엇을 남겼나요?";
 "today.noteSection" = "메모 남기기";
 "today.notePlaceholder" = "이 노래가 당신에게 무엇을 남겼나요?";
 "today.photoChange" = "변경";
@@ -508,6 +509,16 @@
 "mood.bos" = "고요한";
 "mood.temiz" = "중립적";
 
+/* --- MOOD MEANINGS (v2.5) --- */
+"mood.meaning.atesli"    = "tutkulu";
+"mood.meaning.isikli"    = "mutlu";
+"mood.meaning.enerjik"   = "enerjik";
+"mood.meaning.taze"      = "doğal";
+"mood.meaning.sakin"     = "huzurlu";
+"mood.meaning.nostaljik" = "heyecanlı";
+"mood.meaning.gizemli"   = "sakin";
+"mood.meaning.bos"       = "stabil";
+
 /* --- FEELING LABELS --- */
 "feeling.calm" = "차분함";
 "feeling.happy" = "기쁨";
@@ -661,3 +672,5 @@
 
 /* --- GENRE FALLBACK --- */
 "genre.music" = "음악";
+"notification.appUpdate.title" = "새 버전 출시 🚀";
+"notification.appUpdate.body" = "ONE %@ 업데이트됐어요! 탭해서 업데이트하세요.";

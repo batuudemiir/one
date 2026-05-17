@@ -77,7 +77,7 @@ struct AddFriendView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 ONETokens.oneCream.ignoresSafeArea()
 
@@ -154,37 +154,37 @@ struct AddFriendView: View {
     }
 
     // MARK: - Main Content
+    //
+    // İki niyet mimarisi:
+    //   1) "Seni eklesinler"  → büyük kod kartı + 3 paylaşım kanalı (SMS, link, QR göster)
+    //   2) "Birini ekle"      → arama kutusu (kod/@username) + sağda QR tara aksiyonu
+    //
+    // Bu ayrım kullanıcının niyeti netleşir: kendi kodumu paylaşıyor muyum
+    // yoksa birinin kodunu mu arıyorum? Önceki tasarımda iki niyet
+    // karışıyordu — QR göster ve QR tara aynı satırdaydı.
 
     private var mainContent: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
-
-                // ── Profil + kod kartı ──────────────────────────
-                profileCard
+                // ── BÖLÜM 1: Arama ────────────────────────
+                smartSearchSection
                     .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                    .padding(.bottom, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 24)
 
-                // ── Paylaşım seçenekleri ────────────────────────
-                shareOptionsRow
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 28)
-
-                // ── Divider ─────────────────────────────────────
-                Rectangle()
-                    .fill(ONETokens.oneSilver)
-                    .frame(height: 1)
-                    .padding(.horizontal, 20)
-
-                // ── Arama / Başarı ──────────────────────────────
+                // ── BÖLÜM 2: Kodunuz (Davet Gönder) ───────
                 if showSuccess {
                     successSection
                         .padding(.horizontal, 20)
-                        .padding(.top, 24)
-                } else {
-                    smartSearchSection
+                } else if foundUser == nil && !isSearching {
+                    
+                    inviteHero
                         .padding(.horizontal, 20)
-                        .padding(.top, 24)
+                        .padding(.bottom, 24)
+
+                    quickShareRow
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 30)
                 }
 
                 Color.clear.frame(height: 60)
@@ -193,130 +193,166 @@ struct AddFriendView: View {
         .scrollDismissesKeyboard(.interactively)
     }
 
-    // MARK: - Profile Card
+    // MARK: - Header & section helpers
 
-    private var profileCard: some View {
+    private var pageHeader: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(NSLocalizedString("addFriend.hero.title", comment: ""))
+                .displayLG()
+                .foregroundColor(ONETokens.oneInk)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(NSLocalizedString("addFriend.hero.subtitle", comment: ""))
+                .bodySM()
+                .foregroundColor(ONETokens.oneAsh)
+                .lineLimit(2)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func sectionHeader(_ text: String) -> some View {
+        Text(text.uppercased())
+            .monoLabel(tracking: 1.8)
+            .foregroundColor(ONETokens.oneAsh)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var orDivider: some View {
+        HStack(spacing: 14) {
+            Rectangle()
+                .fill(ONETokens.oneSilver)
+                .frame(height: 1)
+            Text(NSLocalizedString("addFriend.or", comment: "").uppercased())
+                .monoLabel(tracking: 2.0)
+                .foregroundColor(ONETokens.oneStone)
+            Rectangle()
+                .fill(ONETokens.oneSilver)
+                .frame(height: 1)
+        }
+        .accessibilityHidden(true)
+    }
+
+    // MARK: - Invite Hero (kod kartı — ana CTA)
+    //
+    // Eski profileCard'da kullanıcının profili ve kod yan yanaydı; kod
+    // küçük kalıyordu. Yeni hero kartında **kod ana kahraman**: büyük,
+    // mood-tinted, tek dokunuşla kopyalanır. Kullanıcı kimliği üst
+    // sırada minik bir chip olarak ikincil planda durur.
+    private var inviteHero: some View {
         let displayName = cloudKitManager.currentUser?["displayName"] as? String ?? "ONE"
         let username    = cloudKitManager.currentUser?["username"]    as? String
         let colorHex    = cloudKitManager.currentUser?["avatarColor"] as? String ?? "#888888"
+        let accent      = Color(hex: colorHex)
         let initial     = String(displayName.prefix(1)).uppercased()
 
-        return HStack(spacing: 16) {
-            // Avatar
-            ZStack {
-                Circle()
-                    .fill(Color(hex: colorHex))
-                    .frame(width: 56, height: 56)
-                Text(initial)
-                    .font(.system(size: 22, weight: .regular, design: .serif))
-                    .italic()
-                    .foregroundColor(.white.opacity(0.9))
-            }
-
-            // İsim + kullanıcı adı
-            VStack(alignment: .leading, spacing: 3) {
-                Text(NSLocalizedString("addFriend.yourProfile", comment: ""))
-                    .monoMicro(tracking: 1.5)
-                    .foregroundColor(ONETokens.oneMist)
-                Text(displayName)
-                    .displaySM()
-                    .foregroundColor(ONETokens.oneInk)
-                if let uname = username, !uname.isEmpty {
-                    Text("@\(uname)")
-                        .monoLabel(tracking: 0.3)
-                        .foregroundColor(ONETokens.oneAsh)
+        return VStack(spacing: 24) {
+            // Identity
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle().fill(accent).frame(width: 72, height: 72)
+                    Text(initial)
+                        .editorialMD()
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                }
+                
+                VStack(spacing: 4) {
+                    Text(displayName)
+                        .displaySM()
+                        .fontWeight(.bold)
+                        .foregroundColor(ONETokens.oneInk)
+                    if let uname = username, !uname.isEmpty {
+                        Text("@\(uname)")
+                            .bodyLG()
+                            .foregroundColor(ONETokens.oneAsh)
+                    }
                 }
             }
 
-            Spacer()
-
-            // Davet kodu — dokunulabilir
+            // Kod
             Button(action: copyInviteCode) {
-                VStack(spacing: 5) {
+                VStack(spacing: 10) {
                     Text(myInviteCode)
-                        .font(.system(size: 17, weight: .bold, design: .monospaced))
-                        .tracking(5)
+                        .displayXXL()
+                        .fontWeight(.bold)
+                        .tracking(10)
                         .foregroundColor(codeCopied ? ONETokens.oneGreen : ONETokens.oneInk)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
 
-                    HStack(spacing: 3) {
-                        Image(systemName: codeCopied ? "checkmark" : "doc.on.doc")
-                            .font(.system(size: 9, weight: .medium))
+                    HStack(spacing: 6) {
+                        Image(systemName: codeCopied ? "checkmark.circle.fill" : "doc.on.doc")
+                            .font(.system(size: 13, weight: .medium))
                         Text(codeCopied
                              ? NSLocalizedString("addFriend.copied", comment: "")
-                             : NSLocalizedString("addFriend.tapToCopy", comment: ""))
-                            .font(.system(size: 9, weight: .medium, design: .monospaced))
+                             : NSLocalizedString("addFriend.tapToCopy", comment: "Kopyalamak için dokun"))
+                            .bodySM()
+                            .fontWeight(.medium)
                     }
                     .foregroundColor(codeCopied ? ONETokens.oneGreen : ONETokens.oneMist)
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 28)
+                .background(RoundedRectangle(cornerRadius: 16).fill(ONETokens.oneSilver.opacity(0.4)))
                 .animation(ONEAnimation.micro, value: codeCopied)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(codeCopied ? ONETokens.oneGreen.opacity(0.08) : ONETokens.oneSilver.opacity(0.9))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(codeCopied ? ONETokens.oneGreen.opacity(0.3) : Color.clear, lineWidth: 1)
-                        )
-                )
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(String(format: NSLocalizedString("addFriend.codeA11y", comment: ""), myInviteCode))
+            .accessibilityHint(NSLocalizedString("addFriend.codeA11yHint", comment: ""))
         }
-        .padding(16)
+        .padding(.horizontal, 24)
+        .padding(.top, 32)
+        .padding(.bottom, 24)
         .background(
-            RoundedRectangle(cornerRadius: 18)
-                .fill(ONETokens.onePaper.opacity(0.75))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18)
-                        .stroke(ONETokens.oneSilver, lineWidth: 1)
-                )
+            RoundedRectangle(cornerRadius: 28)
+                .fill(ONETokens.onePaper)
+                .shadow(color: Color.black.opacity(0.04), radius: 16, x: 0, y: 6)
         )
     }
 
-    // MARK: - Share Options Row
+    // MARK: - Quick Share Row (3 kanal)
+    //
+    // SMS / iMessage TR Gen Z için en güçlü dağıtım kanalı — bu yüzden
+    // ilk sıraya çıkarıldı (önceki tasarımda 4. butondu). QR tara
+    // BÖLÜM 2'ye taşındı çünkü o "birini eklemek" niyeti.
 
-    private var shareOptionsRow: some View {
-        HStack(spacing: 10) {
+    private var quickShareRow: some View {
+        HStack(spacing: 12) {
             shareOptionBtn(
-                label: NSLocalizedString("addFriend.showQR", comment: ""),
-                icon: "qrcode",
+                label: NSLocalizedString("addFriend.shareSMS", comment: "Rehber"),
+                icon: "person.crop.circle.badge.plus",
                 primary: true
-            ) { showQRCode = true }
+            ) { showContactsInvite = true }
 
             shareOptionBtn(
-                label: NSLocalizedString("addFriend.share", comment: ""),
+                label: NSLocalizedString("addFriend.share", comment: "Paylaş"),
                 icon: "square.and.arrow.up"
             ) { showInviteShareSheet = true }
 
             shareOptionBtn(
-                label: NSLocalizedString("addFriend.contacts", comment: ""),
-                icon: "person.2"
-            ) { showContactsInvite = true }
-
-            shareOptionBtn(
-                label: NSLocalizedString("addFriend.scanQR", comment: ""),
-                icon: "qrcode.viewfinder"
-            ) { showQRScanner = true }
+                label: NSLocalizedString("addFriend.showQR", comment: "QR Kod"),
+                icon: "qrcode"
+            ) { showQRCode = true }
         }
     }
 
     private func shareOptionBtn(label: String, icon: String, primary: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 8) {
+            VStack(spacing: 10) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(primary ? ONETokens.oneInk : ONETokens.oneSilver.opacity(0.9))
-                        .frame(width: 52, height: 52)
+                    Circle()
+                        .fill(primary ? ONETokens.oneInk : ONETokens.oneSilver.opacity(0.6))
+                        .frame(width: 56, height: 56)
                     Image(systemName: icon)
-                        .font(.system(size: 19, weight: primary ? .regular : .light))
-                        .foregroundColor(primary ? ONETokens.oneCream : ONETokens.oneAsh)
+                        .displaySM()
+                        .fontWeight(primary ? .regular : .medium)
+                        .foregroundColor(primary ? .white : ONETokens.oneInk)
                 }
                 Text(label)
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .tracking(0.3)
-                    .foregroundColor(ONETokens.oneMist)
+                    .bodySM()
+                    .fontWeight(.medium)
+                    .foregroundColor(ONETokens.oneInk)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.7)
             }
             .frame(maxWidth: .infinity)
         }
@@ -324,22 +360,19 @@ struct AddFriendView: View {
     }
 
     // MARK: - Smart Search Section
+    //
+    // Bölüm 2'nin gövdesi. Kullanıcı bir kişiyi ekliyor: kod yazar,
+    // @username yazar, ya da QR tarar. Üç davranış da bu satırdan
+    // erişilebilir — en sağda QR tarayıcı action olarak.
 
     private var smartSearchSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-
-            Text(NSLocalizedString("addFriend.addSection", comment: ""))
-                .monoLabel(tracking: 2.0)
-                .foregroundColor(ONETokens.oneAsh)
-
+        VStack(alignment: .leading, spacing: 14) {
             // Arama alanı
             ZStack(alignment: .trailing) {
                 HStack(spacing: 10) {
-                    Image(systemName: searchFieldIcon)
-                        .font(.system(size: 14, weight: .light))
-                        .foregroundColor(isQueryReady ? ONETokens.oneInk : ONETokens.oneMist)
-                        .frame(width: 22)
-                        .animation(ONEAnimation.micro, value: searchFieldIcon)
+                    Image(systemName: "magnifyingglass")
+                        .displayXS()
+                        .foregroundColor(ONETokens.oneMist)
 
                     TextField(
                         NSLocalizedString("addFriend.searchPlaceholder", comment: ""),
@@ -348,7 +381,8 @@ struct AddFriendView: View {
                     .textFieldStyle(.plain)
                     .autocapitalization(.none)
                     .autocorrectionDisabled()
-                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .displayXS()
+                    .fontWeight(.medium)
                     .onSubmit { performSmartSearch() }
                     .onChange(of: smartQuery) { _, newValue in
                         foundUser     = nil
@@ -363,67 +397,48 @@ struct AddFriendView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 14)
+                .padding(.horizontal, 16)
                 .padding(.vertical, 14)
-                .padding(.trailing, smartQuery.isEmpty ? 0 : 56)
+                .padding(.trailing, 50)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(ONETokens.oneSilver.opacity(0.8))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(searchBorderColor, lineWidth: 1.5)
-                        )
+                        .fill(ONETokens.oneSilver.opacity(0.5))
                 )
 
-                // Yapıştır / Ara butonu
                 if smartQuery.isEmpty {
-                    Button(action: pasteFromClipboard) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "doc.on.clipboard")
-                                .font(.system(size: 10))
-                            Text(NSLocalizedString("addFriend.paste", comment: ""))
-                                .monoLabel(tracking: 0.3)
-                        }
-                        .foregroundColor(ONETokens.oneAsh)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Capsule().fill(ONETokens.oneCreamMid))
+                    Button(action: { showQRScanner = true }) {
+                        Image(systemName: "qrcode.viewfinder")
+                            .displaySM()
+                            .fontWeight(.light)
+                            .foregroundColor(ONETokens.oneInk)
                     }
-                    .padding(.trailing, 10)
-                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                    .padding(.trailing, 16)
+                    .transition(.opacity)
                 } else {
                     Button(action: performSmartSearch) {
                         ZStack {
                             Circle()
                                 .fill(isQueryReady ? ONETokens.oneInk : ONETokens.oneSilver)
-                                .frame(width: 38, height: 38)
+                                .frame(width: 36, height: 36)
                             if isSearching || isLoading {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: ONETokens.oneCream))
-                                    .scaleEffect(0.75)
+                                    .scaleEffect(0.7)
                             } else {
                                 Image(systemName: "arrow.right")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .bodySM()
+                                    .fontWeight(.semibold)
                                     .foregroundColor(isQueryReady ? ONETokens.oneCream : ONETokens.oneMist)
                             }
                         }
                     }
                     .disabled(!isQueryReady || isSearching || isLoading)
-                    .padding(.trailing, 8)
+                    .padding(.trailing, 6)
                     .transition(.opacity.combined(with: .scale(scale: 0.9)))
                     .animation(ONEAnimation.micro, value: isQueryReady)
                 }
             }
             .animation(ONEAnimation.micro, value: smartQuery.isEmpty)
-
-            // İpucu chipler — boş alanda göster
-            if smartQuery.isEmpty {
-                HStack(spacing: 10) {
-                    hintChip(text: "ABC123", icon: "number")
-                    hintChip(text: "@kullanıcıadı", icon: "at")
-                }
-                .transition(.opacity)
-            }
 
             // Bulunan kullanıcı kartı
             if let user = foundUser {
@@ -437,7 +452,8 @@ struct AddFriendView: View {
                     Image(systemName: "person.slash")
                         .font(.system(size: 13, weight: .light))
                     Text(NSLocalizedString("addFriend.usernameNotFound", comment: ""))
-                        .monoSM(tracking: 0)
+                        .bodySM()
+                        .fontWeight(.medium)
                 }
                 .foregroundColor(ONETokens.oneAsh)
                 .padding(.vertical, 4)
@@ -455,8 +471,8 @@ struct AddFriendView: View {
             Image(systemName: icon)
                 .font(.system(size: 10, weight: .medium))
             Text(text)
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
-                .tracking(0.3)
+                .monoSM(tracking: 0.3)
+                .fontWeight(.medium)
         }
         .foregroundColor(ONETokens.oneAsh)
         .padding(.horizontal, 10)
@@ -482,7 +498,8 @@ struct AddFriendView: View {
                     .fill(Color(hex: colorHex))
                     .frame(width: 46, height: 46)
                 Text(initial)
-                    .font(.system(size: 18, weight: .regular, design: .serif))
+                    .editorialMD()
+                    .fontWeight(.regular)
                     .italic()
                     .foregroundColor(.white.opacity(0.9))
             }
@@ -490,7 +507,7 @@ struct AddFriendView: View {
                 ZStack {
                     Circle().fill(ONETokens.oneCream)
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 14))
+                        .bodySM()
                         .foregroundColor(ONETokens.oneGreen)
                 }
                 .frame(width: 20, height: 20)
@@ -519,7 +536,8 @@ struct AddFriendView: View {
                 } else {
                     HStack(spacing: 4) {
                         Image(systemName: "person.badge.plus")
-                            .font(.system(size: 11, weight: .medium))
+                            .monoSM()
+                            .fontWeight(.medium)
                         Text(NSLocalizedString("addFriend.addUser", comment: ""))
                             .monoSM(tracking: 0.5)
                     }
@@ -540,6 +558,8 @@ struct AddFriendView: View {
                         .stroke(ONETokens.oneGreen.opacity(0.25), lineWidth: 1.5)
                 )
         )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(String(format: NSLocalizedString("accessibility.addFriend.foundUser", comment: ""), (user["displayName"] as? String ?? "Kullanıcı")))
     }
 
     // MARK: - Davet Karşılama (Deep Link)
@@ -607,7 +627,7 @@ struct AddFriendView: View {
     private var successSection: some View {
         VStack(spacing: 20) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 44))
+                .displayXXL()
                 .foregroundColor(ONETokens.oneGreen)
 
             Text(NSLocalizedString("addFriend.requestSent", comment: ""))
@@ -686,12 +706,12 @@ struct AddFriendView: View {
                 self.isSearching = false
                 switch result {
                 case .success(let user):
-                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    ONEHaptics.songSaved()
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
                         self.foundUser = user
                     }
                 case .failure:
-                    UINotificationFeedbackGenerator().notificationOccurred(.error)
+                    ONEHaptics.error()
                     withAnimation(ONEAnimation.micro) { self.userNotFound = true }
                 }
             }
@@ -708,7 +728,7 @@ struct AddFriendView: View {
             isLoading = false
             switch result {
             case .success:
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                ONEHaptics.songSaved()
                 withAnimation(ONEAnimation.micro) {
                     successMessage = "\(displayName) adlı kullanıcıya istek gönderildi!"
                     showSuccess    = true
@@ -722,7 +742,7 @@ struct AddFriendView: View {
                     pendingUserName       = displayName
                     showCancelAlert       = true
                 } else {
-                    UINotificationFeedbackGenerator().notificationOccurred(.error)
+                    ONEHaptics.error()
                     errorMessage = error.localizedDescription
                     showError    = true
                 }
@@ -759,14 +779,14 @@ struct AddFriendView: View {
             isLoading = false
             switch result {
             case .success:
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                ONEHaptics.songSaved()
                 withAnimation(ONEAnimation.micro) {
                     successMessage = NSLocalizedString("circle.requestWithdrawn", comment: "")
                     showSuccess    = true
                     smartQuery     = ""
                 }
             case .failure(let error):
-                UINotificationFeedbackGenerator().notificationOccurred(.error)
+                ONEHaptics.error()
                 errorMessage = error.localizedDescription
                 showError    = true
             }
@@ -775,7 +795,7 @@ struct AddFriendView: View {
 
     private func copyInviteCode() {
         UIPasteboard.general.string = myInviteCode
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        ONEHaptics.moodSelected()
         withAnimation(ONEAnimation.micro) { codeCopied = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             withAnimation(ONEAnimation.micro) { codeCopied = false }
@@ -786,7 +806,7 @@ struct AddFriendView: View {
         guard let raw = UIPasteboard.general.string else { return }
         let cleaned = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleaned.isEmpty else { return }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        ONEHaptics.moodSelected()
         smartQuery = cleaned
     }
 }
@@ -813,7 +833,7 @@ struct QRCodeView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 ONETokens.oneCream.ignoresSafeArea()
 
@@ -822,7 +842,7 @@ struct QRCodeView: View {
 
                     ZStack {
                         RoundedRectangle(cornerRadius: 24)
-                            .fill(Color.white)
+                            .fill(ONETokens.onePaper)
                             .frame(width: 260, height: 260)
                             .shadow(color: Color.black.opacity(0.08), radius: 24, x: 0, y: 8)
 
@@ -834,15 +854,17 @@ struct QRCodeView: View {
                                 .frame(width: 210, height: 210)
                         } else {
                             Text(code)
-                                .font(.system(size: 18, weight: .bold, design: .monospaced))
+                                .displayXS()
+                                .fontWeight(.bold)
                                 .foregroundColor(ONETokens.oneInk)
                         }
                     }
                     .padding(.bottom, 28)
+                    .accessibilityLabel(String(format: NSLocalizedString("accessibility.addFriend.qrCode", comment: ""), code))
 
                     Button(action: {
                         UIPasteboard.general.string = code
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        ONEHaptics.moodSelected()
                         withAnimation(ONEAnimation.micro) { codeCopied = true }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                             withAnimation(ONEAnimation.micro) { codeCopied = false }
@@ -850,13 +872,14 @@ struct QRCodeView: View {
                     }) {
                         VStack(spacing: 6) {
                             Text(code)
-                                .font(.system(size: 32, weight: .bold, design: .monospaced))
+                                .displayLG()
+                                .fontWeight(.bold)
                                 .tracking(8)
                                 .foregroundColor(codeCopied ? ONETokens.oneGreen : ONETokens.oneInk)
 
                             HStack(spacing: 4) {
                                 Image(systemName: codeCopied ? "checkmark" : "doc.on.doc")
-                                    .font(.system(size: 11))
+                                    .monoSM()
                                 Text(codeCopied
                                      ? NSLocalizedString("addFriend.copied", comment: "")
                                      : NSLocalizedString("addFriend.tapToCopy", comment: ""))
@@ -898,7 +921,7 @@ struct QRScannerView: View {
     @State private var permissionDenied  = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Color.black.ignoresSafeArea()
 
@@ -934,7 +957,8 @@ struct QRScannerView: View {
                 } else if permissionDenied {
                     VStack(spacing: 20) {
                         Image(systemName: "camera.slash")
-                            .font(.system(size: 48, weight: .ultraLight))
+                            .displayXXL()
+                            .fontWeight(.ultraLight)
                             .foregroundColor(.white)
                         Text(NSLocalizedString("addFriend.cameraRequired", comment: ""))
                             .displaySM()
@@ -1062,7 +1086,7 @@ struct CameraQRScannerRepresentable: UIViewRepresentable {
 
             hasScanned = true
             session?.stopRunning()
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            ONEHaptics.feelingSelected()
 
             let code: String
             if let url   = URL(string: value),

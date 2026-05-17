@@ -116,22 +116,15 @@ struct FeaturedSongCard: View {
     @ViewBuilder
     private var artworkLayer: some View {
         if let url = recommendation.coverURL {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure:
-                    fallbackGradient
-                case .empty:
-                    ZStack {
-                        accent.opacity(0.28)
-                        ProgressView()
-                            .tint(.white.opacity(0.6))
-                    }
-                @unknown default:
-                    fallbackGradient
+            CachedAsyncImage(url: url) { image in
+                image
+                    .resizable()
+                    .scaledToFill()
+            } placeholder: {
+                ZStack {
+                    accent.opacity(0.28)
+                    ProgressView()
+                        .tint(.white.opacity(0.6))
                 }
             }
         } else {

@@ -5,9 +5,7 @@
 //  Kart 2 — Ruh Hali Haritası
 //  28 günlük takvim grid + legend + duygu bar chart (animasyonlu)
 //
-//  Fontlar:
-//    Gerçek font: "BebasNeue-Regular" (başlık) ve "SyneMono-Regular" (etiketler)
-//    Şu an system font fallback kullanılıyor.
+//  Tipografi: `ONETypography.displayXXL` (başlık) ve `ONETypography.monoMicro`/`monoLabel` (etiketler).
 //
 
 import SwiftUI
@@ -31,12 +29,10 @@ struct MoodMapCardView: View {
                     // Başlık
                     VStack(alignment: .leading, spacing: 0) {
                         Text(NSLocalizedString("monthly.moodTitle", comment: ""))
-                            // Gerçek font: Font.custom("BebasNeue-Regular", size: 56)
-                            .font(.system(size: 56, weight: .black))
+                            .displayXXL()
                             .foregroundColor(.white)
                         Text(NSLocalizedString("monthly.moodMap", comment: ""))
-                            // Gerçek font: Font.custom("BebasNeue-Regular", size: 56)
-                            .font(.system(size: 56, weight: .black))
+                            .displayXXL()
                             .foregroundColor(.white.opacity(0.30))
                     }
                     .padding(.bottom, 32)
@@ -61,7 +57,7 @@ struct MoodMapCardView: View {
         .overlay(alignment: .bottomTrailing) {
             if showWatermark { watermarkView }
         }
-        .background(Color.black)
+        .background(ONETokens.oneCinematicDark)
         .ignoresSafeArea()
         .onAppear {
             // Başlangıç genişlikleri sıfır
@@ -110,8 +106,7 @@ struct MoodMapCardView: View {
             HStack(spacing: 0) {
                 ForEach(["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"], id: \.self) { d in
                     Text(d)
-                        // Gerçek font: Font.custom("SyneMono-Regular", size: 7)
-                        .font(.system(size: 7, weight: .regular, design: .monospaced))
+                        .monoMicro()
                         .foregroundColor(.white.opacity(0.25))
                         .frame(maxWidth: .infinity)
                 }
@@ -132,8 +127,7 @@ struct MoodMapCardView: View {
                             )
 
                         Text("\(idx + 1)")
-                            // Gerçek font: Font.custom("SyneMono-Regular", size: 7)
-                            .font(.system(size: 7, weight: .regular, design: .monospaced))
+                            .monoMicro()
                             .foregroundColor(.white.opacity(0.20))
                             .padding(3)
                     }
@@ -168,8 +162,7 @@ struct MoodMapCardView: View {
                         .fill(item.color)
                         .frame(width: 6, height: 6)
                     Text(item.label)
-                        // Gerçek font: Font.custom("SyneMono-Regular", size: 9)
-                        .font(.system(size: 9, weight: .regular, design: .monospaced))
+                        .monoMicro()
                         .foregroundColor(.white.opacity(0.55))
                 }
             }
@@ -180,17 +173,14 @@ struct MoodMapCardView: View {
     private func emotionBars(containerWidth: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(NSLocalizedString("monthly.emotionDistribution", comment: ""))
-                // Gerçek font: Font.custom("SyneMono-Regular", size: 9)
-                .font(.system(size: 9, weight: .regular, design: .monospaced))
-                .tracking(2)
+                .monoMicro(tracking: 2)
                 .foregroundColor(.white.opacity(0.35))
                 .padding(.bottom, 12)
 
             ForEach(Array(data.emotionBreakdown.enumerated()), id: \.offset) { i, item in
                 HStack(spacing: 12) {
                     Text(item.name)
-                        // Gerçek font: Font.custom("SyneMono-Regular", size: 10)
-                        .font(.system(size: 10, weight: .regular, design: .monospaced))
+                        .monoLabel()
                         .foregroundColor(.white.opacity(0.65))
                         .frame(width: 80, alignment: .leading)
 
@@ -212,8 +202,7 @@ struct MoodMapCardView: View {
                     }
 
                     Text("\(Int(item.percentage * 100))%")
-                        // Gerçek font: Font.custom("SyneMono-Regular", size: 9)
-                        .font(.system(size: 9, weight: .regular, design: .monospaced))
+                        .monoMicro()
                         .foregroundColor(.white.opacity(0.35))
                         .frame(width: 32, alignment: .trailing)
                 }

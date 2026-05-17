@@ -16,25 +16,20 @@ struct RecommendationsSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Header with refresh button
             HStack {
                 Text(NSLocalizedString("discover.ourPicks", comment: ""))
                     .monoBase(tracking: 2.0)
                     .foregroundColor(ONETokens.oneAsh)
-                
+
                 Spacer()
-                
+
                 if !engine.isLoading && !engine.recommendations.isEmpty {
                     Button(action: {
-                        let impact = UIImpactFeedbackGenerator(style: .light)
-                        impact.impactOccurred()
-                        
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         isRefreshing = true
                         Task {
                             await engine.refreshRecommendations()
-                            await MainActor.run {
-                                isRefreshing = false
-                            }
+                            await MainActor.run { isRefreshing = false }
                         }
                     }) {
                         HStack(spacing: 4) {
@@ -48,10 +43,7 @@ struct RecommendationsSection: View {
                         .foregroundColor(ONETokens.oneCharcoal)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .fill(ONETokens.oneSilver)
-                        )
+                        .background(Capsule().fill(ONETokens.oneSilver))
                     }
                     .disabled(isRefreshing)
                 }
@@ -116,6 +108,11 @@ struct RecommendationsSection: View {
                     onTap: {
                         AppAnalytics.shared.track(.recommendationTapped(source: recommendation.source == .spotify ? "spotify" : "apple"))
                         onSelectSong(recommendation)
+                    },
+                    onDismiss: {
+                        Task { @MainActor in
+                            engine.dismissRecommendation(recommendation)
+                        }
                     }
                 )
             }

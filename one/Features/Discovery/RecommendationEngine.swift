@@ -32,6 +32,7 @@ class RecommendationEngine: ObservableObject {
     private let appleMusicService: AppleMusicRecommendationService
     private let cache: RecommendationCache
     private let context: NSManagedObjectContext
+    private var cachedAppleMusicAuth: Bool? = nil
     
     init(context: NSManagedObjectContext) {
         self.context = context
@@ -96,9 +97,10 @@ class RecommendationEngine: ObservableObject {
         isLoading = true
         error = nil
         
-        // Step 1.5: Check if any service is connected
+        // Step 1.5: Check services in parallel to avoid sequential waiting
         let useSpotify = SpotifyManager.shared.isAuthenticated
-        let useAppleMusic = await checkAppleMusicAuthorization()
+        async let appleMusicAuthCheck = checkAppleMusicAuthorization()
+        let useAppleMusic = await appleMusicAuthCheck
         
         ONELogger.debug("Music Service Status:", category: .discovery)
         ONELogger.debug("Spotify authenticated: \(useSpotify)", category: .discovery)
@@ -113,32 +115,30 @@ class RecommendationEngine: ObservableObject {
             return
         }
         
-        // Step 2: Check cache validity (only if service is connected)
-        if cache.isCacheValid() {
-            if let cached = cache.getCachedRecommendations() {
-                recommendations = cached
-                isLoading = false
-                ONELogger.success("Loaded \(cached.count) recommendations from cache", category: .discovery)
-                return
-            }
+        // Step 2: Check cache (single JSON decode — getCachedRecommendations handles expiry)
+        if let cached = cache.getCachedRecommendations() {
+            recommendations = cached
+            isLoading = false
+            ONELogger.success("Loaded \(cached.count) recommendations from cache", category: .discovery)
+            return
         }
         
         // Step 3: Analyze taste profile
         var profile = await tasteAnalyzer.analyzeTasteProfile(context: context)
 
-        // If a genre is pinned (user tapped a chip), rebuild the weighted pool so
-        // the pinned genre appears first (doubled at the front).
+        // If a genre is pinned (user tapped a chip), use ONLY that genre as seed.
+        // topTrackIds and topArtists are cleared so they don't override the genre filter
+        // (e.g. user has Turkish pop tracks in history but wants Techno recommendations).
         if let pinned = pinnedGenre, let base = profile {
-            let boostedPool = [pinned, pinned] + base.weightedGenres.filter { $0 != pinned }
             profile = TasteProfile(
-                topGenres: base.topGenres,
-                topArtists: base.topArtists,
-                topTrackIds: base.topTrackIds,
+                topGenres: [pinned],
+                topArtists: [],
+                topTrackIds: [],
                 moodPatterns: base.moodPatterns,
                 totalEntries: base.totalEntries,
                 averageMoodScore: base.averageMoodScore,
                 createdAt: base.createdAt,
-                weightedGenres: boostedPool
+                weightedGenres: [pinned, pinned, pinned]
             )
         }
 
@@ -158,7 +158,7 @@ class RecommendationEngine: ObservableObject {
         // Capture as immutable constant to satisfy Swift 6 concurrency rules
         let capturedProfile = profile
         do {
-            let fetchedRecommendations: [SongRecommendation] = try await withTimeout(seconds: 5) {
+            let fetchedRecommendations: [SongRecommendation] = try await withTimeout(seconds: 8) {
                 if useSpotify {
                     do {
                         if let profile = capturedProfile, profile.totalEntries >= 3 {
@@ -215,17 +215,37 @@ class RecommendationEngine: ObservableObject {
                 feeling: currentFeeling,
                 tasteProfile: profile
             )
-            recommendations = enriched
+            // Step 6: Dismissed olanları filtrele
+            let dismissed = dismissedTrackIDs
+            let filtered = enriched.filter { !dismissed.contains($0.id) }
 
-            // Step 6: Cache results
-            cache.saveRecommendations(enriched, profile: profile)
+            // Step 7: Mood affinity re-rank — bugünkü mood'la eşleşen reason öne çıksın
+            let moodKey = currentMoodLabel.lowercased()
+            let reranked: [SongRecommendation] = {
+                guard !moodKey.isEmpty else { return filtered }
+                var arr = filtered
+                if let bestIdx = arr.indices.first(where: { arr[$0].recommendationReason?.lowercased().contains(moodKey) == true }),
+                   bestIdx != 0 {
+                    arr.swapAt(0, bestIdx)
+                }
+                return arr
+            }()
+            recommendations = reranked
+
+            // Step 8: Cache results
+            cache.saveRecommendations(reranked, profile: profile)
 
             ONELogger.success("Loaded \(enriched.count) recommendations (mood: \(currentMoodLabel))", category: .discovery)
             
+        } catch is CancellationError {
+            if let cached = cache.getCachedRecommendations(), !cached.isEmpty {
+                recommendations = cached
+            } else if recommendations.isEmpty {
+                recommendations = Self.curatedFallback
+            }
         } catch let recommendationError as RecommendationError {
             ONELogger.error("Recommendation error: \(recommendationError.localizedDescription)", category: .discovery)
             error = recommendationError
-            // Serve from cache or curated fallback instead of empty
             if let cached = cache.getCachedRecommendations(), !cached.isEmpty {
                 ONELogger.info("Serving stale cache after error", category: .discovery)
                 recommendations = cached
@@ -247,10 +267,13 @@ class RecommendationEngine: ObservableObject {
     }
     
     // MARK: - Check Apple Music Authorization
-    
+
     private func checkAppleMusicAuthorization() async -> Bool {
+        if let cached = cachedAppleMusicAuth { return cached }
         let status = await MusicAuthorization.request()
-        return status == .authorized
+        let result = status == .authorized
+        cachedAppleMusicAuth = result
+        return result
     }
     
     // MARK: - Refresh Recommendations
@@ -285,6 +308,33 @@ class RecommendationEngine: ObservableObject {
         cache.clearCache()
         recommendations = []
         ONELogger.debug("Cleared recommendations and cache", category: .discovery)
+    }
+
+    // MARK: - Dismissed Tracks
+
+    private static let dismissedTracksKey = "dismissedRecommendationTrackIDs"
+    private let maxDismissedTracks = 50
+
+    /// Kullanıcının "ilginç değil" dediği track ID listesi (UserDefaults).
+    private var dismissedTrackIDs: Set<String> {
+        let arr = UserDefaults.standard.stringArray(forKey: Self.dismissedTracksKey) ?? []
+        return Set(arr)
+    }
+
+    /// Bir öneriyi kalıcı olarak gizle. Bir sonraki fetch bu track'i atlar.
+    func dismissRecommendation(_ rec: SongRecommendation) {
+        var dismissed = UserDefaults.standard.stringArray(forKey: Self.dismissedTracksKey) ?? []
+        let id = rec.id
+        guard !dismissed.contains(id) else { return }
+        dismissed.append(id)
+        // Son 50'yi tut (sonsuz büyümeyi önle)
+        if dismissed.count > maxDismissedTracks {
+            dismissed = Array(dismissed.suffix(maxDismissedTracks))
+        }
+        UserDefaults.standard.set(dismissed, forKey: Self.dismissedTracksKey)
+        // UI'dan hemen kaldır
+        recommendations.removeAll { $0.id == id }
+        ONELogger.info("Dismissed track: \(id)", category: .discovery)
     }
 
     // MARK: - Curated Fallback

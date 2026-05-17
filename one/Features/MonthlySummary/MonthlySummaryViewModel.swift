@@ -154,11 +154,11 @@ class MonthlySummaryViewModel: ObservableObject {
 
         // Top parçalar (en fazla tekrar eden, max 5) — eşitlikte en yakın tarihe göre
         let gradientPairs: [[Color]] = [
-            [Color(red: 0.85, green: 0.35, blue: 0.10), Color(red: 0.90, green: 0.65, blue: 0.10)],
-            [Color(red: 0.25, green: 0.44, blue: 0.80), Color(red: 0.25, green: 0.66, blue: 0.61)],
-            [Color(red: 0.47, green: 0.25, blue: 0.80), Color(red: 0.78, green: 0.25, blue: 0.25)],
-            [Color(red: 0.78, green: 0.25, blue: 0.25), Color(red: 0.85, green: 0.50, blue: 0.10)],
-            [Color(red: 0.25, green: 0.66, blue: 0.61), Color(red: 0.25, green: 0.44, blue: 0.80)],
+            [ONETokens.summaryFireStart,  ONETokens.summaryFireEnd],     // #D85A1A → #E6A61A
+            [ONETokens.summaryMockBlue,   ONETokens.summaryMockTeal],    // #4070C9 → #40A89C
+            [ONETokens.summaryMockPurple, ONETokens.summaryMockRed],     // #7840C9 → #C94040
+            [ONETokens.summaryMockRed,    ONETokens.summaryEmberAmber],  // #C94040 → #D8801A
+            [ONETokens.summaryMockTeal,   ONETokens.summaryMockBlue],    // #40A89C → #4070C9
         ]
         // Build recency map for tie-breaking
         var recencyMap: [String: Date] = [:]
@@ -188,6 +188,19 @@ class MonthlySummaryViewModel: ObservableObject {
                     emoji:          emoji
                 )
             }
+            
+        // MARK: - Storytelling Elements
+        var hourCount: [Int: Int] = [:]
+        for s in songs {
+            guard let d = s.date else { continue }
+            let hour = calendar.component(.hour, from: d)
+            hourCount[hour, default: 0] += 1
+        }
+        let mostActiveHour = hourCount.max(by: { $0.value < $1.value })?.key ?? 20
+        let hourString = String(format: "%02d:00", mostActiveHour)
+
+        let storyTitle = String(format: NSLocalizedString("monthly.storyTitle", comment: ""), dominantMood)
+        let storySubtitle = String(format: NSLocalizedString("monthly.storySubtitle", comment: ""), hourString)
 
         return MonthlySummaryData(
             month:              monthName,
@@ -204,7 +217,9 @@ class MonthlySummaryViewModel: ObservableObject {
             topTracks:          topTracks,
             totalEntries:       songs.count,
             daysLogged:         daysLogged,
-            monthStreak:        monthStreak
+            monthStreak:        monthStreak,
+            storyTitle:         storyTitle,
+            storySubtitle:      storySubtitle
         )
     }
 }

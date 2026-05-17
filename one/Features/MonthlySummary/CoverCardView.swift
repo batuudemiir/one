@@ -5,11 +5,6 @@
 //  Kart 1 — Kapak ekranı. Animasyonlu gradient, grain texture, dev ay yazısı,
 //  istatistik kutuları ve "kaydır" ipucu.
 //
-//  Fontlar:
-//    Gerçek font: "BebasNeue-Regular" ve "Syne-Regular" / "SyneMono-Regular"
-//    Bundle'a eklendiğinde UIAppFonts array içinde tanımlı olmalı.
-//    Şu an system font ile fallback yapılıyor.
-//
 
 import SwiftUI
 
@@ -39,8 +34,8 @@ struct CoverCardView: View {
 
                 // MARK: — Dev "AY" yazısı sol alta
                 Text(monthAbbrev.uppercased())
-                    // Gerçek font: Font.custom("BebasNeue-Regular", size: 220)
-                    .font(.system(size: 220, weight: .black))
+                    .displayXXL()
+                    .fontWeight(.black)
                     .foregroundColor(.white.opacity(0.04))
                     .offset(x: -10, y: 30)
                     .allowsHitTesting(false)
@@ -51,21 +46,19 @@ struct CoverCardView: View {
 
                     // Küçük etiket
                     Text("ONE MOOD · \(data.year)")
-                        // Gerçek font: Font.custom("SyneMono-Regular", size: 10)
-                        .font(.system(size: 10, weight: .regular, design: .monospaced))
-                        .tracking(3)
+                        .monoLabel(tracking: 3)
                         .foregroundColor(.white.opacity(0.40))
                         .padding(.bottom, 18)
 
                     // Büyük başlık
                     VStack(alignment: .leading, spacing: 0) {
                         Text(data.month)
-                            // Gerçek font: Font.custom("BebasNeue-Regular", size: 88)
-                            .font(.system(size: 88, weight: .black))
+                            .displayXXL()
+                            .fontWeight(.black)
                             .foregroundStyle(
                                 LinearGradient(
-                                    colors: [Color(red: 0.90, green: 0.35, blue: 0.10),
-                                             Color(red: 0.95, green: 0.60, blue: 0.10)],
+                                    colors: [ONETokens.summaryGradientStart,
+                                             ONETokens.summaryGradientEnd],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -74,18 +67,25 @@ struct CoverCardView: View {
                             .minimumScaleFactor(0.5)
 
                         Text(NSLocalizedString("monthly.summary", comment: ""))
-                            // Gerçek font: Font.custom("BebasNeue-Regular", size: 88)
-                            .font(.system(size: 88, weight: .black))
+                            .displayXXL()
+                            .fontWeight(.black)
                             .foregroundColor(.white)
                     }
                     .padding(.bottom, 16)
 
-                    // Alt yazı
-                    Text(String(format: NSLocalizedString("monthly.stats", comment: ""), data.totalDays, data.topTracks.count))
-                        // Gerçek font: Font.custom("Syne-Regular", size: 14)
-                        .font(.system(size: 14, weight: .light))
-                        .foregroundColor(.white.opacity(0.50))
-                        .padding(.bottom, 28)
+                    // Storytelling Alt Yazı
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(data.storyTitle)
+                            .displaySM()
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+
+                        Text(data.storySubtitle)
+                            .bodyLG()
+                            .foregroundColor(.white.opacity(0.80))
+                            .lineSpacing(2)
+                    }
+                    .padding(.bottom, 28)
 
                     // Mood Badge
                     moodBadge
@@ -107,10 +107,9 @@ struct CoverCardView: View {
                         // Kaydır hint
                         HStack(spacing: 6) {
                             Text("→")
-                                .font(.system(size: 13))
+                                .bodySM()
                             Text(NSLocalizedString("monthly.swipe", comment: ""))
-                                // Gerçek font: Font.custom("SyneMono-Regular", size: 11)
-                                .font(.system(size: 11, weight: .regular, design: .monospaced))
+                                .monoSM()
                         }
                         .foregroundColor(.white.opacity(0.35))
                         .offset(x: swipeOffset)
@@ -127,8 +126,7 @@ struct CoverCardView: View {
 
                         // Watermark
                         Text(NSLocalizedString("monthly.oneMood", comment: ""))
-                            // Gerçek font: Font.custom("SyneMono-Regular", size: 9)
-                            .font(.system(size: 9, weight: .regular, design: .monospaced))
+                            .monoMicro()
                             .foregroundColor(.white.opacity(0.18))
                     }
                     .padding(.horizontal, 28)
@@ -140,7 +138,7 @@ struct CoverCardView: View {
         .overlay(alignment: .bottomTrailing) {
             if showWatermark { watermarkView }
         }
-        .background(Color.black)
+        .background(ONETokens.oneCinematicDark)
         .ignoresSafeArea()
         .onAppear {
             withAnimation(
@@ -164,7 +162,8 @@ struct CoverCardView: View {
                     .frame(width: 80, height: 28)
             } else {
                 Text("ONE")
-                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .bodySM()
+                    .fontWeight(.bold)
                     .foregroundColor(.white.opacity(0.7))
                     .tracking(3)
             }
@@ -176,11 +175,11 @@ struct CoverCardView: View {
     // MARK: — Gradient Background
     private var gradientBackground: some View {
         ZStack {
-            Color.black
+            ONETokens.oneCinematicDark
 
             // Sol üst — turuncu-kırmızı
             RadialGradient(
-                colors: [Color(red: 0.85, green: 0.25, blue: 0.10).opacity(gradientPulse ? 1.0 : 0.8),
+                colors: [ONETokens.summaryFireSpark.opacity(gradientPulse ? 1.0 : 0.8),
                          Color.clear],
                 center: .topLeading,
                 startRadius: 0,
@@ -189,7 +188,7 @@ struct CoverCardView: View {
 
             // Sağ orta — amber
             RadialGradient(
-                colors: [Color(red: 0.90, green: 0.60, blue: 0.10).opacity(gradientPulse ? 0.90 : 0.70),
+                colors: [ONETokens.summaryAmberGlow.opacity(gradientPulse ? 0.90 : 0.70),
                          Color.clear],
                 center: UnitPoint(x: 0.85, y: 0.45),
                 startRadius: 0,
@@ -198,7 +197,7 @@ struct CoverCardView: View {
 
             // Alt — sarı
             RadialGradient(
-                colors: [Color(red: 0.95, green: 0.80, blue: 0.15).opacity(gradientPulse ? 0.70 : 0.50),
+                colors: [ONETokens.summarySunshine.opacity(gradientPulse ? 0.70 : 0.50),
                          Color.clear],
                 center: .bottom,
                 startRadius: 0,
@@ -219,11 +218,13 @@ struct CoverCardView: View {
 
             Text(data.dominantMood)
                 // Gerçek font: Font.custom("Syne-Regular", size: 14)
-                .font(.system(size: 14, weight: .bold))
+                .bodySM()
+                .fontWeight(.bold)
                 .foregroundColor(.white)
 
             Text(NSLocalizedString("monthly.dominantMood", comment: ""))
-                .font(.system(size: 12, weight: .light))
+                .monoSM()
+                .fontWeight(.light)
                 .foregroundColor(.white.opacity(0.45))
         }
         .padding(.horizontal, 14)
@@ -252,11 +253,11 @@ struct CoverCardView: View {
     private func statBox(value: String, label: String, highlight: Bool = false) -> some View {
         VStack(alignment: .center, spacing: 4) {
             Text(value)
-                .font(.system(size: 36, weight: .black))
-                .foregroundColor(highlight ? Color(red: 0.95, green: 0.65, blue: 0.15) : .white)
+                .displayMD()
+                .fontWeight(.black)
+                .foregroundColor(highlight ? ONETokens.summaryHighlightAmber : .white)
             Text(label)
-                .font(.system(size: 9, weight: .regular, design: .monospaced))
-                .tracking(1.5)
+                .monoMicro(tracking: 1.5)
                 .foregroundColor(.white.opacity(highlight ? 0.65 : 0.45))
         }
         .frame(maxWidth: .infinity)

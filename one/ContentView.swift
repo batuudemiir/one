@@ -11,6 +11,7 @@ struct ContentView: View {
     /// Profile setup is only shown after exhausting all retries.
     @State private var userCheckRetryCount = 0
     private let maxUserCheckRetries = 3
+    @State private var showWhatsNew = false
     
     var body: some View {
         ZStack {
@@ -62,7 +63,20 @@ struct ContentView: View {
             if active {
                 ONELogger.debug("App became active, checking profile status", category: .general)
                 checkProfileStatus()
+                if WhatsNewManager.shared.shouldShow {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                        showWhatsNew = true
+                    }
+                }
             }
+        }
+        .sheet(isPresented: $showWhatsNew) {
+            WhatsNewView {
+                showWhatsNew = false
+                WhatsNewManager.shared.markSeen()
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.hidden)
         }
         .onChange(of: cloudKitManager.currentUser) { _, newUser in
             if newUser != nil && !KeychainHelper.bool(forKey: "hasCreatedProfile") {
@@ -96,6 +110,11 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            // Live Activity — süresi dolmuş activity'leri temizle
+            if #available(iOS 16.1, *) {
+                Task { await LiveActivityManager.shared.cleanupExpiredActivities() }
+            }
+
             // One-time migration: move hasCompletedOnboarding from UserDefaults → Keychain
             if UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") && !KeychainHelper.bool(forKey: "hasCompletedOnboarding") {
                 KeychainHelper.set(true, forKey: "hasCompletedOnboarding")
@@ -158,10 +177,9 @@ struct ContentView: View {
                 // Load errored (throttle/network) — do not show profile setup
                 ONELogger.warning("CloudKit load failed, not showing profile setup", category: .general)
             } else {
-                // Not fetching, no error, no user — retry before concluding new user
-                userCheckRetryCount += 1
+                // Not fetching, no error, no user — trigger a load; count tracked in onChange(of: isFetchingUser)
                 if userCheckRetryCount < maxUserCheckRetries {
-                    ONELogger.warning("no user found (attempt \(userCheckRetryCount)/\(maxUserCheckRetries)), retrying...", category: .general)
+                    ONELogger.warning("no user found, triggering CloudKit load...", category: .general)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         cloudKitManager.loadCurrentUser()
                     }

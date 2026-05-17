@@ -160,7 +160,7 @@ struct DiscoverEventCard: View {
                 sourceURL: URL(string: "https://www.biletix.com"),
                 kind: .liveEvent
             ),
-            moodColor: Color(hex: "#E84040")
+            moodColor: ONETokens.oneRed
         )
 
         DiscoverEventCard(
@@ -174,9 +174,9 @@ struct DiscoverEventCard: View {
                 matchPercent: 92,
                 kind: .microActivity
             ),
-            moodColor: Color(hex: "#4CAF82")
+            moodColor: ONETokens.oneGreen
         )
     }
     .padding(24)
-    .background(Color(hex: "#F7F6F3"))
+    .background(ONETokens.oneCream)
 }

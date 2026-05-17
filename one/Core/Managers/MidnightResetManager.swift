@@ -8,6 +8,7 @@
 import Foundation
 import CoreData
 import BackgroundTasks
+import Combine
 
 class MidnightResetManager {
     static let shared = MidnightResetManager()
@@ -108,6 +109,12 @@ class MidnightResetManager {
                 ONELogger.error("Midnight reset failed: \(error)", category: .calendar)
                 task.setTaskCompleted(success: false)
             }
+
+            // Cache invalidation main thread'de — property mutation thread safety için
+            DispatchQueue.main.async {
+                CloudKitManager.shared.invalidateCircleCache()
+                CloudKitManager.shared.invalidateWeeklyCircleCache()
+            }
         }
     }
 
@@ -131,6 +138,14 @@ class MidnightResetManager {
         } else {
             NotificationManager.shared.cancelStreakWarning()
         }
+
+        // Milestone kutlama — bugün kayıt yapıldıysa güncel streak'i hesapla.
+        if todayEntry != nil {
+            let currentStreak = calculateStreakCount(context: context, upTo: today)
+            StreakMilestoneScheduler.evaluate(streak: currentStreak)
+        }
+
+        NotificationOrchestrator.shared.onMidnight()
     }
 
     private func calculateStreakCount(context: NSManagedObjectContext, upTo date: Date) -> Int {

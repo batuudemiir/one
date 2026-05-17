@@ -34,6 +34,7 @@
 "today.title" = "Choisir la chanson du jour";
 "today.subtitle" = "Commence ta journée et ton humeur ici.";
 "today.moodSection" = "comment tu te sens ?";
+"today.feelingSection" = "qu'est-ce que cette chanson t'a laissé?";
 "today.noteSection" = "laisser une note";
 "today.notePlaceholder" = "qu'est-ce que cette chanson t'a laissé ?";
 "today.photoChange" = "changer";
@@ -507,6 +508,16 @@
 "mood.bos" = "Silencieux";
 "mood.temiz" = "Neutre";
 
+/* --- MOOD MEANINGS (v2.5) --- */
+"mood.meaning.atesli"    = "tutkulu";
+"mood.meaning.isikli"    = "mutlu";
+"mood.meaning.enerjik"   = "enerjik";
+"mood.meaning.taze"      = "doğal";
+"mood.meaning.sakin"     = "huzurlu";
+"mood.meaning.nostaljik" = "heyecanlı";
+"mood.meaning.gizemli"   = "sakin";
+"mood.meaning.bos"       = "stabil";
+
 /* --- FEELING LABELS --- */
 "feeling.calm" = "Calme";
 "feeling.happy" = "Joyeux";
@@ -660,3 +671,5 @@
 
 /* --- GENRE FALLBACK --- */
 "genre.music" = "Musique";
+"notification.appUpdate.title" = "Nouvelle version disponible 🚀";
+"notification.appUpdate.body" = "ONE %@ est là ! Appuie pour mettre à jour.";

@@ -7,6 +7,7 @@
 
 import Foundation
 import CloudKit
+import Combine
 
 // MARK: - Emoji Reaction Item
 
@@ -84,11 +85,10 @@ extension CloudKitManager {
             } else {
                 switch fetchResult {
                 case .success(let existingRecord):
-                    // Varsa onu güncelleyeceğiz
+                    // Mevcut kaydı güncelle (recordID sabit kalır → yorumlar kaybolmaz).
                     shareRecord = existingRecord
-                    ONELogger.debug("Mevcut DailyShare bulundu, güncelleniyor...", category: .cloudkit)
+                    ONELogger.debug("Mevcut DailyShare güncelleniyor (recordID sabit)...", category: .cloudkit)
                 case .failure(_):
-                    // Yoksa yeni oluşturacağız
                     shareRecord = CKRecord(recordType: "DailyShare")
                     shareRecord["shareID"] = UUID().uuidString as CKRecordValue
                     shareRecord["userID"] = currentUserID as CKRecordValue
@@ -106,7 +106,7 @@ extension CloudKitManager {
             shareRecord["moodWord"] = moodWord as CKRecordValue
             shareRecord["moodColor"] = moodColor as CKRecordValue
             shareRecord["moodTheme"] = moodTheme as CKRecordValue
-            shareRecord["dailyNote"] = (dailyNote ?? "") as CKRecordValue
+            shareRecord["dailyNote"] = (dailyNote.map { String($0.prefix(500)).trimmingCharacters(in: .whitespacesAndNewlines) } ?? "") as CKRecordValue
             shareRecord["platform"] = platform as CKRecordValue
             shareRecord["isPublic"] = 1 as CKRecordValue
             shareRecord["createdAt"] = Date() as CKRecordValue
@@ -115,7 +115,8 @@ extension CloudKitManager {
             shareRecord["weatherIcon"] = (weatherIcon ?? "") as CKRecordValue
             shareRecord["weatherDesc"] = (weatherDesc ?? "") as CKRecordValue
             shareRecord["currentStreak"] = currentStreak as CKRecordValue
-            shareRecord["userName"] = (self?.currentUser?["displayName"] as? String ?? "") as CKRecordValue
+            let displayName = (self?.currentUser?["displayName"] as? String ?? "")
+            shareRecord["userName"] = String(displayName.prefix(100)).trimmingCharacters(in: .whitespacesAndNewlines) as CKRecordValue
 
             var tempFileURL: URL? = nil
             if let photoData = photoData {
@@ -131,20 +132,41 @@ extension CloudKitManager {
                 }
             }
             
-            self?.publicDatabase.save(shareRecord) { [weak self] record, error in
-                if let record = record {
-                    // Invalidate circle cache so friends see the fresh share next load
+            let operation = CKModifyRecordsOperation(recordsToSave: [shareRecord], recordIDsToDelete: nil)
+            operation.savePolicy = .changedKeys
+            operation.perRecordSaveBlock = { [weak self] _, result in
+                switch result {
+                case .success(let saved):
                     self?.invalidateCircleCache()
-                    completion(.success(record))
-                } else {
-                    completion(.failure(error ?? NSError(domain: "CloudKit", code: -1)))
+                    completion(.success(saved))
+                case .failure(let error):
+                    if let ckError = error as? CKError, ckError.code == .serverRecordChanged,
+                       let serverRecord = ckError.serverRecord {
+                        // Server'daki versiyonu al ve yerel değişiklikleri üzerine uygula
+                        serverRecord["songName"]    = shareRecord["songName"]
+                        serverRecord["artistName"]  = shareRecord["artistName"]
+                        serverRecord["moodWord"]    = shareRecord["moodWord"]
+                        serverRecord["moodColor"]   = shareRecord["moodColor"]
+                        serverRecord["moodTheme"]   = shareRecord["moodTheme"]
+                        serverRecord["dailyNote"]   = shareRecord["dailyNote"]
+                        serverRecord["feeling"]     = shareRecord["feeling"]
+                        serverRecord["feelingLabel"] = shareRecord["feelingLabel"]
+                        serverRecord["createdAt"]   = shareRecord["createdAt"]
+                        self?.publicDatabase.save(serverRecord) { [weak self] saved, _ in
+                            if let saved { self?.invalidateCircleCache(); completion(.success(saved)) }
+                            else { completion(.failure(error)) }
+                        }
+                    } else {
+                        completion(.failure(error))
+                    }
                 }
-
-                // Clean up temp file
+            }
+            operation.completionBlock = {
                 if let tempURL = tempFileURL {
                     try? FileManager.default.removeItem(at: tempURL)
                 }
             }
+            self?.publicDatabase.add(operation)
         }
     }
     
@@ -250,6 +272,98 @@ extension CloudKitManager {
         }
     }
     
+    func fetchFriendsDailySharesLastWeek(completion: @escaping (Result<[FriendCircleData], Error>) -> Void) {
+        let sevenDaysAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+
+        fetchFriends { [weak self] result in
+            switch result {
+            case .success(let friendships):
+                let friendIDs = friendships.compactMap { friendship -> String? in
+                    let user1 = friendship["user1ID"] as? String
+                    let user2 = friendship["user2ID"] as? String
+                    let currentID = self?.currentUser?["userID"] as? String
+                    return user1 == currentID ? user2 : user1
+                }
+
+                guard !friendIDs.isEmpty else {
+                    completion(.success([]))
+                    return
+                }
+
+                let userPredicate = NSPredicate(format: "userID IN %@", friendIDs)
+                let userQuery = CKQuery(recordType: "AppUser", predicate: userPredicate)
+                self?.publicDatabase.fetch(withQuery: userQuery, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { res in
+                    switch res {
+                    case .success(let (matchResults, _)):
+                        let friendUsers = matchResults.compactMap { try? $0.1.get() }
+                        let appUserIDs = friendUsers.compactMap { $0["userID"] as? String }
+
+                        guard !appUserIDs.isEmpty else {
+                            DispatchQueue.main.async { completion(.success([])) }
+                            return
+                        }
+
+                        let sharePredicate = NSPredicate(format: "userID IN %@ AND date >= %@",
+                                                         appUserIDs, sevenDaysAgo as NSDate)
+                        let shareQuery = CKQuery(recordType: "DailyShare", predicate: sharePredicate)
+
+                        self?.publicDatabase.fetch(withQuery: shareQuery, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { shareRes in
+                            switch shareRes {
+                            case .success(let (shareMatchResults, _)):
+                                let records = shareMatchResults.compactMap { try? $0.1.get() }
+
+                                // Build a user lookup map
+                                var userMap: [String: CKRecord] = [:]
+                                for user in friendUsers {
+                                    if let uid = user["userID"] as? String {
+                                        userMap[uid] = user
+                                    }
+                                }
+
+                                // All records, dedup NOT applied — one entry per share record
+                                var combined: [FriendCircleData] = records.compactMap { record in
+                                    guard let uid = record["userID"] as? String,
+                                          let userRecord = userMap[uid] else { return nil }
+                                    return FriendCircleData(user: userRecord, share: record)
+                                }
+
+                                // Sort: most recent share first
+                                combined.sort {
+                                    ($0.share?.creationDate ?? .distantPast) > ($1.share?.creationDate ?? .distantPast)
+                                }
+
+                                DispatchQueue.main.async { completion(.success(combined)) }
+
+                            case .failure(let error):
+                                DispatchQueue.main.async { completion(.failure(error)) }
+                            }
+                        }
+
+                    case .failure(let error):
+                        DispatchQueue.main.async { completion(.failure(error)) }
+                    }
+                }
+
+            case .failure(let error):
+                DispatchQueue.main.async { completion(.failure(error)) }
+            }
+        }
+    }
+
+    /// Kullanıcının verilen tarihteki DailyShare kaydının `recordName`'ini döndürür.
+    /// Comment thread için shareRecordName lookup'ında kullanılır.
+    /// Kayıt yoksa veya hata varsa nil döner — yorum butonu sessizce devre dışı kalır.
+    func fetchOwnDailyShareRecordName(date: Date, completion: @escaping (String?) -> Void) {
+        fetchUserDailyShare(for: date) { result in
+            switch result {
+            case .success(let record):
+                DispatchQueue.main.async { completion(record.recordID.recordName) }
+            case .failure:
+                DispatchQueue.main.async { completion(nil) }
+            }
+        }
+    }
+
     func fetchUserDailyShare(for date: Date, completion: @escaping (Result<CKRecord, Error>) -> Void) {
         guard let currentUserID = currentUser?["userID"] as? String else {
             ONELogger.warning("fetchUserDailyShare: currentUser is nil, cannot fetch share", category: .cloudkit)
@@ -348,6 +462,8 @@ extension CloudKitManager {
     // MARK: - Emoji Reactions
 
     /// Emoji reaksiyonunu CloudKit'e kaydeder (EmojiReaction record type).
+    /// - Warning: v2.5 ile deprecated — yorum sistemine geçildi.
+    @available(*, deprecated, message: "v2.5 — yorum sistemi kullan (CloudKitCommentService).")
     func sendEmojiReaction(shareRecordName: String, emoji: String, completion: @escaping (Result<Bool, Error>) -> Void) {
         guard let currentUserID = currentUser?["userID"] as? String else {
             completion(.failure(NSError(domain: "CloudKit", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user"])))
@@ -389,6 +505,7 @@ extension CloudKitManager {
     }
 
     /// Kullanıcının bu share'e daha önce gönderdiği emoji reaksiyonunu yükler.
+    @available(*, deprecated, message: "v2.5 — yorum sistemine geçildi.")
     func fetchEmojiReaction(shareRecordName: String, completion: @escaping (String?) -> Void) {
         guard let currentUserID = currentUser?["userID"] as? String else {
             completion(nil)
@@ -411,6 +528,7 @@ extension CloudKitManager {
 
     /// Başkalarının bu share'e gönderdiği tüm emoji reaksiyonlarını yükler (current user hariç).
     /// Her reaksiyon için gönderenin displayName'ini de getirir.
+    @available(*, deprecated, message: "v2.5 — yorum sistemine geçildi.")
     func fetchReceivedEmojiReactions(shareRecordName: String, completion: @escaping ([EmojiReactionItem]) -> Void) {
         guard let currentUserID = currentUser?["userID"] as? String else {
             completion([])

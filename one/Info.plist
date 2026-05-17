@@ -22,6 +22,9 @@
 		<string>spotify</string>
 		<string>instagram</string>
 		<string>instagram-stories</string>
+		<string>tiktok</string>
+		<string>snssdk1180</string>
+		<string>snssdk1233</string>
 	</array>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>Günlük müziğini kaydetmek için Apple Music&apos;e erişim gereklidir.</string>
@@ -29,6 +32,12 @@
 	<string>Günlük anlarını fotoğraflamak ve QR kod taramak için kamera erişimi gereklidir.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>Arkadaşlarını ONE'a davet etmek için rehberine erişim gereklidir.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Video çekimi sırasında ses kaydı için mikrofon erişimi gereklidir.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Günlük kartını ve anılarını fotoğraf kütüphanenden seçmek için erişim gereklidir.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Ruh hali kartını ve paylaşım görsellerini fotoğraf kütüphanene kaydetmek için erişim gereklidir.</string>
 	<key>LSBundleContainsCoreMLmlmodelc</key>
 	<false/>
 	<key>UIAppFonts</key>
@@ -40,7 +49,7 @@
 		<string>DMSans_18pt-LightItalic.ttf</string>
 	</array>
 	<key>SpotifyClientID</key>
-	<string>f2afa405bc0e44bf8ed6c171adc0fa79</string>
+	<string>$(SPOTIFY_CLIENT_ID)</string>
 	<key>TicketmasterAPIKey</key>
 	<string>$(TICKETMASTER_API_KEY)</string>
 	<key>NSSupportsLiveActivities</key>
@@ -50,5 +59,7 @@
 		<string>remote-notification</string>
 		<string>processing</string>
 	</array>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>ONE, sana daha iyi müzik ve ruh hali önerileri sunmak için anonim kullanım verilerini kullanabilir.</string>
 </dict>
 </plist>

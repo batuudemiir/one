@@ -5,10 +5,6 @@
 //  Kart 3 — Bu Ayın Sesi (Top 5 Şarkı)
 //  Staggered liste animasyonu + Share butonu (ImageRenderer, iOS 16+)
 //
-//  Fontlar:
-//    Gerçek font: "BebasNeue-Regular" ve "Syne-Regular" / "SyneMono-Regular"
-//    Şu an system font fallback kullanılıyor.
-//
 
 import SwiftUI
 
@@ -20,7 +16,7 @@ struct TopTracksCardView: View {
     @State private var itemsVisible: [Bool] = []
 
     // Amber rengi — 1. sıra vurgu
-    private let amberColor = Color(red: 0.90, green: 0.60, blue: 0.10)
+    private let amberColor = ONETokens.summaryAmberGlow  // #E69919
 
     var body: some View {
         GeometryReader { geo in
@@ -31,10 +27,12 @@ struct TopTracksCardView: View {
                     // Başlık
                     VStack(alignment: .leading, spacing: 0) {
                         Text(NSLocalizedString("monthly.thisMonth", comment: ""))
-                            .font(.system(size: 56, weight: .black))
+                            .displayLG()
+                            .fontWeight(.black)
                             .foregroundColor(.white)
                         Text(NSLocalizedString("monthly.sound", comment: ""))
-                            .font(.system(size: 56, weight: .black))
+                            .displayLG()
+                            .fontWeight(.black)
                             .foregroundColor(.white.opacity(0.30))
                     }
                     .padding(.bottom, 36)
@@ -47,7 +45,8 @@ struct TopTracksCardView: View {
                                     .font(.system(size: 48))
                                     .opacity(0.4)
                                 Text(NSLocalizedString("monthly.noSongs", comment: ""))
-                                    .font(.system(size: 15, weight: .light))
+                                    .bodyLG()
+                                    .fontWeight(.light)
                                     .foregroundColor(.white.opacity(0.40))
                                     .multilineTextAlignment(.center)
                             }
@@ -68,6 +67,22 @@ struct TopTracksCardView: View {
                                     }
                                 }
                             }
+                            .padding(.bottom, 32)
+                            
+                            // Öngörülebilirlik & Motivasyon Mesajı
+                            VStack(spacing: 6) {
+                                Text(NSLocalizedString("monthly.expectationTitle", comment: ""))
+                                    .bodySM()
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white.opacity(0.9))
+
+                                Text(NSLocalizedString("monthly.expectationBody", comment: ""))
+                                    .bodySM()
+                                    .foregroundColor(.white.opacity(0.6))
+                                    .multilineTextAlignment(.center)
+                                    .lineSpacing(2)
+                            }
+                            .frame(maxWidth: .infinity)
                             .padding(.bottom, 100)
                         }
 
@@ -79,7 +94,7 @@ struct TopTracksCardView: View {
         .overlay(alignment: .bottomTrailing) {
             if showWatermark { watermarkView }
         }
-        .background(Color.black)
+        .background(ONETokens.oneCinematicDark)
         .ignoresSafeArea()
         .onAppear {
             itemsVisible = Array(repeating: false, count: data.topTracks.count)
@@ -106,7 +121,8 @@ struct TopTracksCardView: View {
                     .frame(width: 80, height: 28)
             } else {
                 Text("ONE")
-                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .bodySM()
+                    .fontWeight(.bold)
                     .foregroundColor(.white.opacity(0.7))
                     .tracking(3)
             }
@@ -120,7 +136,8 @@ struct TopTracksCardView: View {
         HStack(spacing: 14) {
             // Sıra numarası
             Text("\(track.rank)")
-                .font(.system(size: 28, weight: .black))
+                .displayMD()
+                .fontWeight(.black)
                 .foregroundColor(track.rank == 1 ? amberColor : .white.opacity(0.25))
                 .frame(width: 28, alignment: .center)
 
@@ -143,11 +160,12 @@ struct TopTracksCardView: View {
             // İsim + Sanatçı
             VStack(alignment: .leading, spacing: 3) {
                 Text(track.name)
-                    .font(.system(size: 15, weight: .semibold))
+                    .bodyLG()
+                    .fontWeight(.semibold)
                     .foregroundColor(.white)
                     .lineLimit(1)
                 Text(track.artist)
-                    .font(.system(size: 11, weight: .regular, design: .monospaced))
+                    .monoSM()
                     .foregroundColor(.white.opacity(0.45))
                     .lineLimit(1)
             }
@@ -157,10 +175,11 @@ struct TopTracksCardView: View {
             // Seçim sayısı
             VStack(alignment: .trailing, spacing: 2) {
                 Text("\(track.days)")
-                    .font(.system(size: 22, weight: .black))
+                    .displaySM()
+                    .fontWeight(.black)
                     .foregroundColor(.white)
                 Text(NSLocalizedString(track.days > 1 ? "monthly.selectionLabel" : "monthly.timesLabel", comment: ""))
-                    .font(.system(size: 8, weight: .regular, design: .monospaced))
+                    .monoMicro()
                     .foregroundColor(.white.opacity(0.35))
             }
         }

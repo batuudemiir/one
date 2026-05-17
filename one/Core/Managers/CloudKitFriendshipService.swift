@@ -16,6 +16,7 @@
 
 import Foundation
 import CloudKit
+import Combine
 
 // MARK: - Friendship Management
 
@@ -90,8 +91,13 @@ extension CloudKitManager {
 
     // MARK: - Send Friend Request
 
+    /// `source`: istek origin'i — analytics için. "comment_profile",
+    /// "add_friend_search", "deep_link", "contact" vb. Varsayılan "unknown".
     func sendFriendRequest(toUserID: String,
+                           source: String = "unknown",
                            completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        // Origin'i log'a düş — CloudKit'e yazmıyoruz, yalnızca analytics.
+        ONELogger.debug("sendFriendRequest source=\(source) to=\(toUserID)", category: .circle)
         guard let currentUserID = currentUser?["userID"] as? String else {
             completion(.failure(NSError(domain: "CloudKit", code: -1,
                 userInfo: [NSLocalizedDescriptionKey: "Current user not found"]))); return
@@ -132,6 +138,22 @@ extension CloudKitManager {
                         if let saved {
                             ONELogger.success("Friend request sent", category: .circle)
                             AppAnalytics.shared.track(.friendRequestSent)
+                            
+                            // Store'a outgoingRequest bildirimi ekle
+                            let notif = CircleNotification(
+                                id: "outgoingRequest_\(toUserID)_\(Int(Date().timeIntervalSince1970))",
+                                type: .outgoingRequest,
+                                title: "\(toUserID) → Bekliyor",
+                                body: "İstek gönderildi, yanıt bekleniyor.",
+                                date: Date(),
+                                isRead: false,
+                                relatedUserID: toUserID,
+                                emoji: nil,
+                                requestRecordName: saved.recordID.recordName,
+                                requestStatus: "pending"
+                            )
+                            Task { @MainActor in CircleNotificationStore.shared.add(notif) }
+                            
                             completion(.success(saved))
                         } else {
                             completion(.failure(error ?? NSError(domain: "CloudKit", code: -1)))
@@ -151,19 +173,31 @@ extension CloudKitManager {
                 userInfo: [NSLocalizedDescriptionKey: "Current user not found"]))); return
         }
 
-        let rec = CKRecord(recordType: "Friendship")
-        rec["user1ID"] = currentUserID as CKRecordValue
-        rec["user2ID"] = toUserID      as CKRecordValue
-        rec["status"]  = "cancelled"   as CKRecordValue
-
-        publicDatabase.save(rec) { _, error in
-            DispatchQueue.main.async {
-                if let error {
-                    ONELogger.error("Failed to cancel request", error: error, category: .circle)
-                    completion(.failure(error))
-                } else {
-                    ONELogger.success("Friend request cancelled", category: .circle)
-                    completion(.success(true))
+        // Mevcut pending kaydı bul ve sil — yeni kayıt oluşturmak yerine
+        let predicate = NSPredicate(format: "user1ID == %@ AND user2ID == %@ AND status == 'pending'",
+                                    currentUserID, toUserID)
+        let query = CKQuery(recordType: "Friendship", predicate: predicate)
+        publicDatabase.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: 1) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .failure(let error):
+                DispatchQueue.main.async { completion(.failure(error)) }
+            case .success(let (matchResults, _)):
+                guard let recordID = matchResults.first.flatMap({ try? $0.1.get().recordID }) else {
+                    DispatchQueue.main.async { completion(.success(true)) }
+                    return
+                }
+                self.publicDatabase.delete(withRecordID: recordID) { deletedID, error in
+                    DispatchQueue.main.async {
+                        if let error {
+                            ONELogger.error("Failed to cancel request", error: error, category: .circle)
+                            completion(.failure(error))
+                        } else {
+                            ONELogger.success("Friend request cancelled", category: .circle)
+                            CircleNotificationStore.shared.removeByRequestRecordName(recordID.recordName)
+                            completion(.success(true))
+                        }
+                    }
                 }
             }
         }
@@ -247,46 +281,46 @@ extension CloudKitManager {
                 userInfo: [NSLocalizedDescriptionKey: "Current user not found"]))); return
         }
 
-        let rec = CKRecord(recordType: "Friendship")
-        rec["user1ID"] = currentUserID as CKRecordValue
-        rec["user2ID"] = friendUserID  as CKRecordValue
-        rec["status"]  = "removed"     as CKRecordValue
-
-        publicDatabase.save(rec) { _, error in
-            DispatchQueue.main.async {
-                if let error {
-                    ONELogger.error("Failed to remove friend", error: error, category: .circle)
-                    completion(.failure(error))
-                } else {
+        // Mevcut accepted Friendship kayıtlarını bul ve sil — duplicate önlemi
+        let pred1 = NSPredicate(format: "user1ID == %@ AND user2ID == %@", currentUserID, friendUserID)
+        let pred2 = NSPredicate(format: "user1ID == %@ AND user2ID == %@", friendUserID, currentUserID)
+        let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: [pred1, pred2])
+        let query = CKQuery(recordType: "Friendship", predicate: predicate)
+        publicDatabase.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: 10) { [weak self] result in
+            guard let self else { return }
+            let ids: [CKRecord.ID]
+            switch result {
+            case .success(let (matchResults, _)):
+                ids = matchResults.compactMap { try? $0.1.get().recordID }
+            case .failure:
+                ids = []
+            }
+            guard !ids.isEmpty else {
+                DispatchQueue.main.async {
+                    self.invalidateFriendCache()
+                    completion(.success(true))
+                }
+                return
+            }
+            let op = CKModifyRecordsOperation(recordsToSave: nil, recordIDsToDelete: ids)
+            op.modifyRecordsResultBlock = { _ in
+                DispatchQueue.main.async {
                     ONELogger.success("Friend removed", category: .circle)
+                    self.invalidateFriendCache()
                     completion(.success(true))
                 }
             }
+            self.publicDatabase.add(op)
         }
     }
 
-    // MARK: - Block User
+    // MARK: - Block User (delegates to CloudKitBlockService for deterministic deduplication)
 
     func blockUser(userID: String, completion: @escaping (Result<Bool, Error>) -> Void) {
-        guard let currentUserID = currentUser?["userID"] as? String else {
-            completion(.failure(NSError(domain: "CloudKit", code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "Current user not found"]))); return
-        }
-
-        let rec = CKRecord(recordType: "Friendship")
-        rec["user1ID"] = currentUserID as CKRecordValue
-        rec["user2ID"] = userID        as CKRecordValue
-        rec["status"]  = "blocked"     as CKRecordValue
-
-        publicDatabase.save(rec) { _, error in
-            DispatchQueue.main.async {
-                if let error {
-                    ONELogger.error("Failed to block user", error: error, category: .circle)
-                    completion(.failure(error))
-                } else {
-                    ONELogger.success("User blocked", category: .circle)
-                    completion(.success(true))
-                }
+        blockUser(userID: userID, reason: nil) { result in
+            switch result {
+            case .success(let v): completion(.success(v))
+            case .failure(let e): completion(.failure(e as Error))
             }
         }
     }
@@ -418,8 +452,19 @@ extension CloudKitManager {
             case .success(let r):
                 let friends = r.values.filter { ($0["status"] as? String) == "accepted" }
                 let count = friends.count
+                // Update notification fast-path cache
+                let ids = friends.compactMap { r -> String? in
+                    let u1 = r["user1ID"] as? String ?? ""
+                    let u2 = r["user2ID"] as? String ?? ""
+                    guard let me = self.currentUser?["userID"] as? String else { return nil }
+                    return u1 == me ? u2 : u1
+                }
+                self.cachedFriendIDs = Set(ids)
+                self.cachedFriendIDsTimestamp = Date()
                 DispatchQueue.main.async {
                     BadgeManager.shared.evaluateFriendCount(count)
+                    // B4 — Day-4 circle invite push'unu doğru gate'lemek için.
+                    EngagementTracker.lastKnownFriendCount = count
                     completion(.success(Array(friends)))
                 }
             case .failure(let e):
@@ -465,8 +510,8 @@ extension CloudKitManager {
 
     // MARK: - Private: Fetch Pending Request From Specific User
 
-    private func fetchPendingRequestFrom(userID: String,
-                                         completion: @escaping (Result<CKRecord, Error>) -> Void) {
+    func fetchPendingRequestFrom(userID: String,
+                                 completion: @escaping (Result<CKRecord, Error>) -> Void) {
         guard let currentUserID = currentUser?["userID"] as? String else {
             completion(.failure(NSError(domain: "CloudKit", code: -1))); return
         }

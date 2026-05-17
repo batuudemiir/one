@@ -85,15 +85,8 @@ struct ONEToastView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(toast.type.color.opacity(0.2), lineWidth: 1)
-                )
-                .shadow(color: Color.black.opacity(0.08), radius: 16, x: 0, y: 6)
-        )
+        .liquidGlass(tint: toast.type.color.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.08), radius: 16, x: 0, y: 6)
         .padding(.horizontal, 16)
         .gesture(
             DragGesture(minimumDistance: 10)

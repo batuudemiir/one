@@ -55,10 +55,10 @@ struct MonthSummaryTests {
         let d2 = makeDate(year: 2026, month: 3, day: 2)
         let d3 = makeDate(year: 2026, month: 3, day: 5)
 
-        let entries: [Date: DailyEntry] = [
-            Calendar.current.startOfDay(for: d1): makeEntry(date: d1),
-            Calendar.current.startOfDay(for: d2): makeEntry(date: d2),
-            Calendar.current.startOfDay(for: d3): makeEntry(date: d3),
+        let entries: [Date: [DailyEntry]] = [
+            Calendar.current.startOfDay(for: d1): [makeEntry(date: d1)],
+            Calendar.current.startOfDay(for: d2): [makeEntry(date: d2)],
+            Calendar.current.startOfDay(for: d3): [makeEntry(date: d3)],
         ]
 
         let summary = MonthSummary(year: 2026, month: 3, entries: entries, totalDays: 31)
@@ -80,11 +80,11 @@ struct MonthSummaryTests {
         let d3 = makeDate(year: 2026, month: 2, day: 3)
         let d4 = makeDate(year: 2026, month: 2, day: 4)
 
-        let entries: [Date: DailyEntry] = [
-            Calendar.current.startOfDay(for: d1): makeEntry(date: d1, moodColorHex: "#E84040"),
-            Calendar.current.startOfDay(for: d2): makeEntry(date: d2, moodColorHex: "#5B8DEF"),
-            Calendar.current.startOfDay(for: d3): makeEntry(date: d3, moodColorHex: "#E84040"),
-            Calendar.current.startOfDay(for: d4): makeEntry(date: d4, moodColorHex: "#5B8DEF"),
+        let entries: [Date: [DailyEntry]] = [
+            Calendar.current.startOfDay(for: d1): [makeEntry(date: d1, moodColorHex: "#E84040")],
+            Calendar.current.startOfDay(for: d2): [makeEntry(date: d2, moodColorHex: "#5B8DEF")],
+            Calendar.current.startOfDay(for: d3): [makeEntry(date: d3, moodColorHex: "#E84040")],
+            Calendar.current.startOfDay(for: d4): [makeEntry(date: d4, moodColorHex: "#5B8DEF")],
         ]
 
         let summary = MonthSummary(year: 2026, month: 2, entries: entries, totalDays: 28)
@@ -102,10 +102,10 @@ struct MonthSummaryTests {
         let d2 = makeDate(year: 2026, month: 5, day: 2)
         let d3 = makeDate(year: 2026, month: 5, day: 3)
 
-        let entries: [Date: DailyEntry] = [
-            Calendar.current.startOfDay(for: d1): makeEntry(date: d1, moodColorHex: "#FF0000"),
-            Calendar.current.startOfDay(for: d2): makeEntry(date: d2, moodColorHex: "#00FF00"),
-            Calendar.current.startOfDay(for: d3): makeEntry(date: d3, moodColorHex: "#FF0000"),
+        let entries: [Date: [DailyEntry]] = [
+            Calendar.current.startOfDay(for: d1): [makeEntry(date: d1, moodColorHex: "#FF0000")],
+            Calendar.current.startOfDay(for: d2): [makeEntry(date: d2, moodColorHex: "#00FF00")],
+            Calendar.current.startOfDay(for: d3): [makeEntry(date: d3, moodColorHex: "#FF0000")],
         ]
 
         let summary = MonthSummary(year: 2026, month: 5, entries: entries, totalDays: 31)

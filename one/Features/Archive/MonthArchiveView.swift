@@ -17,12 +17,15 @@ struct MonthArchiveView: View {
     let onYearTap: () -> Void
 
     @EnvironmentObject private var archiveStore: ArchiveStore
+    @ObservedObject private var globalUI = GlobalUIState.shared
     @State private var previewEntries: [DailyEntry] = []
     @State private var previewIndex: Int = 0
     @State private var showPreview  = false
     @State private var appeared     = false
     @State private var cardDragOffset: CGFloat = 0
     @State private var isDraggingCard = false
+    @State private var showRecap = false
+    @State private var fullScreenPhotoURL: URL? = nil
 
     // Haftanın günleri — Pazartesi başlangıç
     private var weekDays: [String] {
@@ -77,13 +80,19 @@ struct MonthArchiveView: View {
 
                     ZStack {
                         ForEach(Array(previewEntries.enumerated()), id: \.element.id) { idx, entry in
-                            DayPreviewCard(entry: entry)
+                            DayPreviewCard(entry: entry, onPhotoTap: { url in
+                                withAnimation(ONEAnimation.micro) {
+                                    fullScreenPhotoURL = url
+                                }
+                            })
                                 .offset(x: CGFloat(idx - previewIndex) * (cardW + 16) + cardDragOffset)
                                 .animation(isDraggingCard ? nil : ONEAnimation.cardSpring, value: previewIndex)
                                 .animation(isDraggingCard ? nil : ONEAnimation.cardSpring, value: cardDragOffset)
+                                .transition(.identity)
                         }
                     }
-                    .frame(width: cardW, height: cardHeight)
+                    .frame(width: cardW)
+                    .fixedSize(horizontal: false, vertical: true)
                     .clipped()
                     .gesture(
                         DragGesture(minimumDistance: 10)
@@ -124,6 +133,8 @@ struct MonthArchiveView: View {
                                     .frame(width: idx == previewIndex ? 8 : 6,
                                            height: idx == previewIndex ? 8 : 6)
                                     .animation(ONEAnimation.micro, value: previewIndex)
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Rectangle())
                                     .onTapGesture {
                                         withAnimation(ONEAnimation.cardSpring) { previewIndex = idx }
                                     }
@@ -137,9 +148,19 @@ struct MonthArchiveView: View {
                 ))
             }
         }
+        .liquidGlassSheetBackground()
         .animation(ONEAnimation.cardSpring, value: showPreview)
         .onAppear {
             withAnimation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.1)) { appeared = true }
+        }
+        .fullScreenCover(isPresented: $showRecap) {
+            MonthRecapStoryView(summary: summary)
+        }
+        .onChange(of: fullScreenPhotoURL) { _, newURL in
+            GlobalUIState.shared.archivePhotoURL = newURL
+        }
+        .onChange(of: globalUI.archivePhotoURL) { _, newURL in
+            if newURL == nil { fullScreenPhotoURL = nil }
         }
     }
 
@@ -275,6 +296,7 @@ struct MonthArchiveView: View {
                 ForEach(Array(cells.enumerated()), id: \.offset) { _, date in
                     if let date {
                         if let entry = summary.primaryEntry(for: date) {
+
                             let dayEntries = summary.allEntries(for: date)
                             let hasMultiple = dayEntries.count > 1
 
@@ -293,12 +315,7 @@ struct MonthArchiveView: View {
                                 }
                             }
                             .onTapGesture {
-                                ONEHaptics.feelingSelected()
-                                previewEntries = dayEntries
-                                previewIndex   = 0
-                                withAnimation(ONEAnimation.cardSpring) {
-                                    showPreview = true
-                                }
+                                openPreview(entries: dayEntries)
                             }
                                 .opacity(appeared ? 1 : 0)
                                 .scaleEffect(appeared ? 1 : 0.85)
@@ -315,6 +332,9 @@ struct MonthArchiveView: View {
                     }
                 }
             }
+            // Ay değiştiğinde tüm hücre view'larını yeniden oluştur;
+            // aksi hâlde aynı offset'teki hücreler eski @State (fotoğraf) taşır.
+            .id("\(summary.year)-\(summary.month)")
         }
         .padding(16)
         .background(ONETokens.onePaper.opacity(0.78))
@@ -334,6 +354,19 @@ struct MonthArchiveView: View {
         .padding(.bottom, 4)
     }
 
+    private func openPreview(entries: [DailyEntry]) {
+        ONEHaptics.feelingSelected()
+        if showPreview {
+            // Preview zaten açık: içeriği hızlı geçişle değiştir.
+            previewEntries = entries
+            previewIndex   = 0
+        } else {
+            previewEntries = entries
+            previewIndex   = 0
+            withAnimation(ONEAnimation.cardSpring) { showPreview = true }
+        }
+    }
+
     private func cellDelay(for date: Date) -> Double {
         let day = Calendar.current.component(.day, from: date)
         return Double(day - 1) * 0.012
@@ -350,6 +383,41 @@ struct MonthArchiveView: View {
                 moodDistribution: summary.moodDistribution,
                 filledDays: summary.filledDays
             )
+        }
+    }
+    
+    // MARK: — Aylık Özet Butonu
+    private var recapButton: some View {
+        Button {
+            ONEHaptics.songSaved()
+            showRecap = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(ONETokens.oneBrand)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Aylık Hikayeni Gör")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(ONETokens.oneInk)
+                    Text("Spotify Wrapped benzeri özel özetin.")
+                        .font(.custom("GeistMono-Regular", size: 12))
+                        .foregroundColor(ONETokens.oneAsh)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundColor(ONETokens.oneSilver)
+                    .font(.system(size: 14, weight: .semibold))
+            }
+            .padding(16)
+            .background(ONETokens.onePaper)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(ONETokens.oneSilver.opacity(0.5), lineWidth: 1)
+            )
+            .shadow(color: ONETokens.oneBrand.opacity(0.1), radius: 10, x: 0, y: 5)
         }
     }
 }

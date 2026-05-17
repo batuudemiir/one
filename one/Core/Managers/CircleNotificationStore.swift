@@ -4,7 +4,7 @@
 //
 //  Çevre bildirimlerini UserDefaults'a persist eden singleton store.
 //  CloudKitNotificationService push aldığında buraya yazar;
-//  FriendRequestsView "Bildirimler" sekmesinde buradan okur.
+//  CircleActivityView tek birleşik akışta buradan okur.
 //
 
 import Foundation
@@ -17,7 +17,7 @@ final class CircleNotificationStore: ObservableObject {
 
     // MARK: - Constants
 
-    private let userDefaultsKey = "circleNotifications_v1"
+    private let userDefaultsKey = "circleNotifications_v2"
     private let maxAgeDays: Double = 30
 
     // MARK: - Published State
@@ -38,6 +38,28 @@ final class CircleNotificationStore: ObservableObject {
         persist()
     }
 
+    /// Belirli bir ID'ye sahip bildirimi güncelle (ör: arkadaş isteği kabul edildi).
+    func update(id: String, transform: (inout CircleNotification) -> Void) {
+        guard let index = notifications.firstIndex(where: { $0.id == id }) else { return }
+        transform(&notifications[index])
+        persist()
+    }
+
+    /// Belirli bir ID'ye sahip bildirimi kaldır.
+    func remove(id: String) {
+        guard notifications.contains(where: { $0.id == id }) else { return }
+        notifications.removeAll { $0.id == id }
+        persist()
+    }
+
+    /// Belirli bir requestRecordName'e sahip friendRequest/outgoingRequest bildirimini kaldır.
+    func removeByRequestRecordName(_ recordName: String) {
+        notifications.removeAll {
+            $0.requestRecordName == recordName && ($0.type == .friendRequest || $0.type == .outgoingRequest)
+        }
+        persist()
+    }
+
     /// "Bildirimler" sekmesi açıldığında tüm bildirimleri okundu işaretle.
     func markAllRead() {
         guard notifications.contains(where: { !$0.isRead }) else { return }
@@ -52,10 +74,32 @@ final class CircleNotificationStore: ObservableObject {
         notifications.filter { !$0.isRead }.count
     }
 
-    /// FriendRequestsView'de gösterilecek bildirimler.
-    /// .friendRequest tipini hariç tutar; bunlar live CloudKit'ten çekiliyor.
-    var displayable: [CircleNotification] {
-        notifications.filter { $0.type != .friendRequest }
+    // MARK: - Unified Feed
+
+    /// Tek birleşik aktivite akışı — sıralama algoritması:
+    /// 1. Okunmamış → okunmuş üstte
+    /// 2. Aynı okunma durumunda tip önceliği (sortPriority)
+    /// 3. Aynı tip ve okunma: kronolojik (yeni → eski)
+    var unifiedFeed: [CircleNotification] {
+        notifications.sorted { lhs, rhs in
+            if lhs.isRead != rhs.isRead {
+                return !lhs.isRead  // okunmamış üstte
+            }
+            if lhs.type.sortPriority != rhs.type.sortPriority {
+                return lhs.type.sortPriority > rhs.type.sortPriority
+            }
+            return lhs.date > rhs.date
+        }
+    }
+
+    /// Arkadaşlık isteği tipindeki bildirimler — inline aksiyon kartları için.
+    var requestNotifications: [CircleNotification] {
+        unifiedFeed.filter { $0.type == .friendRequest || $0.type == .outgoingRequest }
+    }
+
+    /// Arkadaşlık isteği olmayan bildirimler — aktivite akışı kartları için.
+    var activityNotifications: [CircleNotification] {
+        unifiedFeed.filter { $0.type != .friendRequest && $0.type != .outgoingRequest }
     }
 
     // MARK: - Persistence
@@ -66,6 +110,15 @@ final class CircleNotificationStore: ObservableObject {
     }
 
     private func load() {
+        // v1'den migration: eski key'den oku, yeni key'e yaz
+        let v1Key = "circleNotifications_v1"
+        if let v1Data = UserDefaults.standard.data(forKey: v1Key),
+           let v1Decoded = try? JSONDecoder().decode([CircleNotification].self, from: v1Data) {
+            notifications = v1Decoded
+            persist()
+            UserDefaults.standard.removeObject(forKey: v1Key)
+            return
+        }
         guard
             let data = UserDefaults.standard.data(forKey: userDefaultsKey),
             let decoded = try? JSONDecoder().decode([CircleNotification].self, from: data)

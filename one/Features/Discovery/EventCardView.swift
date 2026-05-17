@@ -38,7 +38,7 @@ private enum CTAAction {
 
     var tintColor: Color {
         switch self {
-        case .biletixDirect, .biletixSearch: return Color(hex: "#E63946")
+        case .biletixDirect, .biletixSearch: return ONETokens.oneBrand
         case .maps:                          return ONETokens.oneBlue
         case .none:                          return .clear
         }

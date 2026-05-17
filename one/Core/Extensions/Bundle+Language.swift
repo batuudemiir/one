@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Combine
 
 private var bundleKey: UInt8 = 0
 

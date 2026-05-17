@@ -10,6 +10,7 @@ import SwiftUI
 struct RecommendationCardView: View {
     let recommendation: SongRecommendation
     let onTap: () -> Void
+    var onDismiss: (() -> Void)? = nil
     
     var body: some View {
         Button(action: {
@@ -20,16 +21,12 @@ struct RecommendationCardView: View {
                 // Album artwork
                 Group {
                     if let url = recommendation.coverURL {
-                        AsyncImage(url: url) { image in
+                        CachedAsyncImage(url: url) { image in
                             image
                                 .resizable()
                                 .scaledToFill()
                         } placeholder: {
-                            ZStack {
-                                ONETokens.oneSilver
-                                ProgressView()
-                                    .tint(ONETokens.oneMist)
-                            }
+                            SerenitySkeleton()
                         }
                     } else {
                         ZStack {
@@ -59,33 +56,16 @@ struct RecommendationCardView: View {
                         .foregroundColor(ONETokens.oneAsh)
                         .lineLimit(1)
 
-                    if let reason = recommendation.recommendationReason {
-                        Text(reason)
-                            .monoMicro(tracking: 0.6)
-                            .foregroundColor(ONETokens.oneMist)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(ONETokens.oneCream)
-                            )
-                            .padding(.top, 2)
-                    }
-
-                    // Platform attribution (required by Spotify & Apple guidelines)
-                    HStack(spacing: 3) {
-                        Image(systemName: recommendation.source == .spotify ? "music.note" : "applelogo")
-                            .font(.system(size: 8, weight: .medium))
-                        Text(recommendation.source == .spotify ? "Spotify" : "Apple Music")
-                            .monoLabel()
-                    }
-                    .foregroundColor(ONETokens.oneMist)
-                    .padding(.top, 2)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .buttonStyle(RecommendationCardButtonStyle())
+        .contextMenu {
+            Button(role: .destructive, action: { onDismiss?() }) {
+                Label("İlginç değil", systemImage: "hand.thumbsdown")
+            }
+        }
     }
 }
 

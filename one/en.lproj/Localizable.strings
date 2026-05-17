@@ -34,8 +34,9 @@
 "today.title" = "Pick today's song";
 "today.subtitle" = "Start your mood and day from here.";
 "today.moodSection" = "how are you feeling?";
+"today.feelingSection" = "what did this song leave in you?";
 "today.noteSection" = "leave a note";
-"today.notePlaceholder" = "what did this song leave in you?";
+"today.notePlaceholder" = "write your thoughts...";
 "today.photoChange" = "change";
 "today.saveButton" = "Save";
 "today.continueButton" = "Continue";
@@ -90,6 +91,47 @@
 "onboarding.slogan" = "Feel. Discover. Share.";
 "onboarding.connectMusic" = "Connect music service";
 "onboarding.later" = "LATER";
+"onboarding.startMagic" = "Let's begin";
+"onboarding.continueShort" = "CONTINUE";
+
+/* Welcome */
+"onboarding.welcome.cta" = "Let's begin";
+"onboarding.welcome.subnote" = "Takes less than 30 seconds";
+
+/* Promise */
+"onboarding.promise.title" = "One feeling,\nevery day.";
+"onboarding.promise.sub" = "ONE captures your day in a color, a song, a moment. Fast, simple, yours.";
+
+/* Tutorial */
+"onboarding.tutorial.intro.title" = "How does\nit work?";
+"onboarding.tutorial.intro.sub" = "Saving a day in ONE takes 3 steps. Let's try it together.";
+"onboarding.tutorial.intro.cta" = "TRY IT";
+"onboarding.tutorial.step1.title" = "Pick your feeling";
+"onboarding.tutorial.step1.body" = "Choose today's color from 12 moods.";
+"onboarding.tutorial.step2.title" = "Match a song";
+"onboarding.tutorial.step2.body" = "Attach a song to that feeling — Apple Music or Spotify.";
+"onboarding.tutorial.step3.title" = "See your card, share it";
+"onboarding.tutorial.step3.body" = "Your day's card appears — share it with your circle if you like.";
+"onboarding.tutorial.stepBadge.1" = "1 / 2 — PICK YOUR FEELING";
+"onboarding.tutorial.stepBadge.2" = "2 / 2 — YOUR CARD IS READY";
+
+/* Magic moment — mood pick & reveal */
+"onboarding.moodPick.title" = "How are you\nfeeling today?";
+"onboarding.moodPick.sub" = "Pick a color. ONE makes it yours.";
+"onboarding.moodPick.continue" = "CONTINUE";
+"onboarding.reveal.title" = "Here is\ntoday's card.";
+"onboarding.reveal.sub" = "One feeling, one color, every evening. ONE prepares this card just for you.";
+"onboarding.reveal.continue" = "GREAT, CONTINUE";
+
+/* Music */
+"onboarding.music.title" = "Connect\nyour music.";
+"onboarding.music.sub" = "To match a song to your feeling, link Apple Music or Spotify. No subscription required.";
+
+/* Soft notification ask */
+"onboarding.notif.title" = "Want a soft\nnudge each evening?";
+"onboarding.notif.sub" = "One gentle reminder at 9pm. No ads, no pressure.";
+"onboarding.notif.yes" = "Sure";
+"onboarding.notif.no" = "Not now";
 
 /* ── SPLASH ── */
 "splash.slogan" = "feel · discover · share";
@@ -259,6 +301,8 @@
 "profile.appName" = "One — Daily Mood";
 "profile.echoTitle" = "Echo";
 "profile.echoDesc" = "Discover your listening patterns and repeats";
+"profile.features.lockedTitle" = "Analytics Preparing";
+"profile.features.lockedDesc" = "Record your mood for %d more days to unlock Echo and Monthly Summary!";
 "profile.spotifyDisconnect" = "Disconnect Spotify";
 "profile.spotifyDisconnectMsg" = "Are you sure you want to disconnect Spotify? Recommendations and cache will be cleared.";
 "profile.appleMusicTitle" = "Apple Music Permission";
@@ -590,6 +634,16 @@
 "mood.bos" = "void";
 "mood.temiz" = "still";
 
+/* --- MOOD MEANINGS (v2.5) --- */
+"mood.meaning.atesli"    = "tutkulu";
+"mood.meaning.isikli"    = "mutlu";
+"mood.meaning.enerjik"   = "enerjik";
+"mood.meaning.taze"      = "doğal";
+"mood.meaning.sakin"     = "huzurlu";
+"mood.meaning.nostaljik" = "heyecanlı";
+"mood.meaning.gizemli"   = "sakin";
+"mood.meaning.bos"       = "stabil";
+
 /* --- FEELING LABELS --- */
 "feeling.calm" = "Calm";
 "feeling.happy" = "Joyful";
@@ -667,6 +721,8 @@
 "nav.circle" = "circle";
 "nav.profile" = "profile";
 "nav.tabAccessibility" = "%@ tab";
+"nav.todayHint" = "Log today's mood";
+"nav.expandBarA11y" = "Expand tab bar";
 
 /* --- DISCOVER CTA LABELS --- */
 "discover.ctaMap" = "Map";
@@ -868,6 +924,7 @@
 /* Yearly Summary */
 "yearly.title" = "Year in Review";
 "yearly.subtitle" = "12 months in sound";
+"yearly.availableInDecember" = "Unlocks in December";
 "yearly.monthlyMoods" = "BY MONTH";
 "yearly.topTracks" = "MOST PLAYED";
 "yearly.topArtists" = "TOP ARTISTS";
@@ -877,3 +934,141 @@
 "yearly.uniqueSongs" = "UNIQUE SONGS";
 "yearly.longestStreak" = "LONGEST STREAK";
 "yearly.dominantMood" = "DOMINANT MOOD";
+"notification.appUpdate.title" = "New version available 🚀";
+"notification.appUpdate.body" = "ONE %@ is here! Tap to update now.";
+
+/* First entry — Circle invite hook (A4) */
+"firstEntryInvite.eyebrow" = "FIRST STEP DONE";
+"firstEntryInvite.title" = "ONE feels better with someone close.";
+"firstEntryInvite.body" = "Let one of your people drop their color tonight too. Seeing what you both feel hits different.";
+"firstEntryInvite.invite" = "Invite someone close";
+"firstEntryInvite.skip" = "Not now";
+
+/* A5 — Empty state next-action prompts */
+"echo.empty.title" = "Echo is quiet for now.";
+"echo.empty.body" = "Once you log a day, your week, rhythm, and color palette show up here.";
+"echo.empty.cta" = "Log today";
+"discover.emptyCta" = "Pick today's mood";
+
+/* B1 — Streak / freeze (soft streak) */
+"streak.freezeUsed.toast" = "You missed a day, but your streak held — 1 freeze per week ❄️";
+"badges.streak3.title" = "3 Days";
+"badges.streak3.desc" = "First loop closed";
+"badges.streak14.title" = "14 Days";
+"badges.streak14.desc" = "Two weeks in a row";
+
+/* B5 — Widget install nudge */
+"widget.nudge.title" = "Mood in one tap";
+"widget.nudge.body" = "Add the ONE widget to your home screen and drop your color without opening the app.";
+
+/* C1 — Discovery Mood DNA */
+"discover.moodDNA.shaping" = "Your Mood DNA is taking shape";
+"discover.moodDNA.progress" = "%d / %d days";
+"discover.moodDNA.ready" = "Your Mood DNA is ready 🧬";
+"discover.moodDNA.readyBody" = "Discovery now speaks to your taste.";
+
+/* D2 — Loss aversion loyalty card */
+"profile.loyalty.title" = "YOUR MEMORIES";
+"profile.loyalty.subtitle" = "Built with ONE";
+"profile.loyalty.daysWithONE" = "DAYS WITH ONE";
+"profile.loyalty.entries" = "ENTRIES";
+"profile.loyalty.streak" = "CURRENT STREAK";
+"profile.loyalty.badges" = "BADGES";
+
+/* Profile footer */
+"profile.madeWithLove" = "Made with love and memories.";
+
+/* Profile invite code chip */
+"profile.inviteCode.shareHint" = "Share your code, grow your circle";
+"profile.inviteCode.copy" = "Copy code";
+"profile.inviteCode.share" = "Share code";
+
+/* Add Friend redesign — two-intent architecture */
+"addFriend.hero.title" = "Grow your circle";
+"addFriend.hero.subtitle" = "Share today's color with someone close.";
+"addFriend.section.beAdded" = "Let them add you";
+"addFriend.section.addSomeone" = "Add someone";
+"addFriend.or" = "or";
+"addFriend.yourCode" = "INVITE CODE";
+"addFriend.shareSMS" = "Message";
+"addFriend.searchPrompt" = "Type a code or @username.";
+"addFriend.scanQRCta" = "Or scan a QR code";
+"addFriend.codeA11y" = "Your invite code: %@";
+"addFriend.codeA11yHint" = "Double tap to copy";
+
+/* Profile redesign — BeReal-style hero */
+"profile.friendsCount" = "%d Friends";
+"profile.shareProfile" = "Share Profile";
+"profile.badges.section" = "YOUR BADGES";
+"profile.badges.locked" = "Locked";
+"profile.badges.unlockedA11y" = "unlocked";
+"profile.addFriend.a11y" = "Add friend";
+"profile.settings.a11y" = "Settings";
+"profile.editProfile.a11y" = "Edit profile";
+
+/* Profile settings sheet */
+"profile.settings.title" = "Settings";
+
+/* Profile redesign — share button + recent mood strip */
+"profile.shareProfile.hint" = "Send your code, grow your circle";
+"profile.recentWeek.title" = "PAST 7 DAYS";
+"profile.recentWeek.subtitle" = "Your color map";
+"profile.recentWeek.todayShort" = "Today";
+
+/* Profile friends list */
+"profile.friendsList.a11y" = "Open friends list";
+"profile.changePhoto" = "Change photo";
+
+/* My Friends list (profile tab) */
+"myFriends.title" = "My Friends";
+"myFriends.today" = "TODAY";
+"myFriends.empty.title" = "No friends yet";
+"myFriends.empty.body" = "Share your invite code or add someone's code to grow your circle.";
+"myFriends.loading" = "Loading your friends...";
+"myFriends.dailyShare" = "Daily share";
+
+/* Time-based Badges */
+"badges.nightOwl.title" = "Night Owl";
+"badges.nightOwl.desc" = "Lost in midnight thoughts";
+"badges.earlyBird.title" = "Early Bird";
+"badges.earlyBird.desc" = "In the first light of dawn";
+
+/* Viral Sharing */
+"share.xTemplate" = "My ONE mood today: %@. How was your day? 🎧✨\n\n#OneApp #DailyMood";
+"share.tiktok" = "Share on TikTok";
+"share.tiktokHint" = "Show how you spent that day";
+
+/* Storytelling */
+"monthly.storyTitle" = "The Month of %@ Music";
+"monthly.storySubtitle" = "You got lost in thoughts mostly at %@.";
+"monthly.expectationTitle" = "See You Next Month";
+"monthly.expectationBody" = "Keep saving your daily songs to shape\nyour next monthly summary.";
+
+/* Resonance (v2.6) */
+"resonance.title" = "Resonance";
+"resonance.send" = "Send Resonance";
+"resonance.sent" = "Resonance sent ✨";
+"resonance.sheetTitle" = "Send Resonance";
+"resonance.sheetSubtitle" = "Share your current mood and let your friend feel it.";
+"resonance.pickMood" = "Pick your color";
+"resonance.sendCTA" = "Send Resonance";
+"resonance.rateLimit" = "You've reached the resonance limit for today (max 5/day).";
+"resonance.received" = "%@ sent you a %@ resonance";
+
+/* P1.1 — Onboarding music optional */
+"onboarding.music.connectAndStart" = "Connect & Begin";
+"onboarding.music.skipForNow" = "Skip for now · Connect later in Profile";
+
+/* P1.6 — Onboarding streak freeze hint */
+"onboarding.notif.freezeHint" = "Miss a day, your streak stays — one freeze gifted weekly.";
+
+/* Accessibility — DayCell */
+"accessibility.dayCell.hasPhoto" = "with photo";
+"accessibility.dayCell.hint" = "Double-tap to see details";
+
+/* Accessibility — WaveStrip */
+"wavestrip.bar.hint" = "open day details";
+
+/* Accessibility — MoodBarStrip (Req 13) */
+"moodbarstrip.empty" = "Monthly mood distribution: no entries";
+"moodbarstrip.summary" = "Monthly mood distribution: %@";

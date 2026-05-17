@@ -57,12 +57,7 @@ struct GenreChipsView: View {
                                 .foregroundColor(isSelected ? .white : ONETokens.oneCharcoal)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 7)
-                                .background(
-                                    Capsule()
-                                        .fill(isSelected
-                                              ? ONETokens.oneBrand
-                                              : ONETokens.oneCreamMid.opacity(0.6))
-                                )
+                                .liquidGlass((isSelected ? LiquidGlassVariant.regular.tint(ONETokens.oneBrand) : .regular).interactive(), in: Capsule())
                             }
                             .buttonStyle(.plain)
                         }

@@ -20,6 +20,9 @@ class DiscoverViewModel: ObservableObject {
     @Published var upcomingEvents: [MoodEvent] = []
     @Published var isLoadingEvents: Bool = false
     @Published var selectedTab: DiscoverTab = .etkinlikler
+    /// C1 — Mood DNA: toplam entry sayısı. 7'den az ise "şekilleniyor",
+    /// >= 7 ise "hazır" affordance.
+    @Published var totalEntries: Int = 0
 
     let recommendationEngine: RecommendationEngine
     private let context: NSManagedObjectContext
@@ -33,6 +36,13 @@ class DiscoverViewModel: ObservableObject {
         self.recommendationEngine = RecommendationEngine(context: context)
         self.preferredCity = UserDefaults.standard.string(forKey: ONETokens.cityPreferenceKey) ?? ONETokens.defaultCity
         loadTodayEntry()
+        loadTotalEntries()
+    }
+
+    /// C1 — Discovery D7 unlock için toplam entry sayısı.
+    func loadTotalEntries() {
+        let request: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        totalEntries = (try? context.count(for: request)) ?? 0
     }
 
     // MARK: - Load today's entry
@@ -57,11 +67,12 @@ class DiscoverViewModel: ObservableObject {
     // MARK: - Fetch all content
 
     func fetchContent() async {
-        let moodKey = todayEntry.map { "\($0.moodLabel):\($0.moodColorHex)" } ?? ""
+        let moodKey = todayEntry.map { "\($0.normalizedMoodLabel):\($0.moodColorHex)" } ?? ""
         if recommendationEngine.recommendations.isEmpty || moodKey != lastRecommendationMoodKey {
+            recommendationEngine.clearCache()
             // Mood context'i engine'e aktar — kişisel açıklamalar için
             if let entry = todayEntry {
-                recommendationEngine.currentMoodLabel   = entry.moodLabel
+                recommendationEngine.currentMoodLabel   = entry.normalizedMoodLabel
                 recommendationEngine.currentMoodColorHex = entry.moodColorHex
                 recommendationEngine.currentFeeling     = entry.feeling.rawValue
             }
@@ -89,7 +100,7 @@ class DiscoverViewModel: ObservableObject {
 
     private func loadUpcomingEvents(for entry: DailyEntry) async {
         // Return cached result if mood + date match (avoids repeated Ticketmaster calls)
-        if let cached = eventCache.get(moodColorHex: entry.moodColorHex, moodLabel: entry.moodLabel) {
+        if let cached = eventCache.get(moodColorHex: entry.moodColorHex, moodLabel: entry.normalizedMoodLabel) {
             upcomingEvents = cached
             return
         }
@@ -107,7 +118,7 @@ class DiscoverViewModel: ObservableObject {
 
         // Persist for subsequent opens (same mood, same day)
         if !sorted.isEmpty {
-            eventCache.save(sorted, moodColorHex: entry.moodColorHex, moodLabel: entry.moodLabel)
+            eventCache.save(sorted, moodColorHex: entry.moodColorHex, moodLabel: entry.normalizedMoodLabel)
         }
     }
 

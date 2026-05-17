@@ -24,30 +24,8 @@ struct InviteShareCard: View {
     
     var body: some View {
         ZStack {
-            // Background Gradient
-            LinearGradient(
-                colors: [bgColor1, bgColor2],
-                startPoint: format == .post ? .leading : .topLeading,
-                endPoint: format == .post ? .trailing : .bottomTrailing
-            )
-            
-            // Abstract Circles / Noise
-            GeometryReader { geometry in
-                ZStack {
-                    Circle()
-                        .fill(ONETokens.onePaper.opacity(0.04))
-                        .frame(width: 300, height: 300)
-                        .offset(x: format == .post ? geometry.size.width * 0.7 : geometry.size.width * 0.5, y: -50)
-                        .blur(radius: 20)
-                    
-                    Circle()
-                        .fill(Color.black.opacity(0.2))
-                        .frame(width: 200, height: 200)
-                        .offset(x: -80, y: format == .post ? geometry.size.height * 0.8 : geometry.size.height * 0.6)
-                        .blur(radius: 15)
-                }
-            }
-            .clipped()
+            // BeReal style deep black background
+            Color.black
             
             if format == .story {
                 storyLayout
@@ -64,108 +42,161 @@ struct InviteShareCard: View {
         VStack(spacing: 0) {
             Spacer()
             
-            Image("hi")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 140, height: 140)
-                .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
+            Text("ADD ME ON")
+                .bodyLG()
+                .fontWeight(.bold)
+                .foregroundColor(.white.opacity(0.6))
+                .padding(.bottom, -8)
+
+            Text("ONE")
+                .displayXXL()
+                .fontWeight(.black)
+                .foregroundColor(.white)
+                .tracking(4)
                 .padding(.bottom, 40)
             
-            Text(String(format: NSLocalizedString("invite.invitesYou", comment: ""), userName.uppercased()))
-                .monoLabel(tracking: 2.0)
-                .foregroundColor(ONETokens.oneAsh)
-                .padding(.bottom, 12)
+            // Abstract visual profile placeholder
+            ZStack {
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Color(hex: "#121212"))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .stroke(Color(hex: "#222222"), lineWidth: 1)
+                    )
+                    .frame(width: 220, height: 260)
+                
+                VStack(spacing: 16) {
+                    Circle()
+                        .fill(Color(hex: "#222222"))
+                        .frame(width: 90, height: 90)
+                        .overlay(
+                            Text(String(userName.prefix(1)).uppercased())
+                                .displayMD()
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                        )
 
-            Text(NSLocalizedString("app.slogan", comment: ""))
-                .displayXL()
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
-                .padding(.bottom, 60)
+                    Text(userName)
+                        .displaySM()
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .padding(.horizontal, 20)
+                }
+            }
+            .padding(.bottom, 50)
 
             VStack(spacing: 8) {
-                Text(NSLocalizedString("invite.codeLabel", comment: ""))
-                    .monoSM(tracking: 1.5)
-                    .foregroundColor(ONETokens.oneAsh)
-                
+                Text(NSLocalizedString("invite.codeLabel", comment: "").uppercased())
+                    .monoSM()
+                    .fontWeight(.bold)
+                    .foregroundColor(.white.opacity(0.5))
+                    .tracking(2)
+
                 Text(inviteCode.uppercased())
-                    .monoBase(tracking: 4.0)
-                    .foregroundColor(ONETokens.oneInk)
+                    .displayMD()
+                    .fontWeight(.black)
+                    .foregroundColor(.white)
+                    .tracking(6)
                     .padding(.horizontal, 32)
                     .padding(.vertical, 16)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(ONETokens.onePaper)
+                            .fill(Color(hex: "#121212"))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color(hex: "#222222"), lineWidth: 1)
+                            )
                     )
-                    .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
             }
-            .padding(.bottom, 100)
             
-            Text(NSLocalizedString("invite.footer", comment: ""))
-                .monoMicro(tracking: 1.0)
-                .foregroundColor(.white.opacity(0.4))
-                .padding(.bottom, 60)
+            Spacer()
+            
+            Text("one.forvibe.app")
+                .monoSM()
+                .fontWeight(.bold)
+                .foregroundColor(.white.opacity(0.3))
+                .padding(.bottom, 30)
         }
-        .padding(.horizontal, 32)
     }
     
     private var postLayout: some View {
         HStack(spacing: 0) {
-            // Left mascot area
-            VStack {
+            // Left area: App branding
+            VStack(spacing: 0) {
                 Spacer()
-                Image("hi")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 120, height: 120)
-                    .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
+                Text("ADD ME ON")
+                    .bodySM()
+                    .fontWeight(.bold)
+                    .foregroundColor(.white.opacity(0.6))
+                    .padding(.bottom, -6)
+                Text("ONE")
+                    .displayLG()
+                    .fontWeight(.black)
+                    .foregroundColor(.white)
+                    .tracking(4)
                 Spacer()
             }
-            .frame(width: 240)
+            .frame(width: 260)
             
-            VStack(alignment: .leading, spacing: 0) {
+            // Right area: Profile & Code
+            VStack(spacing: 0) {
                 Spacer()
                 
-                Text(String(format: NSLocalizedString("invite.invitesYou", comment: ""), userName.uppercased()))
-                    .monoLabel(tracking: 2.0)
-                    .foregroundColor(ONETokens.oneAsh)
-                    .padding(.bottom, 8)
+                HStack(spacing: 20) {
+                    Circle()
+                        .fill(Color(hex: "#222222"))
+                        .frame(width: 70, height: 70)
+                        .overlay(
+                            Text(String(userName.prefix(1)).uppercased())
+                                .displayMD()
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                        )
 
-                Text(NSLocalizedString("app.slogan", comment: ""))
-                    .displayXL()
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.leading)
-                    .lineSpacing(4)
-                    .padding(.bottom, 32)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(userName)
+                            .displaySM()
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
 
-                HStack(alignment: .bottom) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(NSLocalizedString("invite.codeLabel", comment: ""))
-                            .monoSM(tracking: 1.5)
-                            .foregroundColor(ONETokens.oneAsh)
-                        
-                        Text(inviteCode.uppercased())
-                            .monoBase(tracking: 4.0)
-                            .foregroundColor(ONETokens.oneInk)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 14)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(ONETokens.onePaper)
-                            )
-                            .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+                        Text("one.forvibe.app")
+                            .monoSM()
+                            .fontWeight(.bold)
+                            .foregroundColor(.white.opacity(0.4))
                     }
-                    Spacer()
-                    Text(NSLocalizedString("invite.footer", comment: ""))
-                        .monoMicro(tracking: 1.0)
-                        .foregroundColor(.white.opacity(0.4))
-                        .padding(.bottom, 4)
+                }
+                .padding(.bottom, 30)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(NSLocalizedString("invite.codeLabel", comment: "").uppercased())
+                        .monoMicro()
+                        .fontWeight(.bold)
+                        .foregroundColor(.white.opacity(0.5))
+                        .tracking(2)
+
+                    Text(inviteCode.uppercased())
+                        .displayMD()
+                        .fontWeight(.black)
+                        .foregroundColor(.white)
+                        .tracking(4)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(hex: "#121212"))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color(hex: "#222222"), lineWidth: 1)
+                                )
+                        )
                 }
                 
                 Spacer()
             }
-            .padding(.vertical, 32)
             .padding(.trailing, 40)
+            
+            Spacer()
         }
     }
 }

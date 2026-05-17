@@ -9,6 +9,7 @@ import SwiftUI
 import CoreData
 import CloudKit
 import UserNotifications
+import AppTrackingTransparency
 // MARK: - App Delegate for Push Notifications
 
 class AppDelegate: NSObject, UIApplicationDelegate {
@@ -149,13 +150,42 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             options: []
         )
 
+        let appUpdateCategory = UNNotificationCategory(
+            identifier: "APP_UPDATE",
+            actions: [],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        // v2.5 — Yorum bildirimleri: Yanıtla (inline text) + Paylaşımı aç
+        let replyAction = UNTextInputNotificationAction(
+            identifier: "REPLY_ACTION",
+            title: "Yanıtla",
+            options: [.authenticationRequired],
+            textInputButtonTitle: "Gönder",
+            textInputPlaceholder: "Yanıtını yaz…"
+        )
+        let openCommentsAction = UNNotificationAction(
+            identifier: "OPEN_COMMENTS",
+            title: "Paylaşımı aç",
+            options: [.foreground]
+        )
+        let commentNotificationCategory = UNNotificationCategory(
+            identifier: "COMMENT_NOTIFICATION",
+            actions: [replyAction, openCommentsAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
         UNUserNotificationCenter.current().setNotificationCategories([
             friendRequestCategory,
             streakCategory,
             weeklySummaryCategory,
             discoveryCategory,
             friendSharedCategory,
-            moodResonanceCategory
+            moodResonanceCategory,
+            appUpdateCategory,
+            commentNotificationCategory
         ])
     }
 }
@@ -196,42 +226,37 @@ struct oneApp: App {
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
                 .preferredColorScheme(isDarkMode ? .dark : .light)
                 .onAppear {
-                    // Check CloudKit availability on app launch
-                    cloudKitManager.checkCloudKitAvailability()
+                    // Faz 3.5 (2026-04-26) — cold start optimizasyonu:
+                    // .onAppear ana thread'i bloke etmemeli. Tüm ağır init işleri
+                    // Task'e taşındı; ilk frame splash'ten kullanıcı içeriğine kesintisiz
+                    // geçer, retention-kritik işler arka planda akar.
 
-                    // Uygulama açılışında kalmış eski Live Activity'leri temizle
+                    // Tier 1 — anında, ucuz, UI'a senkronize
                     if #available(iOS 16.1, *) {
-                        Task {
-                            await LiveActivityManager.shared.endAllActivities()
+                        Task { await LiveActivityManager.shared.endAllActivities() }
+                    }
+
+                    // Tier 2 — bir tick gecikmeli (ilk frame paint olduktan sonra)
+                    Task.detached(priority: .userInitiated) {
+                        await MainActor.run {
+                            cloudKitManager.checkCloudKitAvailability()
+                            MidnightResetManager.shared.scheduleMidnightReset()
+                            setupPushNotifications()
                         }
                     }
-                    
-                    // Schedule midnight reset
-                    MidnightResetManager.shared.scheduleMidnightReset()
-                    
-                    // Request notification permission & register CloudKit subscription
-                    setupPushNotifications()
 
-                    // Akıllı hatırlatma: geçmiş kayıt saatlerine göre optimize et
-                    NotificationManager.shared.scheduleSmartDailyReminder(
-                        context: persistenceController.container.viewContext
-                    )
-
-                    // Ay-sonu özet bildirimi planla
-                    NotificationManager.shared.scheduleMonthEndNotification()
-
-                    // App Store güncelleme kontrolü
-                    updateChecker.check()
-                }
-                .sheet(isPresented: $updateChecker.updateAvailable) {
-                    AppUpdateSheet(
-                        currentVersion: updateChecker.currentVersion,
-                        newVersion: updateChecker.appStoreVersion,
-                        onUpdate: { updateChecker.openAppStore() },
-                        onDismiss: { updateChecker.updateAvailable = false }
-                    )
-                    .presentationDetents([.height(340)])
-                    .presentationDragIndicator(.visible)
+                    // Tier 3 — bekleyebilir (engagement, telemetri, network)
+                    Task.detached(priority: .background) {
+                        await MainActor.run {
+                            NotificationOrchestrator.shared.bootOnLaunch()
+                            NotificationOrchestrator.shared.onAppOpened()
+                            NotificationManager.shared.scheduleSmartDailyReminder(
+                                context: persistenceController.container.viewContext
+                            )
+                            NotificationManager.shared.scheduleMonthEndNotification()
+                            updateChecker.check()
+                        }
+                    }
                 }
                 .onOpenURL { url in
                     // 1. Handle Spotify callback
@@ -260,6 +285,20 @@ struct oneApp: App {
                 }
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
                     guard let url = userActivity.webpageURL else { return }
+
+                    // In-App Event universal link: https://one.forvibe.app/event/mood
+                    // Mood seçim ekranı (ONEColorPickerView) zaten splash sonrası
+                    // ana ekran; burada sadece olası modal/sheet'leri kapatıp
+                    // kullanıcıyı picker'a getirmek için bildirim yayınlanır.
+                    if url.path.hasPrefix("/event/mood") {
+                        ONELogger.info("Received in-app event universal link: mood", category: .general)
+                        NotificationCenter.default.post(
+                            name: NSNotification.Name("OpenMoodPicker"),
+                            object: nil
+                        )
+                        return
+                    }
+
                     // Desteklenen domainler: one.forvibe.app ve onedaily.app (eski)
                     // Beklenen format: https://one.forvibe.app/invite?code=ABC123
                     if url.path == "/invite" || url.path.hasPrefix("/invite"),
@@ -281,7 +320,9 @@ struct oneApp: App {
                 }
                 .onChange(of: cloudKitManager.currentUser?.recordID.recordName) { _, newValue in
                     if let userID = newValue {
-                        AppAnalytics.shared.identify(userID: userID)
+                        if ATTrackingManager.trackingAuthorizationStatus == .authorized {
+                            AppAnalytics.shared.identify(userID: userID)
+                        }
                         CrashReporter.shared.setUser(id: userID)
                         cloudKitManager.registerAllSubscriptions()
                         // Fire any deep link that arrived before currentUser was ready

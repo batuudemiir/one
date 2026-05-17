@@ -103,7 +103,8 @@ struct DiscoverFeaturedEventCard: View {
 
                     // Title
                     Text(event.title)
-                        .font(.system(size: 17, weight: .semibold))
+                        .bodyLG()
+                        .fontWeight(.semibold)
                         .foregroundColor(.white)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -194,10 +195,10 @@ struct DiscoverFeaturedEventCard: View {
                 sourceURL: URL(string: "https://www.biletix.com"),
                 kind: .artistConcert
             ),
-            moodColor: Color(hex: "#E84040")
+            moodColor: ONETokens.oneRed
         )
     }
     .padding(.horizontal, 24)
     .padding(.vertical, 24)
-    .background(Color(hex: "#F7F6F3"))
+    .background(ONETokens.oneCream)
 }

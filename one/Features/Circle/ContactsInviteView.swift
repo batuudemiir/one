@@ -42,7 +42,7 @@ struct ContactsInviteView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 ONETokens.oneCream.ignoresSafeArea()
 
@@ -175,7 +175,7 @@ struct ContactsInviteView: View {
                 }
             }
             .monoSM(tracking: 0.8)
-            .foregroundColor(ONETokens.oneCream)
+            .foregroundStyle(ONETokens.oneCream)
             .padding(.horizontal, 24)
             .padding(.vertical, 12)
             .background(RoundedRectangle(cornerRadius: 12).fill(ONETokens.oneInk))
@@ -289,7 +289,8 @@ private struct ContactRow: View {
                 .frame(width: 44, height: 44)
                 .overlay(
                     Text(initial)
-                        .font(.system(size: 17, weight: .medium, design: .serif))
+                        .editorialMD()
+                        .fontWeight(.medium)
                         .italic()
                         .foregroundColor(ONETokens.oneAsh)
                 )
@@ -310,7 +311,7 @@ private struct ContactRow: View {
             Button(action: onInvite) {
                 Text(NSLocalizedString("contacts.inviteButton", comment: ""))
                     .monoLabel(tracking: 0.6)
-                    .foregroundColor(ONETokens.oneCream)
+                    .foregroundStyle(ONETokens.oneCream)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(Capsule().fill(ONETokens.oneInk))

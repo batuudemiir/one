@@ -10,6 +10,7 @@ struct AppUpdateSheet: View {
     let newVersion: String
     let onUpdate: () -> Void
     let onDismiss: () -> Void
+    var isForced: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -60,13 +61,17 @@ struct AppUpdateSheet: View {
 
             Spacer().frame(height: ONETokens.spacingSM)
 
-            // Sonra hatırlat
-            Button(action: onDismiss) {
-                Text(NSLocalizedString("update.later", comment: ""))
-                    .monoSM(tracking: 0.8)
-                    .foregroundColor(ONETokens.oneAsh)
+            // Sonra hatırlat — zorla güncelleme modunda gizli
+            if !isForced {
+                Button(action: onDismiss) {
+                    Text(NSLocalizedString("update.later", comment: ""))
+                        .monoSM(tracking: 0.8)
+                        .foregroundColor(ONETokens.oneAsh)
+                }
+                .padding(.bottom, ONETokens.spacingLG)
+            } else {
+                Spacer().frame(height: ONETokens.spacingLG)
             }
-            .padding(.bottom, ONETokens.spacingLG)
         }
         .frame(maxWidth: .infinity)
         .background(ONETokens.oneCream.ignoresSafeArea())

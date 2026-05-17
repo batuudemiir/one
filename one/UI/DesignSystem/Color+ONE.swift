@@ -41,6 +41,15 @@ extension Color {
     }
 }
 
+extension String {
+    /// Network'ten gelen hex renk string'inin geçerliliğini kontrol eder.
+    /// Geçerli formatlar: 3, 6 veya 8 hex karakter (# prefix opsiyonel).
+    var isValidHexColor: Bool {
+        let stripped = trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        return [3, 6, 8].contains(stripped.count) && stripped.allSatisfy(\.isHexDigit)
+    }
+}
+
 extension UIColor {
     /// Initialize a UIColor from a hex string (for adaptive trait-based colors)
     convenience init(hex: String) {

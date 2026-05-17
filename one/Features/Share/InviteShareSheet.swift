@@ -19,6 +19,7 @@ struct InviteShareSheet: View {
     @State private var errorMessage: String?
     @State private var showError = false
     @State private var isSaved = false
+    @State private var isCopied = false
     @State private var breathe = false
     @State private var selectedFormat: ShareFormat = .story
     
@@ -30,28 +31,34 @@ struct InviteShareSheet: View {
             
             titleRow
             
-            formatPicker
-                .padding(.horizontal, 24)
-                .padding(.bottom, 20)
-            
-            // Card preview or loading indicator
-            Group {
-                if isGenerating {
-                    loadingView
-                } else if let image = generatedImage {
-                    cardPreview(image)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    
+                    formatPicker
+                        .padding(.horizontal, 40)
+                        .padding(.top, 8)
+                    
+                    // Card preview or loading indicator
+                    Group {
+                        if isGenerating {
+                            loadingView
+                        } else if let image = generatedImage {
+                            cardPreview(image)
+                        }
+                    }
+                    .frame(height: 400)
+                    
+                    actionButtons
+                        .padding(.top, 12)
+                    
+                    shareLinkView
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 40)
                 }
             }
-            .frame(height: 160)
-            
-            Spacer(minLength: 12)
-            
-            actionButtons
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
         }
         .background(ONETokens.oneCream.ignoresSafeArea())
-        .presentationDetents([.height(560), .large])
+        .presentationDetents([.fraction(0.9), .large])
         .presentationDragIndicator(.hidden)
         .task { await generateCard() }
         .alert(NSLocalizedString("general.error", comment: ""), isPresented: $showError) {
@@ -78,21 +85,20 @@ struct InviteShareSheet: View {
     private var titleRow: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(NSLocalizedString("invite.joinCircle", comment: ""))
-                    .monoLabel(tracking: 2.0)
-                    .foregroundColor(ONETokens.oneAsh)
-                Text(NSLocalizedString("invite.sendInvite", comment: ""))
-                    .displaySM()
+                Text(NSLocalizedString("invite.sendInvite", comment: "Profili Paylaş"))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundColor(ONETokens.oneInk)
-                    .lineLimit(1)
+                Text(NSLocalizedString("invite.shareSubtitle", comment: "Davet kodun veya link ile seni ekleyebilirler"))
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(ONETokens.oneMist)
             }
             Spacer()
             Button(action: { dismiss() }) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 13, weight: .bold))
                     .foregroundColor(ONETokens.oneAsh)
                     .frame(width: 32, height: 32)
-                    .background(Circle().fill(ONETokens.oneSilver))
+                    .background(Circle().fill(ONETokens.oneSilver.opacity(0.6)))
             }
         }
         .padding(.horizontal, 24)
@@ -101,8 +107,8 @@ struct InviteShareSheet: View {
     
     private var formatPicker: some View {
         Picker(NSLocalizedString("invite.formatPicker", comment: ""), selection: $selectedFormat) {
-            Text(NSLocalizedString("invite.story", comment: "")).tag(ShareFormat.story)
-            Text(NSLocalizedString("invite.post", comment: "")).tag(ShareFormat.post)
+            Text(NSLocalizedString("invite.story", comment: "Hikaye")).tag(ShareFormat.story)
+            Text(NSLocalizedString("invite.post", comment: "Gönderi")).tag(ShareFormat.post)
         }
         .pickerStyle(.segmented)
     }
@@ -119,8 +125,8 @@ struct InviteShareSheet: View {
                         breathe = true
                     }
                 }
-            Text(NSLocalizedString("invite.preparing", comment: ""))
-                .monoSM(tracking: 0.5)
+            Text(NSLocalizedString("invite.preparing", comment: "Hazırlanıyor..."))
+                .font(.system(size: 13, weight: .medium, design: .monospaced))
                 .foregroundColor(ONETokens.oneAsh)
         }
         .frame(maxWidth: .infinity)
@@ -130,67 +136,82 @@ struct InviteShareSheet: View {
         Image(uiImage: image)
             .resizable()
             .aspectRatio(selectedFormat == .story ? 9 / 16 : 16 / 9, contentMode: .fit)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(color: Color.black.opacity(0.14), radius: 14, x: 0, y: 6)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .shadow(color: Color.black.opacity(0.25), radius: 24, x: 0, y: 12)
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, selectedFormat == .story ? 120 : 60)
+            .padding(.horizontal, selectedFormat == .story ? 70 : 20)
             .transition(.opacity.combined(with: .scale(scale: 0.96)))
     }
     
     private var actionButtons: some View {
-        VStack(spacing: 10) {
-            // ── Instagram Story ──────────────────────────────
-            let instaInstalled = ShareManager.shared.isInstagramInstalled()
-            ActionRow(
-                icon: "camera.viewfinder",
-                label: NSLocalizedString("invite.instagramStory", comment: ""),
-                sublabel: instaInstalled ? NSLocalizedString("invite.instagramInstalled", comment: "") : NSLocalizedString("invite.instagramNotInstalled", comment: ""),
-                style: .filled(ONETokens.oneInk),
-                isEnabled: generatedImage != nil && instaInstalled,
-                action: shareToInstagramStory
-            )
-            
-            // ── Diğer uygulamalar ────────────────────────────
-            ActionRow(
-                icon: "square.and.arrow.up",
-                label: NSLocalizedString("invite.otherApps", comment: ""),
-                sublabel: NSLocalizedString("invite.otherAppsHint", comment: ""),
-                style: .bordered,
-                isEnabled: generatedImage != nil,
-                action: shareViaSystem
-            )
-            
-            // ── Fotoğraflara kaydet ──────────────────────────
-            if isSaved {
-                HStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(ONETokens.oneGreen)
-                    Text(NSLocalizedString("invite.savedToPhotos", comment: ""))
-                        .monoSM(tracking: 0)
-                        .foregroundColor(ONETokens.oneGreen)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .transition(.opacity)
-            } else {
-                ActionRow(
-                    icon: "square.and.arrow.down",
-                    label: NSLocalizedString("invite.saveToPhotos", comment: ""),
-                    sublabel: NSLocalizedString("invite.saveToPhotosHint", comment: ""),
-                    style: .ghost,
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 24) {
+                
+                let instaInstalled = ShareManager.shared.isInstagramInstalled()
+                ShareAppIcon(
+                    iconName: "camera.viewfinder",
+                    title: "Instagram",
+                    color: Color(hex: "#E1306C"),
+                    isEnabled: generatedImage != nil && instaInstalled,
+                    action: shareToInstagramStory
+                )
+                
+                ShareAppIcon(
+                    iconName: "square.and.arrow.up",
+                    title: "Diğer",
+                    color: ONETokens.oneInk,
+                    isEnabled: generatedImage != nil,
+                    action: shareViaSystem
+                )
+                
+                ShareAppIcon(
+                    iconName: "arrow.down",
+                    title: "Kaydet",
+                    color: ONETokens.oneAsh,
                     isEnabled: generatedImage != nil,
                     action: saveToPhotos
                 )
+                
+                ShareAppIcon(
+                    iconName: "link",
+                    title: "Kopyala",
+                    color: ONETokens.oneAsh,
+                    isEnabled: true,
+                    action: copyLink
+                )
+            }
+            .padding(.horizontal, 28)
+        }
+    }
+    
+    private var shareLinkView: some View {
+        HStack {
+            Text(inviteLinkURL?.absoluteString ?? "")
+                .font(.system(size: 14, weight: .medium, design: .monospaced))
+                .foregroundColor(ONETokens.oneInk)
+                .lineLimit(1)
+                .truncationMode(.middle)
+            
+            Spacer()
+            
+            Button(action: copyLink) {
+                Text(isCopied ? NSLocalizedString("general.copied", comment: "Kopyalandı") : NSLocalizedString("general.copy", comment: "Kopyala"))
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(isCopied ? .white : ONETokens.oneInk)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(isCopied ? ONETokens.oneGreen : ONETokens.oneSilver.opacity(0.8)))
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: isSaved)
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 16).fill(ONETokens.oneSilver.opacity(0.3)))
     }
     
     // MARK: - Actions
     
     private var inviteLinkURL: URL? {
         // Universal Link for the invitation
-        URL(string: "https://onedaily.app/invite?code=\(inviteCode)")
+        URL(string: "https://one.forvibe.app/invite/\(inviteCode)")
     }
     
     @MainActor
@@ -216,12 +237,14 @@ struct InviteShareSheet: View {
     
     private func shareToInstagramStory() {
         guard let image = generatedImage else { return }
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        
+        ONEHaptics.feelingSelected()
+
         dismiss()
-        
+
         DispatchQueue.main.async {
-            ShareManager.shared.shareToInstagramStories(image: image) { result in
+            // v2.6 — Attribution sticker: Universal Link path'i ile davet kodu doğrudan açılır.
+            let attributionURL = URL(string: "https://one.forvibe.app/invite/\(self.inviteCode)")
+            ShareManager.shared.shareToInstagramStories(image: image, contentURL: attributionURL) { result in
                 if case .failure(let err) = result {
                     ONELogger.error("Instagram story share failed: \(err.localizedDescription)", category: .share)
                 }
@@ -231,7 +254,7 @@ struct InviteShareSheet: View {
     
     private func shareViaSystem() {
         guard let image = generatedImage else { return }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        ONEHaptics.moodSelected()
         
         var items: [Any] = [image]
         let inviteText = String(format: NSLocalizedString("invite.shareText", comment: ""), inviteLinkURL?.absoluteString ?? "")
@@ -242,11 +265,11 @@ struct InviteShareSheet: View {
     
     private func saveToPhotos() {
         guard let image = generatedImage else { return }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        ONEHaptics.moodSelected()
         ShareManager.shared.saveToPhotoLibrary(image: image) { result in
             switch result {
             case .success:
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                ONEHaptics.songSaved()
                 withAnimation { isSaved = true }
             case .failure(let err):
                 errorMessage = err.localizedDescription
@@ -254,78 +277,44 @@ struct InviteShareSheet: View {
             }
         }
     }
+    
+    private func copyLink() {
+        ONEHaptics.moodSelected()
+        UIPasteboard.general.string = inviteLinkURL?.absoluteString ?? ""
+        withAnimation { isCopied = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation { isCopied = false }
+        }
+    }
 }
 
-// MARK: - ActionRow
+// MARK: - ShareAppIcon
 
-private enum ActionRowStyle {
-    case filled(Color)
-    case bordered
-    case ghost
-}
-
-private struct ActionRow: View {
-    let icon: String
-    let label: String
-    let sublabel: String
-    let style: ActionRowStyle
+private struct ShareAppIcon: View {
+    let iconName: String
+    let title: String
+    let color: Color
     let isEnabled: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 14) {
-                Image(systemName: icon)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(iconColor)
-                    .frame(width: 22)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(label)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(labelColor)
-                    Text(sublabel)
-                        .monoSM(tracking: 0.3)
-                        .foregroundColor(labelColor.opacity(0.55))
+            VStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.12))
+                        .frame(width: 60, height: 60)
+                    Image(systemName: iconName)
+                        .font(.system(size: 24, weight: .regular))
+                        .foregroundColor(color)
                 }
                 
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(labelColor.opacity(0.35))
+                Text(title)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(ONETokens.oneInk)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 13)
-            .background(background)
         }
         .disabled(!isEnabled)
-        .opacity(isEnabled ? 1.0 : 0.38)
-    }
-    
-    // MARK: Style helpers
-    
-    private var labelColor: Color {
-        switch style {
-        case .filled: return .white
-        case .bordered, .ghost: return ONETokens.oneInk
-        }
-    }
-    
-    private var iconColor: Color { labelColor }
-    
-    @ViewBuilder
-    private var background: some View {
-        switch style {
-        case .filled(let color):
-            RoundedRectangle(cornerRadius: 14).fill(color)
-        case .bordered:
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(ONETokens.oneStone, lineWidth: 1))
-        case .ghost:
-            RoundedRectangle(cornerRadius: 14)
-                .fill(ONETokens.oneSilver.opacity(0.6))
-        }
+        .opacity(isEnabled ? 1.0 : 0.4)
     }
 }

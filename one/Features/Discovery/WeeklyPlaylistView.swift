@@ -21,7 +21,7 @@ struct WeeklyPlaylistView: View {
     // MARK: - Dominant Mood Color
 
     private var dominantColor: Color {
-        guard let top = service.moodDistribution.first else { return Color(hex: "#5B8DEF") }
+        guard let top = service.moodDistribution.first else { return ONETokens.oneBlue }
         return Color(hex: top.color)
     }
 
@@ -96,7 +96,7 @@ struct WeeklyPlaylistView: View {
                                 .fill(Color.white.opacity(0.14))
                                 .frame(width: 36, height: 36)
                             Image(systemName: "xmark")
-                                .font(.system(size: 13, weight: .semibold))
+                                .bodySM().fontWeight(.semibold)
                                 .foregroundColor(.white.opacity(0.85))
                         }
                     }
@@ -145,13 +145,14 @@ struct WeeklyPlaylistView: View {
                 // Title
                 VStack(alignment: .leading, spacing: 6) {
                     Text("HAFTALIK MİX")
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                        .monoSM().fontWeight(.semibold)
                         .tracking(2.5)
                         .foregroundColor(.white.opacity(0.55))
 
                     if !weekDateRangeString.isEmpty {
                         Text(weekDateRangeString)
-                            .font(.system(size: 32, weight: .black))
+                            .font(ONETypography.displayHero)
+                            .fontWeight(.black)
                             .foregroundColor(.white)
                             .lineSpacing(2)
                     }
@@ -174,7 +175,8 @@ struct WeeklyPlaylistView: View {
                 HStack(spacing: 16) {
                     if !service.weekEntries.isEmpty {
                         Label("\(service.weekEntries.count) gün", systemImage: "calendar")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(ONETypography.monoBase)
+                            .fontWeight(.medium)
                             .foregroundColor(.white.opacity(0.6))
                     }
                     if let mood = service.dominantMood {
@@ -182,7 +184,8 @@ struct WeeklyPlaylistView: View {
                             .fill(Color.white.opacity(0.25))
                             .frame(width: 1, height: 12)
                         Label(mood, systemImage: "waveform")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(ONETypography.monoBase)
+                            .fontWeight(.medium)
                             .foregroundColor(.white.opacity(0.6))
                     }
                 }
@@ -205,10 +208,10 @@ struct WeeklyPlaylistView: View {
                     .fill(Color(hex: item.color))
                     .frame(width: 8, height: 8)
                 Text(item.mood)
-                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .monoBase().fontWeight(.semibold)
                     .foregroundColor(.white)
                 Text("×\(item.count)")
-                    .font(.system(size: 10, weight: .regular, design: .monospaced))
+                    .monoLabel()
                     .foregroundColor(.white.opacity(0.6))
             }
             .padding(.horizontal, 14)
@@ -236,24 +239,24 @@ struct WeeklyPlaylistView: View {
                     .fill(Color.white.opacity(0.06))
                     .frame(width: 72, height: 72)
                 Image(systemName: "music.note.list")
-                    .font(.system(size: 28))
+                    .displayMD()
                     .foregroundColor(.white.opacity(0.4))
             }
 
             VStack(spacing: 8) {
                 Text(NSLocalizedString("discover.minSelections", comment: ""))
-                    .font(.system(size: 18, weight: .bold))
+                    .bodyXL().fontWeight(.bold)
                     .foregroundColor(.white)
 
                 Text(NSLocalizedString("discover.minSelectionsHint", comment: ""))
-                    .font(.system(size: 14))
+                    .bodySM()
                     .foregroundColor(.white.opacity(0.55))
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
             }
 
             Text(String(format: NSLocalizedString("discover.daysCompleted", comment: ""), service.weekEntries.count))
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .monoBase().fontWeight(.semibold)
                 .foregroundColor(.white.opacity(0.4))
                 .tracking(0.6)
         }
@@ -265,7 +268,7 @@ struct WeeklyPlaylistView: View {
     private var weekReviewSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("HAFTANIN GEZİNTİSİ")
-                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .monoLabel().fontWeight(.semibold)
                 .tracking(2)
                 .foregroundColor(.white.opacity(0.45))
 
@@ -308,11 +311,11 @@ struct WeeklyPlaylistView: View {
             // Day column
             VStack(spacing: 1) {
                 Text(dayFmt.string(from: entry.date).uppercased())
-                    .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                    .monoMicro().fontWeight(.semibold)
                     .tracking(0.5)
                     .foregroundColor(.white.opacity(0.4))
                 Text(numFmt.string(from: entry.date))
-                    .font(.system(size: 18, weight: .black))
+                    .bodyXL().fontWeight(.black)
                     .foregroundColor(.white.opacity(0.85))
             }
             .frame(width: 32)
@@ -327,18 +330,18 @@ struct WeeklyPlaylistView: View {
                 )
                 .overlay(
                     Image(systemName: "music.note")
-                        .font(.system(size: 14, weight: .medium))
+                        .bodySMMedium()
                         .foregroundColor(entry.moodColor)
                 )
 
             // Song info
             VStack(alignment: .leading, spacing: 3) {
                 Text(entry.songName)
-                    .font(.system(size: 14, weight: .semibold))
+                    .bodySM().fontWeight(.semibold)
                     .foregroundColor(.white)
                     .lineLimit(1)
                 Text(entry.artistName)
-                    .font(.system(size: 12))
+                    .monoBase()
                     .foregroundColor(.white.opacity(0.5))
                     .lineLimit(1)
             }
@@ -346,9 +349,9 @@ struct WeeklyPlaylistView: View {
             Spacer()
 
             // Mood label capsule
-            if !entry.moodLabel.isEmpty {
-                Text(entry.moodLabel)
-                    .font(.system(size: 9, weight: .semibold))
+            if !entry.normalizedMoodLabel.isEmpty {
+                Text(entry.normalizedMoodLabel)
+                    .monoMicro().fontWeight(.semibold)
                     .foregroundColor(entry.moodColor)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)
@@ -365,13 +368,13 @@ struct WeeklyPlaylistView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("ÖNERİLER")
-                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .monoLabel().fontWeight(.semibold)
                     .tracking(2)
                     .foregroundColor(.white.opacity(0.45))
                 Spacer()
                 if !service.playlistSongs.isEmpty {
                     Text("\(service.playlistSongs.count) şarkı")
-                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .monoSM()
                         .foregroundColor(.white.opacity(0.3))
                 }
             }
@@ -403,14 +406,14 @@ struct WeeklyPlaylistView: View {
         } label: {
             HStack(spacing: 14) {
                 // Artwork
-                AsyncImage(url: song.coverURL) { image in
+                CachedAsyncImage(url: song.coverURL) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
                     ZStack {
                         RoundedRectangle(cornerRadius: ONETokens.radiusCover)
                             .fill(Color.white.opacity(0.08))
                         Image(systemName: "music.note")
-                            .font(.system(size: 18))
+                            .bodyXL()
                             .foregroundColor(.white.opacity(0.3))
                     }
                 }
@@ -421,20 +424,20 @@ struct WeeklyPlaylistView: View {
                 // Info
                 VStack(alignment: .leading, spacing: 5) {
                     Text(song.name)
-                        .font(.system(size: 14, weight: .semibold))
+                        .bodySM().fontWeight(.semibold)
                         .foregroundColor(.white)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
 
                     Text(song.artist)
-                        .font(.system(size: 12))
+                        .monoBase()
                         .foregroundColor(.white.opacity(0.5))
                         .lineLimit(1)
 
                     HStack(spacing: 6) {
                         if let reason = song.recommendationReason {
                             Text(reason)
-                                .font(.system(size: 9, weight: .medium))
+                                .monoMicro().fontWeight(.medium)
                                 .foregroundColor(.white.opacity(0.45))
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 3)
@@ -442,7 +445,7 @@ struct WeeklyPlaylistView: View {
                                 .lineLimit(1)
                         }
                         Image(systemName: song.source == .spotify ? "music.note" : "applelogo")
-                            .font(.system(size: 9))
+                            .monoMicro()
                             .foregroundColor(.white.opacity(0.3))
                     }
                 }
@@ -450,7 +453,7 @@ struct WeeklyPlaylistView: View {
                 Spacer()
 
                 Image(systemName: "arrow.up.right")
-                    .font(.system(size: 11, weight: .semibold))
+                    .monoSM().fontWeight(.semibold)
                     .foregroundColor(.white.opacity(0.25))
             }
             .padding(14)
@@ -475,10 +478,10 @@ struct WeeklyPlaylistView: View {
                 Button { UIApplication.shared.open(url) } label: {
                     HStack(spacing: 10) {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 16))
+                            .bodyLG()
                             .foregroundStyle(ONETokens.oneGreen)
                         Text(NSLocalizedString("premium.playlist.openAppleMusic", comment: ""))
-                            .font(.system(size: 15, weight: .semibold))
+                            .bodyMD().fontWeight(.semibold)
                             .foregroundStyle(.white)
                     }
                     .frame(maxWidth: .infinity)
@@ -505,10 +508,10 @@ struct WeeklyPlaylistView: View {
                                 .scaleEffect(0.85)
                         } else {
                             Image(systemName: "music.note.list")
-                                .font(.system(size: 15, weight: .semibold))
+                                .bodyMD().fontWeight(.semibold)
                         }
                         Text(NSLocalizedString("premium.playlist.saveAppleMusic", comment: ""))
-                            .font(.system(size: 15, weight: .semibold))
+                            .bodyMD().fontWeight(.semibold)
                     }
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -532,8 +535,8 @@ struct WeeklyPlaylistView: View {
 
             if let error = service.playlistError {
                 Text(error)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Color(hex: "#FF6B6B"))
+                    .monoBase()
+                    .foregroundStyle(ONETokens.oneBrandLight)
                     .multilineTextAlignment(.center)
             }
         }

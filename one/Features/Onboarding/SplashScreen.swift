@@ -73,6 +73,7 @@ struct SplashScreen: View {
                     .opacity(sloganOpacity)
             }
         }
+        .colorScheme(.light)
         .onAppear { startAnimation() }
     }
 

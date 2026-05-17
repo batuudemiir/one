@@ -11,15 +11,25 @@ import CoreData
 // MARK: - Main Application View
 struct ONEColorPickerView: View {
     @StateObject private var vm = ColorPickerViewModel()
+    @StateObject private var globalUI = GlobalUIState.shared
     @StateObject private var notificationManager = NotificationManager.shared
+    @StateObject private var cloudKit = CloudKitManager.shared
     @Environment(\.managedObjectContext) private var viewContext
     @State private var todayEntryStep: Step = .search
-    
+    @Namespace private var moodCoreNS
+    /// Last tab the user was on — used to coerce TabView selection when
+    /// `vm.currentScreen` becomes a non-tab screen (e.g. .confirm/.done).
+    @State private var lastTab: ScreenType = .today
+
+    /// The 5 primary tabs (in display order) — other screens (confirm, done,
+    /// echo, search) are routed outside the TabView as full-screen overlays.
+    private let primaryTabs: [ScreenType] = [.discover, .archive, .today, .circle, .profile]
+
     var body: some View {
         ZStack {
             // Background
             ONETokens.oneCream.ignoresSafeArea()
-            
+
             // Shared tinted gradient for confirm/done screens
             if vm.currentScreen == .confirm || vm.currentScreen == .done {
                 GeometryReader { geometry in
@@ -36,96 +46,42 @@ struct ONEColorPickerView: View {
                     .animation(ONEAnimation.moodTransition, value: vm.selectedMood?.color)
                 }
             }
-            
-            // Screen Router
-            VStack {
+
+            // Root router:
+            // • confirm/done: full-screen overlays that replace the tab UI
+            // • everything else: the 5-tab interface (native Liquid Glass on
+            //   iOS 26+, legacy BottomNavigation fallback below)
+            Group {
                 switch vm.currentScreen {
-                case .today, .search:
-                    // ── Bugün sekmesi: yeni TodayView ──
-                    TodayView(context: viewContext, entryStep: $todayEntryStep)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                        .onChange(of: vm.currentScreen) { _, screen in
-                            // Başka sekmeye geçince step'i sıfırla
-                            if screen != .today { todayEntryStep = .search }
-                        }
                 case .confirm:
-                    ConfirmScreen(vm: vm, viewContext: viewContext)
+                    ConfirmScreen(vm: vm, viewContext: viewContext, moodCoreNS: moodCoreNS)
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
-                            removal: .move(edge: .leading).combined(with: .opacity)
+                            removal:   .move(edge: .leading).combined(with: .opacity)
                         ))
                 case .done:
-                    DoneScreen(vm: vm)
-                        .transition(.asymmetric(insertion: .scale.combined(with: .opacity), removal: .opacity))
-                case .archive:
-                    ArchiveContainerView(context: viewContext)
-                        .transition(.asymmetric(insertion: .opacity, removal: .opacity))
-                case .profile:
-                    ProfileView(isFromTab: true)
+                    DoneScreen(vm: vm, moodCoreNS: moodCoreNS)
                         .transition(.asymmetric(
-                            insertion: .move(edge: .leading).combined(with: .opacity),
-                            removal: .opacity
+                            insertion: .scale.combined(with: .opacity),
+                            removal:   .opacity
                         ))
-                case .circle:
-                    CircleView()
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .leading).combined(with: .opacity),
-                            removal: .opacity
-                        ))
-                case .echo:
-                    // ── Yankı — profil içinden erişilir ──
-                    EchoView(context: viewContext)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .leading).combined(with: .opacity),
-                            removal: .opacity
-                        ))
-                case .discover:
-                    // ── Keşfet sekmesi ──
-                    DiscoverView(context: viewContext)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .leading).combined(with: .opacity),
-                            removal: .opacity
-                        ))
+                default:
+                    mainTabsView
+                        .transition(.opacity)
                 }
             }
             .animation(ONEAnimation.cardSpring, value: vm.currentScreen)
-
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if vm.currentScreen != .confirm {
-                BottomNavigation(currentScreen: $vm.currentScreen)
-            }
+        // Remember the last primary tab whenever the user actually lands on one.
+        .onChange(of: vm.currentScreen) { _, screen in
+            if primaryTabs.contains(screen) { lastTab = screen }
+            if screen != .today { todayEntryStep = .search }
         }
-        // Dark mode enabled — tokens are adaptive
         .onAppear {
             vm.loadArchiveData(context: viewContext)
             vm.loadPatternData(context: viewContext)
+            if primaryTabs.contains(vm.currentScreen) { lastTab = vm.currentScreen }
         }
-        .gesture(
-            DragGesture(minimumDistance: 40, coordinateSpace: .local)
-                .onEnded { value in
-                    guard abs(value.translation.width) > abs(value.translation.height) else { return }
-
-                    let tabs: [ScreenType] = [.discover, .archive, .today, .circle, .profile]
-                    guard let currentIndex = tabs.firstIndex(of: vm.currentScreen) else { return }
-
-                    let translation = value.translation.width
-                    let threshold: CGFloat = 50
-
-                    if translation < -threshold {
-                        if currentIndex < tabs.count - 1 {
-                            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = tabs[currentIndex + 1] }
-                        }
-                    } else if translation > threshold {
-                        if currentIndex > 0 {
-                            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = tabs[currentIndex - 1] }
-                        }
-                    }
-                }
-        )
         .onChange(of: notificationManager.shouldNavigateToCircle) { _, shouldNavigate in
             if shouldNavigate {
                 withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .circle }
@@ -151,6 +107,124 @@ struct ONEColorPickerView: View {
                 notificationManager.shouldNavigateToDiscovery = false
             }
         }
+        .overlay {
+            if let url = globalUI.archivePhotoURL {
+                FullScreenPhotoView(
+                    url: url,
+                    isPresented: Binding(
+                        get: { globalUI.archivePhotoURL != nil },
+                        set: { if !$0 { globalUI.archivePhotoURL = nil } }
+                    )
+                )
+                .transition(.opacity)
+                .zIndex(100)
+            } else if let img = globalUI.circlePhotoImage {
+                PhotoDataViewerSheet(
+                    image: img,
+                    isPresented: Binding(
+                        get: { globalUI.circlePhotoImage != nil },
+                        set: { if !$0 { globalUI.circlePhotoImage = nil } }
+                    )
+                )
+                .transition(.opacity)
+                .zIndex(100)
+            } else if let url = globalUI.todayPhotoURL {
+                PhotoViewerSheet(
+                    photoURL: url,
+                    isPresented: Binding(
+                        get: { globalUI.todayPhotoURL != nil },
+                        set: { if !$0 { globalUI.todayPhotoURL = nil } }
+                    )
+                )
+                .transition(.opacity)
+                .zIndex(100)
+            }
+        }
+    }
+
+    // MARK: - Primary tabs view (Liquid Glass on iOS 26, legacy fallback below)
+
+    @ViewBuilder
+    private var mainTabsView: some View {
+        if #available(iOS 26.0, *) {
+            liquidGlassTabView
+        } else {
+            legacyTabView
+        }
+    }
+
+    /// Native iOS 26 TabView — Apple's built-in Liquid Glass effect and
+    /// drag-to-select come for free. Each tab is declared with `Tab(...)`.
+    @available(iOS 26.0, *)
+    private var liquidGlassTabView: some View {
+        TabView(selection: tabBinding) {
+            Tab(NSLocalizedString("nav.discover", comment: ""), systemImage: "sparkles", value: ScreenType.discover) {
+                DiscoverView(context: viewContext)
+            }
+            Tab(NSLocalizedString("nav.archive", comment: ""), systemImage: "calendar", value: ScreenType.archive) {
+                ArchiveContainerView(context: viewContext)
+            }
+            Tab(NSLocalizedString("nav.today", comment: ""), systemImage: "music.note", value: ScreenType.today) {
+                TodayView(context: viewContext, entryStep: $todayEntryStep)
+            }
+            Tab(value: ScreenType.circle) {
+                CircleView()
+                    .badge(cloudKit.unseenFriendShareCount)
+            } label: {
+                Label(NSLocalizedString("nav.circle", comment: ""), systemImage: "person.2.fill")
+            }
+            Tab(NSLocalizedString("nav.profile", comment: ""), systemImage: "person.fill", value: ScreenType.profile) {
+                ProfileView(isFromTab: true)
+            }
+        }
+        .tint(ONETokens.oneRed)
+    }
+
+    /// iOS < 26: fall back to the custom floating bar we've had.
+    private var legacyTabView: some View {
+        ZStack {
+            Group {
+                switch vm.currentScreen {
+                case .discover:
+                    DiscoverView(context: viewContext)
+                case .archive:
+                    ArchiveContainerView(context: viewContext)
+                case .circle:
+                    CircleView()
+                case .profile:
+                    ProfileView(isFromTab: true)
+                case .echo:
+                    EchoView(context: viewContext)
+                default:
+                    TodayView(context: viewContext, entryStep: $todayEntryStep)
+                }
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            BottomNavigation(currentScreen: $vm.currentScreen)
+        }
+    }
+
+    /// Bridges the native TabView selection to `vm.currentScreen` without
+    /// introducing a second source of truth.
+    ///
+    /// • get: if the VM's screen is one of the 5 tabs, use it. Otherwise
+    ///   (confirm/done/echo/search) coerce to the last known tab so TabView
+    ///   doesn't silently snap to its first tab.
+    /// • set: write straight into the VM (no mirror @State, no onChange hop).
+    ///
+    /// This avoids the AttributeGraph cycle caused by onChange writing back
+    /// into a separate @State that feeds the binding.
+    private var tabBinding: Binding<ScreenType> {
+        Binding<ScreenType>(
+            get: {
+                primaryTabs.contains(vm.currentScreen) ? vm.currentScreen : lastTab
+            },
+            set: { newValue in
+                guard vm.currentScreen != newValue else { return }
+                vm.currentScreen = newValue
+            }
+        )
     }
 }
 
@@ -160,7 +234,7 @@ struct SongRow: View {
     var body: some View {
         HStack(spacing: 12) {
             if let artworkURL = song.artworkURL {
-                AsyncImage(url: artworkURL) { phase in
+                CachedAsyncImagePhase(url: artworkURL) { phase in
                     if let image = phase.image {
                         image.resizable().aspectRatio(contentMode: .fill)
                     } else {
@@ -205,19 +279,38 @@ struct MoodButton: View {
     let isSelected: Bool
     let action: () -> Void
 
+    @State private var rippleScale: CGFloat = 0
+    @State private var rippleOpacity: Double = 0
+    @State private var breatheAmp: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            if !reduceMotion { triggerRipple() }
+            action()
+        }) {
             VStack(spacing: 8) {
-                Circle()
-                    .fill(mood.color)
-                    .frame(width: isSelected ? 56 : 48, height: isSelected ? 56 : 48)
-                    .overlay(
-                        Circle()
-                            .strokeBorder(isSelected ? Color.black.opacity(0.2) : Color.clear, lineWidth: 3)
-                            .padding(-4)
-                    )
-                    .shadow(color: isSelected ? mood.color.opacity(0.4) : Color.clear, radius: 10, y: 5)
-                    .animation(ONEAnimation.micro, value: isSelected)
+                ZStack {
+                    // Watch-style tap ripple
+                    Circle()
+                        .fill(mood.color.opacity(0.28))
+                        .frame(width: 80, height: 80)
+                        .scaleEffect(rippleScale)
+                        .opacity(rippleOpacity)
+                        .allowsHitTesting(false)
+
+                    BreatheBlob(amplitude: breatheAmp)
+                        .fill(mood.color)
+                        .frame(width: isSelected ? 56 : 48, height: isSelected ? 56 : 48)
+                        .overlay(
+                            Circle()
+                                .strokeBorder(isSelected ? Color.black.opacity(0.18) : Color.clear, lineWidth: 3)
+                                .padding(-4)
+                        )
+                        .shadow(color: isSelected ? mood.color.opacity(0.4) : Color.clear, radius: 10, y: 5)
+                        .animation(ONEAnimation.micro, value: isSelected)
+                }
+                .frame(width: 80, height: 80)
 
                 Text(mood.label.uppercased())
                     .monoSM(tracking: 1.2)
@@ -226,10 +319,72 @@ struct MoodButton: View {
                     .animation(ONEAnimation.micro, value: isSelected)
             }
         }
+        .onChange(of: isSelected) { _, selected in
+            if selected && !reduceMotion {
+                withAnimation(.easeInOut(duration: ONEAnimation.durationBreathe).repeatForever(autoreverses: true)) {
+                    breatheAmp = 5
+                }
+            } else {
+                withAnimation(.easeOut(duration: 0.25)) {
+                    breatheAmp = 0
+                }
+            }
+        }
+        .onAppear {
+            if isSelected && !reduceMotion {
+                withAnimation(.easeInOut(duration: ONEAnimation.durationBreathe).repeatForever(autoreverses: true)) {
+                    breatheAmp = 5
+                }
+            }
+        }
         .buttonStyle(PlainButtonStyle())
         .accessibilityLabel(String(format: NSLocalizedString("accessibility.confirm.moodButton", comment: ""), mood.label))
         .accessibilityHint(mood.meaning)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func triggerRipple() {
+        rippleScale = 0.2
+        rippleOpacity = 0.7
+        withAnimation(.easeOut(duration: 0.45)) {
+            rippleScale = 1.4
+            rippleOpacity = 0
+        }
+    }
+}
+
+// MARK: - Breathe Blob Shape (Watch Mindfulness morph)
+
+struct BreatheBlob: Shape {
+    var amplitude: CGFloat
+
+    var animatableData: CGFloat {
+        get { amplitude }
+        set { amplitude = newValue }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        // amplitude ≈ 0 → saf daire, 180 trig hesabından kaçın
+        guard amplitude > 0.5 else {
+            return Path(ellipseIn: rect)
+        }
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        // baseR: frame sınırını aşmamak için amplitude kadar içeri al
+        let baseR  = min(rect.width, rect.height) / 2 - amplitude
+        let bumps  = 6
+        var path   = Path()
+        let steps  = 180
+
+        for i in 0...steps {
+            let angle = CGFloat(i) / CGFloat(steps) * 2 * .pi
+            let r     = baseR + amplitude * sin(CGFloat(bumps) * angle)
+            let x     = center.x + r * cos(angle - .pi / 2)
+            let y     = center.y + r * sin(angle - .pi / 2)
+            if i == 0 { path.move(to: CGPoint(x: x, y: y)) }
+            else       { path.addLine(to: CGPoint(x: x, y: y)) }
+        }
+        path.closeSubpath()
+        return path
     }
 }
 
@@ -318,7 +473,7 @@ struct PatternScreen: View {
                             VStack(alignment: .leading, spacing: 5) {
                                 HStack {
                                     Text(pattern.songName)
-                                        .font(.system(size: 18, weight: .regular, design: .monospaced))
+                                        .displaySM()
                                         .foregroundColor(ONETokens.oneInk)
                                         .tracking(-0.01)
                                         .lineLimit(1)

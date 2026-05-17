@@ -110,27 +110,29 @@ class AppleMusicRecommendationService {
                 }
                 
                 allSongs.append(contentsOf: songs)
+            } catch is CancellationError {
+                throw CancellationError()
             } catch {
                 ONELogger.warning("Failed to search genre \(genre): \(error)", category: .discovery)
                 continue
             }
         }
-        
+
         return Array(allSongs.prefix(limit))
     }
-    
+
     // MARK: - Helper: Search by Artists
-    
+
     private func searchByArtists(artists: [String], limit: Int) async throws -> [SongRecommendation] {
         var allSongs: [SongRecommendation] = []
-        
+
         for artistName in artists {
             do {
                 var searchRequest = MusicCatalogSearchRequest(term: artistName, types: [MusicKit.Song.self])
                 searchRequest.limit = max(6, limit) // each artist contributes a full pool; we shuffle+deduplicate below
-                
+
                 let searchResponse = try await searchRequest.response()
-                
+
                 let songs = searchResponse.songs.map { song in
                     SongRecommendation(
                         id: song.id.rawValue,
@@ -143,8 +145,10 @@ class AppleMusicRecommendationService {
                         source: .appleMusic
                     )
                 }
-                
+
                 allSongs.append(contentsOf: songs)
+            } catch is CancellationError {
+                throw CancellationError()
             } catch {
                 ONELogger.warning("Failed to search artist \(artistName): \(error)", category: .discovery)
                 continue

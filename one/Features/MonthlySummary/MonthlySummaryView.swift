@@ -71,7 +71,9 @@ struct MonthlySummaryView: View {
             topTracks:         [],
             totalEntries:      0,
             daysLogged:        0,
-            monthStreak:       0
+            monthStreak:       0,
+            storyTitle:        "...",
+            storySubtitle:     "..."
         )
     }
 
@@ -110,7 +112,7 @@ struct MonthlySummaryView: View {
 
                     // Paylaş — tek tık: aktif sayfa, uzun baskı: kart seçici
                     Button {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        ONEHaptics.moodSelected()
                         shareCard(page: currentPage)
                     } label: {
                         HStack(spacing: 6) {
@@ -136,7 +138,7 @@ struct MonthlySummaryView: View {
                     .disabled(isSharing)
                     .simultaneousGesture(
                         LongPressGesture(minimumDuration: 0.4).onEnded { _ in
-                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            ONEHaptics.feelingSelected()
                             showPicker = true
                         }
                     )
@@ -183,8 +185,12 @@ struct MonthlySummaryView: View {
             guard let image else { isSharing = false; return }
 
             await MainActor.run {
-                shareToInstagramStory(image: image)
                 isSharing = false
+                // Dismiss et, ardından Instagram'ı aç — pasteboard önce yazılıyor.
+                dismiss()
+                DispatchQueue.main.async {
+                    shareToInstagramStory(image: image)
+                }
             }
         }
     }
@@ -241,31 +247,18 @@ struct MonthlySummaryView: View {
     }
 
     private func shareToInstagramStory(image: UIImage) {
-        let urlStr = "instagram-stories://share?source_application=\(Bundle.main.bundleIdentifier ?? "com.batu.ones")"
-        guard let url = URL(string: urlStr),
-              UIApplication.shared.canOpenURL(url),
-              let pngData = image.pngData() else {
-            // Fallback → sistem sharesheet
-            fallbackShare(image: image)
-            return
+        // v2.6 — ShareManager üzerinden tutarlı attribution sticker akışı.
+        // Instagram yüklü değilse otomatik sistem share sheet'ine düşer.
+        let attributionURL = URL(string: "https://one.forvibe.app")
+        ShareManager.shared.shareToInstagramStories(image: image, contentURL: attributionURL) { result in
+            if case .failure(let err) = result {
+                if case ShareError.instagramNotInstalled = err {
+                    ShareManager.shared.shareViaActivityController(items: [image])
+                } else {
+                    ONELogger.error("Monthly story share failed: \(err.localizedDescription)", category: .share)
+                }
+            }
         }
-        UIPasteboard.general.setItems(
-            [["com.instagram.sharedSticker.backgroundImage": pngData]],
-            options: [.expirationDate: Date().addingTimeInterval(300)]
-        )
-        UIApplication.shared.open(url)
-    }
-
-    private func fallbackShare(image: UIImage) {
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let root  = scene.windows.first?.rootViewController else { return }
-        let av = UIActivityViewController(activityItems: [image], applicationActivities: nil)
-        if let pop = av.popoverPresentationController {
-            pop.sourceView = root.view
-            pop.sourceRect = CGRect(x: UIScreen.main.bounds.midX,
-                                    y: UIScreen.main.bounds.maxY, width: 0, height: 0)
-        }
-        root.present(av, animated: true)
     }
 }
 

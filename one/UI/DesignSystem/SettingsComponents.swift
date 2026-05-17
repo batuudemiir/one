@@ -24,11 +24,11 @@ struct ONESettingsRow: View {
                     .frame(width: 24)
                 
                 Text(title)
-                    .font(.system(size: 15, weight: .regular))
+                    .bodyMD()
                     .foregroundColor(ONETokens.oneInk)
-                
+
                 Spacer()
-                
+
                 if let value = value {
                     Text(value)
                         .font(.custom("GeistMono-Regular", size: 13))
@@ -66,11 +66,11 @@ struct ONESettingsToggle: View {
                 .frame(width: 24)
             
             Text(title)
-                .font(.system(size: 15, weight: .regular))
+                .bodyMD()
                 .foregroundColor(ONETokens.oneInk)
-            
+
             Spacer()
-            
+
             Toggle("", isOn: $isOn)
                 .tint(ONETokens.oneInk)
                 .labelsHidden()

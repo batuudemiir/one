@@ -16,6 +16,25 @@ class ColorPickerViewModel: ObservableObject {
     @Published var selectedSong: Song? = nil
     @Published var selectedMood: ONEMood? = nil
     @Published var selectedFeeling: FeelingOption? = nil
+
+    /// P1.2 — Onboarding'de seçilen mood ilk entry için pre-fill edilir.
+    /// Kullanıcı ilk save'ini hızlı tamamlayabilsin diye ConfirmScreen
+    /// açılır açılmaz mood seçili gelir. Bir kez kullanıldıktan sonra
+    /// flag tüketilir.
+    init() {
+        consumeOnboardingMoodIfNeeded()
+    }
+
+    private func consumeOnboardingMoodIfNeeded() {
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: "onboardingMoodConsumed"),
+              let raw = defaults.string(forKey: "onboardingFirstMood"),
+              let mood = ONEMood(rawValue: raw) else {
+            return
+        }
+        selectedMood = mood
+        defaults.set(true, forKey: "onboardingMoodConsumed")
+    }
     @Published var dailyNote: String = ""
     @Published var selectedPhoto: UIImage? = nil
     @Published var shareWithCircle: Bool = false

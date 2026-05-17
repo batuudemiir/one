@@ -39,6 +39,7 @@ struct DailyEntry: Identifiable, Hashable, Equatable {
 
 // MARK: - Feeling Type
 enum FeelingType: String, CaseIterable {
+    // Mevcut (geriye uyumluluk için korunuyor)
     case calm = "calm"
     case happy = "happy"
     case sad = "sad"
@@ -47,6 +48,81 @@ enum FeelingType: String, CaseIterable {
     case tired = "tired"
     case angry = "angry"
     case peaceful = "peaceful"
+    // v2.5 — yeni feeling seçenekleri
+    case chill = "chill"
+    case overthink = "overthink"
+    case hype = "hype"
+    case manifest = "manifest"
+    case happierThanEver = "happierThanEver"
+    case dance = "dance"
+    case alone = "alone"
+}
+
+// MARK: - Mood Label Migration (v2.5)
+
+extension DailyEntry {
+
+    /// v2.5 öncesi CoreData/CloudKit'e kaydedilen eski mood etiketlerini
+    /// yeni isimlere çevirir. Yeni kayıtlar zaten doğru geldiği için map'te
+    /// olmayan değerler olduğu gibi döner.
+    static let moodLabelMigrationMap: [String: String] = [
+        // ── ateş ──────────────────────────────
+        "ateşli"   : "ateş",
+        "Ateşli"   : "ateş",
+
+        // ── ışık ──────────────────────────────
+        "ışıklı"   : "ışık",
+        "Işıklı"   : "ışık",
+        "isikli"   : "ışık",
+        "neşeli"   : "ışık",
+        "Neşeli"   : "ışık",
+        "mutlu"    : "ışık",
+        "Mutlu"    : "ışık",
+
+        // ── enerji ────────────────────────────
+        "enerjik"  : "enerji",
+        "Enerjik"  : "enerji",
+        "coşkulu"  : "enerji",
+        "Coşkulu"  : "enerji",
+        "canlı"    : "enerji",
+        "Canlı"    : "enerji",
+
+        // ── taze ────────────────────────────── (değişmedi — yine de güvenlik için)
+        "doğal"    : "taze",
+        "Doğal"    : "taze",
+
+        // ── huzur ─────────────────────────────
+        "sakin"    : "huzur",
+        "Sakin"    : "huzur",
+        "huzurlu"  : "huzur",
+        "Huzurlu"  : "huzur",
+        "dingin"   : "huzur",
+        "Dingin"   : "huzur",
+
+        // ── özlem ─────────────────────────────
+        "nostaljik": "özlem",
+        "Nostaljik": "özlem",
+        "heyecanlı": "özlem",
+        "Heyecanlı": "özlem",
+
+        // ── loş ───────────────────────────────
+        "gizemli"  : "loş",
+        "Gizemli"  : "loş",
+
+        // ── boşluk ────────────────────────────
+        "boş"      : "boşluk",
+        "Boş"      : "boşluk",
+        "sessiz"   : "boşluk",
+        "Sessiz"   : "boşluk",
+        "bos"      : "boşluk",
+        "Bos"      : "boşluk",
+    ]
+
+    /// Görüntüleme ve istatistik için kullanılacak normalize edilmiş mood etiketi.
+    /// Eski kayıtlar otomatik olarak yeni isimlere çevrilir.
+    var normalizedMoodLabel: String {
+        Self.moodLabelMigrationMap[moodLabel] ?? moodLabel
+    }
 }
 
 // MARK: - DailyEntry to DailySong Conversion

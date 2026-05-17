@@ -27,6 +27,9 @@ struct EchoView: View {
 
             if vm.isLoading {
                 loadingView
+            } else if vm.data.totalSongs == 0 {
+                // A5 — Echo'da hiç data yok: zenginleştirme yerine ilk adımı öner
+                echoEmptyState
             } else {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
@@ -82,6 +85,55 @@ struct EchoView: View {
         .onAppear {
             withAnimation(.easeOut(duration: ONEAnimation.durationLong).delay(0.15)) { appeared = true }
         }
+    }
+
+    // MARK: — Empty state (A5)
+    /// Echo'da hiç entry yok — kullanıcıya ilk somut next-action'ı öner.
+    private var echoEmptyState: some View {
+        VStack(spacing: 18) {
+            Spacer()
+            ZStack {
+                Circle()
+                    .stroke(ONETokens.oneSilver, lineWidth: 1.2)
+                    .frame(width: 78, height: 78)
+                Image(systemName: "waveform.path.ecg")
+                    .font(.system(size: 28, weight: .light))
+                    .foregroundColor(ONETokens.oneAsh)
+            }
+
+            VStack(spacing: 8) {
+                Text(NSLocalizedString("echo.empty.title", comment: ""))
+                    .displayMD()
+                    .foregroundColor(ONETokens.oneInk)
+                    .multilineTextAlignment(.center)
+                Text(NSLocalizedString("echo.empty.body", comment: ""))
+                    .bodySM()
+                    .foregroundColor(ONETokens.oneAsh)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+                    .padding(.horizontal, 36)
+            }
+
+            Button {
+                if let onDismiss {
+                    onDismiss()
+                }
+                NotificationCenter.default.post(name: .init("switchToTodayTab"), object: nil)
+            } label: {
+                Text(NSLocalizedString("echo.empty.cta", comment: ""))
+                    .monoSM(tracking: 0.8)
+                    .foregroundColor(ONETokens.oneCream)
+                    .padding(.horizontal, 22)
+                    .padding(.vertical, 13)
+                    .background(Capsule().fill(ONETokens.oneInk))
+            }
+            .padding(.top, 6)
+
+            Spacer()
+            Spacer().frame(height: 100)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 24)
     }
 
     // MARK: — Loading
@@ -199,7 +251,8 @@ struct EchoView: View {
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: 1) {
                 Text(value)
-                    .font(.system(size: 20, weight: .semibold))
+                    .displaySM()
+                    .fontWeight(.semibold)
                     .foregroundColor(ONETokens.oneInk)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -493,7 +546,8 @@ struct EchoView: View {
             // Özet sayı
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("\(vm.data.syncCount)")
-                    .font(.system(size: 40, weight: .semibold))
+                    .displayXL()
+                    .fontWeight(.semibold)
                     .foregroundColor(ONETokens.oneInk)
                 Text(NSLocalizedString("echo.circleMatches", comment: ""))
                     .bodyMD()

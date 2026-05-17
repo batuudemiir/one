@@ -152,7 +152,7 @@ struct SaveRitualParticles: View {
                 ))
             }
 
-        case .gizemli:
+        case .yorgun:
             // 32 toz noktası — sinüzoidal yatay drift
             for i in 0..<32 {
                 let angle = Double(i) * (2 * .pi / 32) + Double(i % 5) * 0.14
@@ -220,7 +220,7 @@ struct SaveRitualParticles: View {
                 ))
             }
 
-        case .hassas:
+        case .uzgun:
             // 20 küçük daire — yavaş dağılım, nazik
             for i in 0..<20 {
                 let angle = Double(i) * (2 * .pi / 20)
@@ -237,8 +237,39 @@ struct SaveRitualParticles: View {
                 ))
             }
 
-        case .bos, .temiz:
-            break
+        case .stresli:
+            // 28 hızlı nokta — dağınık patlama
+            for i in 0..<28 {
+                let angle = Double(i) * (2 * .pi / 28)
+                let speed = 120.0 + Double(i % 5) * 30.0
+                result.append(RParticle(
+                    ox: 0, oy: 0,
+                    vx: CGFloat(cos(angle) * speed),
+                    vy: CGFloat(sin(angle) * speed),
+                    size: 3 + CGFloat(i % 4),
+                    delay: Double(i % 4) * 0.015,
+                    maxLife: 0.9 + Double(i % 3) * 0.15,
+                    rotation0: 0,
+                    rotSpeed: 0
+                ))
+            }
+
+        case .sinirli:
+            // 36 keskin parça — yüksek hız
+            for i in 0..<36 {
+                let angle = Double(i) * (2 * .pi / 36)
+                let speed = 140.0 + Double(i % 6) * 25.0
+                result.append(RParticle(
+                    ox: 0, oy: 0,
+                    vx: CGFloat(cos(angle) * speed),
+                    vy: CGFloat(sin(angle) * speed * 0.8),
+                    size: 2 + CGFloat(i % 3),
+                    delay: Double(i % 5) * 0.012,
+                    maxLife: 0.8 + Double(i % 3) * 0.12,
+                    rotation0: Double(i) * 30.0,
+                    rotSpeed: 60.0
+                ))
+            }
         }
 
         return result
@@ -256,9 +287,10 @@ struct SaveRitualParticles: View {
         case .ozgur:     drawDroplets(ctx: &ctx, center: center, elapsed: elapsed)
         case .derin:     drawDroplets(ctx: &ctx, center: center, elapsed: elapsed)
         case .nostaljik: drawDroplets(ctx: &ctx, center: center, elapsed: elapsed)
-        case .gizemli:   drawDust(ctx: &ctx, center: center, elapsed: elapsed)
-        case .hassas:    drawDust(ctx: &ctx, center: center, elapsed: elapsed)
-        case .bos, .temiz: break
+        case .yorgun:    drawDust(ctx: &ctx, center: center, elapsed: elapsed)
+        case .uzgun:     drawDust(ctx: &ctx, center: center, elapsed: elapsed)
+        case .stresli:   drawConfetti(ctx: &ctx, center: center, elapsed: elapsed)
+        case .sinirli:   drawEmbers(ctx: &ctx, center: center, elapsed: elapsed)
         }
     }
 

@@ -109,8 +109,12 @@ class ShareManager {
     // MARK: - Instagram Stories Direct Share
     /// Writes the image to UIPasteboard FIRST, then immediately opens Instagram Stories.
     /// The image must be written before the URL open call — order is critical.
+    /// - Parameter contentURL: Optional Universal Link / web URL — Instagram Story'nin üstüne
+    ///   "Uygulamada aç" attribution sticker'ı olarak yapıştırılır. Tıklanınca uygulamayı (varsa)
+    ///   veya web fallback'ı açar.
     func shareToInstagramStories(
         image: UIImage,
+        contentURL: URL? = nil,
         completion: @escaping (Result<Void, ShareError>) -> Void
     ) {
         // Use the instagram-stories:// scheme (requires LSApplicationQueriesSchemes in Info.plist)
@@ -131,9 +135,14 @@ class ShareManager {
 
         // 1. Write to pasteboard BEFORE opening Instagram — this is the critical step.
         //    Using "com.instagram.sharedSticker.backgroundImage" pastes into the background layer.
-        let pasteboardItems: [[String: Any]] = [[
+        //    contentURL eklenince Instagram otomatik olarak "Uygulamada aç" sticker'ı yerleştirir.
+        var item: [String: Any] = [
             "com.instagram.sharedSticker.backgroundImage": imageData
-        ]]
+        ]
+        if let contentURL {
+            item["com.instagram.sharedSticker.contentURL"] = contentURL.absoluteString
+        }
+        let pasteboardItems: [[String: Any]] = [item]
         let pasteboardOptions: [UIPasteboard.OptionsKey: Any] = [
             .expirationDate: Date().addingTimeInterval(60)   // 60 seconds
         ]
@@ -152,6 +161,22 @@ class ShareManager {
                     )))
                 }
             }
+        }
+    }
+
+    // MARK: - TikTok Direct Share (Workaround)
+    /// Since TikTok doesn't have an official direct image share URL scheme like Instagram,
+    /// we save the image to the photo library and open the TikTok app directly.
+    func shareToTikTok(
+        image: UIImage,
+        completion: @escaping (Result<Void, ShareError>) -> Void
+    ) {
+        // TikTok direct sharing without SDK is not officially supported via URL schemes.
+        // Opening snssdk1180:// just launches the app without the image.
+        // Therefore, we must use the system share sheet.
+        DispatchQueue.main.async {
+            self.shareViaActivityController(items: [image])
+            completion(.success(()))
         }
     }
 

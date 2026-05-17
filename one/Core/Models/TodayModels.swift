@@ -28,25 +28,26 @@ struct MoodOption: Identifiable {
     let id = UUID()
     let key: String       // matches ONEMood rawValue
     let color: Color
-    let label: String
+    let label: String     // elemental name (ateş, ışık, …)
+    let meaning: String   // feeling word (tutkulu, mutlu, …)
 
-    /// 12 moods arranged by color-psychology spectrum (4 columns × 3 rows)
-    /// Row 1 — warm:    Ateşli · Coşkulu · Mutlu  · Taze
-    /// Row 2 — cool:    Huzurlu · Özgür  · Derin  · Nostaljik
-    /// Row 3 — deep:    Gizemli · Hassas · Sessiz · Sade
+    /// 8 moods — v2.5 palette (4 columns × 2 rows)
+    // NOT: Lokalizasyon iptal — mood etiketleri cihaz dilinden bağımsız her zaman Türkçe.
+    // Sebep: en.lproj'da label çevrildi ama meaning çevrilmedi → İngilizce cihazda
+    // "FIRE / tutkulu" gibi karışık görünüyordu. TR-first ICP için sabitlendi.
     static let all: [MoodOption] = [
-        MoodOption(key: "atesli",    color: ONETokens.oneRed,     label: NSLocalizedString("mood.atesli",    comment: "")),
-        MoodOption(key: "enerjik",   color: ONETokens.moodOrange, label: NSLocalizedString("mood.enerjik",   comment: "")),
-        MoodOption(key: "isikli",    color: ONETokens.moodYellow, label: NSLocalizedString("mood.isikli",    comment: "")),
-        MoodOption(key: "taze",      color: ONETokens.moodLime,   label: NSLocalizedString("mood.taze",      comment: "")),
-        MoodOption(key: "sakin",     color: ONETokens.oneGreen,   label: NSLocalizedString("mood.sakin",     comment: "")),
-        MoodOption(key: "ozgur",     color: ONETokens.moodTeal,   label: NSLocalizedString("mood.ozgur",     comment: "")),
-        MoodOption(key: "derin",     color: ONETokens.oneBlue,    label: NSLocalizedString("mood.derin",     comment: "")),
-        MoodOption(key: "nostaljik", color: ONETokens.moodIndigo, label: NSLocalizedString("mood.nostaljik", comment: "")),
-        MoodOption(key: "gizemli",   color: ONETokens.moodPurple, label: NSLocalizedString("mood.gizemli",   comment: "")),
-        MoodOption(key: "hassas",    color: ONETokens.moodRose,   label: NSLocalizedString("mood.hassas",    comment: "")),
-        MoodOption(key: "bos",       color: ONETokens.moodDark,   label: NSLocalizedString("mood.bos",       comment: "")),
-        MoodOption(key: "temiz",     color: ONETokens.oneIvory,   label: NSLocalizedString("mood.temiz",     comment: "")),
+        MoodOption(key: "atesli",    color: ONETokens.moodTutkulu, label: "tutkulu",   meaning: "içim yanıyor"),
+        MoodOption(key: "isikli",    color: ONETokens.moodYellow,  label: "mutlu",     meaning: "içimden parlıyor"),
+        MoodOption(key: "enerjik",   color: ONETokens.moodOrange,  label: "enerjik",   meaning: "taşıp duruyor"),
+        MoodOption(key: "taze",      color: ONETokens.moodLime,    label: "doğal",     meaning: "yeni başlıyor"),
+        MoodOption(key: "sakin",     color: ONETokens.moodHuzurlu, label: "huzurlu",   meaning: "her şey yolunda"),
+        MoodOption(key: "nostaljik", color: ONETokens.moodExcited, label: "heyecanlı", meaning: "coşkuyla doluyum"),
+        MoodOption(key: "ozgur",     color: ONETokens.moodTeal,    label: "sakin",     meaning: "hafif, dingin"),
+        MoodOption(key: "derin",     color: ONETokens.moodStabil,  label: "stabil",    meaning: "dengede, sabit"),
+        MoodOption(key: "uzgun",     color: ONETokens.moodIndigo,  label: "üzgün",     meaning: "içim sıkışmış"),
+        MoodOption(key: "stresli",   color: ONETokens.moodStress,  label: "stresli",   meaning: "altında eziliyorum"),
+        MoodOption(key: "yorgun",    color: ONETokens.moodSlate,   label: "yorgun",    meaning: "bitkin, tükenmişim"),
+        MoodOption(key: "sinirli",   color: ONETokens.moodAngry,   label: "sinirli",   meaning: "içimde fırtına var"),
     ]
 }
 
@@ -56,15 +57,16 @@ struct FeelingOption: Identifiable {
     let type: FeelingType
     let label: String
 
+    /// v2.5 — 8 yeni feeling seçeneği
     static let all: [FeelingOption] = [
-        FeelingOption(type: .calm,     label: NSLocalizedString("feeling.calm",     comment: "")),
-        FeelingOption(type: .happy,    label: NSLocalizedString("feeling.happy",    comment: "")),
-        FeelingOption(type: .sad,      label: NSLocalizedString("feeling.sad",      comment: "")),
-        FeelingOption(type: .anxious,  label: NSLocalizedString("feeling.anxious",  comment: "")),
-        FeelingOption(type: .excited,  label: NSLocalizedString("feeling.excited",  comment: "")),
-        FeelingOption(type: .tired,    label: NSLocalizedString("feeling.tired",    comment: "")),
-        FeelingOption(type: .angry,    label: NSLocalizedString("feeling.angry",    comment: "")),
-        FeelingOption(type: .peaceful, label: NSLocalizedString("feeling.peaceful", comment: "")),
+        FeelingOption(type: .chill,           label: "Chill"),
+        FeelingOption(type: .overthink,       label: "Overthink"),
+        FeelingOption(type: .hype,            label: "Hype"),
+        FeelingOption(type: .manifest,        label: "Manifest"),
+        FeelingOption(type: .happierThanEver, label: "Happier than ever"),
+        FeelingOption(type: .sad,             label: "Sad"),
+        FeelingOption(type: .dance,           label: "Dance"),
+        FeelingOption(type: .alone,           label: "Alone"),
     ]
 }
 

@@ -7,6 +7,7 @@
 
 import StoreKit
 import UIKit
+import Combine
 
 final class AppReviewManager {
     static let shared = AppReviewManager()

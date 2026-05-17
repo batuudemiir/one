@@ -33,17 +33,19 @@ struct MonthlySummaryData {
     let totalEntries: Int                          // Tüm DailySong kayıtları (multi-entry dahil)
     let daysLogged: Int                            // Giriş yapılan benzersiz gün sayısı
     let monthStreak: Int                           // Ay içindeki en uzun ardışık gün serisi
+    let storyTitle: String                         // Hikayeleştirilmiş başlık
+    let storySubtitle: String                      // Hikayeleştirilmiş alt metin
 }
 
 // MARK: - Mock Data
 extension MonthlySummaryData {
     static var mock: MonthlySummaryData {
-        let orange  = Color(red: 0.788, green: 0.471, blue: 0.251)  // #C97840
-        let red     = Color(red: 0.788, green: 0.251, blue: 0.251)  // #C94040
-        let yellow  = Color(red: 0.788, green: 0.659, blue: 0.251)  // #C9A840
-        let teal    = Color(red: 0.251, green: 0.659, blue: 0.612)  // #40A89C
-        let blue    = Color(red: 0.251, green: 0.439, blue: 0.788)  // #4070C9
-        let purple  = Color(red: 0.471, green: 0.251, blue: 0.788)  // #7840C9
+        let orange  = ONETokens.moodAmber           // #C97840
+        let red     = ONETokens.summaryMockRed      // #C94040
+        let yellow  = ONETokens.summaryMockYellow   // #C9A840
+        let teal    = ONETokens.summaryMockTeal     // #40A89C
+        let blue    = ONETokens.summaryMockBlue     // #4070C9
+        let purple  = ONETokens.summaryMockPurple   // #7840C9
 
         let moodPattern: [Color] = [
             orange, orange, yellow, teal,   blue,   orange,
@@ -82,7 +84,9 @@ extension MonthlySummaryData {
             ],
             totalEntries: 28,
             daysLogged:   22,
-            monthStreak:  9
+            monthStreak:  9,
+            storyTitle: "Enerjik Müziklerin Ayı",
+            storySubtitle: "En çok akşam 20:00'de düşüncelere daldın."
         )
     }
 }

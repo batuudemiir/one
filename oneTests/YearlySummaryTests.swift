@@ -10,6 +10,7 @@ import Foundation
 import CoreData
 @testable import OneDailyBatuhan
 
+@MainActor
 struct YearlySummaryTests {
 
     private func makePersistence() -> PersistenceController {

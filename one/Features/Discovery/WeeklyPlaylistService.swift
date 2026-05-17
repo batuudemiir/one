@@ -85,7 +85,7 @@ class WeeklyPlaylistService: ObservableObject {
         var moodCounts: [String: (color: String, count: Int)] = [:]
 
         for entry in weekEntries {
-            let mood = entry.moodLabel
+            let mood = entry.normalizedMoodLabel
             if let existing = moodCounts[mood] {
                 moodCounts[mood] = (color: existing.color, count: existing.count + 1)
             } else {
@@ -171,16 +171,14 @@ class WeeklyPlaylistService: ObservableObject {
         playlistError = nil
         defer { isCreatingPlaylist = false }
 
-        do {
-            // MusicKit authorization
-            let status = await MusicAuthorization.request()
-            guard status == .authorized else {
-                playlistError = NSLocalizedString("premium.playlist.authRequired", comment: "")
-                return
-            }
-
-            // Playlist name: "ONE+ Huzur — 14 Nis"
-            let fmt = DateFormatter()
+        // MusicKit authorization
+        let status = await MusicAuthorization.request()
+        guard status == .authorized else {
+            playlistError = NSLocalizedString("premium.playlist.authRequired", comment: "")
+            return
+        }
+        // Playlist name: "ONE+ Huzur — 14 Nis"
+        let fmt = DateFormatter()
             fmt.locale = LanguageManager.shared.currentLocale
             fmt.dateFormat = "d MMM"
             let moodLabel = dominantMood ?? "ONE"
@@ -245,9 +243,5 @@ class WeeklyPlaylistService: ObservableObject {
             } else {
                 playlistError = NSLocalizedString("premium.playlist.iosTooOld", comment: "")
             }
-        } catch {
-            playlistError = error.localizedDescription
-            ONELogger.error("Failed to create Apple Music playlist", error: error, category: .discovery)
-        }
     }
 }

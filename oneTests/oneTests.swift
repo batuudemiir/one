@@ -6,7 +6,7 @@
 //
 
 import Testing
-@testable import one
+@testable import OneDailyBatuhan
 
 struct oneTests {
 

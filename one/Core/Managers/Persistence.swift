@@ -30,7 +30,9 @@ struct PersistenceController {
         } else {
             // CloudKit configuration
             guard let description = container.persistentStoreDescriptions.first else {
-                fatalError("Failed to retrieve persistent store description")
+                ONELogger.error("CoreData: persistentStoreDescriptions is empty — CloudKit sync disabled", category: .persistence)
+                container.loadPersistentStores(completionHandler: { _, _ in })
+                return
             }
             
             // Enable CloudKit sync
@@ -61,7 +63,8 @@ struct PersistenceController {
         
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
-                fatalError("Unresolved error \(error), \(error.userInfo)")
+                ONELogger.error("CoreData store failed to load: \(error.code) — \(error.localizedDescription)", category: .persistence)
+                ErrorHandler.shared.handle(error, context: "CoreDataStoreLoad")
             }
         })
         
@@ -147,7 +150,11 @@ struct PersistenceController {
                                let compressedData = image.jpegData(compressionQuality: 0.7) {
                                 await MainActor.run {
                                     dailySong.photoData = compressedData
-                                    try? context.save()
+                                    do {
+                                        try context.save()
+                                    } catch {
+                                        ErrorHandler.shared.handle(error, context: "artworkDownload")
+                                    }
                                 }
                             }
                         } catch {
@@ -167,7 +174,8 @@ struct PersistenceController {
                 // Set expiration to midnight (00:00) of next day
                 var calendar = Calendar.current
                 calendar.timeZone = TimeZone.current
-                if let midnight = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: calendar.date(byAdding: .day, value: 1, to: Date())!) {
+                if let tomorrow = calendar.date(byAdding: .day, value: 1, to: Date()),
+                   let midnight = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: tomorrow) {
                     dailySong.shareExpiresAt = midnight
                 }
             } else {
@@ -290,8 +298,9 @@ struct PersistenceController {
         let repeatedSongs = songCounts.filter { $0.value.count > 1 }
         
         // Convert to SongPattern
-        let patterns = repeatedSongs.map { key, value -> SongPattern in
+        let patterns = repeatedSongs.compactMap { key, value -> SongPattern? in
             let components = key.components(separatedBy: "|")
+            guard components.count >= 2 else { return nil }
             let songName = components[0]
             let artistName = components[1]
             let percentage = Double(value.count) / Double(allSongs.count)

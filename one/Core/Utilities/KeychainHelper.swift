@@ -39,7 +39,7 @@ enum KeychainHelper {
             kSecAttrService: service,
             kSecAttrAccount: key,
             kSecValueData: data,
-            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlock
+            kSecAttrAccessible: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         ]
         SecItemDelete(query as CFDictionary)
         SecItemAdd(query as CFDictionary, nil)

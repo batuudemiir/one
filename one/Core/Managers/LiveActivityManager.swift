@@ -5,6 +5,8 @@
 
 import Foundation
 import ActivityKit
+import Combine
+import UIKit
 
 // DailySongActivityAttributes ve FriendShareActivityAttributes
 // ActivityAttributes.swift dosyasında tanımlı — hem bu target hem extension paylaşır.
@@ -12,10 +14,37 @@ import ActivityKit
 @available(iOS 16.1, *)
 final class LiveActivityManager {
     static let shared = LiveActivityManager()
-    private init() {}
+
+    /// Foreground'a her geçişte expired activity'leri temizle
+    private init() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleForeground),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+
+    @objc private func handleForeground() {
+        Task { await cleanupExpiredActivities() }
+    }
 
     // MARK: - Daily Song
-    // Kutlama arc'ı: 0–5sn kutlama → 5–30sn normal → 30sn kapanış
+    // Kutlama arc'ı: 0–5sn kutlama → 5–300sn normal → kapanış
+
+    /// Live Activity'nin başlatıldığı zaman damgası — uygulama kapatılsa
+    /// bile UserDefaults üzerinden korunur, tekrar açılınca temizlenir.
+    private static let activityStartKey       = "dailySongActivityStartTime"
+    private static let friendShareStartKey    = "friendShareActivityStartTime"
+    /// Toplam gösterim süresi (saniye): 5 kutlama + 295 normal = 300
+    static let activityDuration:    TimeInterval = 300   // 5 dk
+    static let friendShareDuration: TimeInterval = 120   // 2 dk
 
     func startDailySong(
         songName: String,
@@ -39,6 +68,10 @@ final class LiveActivityManager {
         }
 
         let animStyle = Self.animationStyle(forMoodLabel: moodLabel)
+        let endDate   = Date().addingTimeInterval(Self.activityDuration)
+
+        // Başlangıç zamanını kaydet — uygulama kapatılırsa cleanup'ta kullanılır
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.activityStartKey)
 
         // İlk state: kutlama (isCelebrating = true)
         let celebrationState = DailySongActivityAttributes.ContentState(
@@ -56,7 +89,7 @@ final class LiveActivityManager {
         let attributes = DailySongActivityAttributes(savedAt: Date())
         let content = ActivityContent(
             state: celebrationState,
-            staleDate: Date().addingTimeInterval(300) // 5 dakika
+            staleDate: endDate
         )
 
         do {
@@ -67,7 +100,7 @@ final class LiveActivityManager {
             )
             ONELogger.success("DailySong Live Activity başlatıldı: \(activity.id)", category: .general)
 
-            Task {
+            Task { @MainActor in
                 // 5 saniye sonra normal moda geç
                 try? await Task.sleep(nanoseconds: 5_000_000_000)
                 let normalState = DailySongActivityAttributes.ContentState(
@@ -81,7 +114,7 @@ final class LiveActivityManager {
                     isCelebrating: false,
                     moodAnimationStyle: animStyle
                 )
-                await activity.update(ActivityContent(state: normalState, staleDate: nil))
+                await activity.update(ActivityContent(state: normalState, staleDate: endDate))
 
                 // 4dk 55sn daha bekle (toplam 5dk) ve kapat
                 try? await Task.sleep(nanoseconds: 295_000_000_000)
@@ -89,10 +122,61 @@ final class LiveActivityManager {
                     ActivityContent(state: normalState, staleDate: nil),
                     dismissalPolicy: .immediate
                 )
+                UserDefaults.standard.removeObject(forKey: Self.activityStartKey)
                 ONELogger.debug("DailySong Live Activity kapandı.", category: .general)
             }
         } catch {
             ONELogger.warning("DailySong Live Activity başlatılamadı: \(error.localizedDescription)", category: .general)
+        }
+    }
+
+    /// Uygulama her foreground'a geçtiğinde + açılışta çağrılır.
+    /// Süresi dolmuş tüm activity'leri (DailySong + FriendShare) kapatır.
+    func cleanupExpiredActivities() async {
+        // DailySong: 5 dk
+        let dailyStart = UserDefaults.standard.double(forKey: Self.activityStartKey)
+        if dailyStart > 0 {
+            let age = Date().timeIntervalSince1970 - dailyStart
+            if age >= Self.activityDuration {
+                for activity in Activity<DailySongActivityAttributes>.activities {
+                    await activity.end(
+                        ActivityContent(state: activity.content.state, staleDate: nil),
+                        dismissalPolicy: .immediate
+                    )
+                }
+                UserDefaults.standard.removeObject(forKey: Self.activityStartKey)
+                ONELogger.debug("Süresi dolan DailySong Live Activity temizlendi (\(Int(age))sn).", category: .general)
+            }
+        }
+
+        // FriendShare: 2 dk
+        let friendStart = UserDefaults.standard.double(forKey: Self.friendShareStartKey)
+        if friendStart > 0 {
+            let age = Date().timeIntervalSince1970 - friendStart
+            if age >= Self.friendShareDuration {
+                for activity in Activity<FriendShareActivityAttributes>.activities {
+                    await activity.end(
+                        ActivityContent(state: activity.content.state, staleDate: nil),
+                        dismissalPolicy: .immediate
+                    )
+                }
+                UserDefaults.standard.removeObject(forKey: Self.friendShareStartKey)
+                ONELogger.debug("Süresi dolan FriendShare Live Activity temizlendi (\(Int(age))sn).", category: .general)
+            }
+        }
+
+        // Güvenlik ağı: UserDefaults yoksa ama orphan activity varsa onları da kapat
+        // (örn. eski sürümlerden kalmış activity'ler)
+        for activity in Activity<DailySongActivityAttributes>.activities {
+            // attributes.savedAt 5 dakikadan eski mi?
+            let savedAt = activity.attributes.savedAt
+            if Date().timeIntervalSince(savedAt) > Self.activityDuration {
+                await activity.end(
+                    ActivityContent(state: activity.content.state, staleDate: nil),
+                    dismissalPolicy: .immediate
+                )
+                ONELogger.debug("Orphan DailySong activity kapatıldı (savedAt: \(savedAt)).", category: .general)
+            }
         }
     }
 
@@ -115,6 +199,9 @@ final class LiveActivityManager {
             )
         }
 
+        let endDate = Date().addingTimeInterval(Self.friendShareDuration)
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.friendShareStartKey)
+
         let state = FriendShareActivityAttributes.ContentState(
             friendName: friendName,
             songName: songName,
@@ -123,7 +210,7 @@ final class LiveActivityManager {
             moodColorHex: moodColorHex,
             moodSFSymbol: moodSFSymbol
         )
-        let content = ActivityContent(state: state, staleDate: Date().addingTimeInterval(120))
+        let content = ActivityContent(state: state, staleDate: endDate)
 
         do {
             let activity = try Activity<FriendShareActivityAttributes>.request(
@@ -133,12 +220,14 @@ final class LiveActivityManager {
             )
             ONELogger.success("FriendShare Live Activity başlatıldı: \(activity.id)", category: .general)
 
-            Task {
-                try? await Task.sleep(nanoseconds: 120_000_000_000)
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: UInt64(Self.friendShareDuration) * 1_000_000_000)
                 await activity.end(
                     ActivityContent(state: state, staleDate: nil),
                     dismissalPolicy: .immediate
                 )
+                UserDefaults.standard.removeObject(forKey: Self.friendShareStartKey)
+                ONELogger.debug("FriendShare Live Activity kapandı.", category: .general)
             }
         } catch {
             ONELogger.warning("FriendShare Live Activity başlatılamadı: \(error.localizedDescription)", category: .general)
@@ -160,6 +249,8 @@ final class LiveActivityManager {
                 dismissalPolicy: .immediate
             )
         }
+        UserDefaults.standard.removeObject(forKey: Self.activityStartKey)
+        UserDefaults.standard.removeObject(forKey: Self.friendShareStartKey)
     }
 
     // MARK: - Helpers

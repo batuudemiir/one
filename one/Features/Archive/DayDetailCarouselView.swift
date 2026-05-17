@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CloudKit
 
 struct DayDetailCarouselView: View {
     let entries: [DailyEntry]
@@ -111,13 +112,13 @@ struct DayDetailCarouselView: View {
         VStack(spacing: 0) {
             // Photo or mood gradient
             if let photoURL = entry.photoURL {
-                AsyncImage(url: photoURL) { image in
+                CachedAsyncImage(url: photoURL) { image in
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                 } placeholder: {
                     LinearGradient(
-                        colors: [entry.moodColor.opacity(0.6), entry.moodColor.opacity(0.2)],
+                        colors: [entry.moodColor.opacity(0.18), entry.moodColor.opacity(0.06)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -126,7 +127,7 @@ struct DayDetailCarouselView: View {
                 .clipped()
             } else {
                 LinearGradient(
-                    colors: [entry.moodColor.opacity(0.6), entry.moodColor.opacity(0.2)],
+                    colors: [entry.moodColor.opacity(0.18), entry.moodColor.opacity(0.06)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -137,13 +138,13 @@ struct DayDetailCarouselView: View {
             VStack(alignment: .leading, spacing: ONETokens.spacingSM) {
                 // Mood badge + time
                 HStack {
-                    Text(entry.moodLabel)
+                    Text(entry.normalizedMoodLabel)
                         .font(ONETypography.monoBase)
                         .tracking(0.5)
                         .foregroundStyle(.white)
                         .padding(.horizontal, ONETokens.spacingSM)
                         .padding(.vertical, ONETokens.spacingXS)
-                        .background(entry.moodColor.opacity(0.8))
+                        .background((ONEMood(hex: entry.moodColorHex)?.pastelColor ?? entry.moodColor).opacity(0.15))
                         .clipShape(Capsule())
 
                     Spacer()
@@ -176,6 +177,18 @@ struct DayDetailCarouselView: View {
                         .lineLimit(3)
                         .padding(.top, ONETokens.spacingXS)
                 }
+
+                // Yorumlar — kendi paylaşımıma gelen yorumlar
+                if let myUserID = CloudKitManager.shared.currentUser?["userID"] as? String {
+                    CommentEntryButton(
+                        shareOwnerID: myUserID,
+                        accentColorHex: entry.moodColorHex,
+                        resolveShareRecordName: { completion in
+                            CloudKitManager.shared.fetchOwnDailyShareRecordName(date: entry.date, completion: completion)
+                        }
+                    )
+                    .padding(.top, ONETokens.spacingMD)
+                }
             }
             .padding(ONETokens.spacingLG)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -201,7 +214,7 @@ struct DayDetailCarouselView: View {
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM yyyy"
-        formatter.locale = Locale.current
+        formatter.locale = LanguageManager.shared.currentLocale
         return formatter.string(from: date)
     }
 }

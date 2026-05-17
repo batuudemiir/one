@@ -35,6 +35,17 @@ private func scaledSystemFont(size: CGFloat, weight: UIFont.Weight, textStyle: U
     return Font(scaledFont)
 }
 
+/// SF Serif (New York) için UIFontMetrics tabanlı ölçekleme.
+/// Editorial eksen — sadece hero/brand yüzeyleri için.
+private func scaledSerifFont(size: CGFloat, weight: UIFont.Weight, textStyle: UIFont.TextStyle) -> Font {
+    let sysDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: textStyle)
+    let serifDescriptor = (sysDescriptor.withDesign(.serif) ?? sysDescriptor)
+        .addingAttributes([.traits: [UIFontDescriptor.TraitKey.weight: weight]])
+    let baseFont = UIFont(descriptor: serifDescriptor, size: size)
+    let scaledFont = UIFontMetrics(forTextStyle: textStyle).scaledFont(for: baseFont)
+    return Font(scaledFont)
+}
+
 // MARK: — DM Sans Font Helper
 // Dynamic Type desteği: Font.custom(_:size:relativeTo:) ile her font
 // kullanıcının sistem font boyutuna göre ölçeklenir (iOS 14+).
@@ -66,6 +77,10 @@ enum ONETypography {
     // SF Pro: iOS native güç, büyük boyutlarda editorial ve güçlü
     // Dynamic Type: relativeTo ile kullanıcının font büyüklüğüne göre ölçeklenir
 
+    /// 44pt · Bold · Tight tracking  →  Monthly/Yearly summary hero, app-store cinematic titles
+    /// Dynamic Type: `relativeTo: .largeTitle` ile accessibility5'te ~62pt'a yaklaşır
+    static let displayXXL = scaledSystemFont(size: 44, weight: .bold, textStyle: .largeTitle)
+
     /// 40pt · Bold · Tight tracking  →  Splash, hero, wordmark
     static let displayXL = scaledSystemFont(size: 40, weight: .bold, textStyle: .largeTitle)
 
@@ -81,9 +96,18 @@ enum ONETypography {
     /// 17pt · Medium  →  Alt başlık, navigation title
     static let displayXS = scaledSystemFont(size: 17, weight: .medium, textStyle: .headline)
 
+    /// 32pt · Bold  →  Hero ekran başlığı (Discover, Profile cover, büyük section)
+    static let displayHero = scaledSystemFont(size: 32, weight: .bold, textStyle: .largeTitle)
+
+    /// 22pt · Semibold  →  Section başlığı, prominent kart başlığı
+    static let displayLgAlt = scaledSystemFont(size: 22, weight: .semibold, textStyle: .title2)
+
     // ── Body — DM Sans (okunabilir UI metni) ──────────────────────────────
     // DM Sans: sıcak geometrik sans, markaya kişilik katar
     // Body hiyerarşisinin tamamı DM Sans kullanır
+
+    /// 18pt · Medium  →  Vurgulu body, prominent label, lead body
+    static let bodyXL = DMSans.medium(18, relativeTo: .body)
 
     /// 16pt · Regular  →  Birincil body metni, açıklama
     static let bodyLG = DMSans.regular(16, relativeTo: .body)
@@ -121,6 +145,23 @@ enum ONETypography {
 
     /// 9pt · Regular + tracking  →  Mikro açıklama (mümkünse kaçın)
     static let monoMicro = DMSans.regular(9, relativeTo: .caption2)
+
+    // ── Editorial — SF Serif / New York (hero/brand yüzeyleri) ───────────────
+    // Kullanım alanı: onboarding hero, profil monogram, aylık özet kapağı,
+    //                 arkadaş ekranı kişilik başlığı, share poster.
+    // KURAL: editorial token dışında .font(.system(design: .serif)) yazma.
+
+    /// 64pt Semibold Serif — Monthly recap kapağı, share poster hero.
+    static let editorialXXL = scaledSerifFont(size: 64, weight: .semibold, textStyle: .largeTitle)
+
+    /// 56pt Semibold Serif — Onboarding wordmark, brand reveal, profil hero monogram.
+    static let editorialXL  = scaledSerifFont(size: 56, weight: .semibold, textStyle: .largeTitle)
+
+    /// 40pt Regular Serif — Reveal kart, onboarding promise label, recap istatistik.
+    static let editorialLG  = scaledSerifFont(size: 40, weight: .regular,  textStyle: .title1)
+
+    /// 28pt Regular Serif — Echo alıntı, günlük yansıma, arkadaş kişilik notu.
+    static let editorialMD  = scaledSerifFont(size: 28, weight: .regular,  textStyle: .title2)
 }
 
 // MARK: — View Modifier'lar
@@ -128,6 +169,12 @@ enum ONETypography {
 extension View {
 
     // ── Display (SF Pro) ──────────────────────────────────────────────────
+
+    /// 44pt Bold — Monthly/Yearly summary hero, cinematic titles
+    func displayXXL() -> some View {
+        self.font(ONETypography.displayXXL)
+            .tracking(-0.9)
+    }
 
     /// 40pt Bold — splash, hero, wordmark
     func displayXL() -> some View {
@@ -157,7 +204,25 @@ extension View {
         self.font(ONETypography.displayXS)
     }
 
+    /// 32pt Bold — hero ekran başlığı
+    func displayHero() -> some View {
+        self.font(ONETypography.displayHero)
+            .tracking(-0.6)
+    }
+
+    /// 22pt Semibold — section başlığı, prominent kart başlığı
+    func displayLgAlt() -> some View {
+        self.font(ONETypography.displayLgAlt)
+            .tracking(-0.3)
+    }
+
     // ── Body (DM Sans) ────────────────────────────────────────────────────
+
+    /// 18pt Medium — vurgulu body, lead body
+    func bodyXL() -> some View {
+        self.font(ONETypography.bodyXL)
+    }
+
 
     /// 16pt Regular — birincil body
     func bodyLG() -> some View {
@@ -218,5 +283,27 @@ extension View {
     func monoMicro(tracking: CGFloat = 0.4) -> some View {
         self.font(ONETypography.monoMicro)
             .tracking(tracking)
+    }
+
+    // ── Editorial (SF Serif / New York) ──────────────────────────────────────
+
+    /// 64pt Semibold Serif — monthly recap kapağı, share poster hero
+    func editorialXXL() -> some View {
+        self.font(ONETypography.editorialXXL).tracking(-1.2)
+    }
+
+    /// 56pt Semibold Serif — onboarding wordmark, profil hero monogram
+    func editorialXL() -> some View {
+        self.font(ONETypography.editorialXL).tracking(-1.0)
+    }
+
+    /// 40pt Regular Serif — reveal kart, promise label, recap istatistik
+    func editorialLG() -> some View {
+        self.font(ONETypography.editorialLG).tracking(-0.6)
+    }
+
+    /// 28pt Regular Serif — echo alıntı, günlük yansıma, arkadaş notu
+    func editorialMD() -> some View {
+        self.font(ONETypography.editorialMD).tracking(-0.3)
     }
 }

@@ -5,6 +5,7 @@
 
 import SwiftUI
 import MusicKit
+import CloudKit
 
 // MARK: - Full Screen Photo Viewer
 
@@ -18,26 +19,33 @@ struct FullScreenPhotoView: View {
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
 
-    // Swipe-to-dismiss state
-    @State private var dismissOffset: CGFloat = 0
-    @State private var backgroundOpacity: Double = 1.0
+    // Swipe-to-dismiss — @GestureState for zero-overhead live tracking
+    @GestureState private var dragY: CGFloat = 0
+    @State private var isDismissing = false
 
     private let minScale: CGFloat = 1.0
     private let maxScale: CGFloat = 5.0
     private let dismissThreshold: CGFloat = 120
 
+    private var dismissOffset: CGFloat { isDismissing ? UIScreen.main.bounds.height : dragY }
+    private var backgroundOpacity: Double {
+        isDismissing ? 0 : Double(max(0.3, 1.0 - dragY / 300))
+    }
+
     var body: some View {
         ZStack(alignment: .topTrailing) {
             Color.black.opacity(backgroundOpacity).ignoresSafeArea()
 
-            AsyncImage(url: url) { phase in
+            CachedAsyncImagePhase(url: url) { phase in
                 switch phase {
                 case .success(let img):
                     img
                         .resizable()
                         .scaledToFit()
+                        .drawingGroup()
                         .scaleEffect(scale)
                         .offset(x: offset.width, y: offset.height + dismissOffset)
+                        .animation(isDismissing ? .easeOut(duration: 0.22) : nil, value: dismissOffset)
                         .gesture(
                             SimultaneousGesture(
                                 MagnificationGesture()
@@ -57,46 +65,32 @@ struct FullScreenPhotoView: View {
                                         }
                                     },
                                 DragGesture()
+                                    .updating($dragY) { val, state, _ in
+                                        guard scale <= 1.01 else { return }
+                                        let dy = val.translation.height
+                                        if dy > 0 { state = dy }
+                                    }
                                     .onChanged { val in
                                         if scale > 1.01 {
-                                            // Zoom'dayken pan
                                             offset = CGSize(
                                                 width:  lastOffset.width  + val.translation.width,
                                                 height: lastOffset.height + val.translation.height
                                             )
-                                        } else {
-                                            // Normal — aşağı sürükleme dismiss
-                                            let dy = val.translation.height
-                                            if dy > 0 {
-                                                dismissOffset = dy
-                                                backgroundOpacity = Double(max(0.3, 1.0 - dy / 300))
-                                            }
                                         }
                                     }
                                     .onEnded { val in
                                         if scale > 1.01 {
                                             lastOffset = offset
-                                        } else {
-                                            if val.translation.height > dismissThreshold {
-                                                // Dismiss
-                                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                                withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
-                                                    dismissOffset = 800
-                                                    backgroundOpacity = 0
-                                                }
-                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                                    var t = Transaction()
-                                                    t.disablesAnimations = true
-                                                    withTransaction(t) { isPresented = false }
-                                                }
-                                            } else {
-                                                // Geri snap
-                                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                                    dismissOffset = 0
-                                                    backgroundOpacity = 1.0
-                                                }
+                                        } else if val.translation.height > dismissThreshold {
+                                            ONEHaptics.moodSelected()
+                                            withAnimation(.easeOut(duration: 0.22)) {
+                                                isDismissing = true
+                                            }
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+                                                isPresented = false
                                             }
                                         }
+                                        // dragY sıfırlanır otomatik (@GestureState)
                                     }
                             )
                         )
@@ -131,14 +125,14 @@ struct FullScreenPhotoView: View {
 
             // Kapat butonu — sağ üst, fotoğrafla birlikte kayar
             Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                isPresented = false
+                withAnimation(.easeOut(duration: 0.22)) { isDismissing = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) { isPresented = false }
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 40, height: 40)
-                    .background(.ultraThinMaterial, in: Circle())
+                    .liquidGlass(in: Circle())
             }
             .padding(.top, 56)
             .padding(.trailing, 20)
@@ -151,8 +145,10 @@ struct FullScreenPhotoView: View {
 // MARK: - Day Preview Card (Wabi-Sabi Minimal)
 struct DayPreviewCard: View {
     let entry: DailyEntry
+    var onPhotoTap: ((URL) -> Void)? = nil
+
     @State private var showShareSheet = false
-    @State private var showFullPhoto  = false
+    @ObservedObject private var cloudKit = CloudKitManager.shared
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -175,7 +171,7 @@ struct DayPreviewCard: View {
             ZStack {
                 if let url = entry.photoURL {
                     // Fotoğraf varsa - sabit boyutta, fill mode
-                    AsyncImage(url: url) { phase in
+                    CachedAsyncImagePhase(url: url) { phase in
                         switch phase {
                         case .success(let img):
                             img
@@ -189,13 +185,11 @@ struct DayPreviewCard: View {
                                 .frame(width: 300, height: 200)
                         }
                     }
+                    .id(url)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        showFullPhoto = true
-                    }
-                    .fullScreenCover(isPresented: $showFullPhoto) {
-                        FullScreenPhotoView(url: url, isPresented: $showFullPhoto)
+                        ONEHaptics.moodSelected()
+                        onPhotoTap?(url)
                     }
                 } else {
                     // Fotoğraf yoksa mood pattern
@@ -226,7 +220,7 @@ struct DayPreviewCard: View {
                         Circle()
                             .fill(Color(hex: entry.moodColorHex))
                             .frame(width: 7, height: 7)
-                        Text(entry.moodLabel.uppercased())
+                        Text(entry.normalizedMoodLabel.uppercased())
                             .monoMicro(tracking: 0.8)
                             .foregroundColor(ONETokens.oneCharcoal)
                             .lineLimit(1)
@@ -297,7 +291,7 @@ struct DayPreviewCard: View {
 
                 // Sağ: Paylaşım butonu
                 Button(action: {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    ONEHaptics.moodSelected()
                     showShareSheet = true
                 }) {
                     HStack(spacing: 6) {
@@ -327,6 +321,20 @@ struct DayPreviewCard: View {
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 14)
+
+            // Yorum butonu — kendi paylaşımlarındaki yorumlar
+            if CommentsFeatureFlag.isEnabled,
+               let myUserID = cloudKit.currentUser?["userID"] as? String {
+                CommentEntryButton(
+                    shareOwnerID: myUserID,
+                    accentColorHex: entry.moodColorHex,
+                    resolveShareRecordName: { completion in
+                        CloudKitManager.shared.fetchOwnDailyShareRecordName(date: entry.date, completion: completion)
+                    }
+                )
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
+            }
         }
         .background(
             RoundedRectangle(cornerRadius: 20)
@@ -348,6 +356,11 @@ struct DayPreviewCard: View {
     }
 
     private func openSong() {
+        if let url = entry.spotifyURL, UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url)
+            return
+        }
+
         let rawQuery = "\(entry.songName) \(entry.artistName)"
         let query = rawQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
 
@@ -583,9 +596,9 @@ struct MoodPatternBackground: View {
             // Base gradient
             LinearGradient(
                 stops: [
-                    .init(color: Color(hex: moodColorHex).opacity(0.95), location: 0.0),
-                    .init(color: Color(hex: moodColorHex).opacity(0.75), location: 0.5),
-                    .init(color: Color(hex: moodColorHex).opacity(0.85), location: 1.0)
+                    .init(color: (ONEMood(hex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.18), location: 0.0),
+                    .init(color: (ONEMood(hex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.08), location: 0.55),
+                    .init(color: .clear, location: 1.0)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -657,14 +670,14 @@ struct MoodPatternPreview: View {
             // Base gradient
             LinearGradient(
                 stops: [
-                    .init(color: Color(hex: moodColorHex).opacity(0.9), location: 0.0),
-                    .init(color: Color(hex: moodColorHex).opacity(0.7), location: 0.5),
-                    .init(color: Color(hex: moodColorHex).opacity(0.8), location: 1.0)
+                    .init(color: (ONEMood(hex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.18), location: 0.0),
+                    .init(color: (ONEMood(hex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.08), location: 0.55),
+                    .init(color: .clear, location: 1.0)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-            
+
             // Organic shapes
             GeometryReader { geometry in
                 ZStack {

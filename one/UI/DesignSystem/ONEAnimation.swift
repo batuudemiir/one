@@ -52,40 +52,28 @@ enum ONEAnimation {
     // MARK: - Animation Type Configurations
     
     /// Micro animation - subtle, quick interactions
-    /// Response: 0.3, Damping: 0.7
-    /// Intended effect: Snappy, responsive feel for immediate feedback
-    /// Use for: Button presses, toggle switches, micro-interactions
-    static let micro = Animation.spring(response: 0.3, dampingFraction: 0.7)
-    
-    /// Card spring - smooth card movements
-    /// Response: 0.45, Damping: 0.8
-    /// Intended effect: Smooth, natural card movement with slight bounce
-    /// Use for: Card animations, list item movements, content reveals
-    static let cardSpring = Animation.spring(response: 0.45, dampingFraction: 0.8)
-    
+    /// Response: 0.25, Damping: 0.60
+    static let micro = Animation.spring(response: 0.25, dampingFraction: 0.60)
+
+    /// Card spring - card movements with organic bounce
+    /// Response: 0.40, Damping: 0.65
+    static let cardSpring = Animation.spring(response: 0.40, dampingFraction: 0.65)
+
     /// Panel spring - panel and sheet transitions
-    /// Response: 0.5, Damping: 0.85
-    /// Intended effect: Smooth panel slides with controlled momentum
-    /// Use for: Side panels, modal sheets, drawer animations
-    static let panelSpring = Animation.spring(response: 0.5, dampingFraction: 0.85)
-    
+    /// Response: 0.44, Damping: 0.72
+    static let panelSpring = Animation.spring(response: 0.44, dampingFraction: 0.72)
+
     /// Screen transition - full screen changes
-    /// Response: 0.6, Damping: 0.9
-    /// Intended effect: Smooth, weighty screen transitions with minimal bounce
-    /// Use for: Navigation transitions, full screen changes, major view switches
-    static let screenTransition = Animation.spring(response: 0.6, dampingFraction: 0.9)
-    
-    /// Mood transition - mood color changes
-    /// Response: 0.7, Damping: 0.95
-    /// Intended effect: Smooth, emotional color transitions without bounce
-    /// Use for: Mood color changes, gradient transitions, emotional state shifts
-    static let moodTransition = Animation.spring(response: 0.7, dampingFraction: 0.95)
-    
-    /// Tab switch - bottom navigation tab changes
-    /// Response: 0.35, Damping: 0.75
-    /// Intended effect: Snappy but fluid tab indicator movement with light bounce
-    /// Use for: Bottom navigation indicator, tab selection changes
-    static let tabSwitch = Animation.spring(response: 0.35, dampingFraction: 0.75)
+    /// Response: 0.52, Damping: 0.82
+    static let screenTransition = Animation.spring(response: 0.52, dampingFraction: 0.82)
+
+    /// Mood transition - intentionally no bounce (emotional color shifts)
+    /// Response: 0.65, Damping: 0.92
+    static let moodTransition = Animation.spring(response: 0.65, dampingFraction: 0.92)
+
+    /// Tab switch - snappy with visible bounce
+    /// Response: 0.28, Damping: 0.60
+    static let tabSwitch = Animation.spring(response: 0.28, dampingFraction: 0.60)
     
     // MARK: - Stagger Animation
     
@@ -96,7 +84,7 @@ enum ONEAnimation {
     ///   - index: Item index in the list
     ///   - baseDelay: Base delay between items (default: 0.08)
     /// - Returns: Delay in seconds for this item
-    static func staggerDelay(index: Int, baseDelay: Double = 0.08) -> Double {
+    static func staggerDelay(index: Int, baseDelay: Double = 0.07) -> Double {
         return Double(index) * baseDelay
     }
     
@@ -169,8 +157,8 @@ private struct PageEntranceModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .opacity(isVisible ? 1 : 0)
-            .scaleEffect(reduceMotion ? 1 : (isVisible ? 1 : 0.96))
-            .offset(y: reduceMotion ? 0 : (isVisible ? 0 : 8))
+            .scaleEffect(reduceMotion ? 1 : (isVisible ? 1 : 0.90))
+            .offset(y: reduceMotion ? 0 : (isVisible ? 0 : 20))
             .animation(
                 reduceMotion
                     ? .easeOut(duration: ONEAnimation.durationMicro)
@@ -189,7 +177,8 @@ private struct ListItemEntranceModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .opacity(isVisible ? 1 : 0)
-            .offset(y: reduceMotion ? 0 : (isVisible ? 0 : 12))
+            .scaleEffect(reduceMotion ? 1 : (isVisible ? 1 : 0.92))
+            .offset(y: reduceMotion ? 0 : (isVisible ? 0 : 22))
             .animation(
                 reduceMotion
                     ? .easeOut(duration: ONEAnimation.durationMicro)

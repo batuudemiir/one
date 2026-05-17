@@ -12,12 +12,20 @@ import UIKit
 final class AppUpdateChecker: ObservableObject {
     static let shared = AppUpdateChecker()
 
+    /// Bu sürümün altındaki kullanıcılar uygulamayı kullanamaz — zorla güncelleme.
+    /// Yeni sürüm yayınlarken bu değeri yeni sürüm numarasıyla güncelle.
+    static let minimumRequiredVersion = "2.2"
+
     // SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor makes all members implicitly @MainActor,
     // which breaks ObservableObject synthesis. Declare objectWillChange nonisolated so
     // SwiftUI can observe it from any actor context.
     nonisolated(unsafe) var objectWillChange = ObservableObjectPublisher()
 
     var updateAvailable = false {
+        willSet { objectWillChange.send() }
+    }
+    /// Zorunlu güncelleme — kullanıcı devam edemez, App Store'a yönlendirilir.
+    var forceUpdate = false {
         willSet { objectWillChange.send() }
     }
     var appStoreVersion: String = "" {
@@ -50,6 +58,7 @@ final class AppUpdateChecker: ObservableObject {
                 self.updateAvailable = storeVersion.isNewerThan(self.currentVersion)
                 if self.updateAvailable {
                     ONELogger.info("App Store'da yeni sürüm: \(storeVersion) (yüklü: \(self.currentVersion))", category: .general)
+                    NotificationManager.shared.scheduleAppUpdateNotification(newVersion: storeVersion)
                 }
             }
         }.resume()

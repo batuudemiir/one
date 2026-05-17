@@ -237,47 +237,12 @@ struct DailySongLiveActivity: Widget {
 
                 DynamicIslandExpandedRegion(.trailing) {
                     if context.state.isCelebrating {
-                        // Kutlama sırasında: checkmark
-                        if #available(iOS 17.0, *) {
-                            if #available(iOS 18.0, *) {
-                                Image(systemName: "checkmark.seal.fill")
-                                    .font(.system(size: 22))
-                                    .foregroundStyle(Color(hex: context.state.moodColorHex))
-                                    .symbolEffect(.bounce, options: .nonRepeating)
-                                    .padding(.trailing, 4)
-                            } else {
-                                // Fallback on earlier versions
-                            };if #available(iOS 18.0, *) {
-                                Image(systemName: "checkmark.seal.fill")
-                                    .font(.system(size: 22))
-                                    .foregroundStyle(Color(hex: context.state.moodColorHex))
-                                    .symbolEffect(.bounce, options: .nonRepeating)
-                                    .padding(.trailing, 4)
-                            } else {
-                                // Fallback on earlier versions
-                            };if #available(iOS 18.0, *) {
-                                Image(systemName: "checkmark.seal.fill")
-                                    .font(.system(size: 22))
-                                    .foregroundStyle(Color(hex: context.state.moodColorHex))
-                                    .symbolEffect(.bounce, options: .nonRepeating)
-                                    .padding(.trailing, 4)
-                            } else {
-                                // Fallback on earlier versions
-                            };if #available(iOS 18.0, *) {
-                                Image(systemName: "checkmark.seal.fill")
-                                    .font(.system(size: 22))
-                                    .foregroundStyle(Color(hex: context.state.moodColorHex))
-                                    .symbolEffect(.bounce, options: .nonRepeating)
-                                    .padding(.trailing, 4)
-                            } else {
-                                // Fallback on earlier versions
-                            }
-                        } else {
-                            Image(systemName: "checkmark.seal.fill")
-                                .font(.system(size: 22))
-                                .foregroundStyle(Color(hex: context.state.moodColorHex))
-                                .padding(.trailing, 4)
-                        }
+                        // Kutlama sırasında: checkmark (iOS 17+ bounce, iOS 16 statik)
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.system(size: 22))
+                            .foregroundStyle(Color(hex: context.state.moodColorHex))
+                            .modifier(BouncingSealModifier())
+                            .padding(.trailing, 4)
                     } else {
                         VStack(spacing: 2) {
                             Image(systemName: "checkmark.circle.fill")
@@ -470,6 +435,21 @@ struct FriendShareLiveActivity: Widget {
                 )
             }
             .keylineTint(Color(hex: context.state.moodColorHex))
+        }
+    }
+}
+
+// MARK: - Bouncing Seal (iOS 17+ symbolEffect, iOS 16 fallback)
+
+/// Live Activity kutlama fazında `checkmark.seal.fill` üzerinde tek seferlik
+/// bounce animasyonu uygular. iOS 17+ `.symbolEffect(.bounce)` kullanır,
+/// iOS 16'da hiçbir efekt eklemez (image olduğu gibi kalır).
+struct BouncingSealModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content.symbolEffect(.bounce)
+        } else {
+            content
         }
     }
 }

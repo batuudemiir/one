@@ -21,11 +21,34 @@ class TodayViewModel: ObservableObject {
     @Published var showLiveActivityAlert: Bool = false
     @Published var streakMilestone: Int? = nil
     @Published var lastYearEntry: DailyEntry? = nil
+    /// C3 — "1 hafta önce bugün" mini Echo (D14+ daha anlamlı, ama her zaman göster).
+    @Published var lastWeekEntry: DailyEntry? = nil
+    @Published var showLastWeekReflection: Bool = false
+    private var hasShownLastWeekReflectionThisSession: Bool = false
+    /// A4 — Çevre davet kancası: yalnızca ilk kayıttan sonra bir kez tetiklenir.
+    @Published var showFirstEntryInvite: Bool = false
+    /// B1 — Streak freeze son hesaplamada devreye girdi mi?
+    @Published var streakFreezeUsedRecently: Bool = false
+    /// B1 — Şu an kullanıcının taze bir freeze hakkı var mı?
+    @Published var streakFreezeAvailable: Bool = true
+    /// Mevcut streak gün sayısı — UI bileşenlerine doğrudan açılır.
+    @Published var streakDays: Int = 0
+    /// Son kırılan streak gün sayısı (kırılma ≥ 7 gün ise empati kartı göster).
+    @Published var lastBrokenStreakDays: Int = 0
+    /// This week's logged entries for WeeklyProgressDots.
+    @Published var thisWeekEntries: [(date: Date, moodColorHex: String)] = []
+    /// Total entry count ever (for milestone insights).
+    @Published var totalEntryCount: Int = 0
+    /// Days since last entry before today (nil = no prior entry).
+    @Published var daysSinceLastEntry: Int? = nil
+    /// Yesterday's mood, if logged.
+    @Published var yesterdayMood: (label: String, color: Color)? = nil
 
     private let context: NSManagedObjectContext
     private var searchTask: Task<Void, Never>? = nil
 
-    private static let streakMilestones: Set<Int> = [7, 30, 100, 365]
+    /// B1 — Tek kaynak: StreakEngine.milestones ile hizalı.
+    private static let streakMilestones: Set<Int> = Set(StreakEngine.milestones)
 
     /// Primary (last) entry for today — used by existing views
     var todayEntry: DailyEntry? { todayEntries.last }
@@ -45,6 +68,10 @@ class TodayViewModel: ObservableObject {
         loadTodayEntry()
         loadRecentArtists()
         loadLastYearEntry()
+        loadLastWeekEntry()
+        loadThisWeekEntries()
+        loadTotalEntryCount()
+        loadYesterdayMood()
     }
 
     // MARK: - Load today's entries from CoreData
@@ -64,6 +91,53 @@ class TodayViewModel: ObservableObject {
             }
         } catch {
             ONELogger.debug("TodayViewModel: fetch error \(error)", category: .general)
+        }
+        refreshStreakDays()
+    }
+
+    /// Streak gün sayısını hesaplar, published property'leri günceller.
+    private func refreshStreakDays() {
+        let todayHasEntry = !todayEntries.isEmpty
+        let current = computeCurrentStreak(includingToday: todayHasEntry)
+        streakDays = current
+
+        // Empati kartı: dün entry vardı ama bugün yoksa kırılma tespiti.
+        if !todayHasEntry {
+            let cal = Calendar.current
+            let yesterday = cal.startOfDay(for: cal.date(byAdding: .day, value: -1, to: Date()) ?? Date())
+            let fetchReq: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+            fetchReq.predicate = NSPredicate(format: "date == %@", yesterday as NSDate)
+            fetchReq.fetchLimit = 1
+            let hasYesterday = ((try? context.fetch(fetchReq))?.count ?? 0) > 0
+
+            if hasYesterday {
+                // Dün giriş yapılmış → streak henüz kırılmamış (bugün yapılırsa devam eder)
+                // Bu durumda yesterdayStreak'i dünün hesabıyla bul
+                let allReq: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+                let songs = (try? context.fetch(allReq)) ?? []
+                let filledDates = Set(songs.compactMap { s -> Date? in
+                    guard let d = s.date else { return nil }
+                    return cal.startOfDay(for: d)
+                })
+                let yesterdayStreak = StreakEngine.compute(
+                    filledDates: filledDates,
+                    today: yesterday,
+                    includeToday: true
+                ).count
+                if yesterdayStreak >= 7 {
+                    let key = "lastBrokenStreakDays"
+                    UserDefaults.standard.set(yesterdayStreak, forKey: key)
+                    lastBrokenStreakDays = yesterdayStreak
+                }
+            } else {
+                // Dün de boş — daha önce kaydedilmiş kırılma değerini oku
+                let key = "lastBrokenStreakDays"
+                lastBrokenStreakDays = UserDefaults.standard.integer(forKey: key)
+            }
+        } else {
+            // Bugün entry var — kırılma yok, sıfırla
+            UserDefaults.standard.removeObject(forKey: "lastBrokenStreakDays")
+            lastBrokenStreakDays = 0
         }
     }
 
@@ -202,9 +276,17 @@ class TodayViewModel: ObservableObject {
         item.shareWithCircle = sharePhoto
         item.isSharedWithCircle = sharePhoto
 
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            ErrorHandler.shared.handle(error, context: "saveEntry")
+            return
+        }
 
         AppAnalytics.shared.track(.entrySaved(hasPhoto: photo != nil, hasNote: !note.isEmpty))
+
+        // A4 — İlk entry sonrası Çevre davet kancası (one-shot)
+        evaluateFirstEntryInviteHook()
 
         // Lock Screen widget güncellemesi
         WidgetDataWriter.writeTodayEntry(
@@ -217,11 +299,34 @@ class TodayViewModel: ObservableObject {
 
         let photoData = (sharePhoto && photo != nil) ? photo?.jpegData(compressionQuality: 0.75) : nil
         let streak = computeCurrentStreak(includingToday: true)
-        if Self.streakMilestones.contains(streak) {
+        WidgetDataWriter.writeStreak(streak)
+        let milestoneCountReq: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        let realEntryCount = (try? context.count(for: milestoneCountReq)) ?? 1
+        if Self.streakMilestones.contains(streak) && realEntryCount >= streak - 1 {
             streakMilestone = streak
         }
         BadgeManager.shared.evaluateStreak(streak)
+        let currentHour = Calendar.current.component(.hour, from: Date())
+        BadgeManager.shared.evaluateTimeBasedBadges(hour: currentHour)
+
+        // B3 — Push planlama anında okunmak üzere persist et.
+        EngagementTracker.lastKnownStreak = streak
         let savedMoodColorHex = mood.color.toHex()
+
+        // Çevreyle paylaşılmıyorsa CloudKit'e yükleme — sadece arşivde kalır
+        guard sharePhoto else {
+            NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
+            NotificationOrchestrator.shared.onSongSaved(moodLabel: mood.label, moodColorHex: mood.color.toHex())
+            NotificationManager.shared.scheduleDiscoveryReminder(moodLabel: mood.label)
+            AppReviewManager.shared.logSongSaved()
+            loadTodayEntry()
+            loadThisWeekEntries()
+            loadTotalEntryCount()
+            loadYesterdayMood()
+            BadgeManager.shared.evaluateEntryCount(totalEntryCount)
+            return
+        }
+
         CloudKitManager.shared.shareDailySong(
             songName: song.name,
             artistName: song.artist,
@@ -255,14 +360,22 @@ class TodayViewModel: ObservableObject {
         }
         
         NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
-        // Bugün seçim yapıldı — hatırlatıcı ve streak uyarısını iptal et
-        NotificationManager.shared.cancelTodayReminderIfNeeded()
-        NotificationManager.shared.cancelStreakWarning()
+        // Bugün seçim yapıldı — Orchestrator engagement update + yarın için
+        // deterministik seed ile daily_reminder yeniden kurulur, streak
+        // uyarıları iptal edilir (race-free).
+        NotificationOrchestrator.shared.onSongSaved(
+            moodLabel: mood.label,
+            moodColorHex: mood.color.toHex()
+        )
         // Keşfet hatırlatıcısı (mood bilgisiyle)
         NotificationManager.shared.scheduleDiscoveryReminder(moodLabel: mood.label)
         // App review — anlamlı event sonrası
         AppReviewManager.shared.logSongSaved()
         loadTodayEntry()
+        loadThisWeekEntries()
+        loadTotalEntryCount()
+        loadYesterdayMood()
+        BadgeManager.shared.evaluateEntryCount(totalEntryCount)
 
         // Dynamic Island — kaydetme anı Live Activity (~30 sn)
         if #available(iOS 16.1, *) {
@@ -306,7 +419,11 @@ class TodayViewModel: ObservableObject {
 
         if let items = try? context.fetch(fetchRequest) {
             items.forEach { context.delete($0) }
-            try? context.save()
+            do {
+                try context.save()
+            } catch {
+                ErrorHandler.shared.handle(error, context: "clearToday")
+            }
         }
         todayEntries = []
         searchResults = []
@@ -320,7 +437,11 @@ class TodayViewModel: ObservableObject {
 
         if let item = try? context.fetch(fetchRequest).first {
             context.delete(item)
-            try? context.save()
+            do {
+                try context.save()
+            } catch {
+                ErrorHandler.shared.handle(error, context: "clearEntry")
+            }
         }
         loadTodayEntry()
     }
@@ -329,6 +450,39 @@ class TodayViewModel: ObservableObject {
 
     func clearStreakMilestone() {
         streakMilestone = nil
+    }
+
+    // MARK: - A4 — First-entry Circle invite hook
+
+    private static let firstEntryInviteHookKey = "firstEntryInviteHookConsumed"
+
+    /// İlk kayıt sonrası Çevre davet kancasını tetikler. Yalnızca toplam
+    /// entry sayısı 1 ise VE daha önce gösterilmediyse açılır. Mevcut
+    /// kullanıcılarda (zaten birden fazla entry'si olanlar) sessiz kalır.
+    private func evaluateFirstEntryInviteHook() {
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: Self.firstEntryInviteHookKey) else { return }
+
+        let countRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        let total = (try? context.count(for: countRequest)) ?? 0
+        guard total == 1 else {
+            // Mevcut kullanıcı — sessiz tüket, bir daha kontrol etme.
+            defaults.set(true, forKey: Self.firstEntryInviteHookKey)
+            return
+        }
+
+        defaults.set(true, forKey: Self.firstEntryInviteHookKey)
+        // Save ritual + milestone animasyonlarının bitmesini beklet.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { [weak self] in
+            guard let self else { return }
+            self.showFirstEntryInvite = true
+            AppAnalytics.shared.track(.firstEntryInviteHookShown)
+        }
+    }
+
+    func dismissFirstEntryInvite(action: String) {
+        showFirstEntryInvite = false
+        AppAnalytics.shared.track(.firstEntryInviteHookAction(action: action))
     }
 
     func loadLastYearEntry() {
@@ -345,8 +499,32 @@ class TodayViewModel: ObservableObject {
         }
     }
 
+    /// C3 — "1 hafta önce bugün" entry'sini yükler (varsa).
+    func loadLastWeekEntry() {
+        let calendar = Calendar.current
+        guard let oneWeekAgo = calendar.date(byAdding: .day, value: -7, to: Date()) else { return }
+        let targetDate = calendar.startOfDay(for: oneWeekAgo)
+
+        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "date == %@", targetDate as NSDate)
+        fetchRequest.fetchLimit = 1
+
+        if let item = try? context.fetch(fetchRequest).first {
+            lastWeekEntry = dailyEntryFrom(item)
+            if !hasShownLastWeekReflectionThisSession {
+                showLastWeekReflection = true
+                hasShownLastWeekReflectionThisSession = true
+            }
+        }
+    }
+
+    func dismissLastWeekReflection() {
+        showLastWeekReflection = false
+    }
+
     // MARK: - Streak Calculation
-    /// Counts consecutive days ending at today (inclusive). Returns 1 on first save.
+    /// Counts consecutive days ending at today, applying StreakEngine's
+    /// soft-streak rules (1 freeze per 7-day window). Returns 1 on first save.
     private func computeCurrentStreak(includingToday: Bool = true) -> Int {
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
@@ -360,15 +538,76 @@ class TodayViewModel: ObservableObject {
             return calendar.startOfDay(for: d)
         })
 
-        // If saving today, today counts even though it may not be in DB yet
-        var streak = includingToday ? 1 : 0
-        var checkDay = calendar.date(byAdding: .day, value: -1, to: today) ?? today
-        while filledDates.contains(checkDay) {
-            streak += 1
-            guard let prev = calendar.date(byAdding: .day, value: -1, to: checkDay) else { break }
-            checkDay = prev
+        // Önceki gün entry yoksa freeze köprüsüne gerek yok — sadece 1.
+        let hasPriorEntry = filledDates.contains { $0 < today }
+        guard hasPriorEntry else {
+            streakFreezeUsedRecently = false
+            streakFreezeAvailable = StreakEngine.isFreezeAvailable(today: today)
+            return 1
         }
-        return streak
+
+        let result = StreakEngine.compute(
+            filledDates: filledDates,
+            today: today,
+            includeToday: includingToday
+        )
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
+        streakFreezeUsedRecently = result.frozenDates.contains(yesterday)
+        streakFreezeAvailable = result.freezeAvailable
+        if !result.newlyConsumedFreezes.isEmpty {
+            ErrorHandler.shared.showInfo(
+                NSLocalizedString("streak.freezeUsed.toast", comment: "")
+            )
+            AppAnalytics.shared.track(.streakFreezeConsumed)
+        }
+        return result.count
+    }
+
+    private func loadThisWeekEntries() {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        guard let weekStart = cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) else { return }
+        let weekEnd = cal.date(byAdding: .day, value: 7, to: weekStart) ?? today
+
+        let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        req.predicate = NSPredicate(format: "date >= %@ AND date < %@", weekStart as NSDate, weekEnd as NSDate)
+        req.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]
+
+        let songs = (try? context.fetch(req)) ?? []
+        thisWeekEntries = songs.compactMap { s in
+            guard let d = s.date, let hex = s.moodColorHex else { return nil }
+            return (date: cal.startOfDay(for: d), moodColorHex: hex)
+        }
+    }
+
+    private func loadTotalEntryCount() {
+        let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        totalEntryCount = (try? context.count(for: req)) ?? 0
+    }
+
+    private func loadYesterdayMood() {
+        let cal = Calendar.current
+        guard let yesterday = cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: Date())) else { return }
+        let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        req.predicate = NSPredicate(format: "date == %@", yesterday as NSDate)
+        req.fetchLimit = 1
+        if let song = try? context.fetch(req).first, let hex = song.moodColorHex, let label = song.moodLabel ?? song.moodWord {
+            yesterdayMood = (label: label, color: Color(hex: hex))
+        } else {
+            yesterdayMood = nil
+        }
+
+        // Compute days since last entry (before today)
+        let allReq: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        allReq.predicate = NSPredicate(format: "date < %@", cal.startOfDay(for: Date()) as NSDate)
+        allReq.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+        allReq.fetchLimit = 1
+        if let last = try? context.fetch(allReq).first, let lastDate = last.date {
+            let diff = cal.dateComponents([.day], from: cal.startOfDay(for: lastDate), to: cal.startOfDay(for: Date())).day
+            daysSinceLastEntry = diff
+        } else {
+            daysSinceLastEntry = nil
+        }
     }
 
     // MARK: - Helpers
@@ -414,19 +653,23 @@ class TodayViewModel: ObservableObject {
         // Sadece bugünün kaydıysa ve daha önceden eklendiyse senkronize etmeyi deneriz.
         guard let itemDate = item.date, Calendar.current.isDate(itemDate, inSameDayAs: today) else { return }
 
+        // Çevreyle paylaşılmamışsa CloudKit'e senkronize etme
+        guard item.shareWithCircle else { return }
+
         // CloudKit throttled veya kullanıcı yüklenemedi — sync'i atla
         guard !CloudKitManager.shared.isThrottled, !CloudKitManager.shared.userLoadFailed else {
             ONELogger.warning("Senkronizasyon atlandı — CloudKit throttled veya kullanıcı yüklenmedi", category: .general)
             return
         }
 
-        CloudKitManager.shared.fetchUserDailyShare(for: today) { result in
-            DispatchQueue.main.async {
+        CloudKitManager.shared.fetchUserDailyShare(for: today) { [weak self] result in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
                 switch result {
-                case .success(_):
+                case .success:
                     // Zaten CloudKit'te var
                     break
-                case .failure(_):
+                case .failure:
                     // CloudKit'te yok ama lokalde var. Hemen yükleyelim.
                     ONELogger.debug("Senkronizasyon: Lokal şarkı bulundu ama CloudKit'te yok. Yükleniyor...", category: .general)
                     let photoData = item.shareWithCircle ? item.photoData : nil

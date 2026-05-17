@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D02482D2F8D2A3300491104 /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 2D02482C2F8D2A3300491104 /* ReceiptParser */; };
-		2D02482F2F8D2A3300491104 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2D02482E2F8D2A3300491104 /* RevenueCat */; };
-		2D0248312F8D2A3300491104 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2D0248302F8D2A3300491104 /* RevenueCatUI */; };
 		2D48C49A2F77F9F6002F8A60 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DA82E7D2F768BEF0090C0F0 /* WidgetKit.framework */; };
 		2D48C49B2F77F9F6002F8A60 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DA82E7F2F768BF00090C0F0 /* SwiftUI.framework */; };
 		2D48C4AA2F77F9F9002F8A60 /* MoodWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2D48C4992F77F9F6002F8A60 /* MoodWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -65,7 +62,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0BD98DA509EB489F8A3E87B9 /* one/Secrets.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = one/Secrets.xcconfig; sourceTree = SOURCE_ROOT; };
+		0BD98DA509EB489F8A3E87B9 /* Secrets.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Secrets.xcconfig; path = /Users/batudemir/secrets/one/Secrets.xcconfig; sourceTree = "<absolute>"; };
 		2D024C8D2F8D9B7D00491104 /* ONEPlus.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = ONEPlus.storekit; sourceTree = "<group>"; };
 		2D48C4992F77F9F6002F8A60 /* MoodWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MoodWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D48C4AF2F77FE55002F8A60 /* MoodWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MoodWidgetExtension.entitlements; sourceTree = "<group>"; };
@@ -172,9 +169,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D02482F2F8D2A3300491104 /* RevenueCat in Frameworks */,
-				2D02482D2F8D2A3300491104 /* ReceiptParser in Frameworks */,
-				2D0248312F8D2A3300491104 /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -209,7 +203,7 @@
 			children = (
 				2D024C8D2F8D9B7D00491104 /* ONEPlus.storekit */,
 				2D48C4AF2F77FE55002F8A60 /* MoodWidgetExtension.entitlements */,
-				0BD98DA509EB489F8A3E87B9 /* one/Secrets.xcconfig */,
+				0BD98DA509EB489F8A3E87B9 /* Secrets.xcconfig */,
 				2D91B35E2F4BAF85001C70F2 /* one */,
 				2D91B3712F4BAF87001C70F2 /* oneTests */,
 				2D91B37B2F4BAF87001C70F2 /* oneUITests */,
@@ -400,7 +394,6 @@
 			mainGroup = 2D91B3532F4BAF85001C70F2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				2D02482B2F8D2A3300491104 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2D91B35D2F4BAF85001C70F2 /* Products */;
@@ -524,7 +517,8 @@
 				CODE_SIGN_ENTITLEMENTS = MoodWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 10;
+				DEVELOPMENT_ASSET_PATHS = MoodWidget/CircleWidget.swift;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MoodWidget/Info.plist;
@@ -536,7 +530,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2;
+				MARKETING_VERSION = 2.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones.MoodWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -557,7 +551,8 @@
 				CODE_SIGN_ENTITLEMENTS = MoodWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 10;
+				DEVELOPMENT_ASSET_PATHS = MoodWidget/CircleWidget.swift;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MoodWidget/Info.plist;
@@ -569,7 +564,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2;
+				MARKETING_VERSION = 2.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones.MoodWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -709,19 +704,19 @@
 		};
 		2D91B3832F4BAF87001C70F2 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0BD98DA509EB489F8A3E87B9 /* one/Secrets.xcconfig */;
+			baseConfigurationReference = 0BD98DA509EB489F8A3E87B9 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = one/one.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = one/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "One +";
+				INFOPLIST_KEY_CFBundleDisplayName = "ONE+";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Bu uygulamanın müzik kütüphanenize erişebilmesi için izni gereklidir.";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "Günlük şarkı seçimlerinizi takviminize kaydetmek için izin gereklidir.";
@@ -738,7 +733,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones;
 				PRODUCT_NAME = OneDailyBatuhan;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -754,19 +749,19 @@
 		};
 		2D91B3842F4BAF87001C70F2 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0BD98DA509EB489F8A3E87B9 /* one/Secrets.xcconfig */;
+			baseConfigurationReference = 0BD98DA509EB489F8A3E87B9 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = one/one.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = one/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "One +";
+				INFOPLIST_KEY_CFBundleDisplayName = "ONE+";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Bu uygulamanın müzik kütüphanenize erişebilmesi için izni gereklidir.";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "Günlük şarkı seçimlerinizi takviminize kaydetmek için izin gereklidir.";
@@ -783,7 +778,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones;
 				PRODUCT_NAME = OneDailyBatuhan;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -815,7 +810,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/One - Günük Mood.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/One - Günük Mood";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OneDailyBatuhan.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OneDailyBatuhan";
 			};
 			name = Debug;
 		};
@@ -837,7 +832,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/One - Günük Mood.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/One - Günük Mood";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OneDailyBatuhan.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OneDailyBatuhan";
 			};
 			name = Release;
 		};
@@ -888,7 +883,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OneActivityExtension/Info.plist;
@@ -900,7 +895,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2;
+				MARKETING_VERSION = 2.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones.OneActivityExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -920,7 +915,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OneActivityExtension/Info.plist;
@@ -932,7 +927,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2;
+				MARKETING_VERSION = 2.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.batu.ones.OneActivityExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1003,35 +998,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		2D02482B2F8D2A3300491104 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.67.2;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		2D02482C2F8D2A3300491104 /* ReceiptParser */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2D02482B2F8D2A3300491104 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
-			productName = ReceiptParser;
-		};
-		2D02482E2F8D2A3300491104 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2D02482B2F8D2A3300491104 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
-			productName = RevenueCat;
-		};
-		2D0248302F8D2A3300491104 /* RevenueCatUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2D02482B2F8D2A3300491104 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
-			productName = RevenueCatUI;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2D91B3542F4BAF85001C70F2 /* Project object */;
 }

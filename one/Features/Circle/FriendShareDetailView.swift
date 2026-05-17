@@ -9,24 +9,28 @@
 import SwiftUI
 import CloudKit
 
+// MARK: - IdentifiableImage
+
+struct IdentifiableImage: Identifiable {
+    let id = UUID()
+    let image: UIImage
+}
+
 struct FriendShareDetailView: View {
     @Environment(\.dismiss) var dismiss
     let share: CKRecord
+    var friendDisplayName: String = ""
     @StateObject private var cloudKitManager = CloudKitManager.shared
-    @State private var sentEmoji: String? = nil
     @State private var appeared = false
     @State private var showPhotoViewer = false
     @State private var showRemoveAlert = false
     @State private var showBlockAlert = false
     @State private var isLoading = false
-    
-    private var photoData: Data? {
-        if let asset = share["photoAsset"] as? CKAsset,
-           let fileURL = asset.fileURL {
-            return try? Data(contentsOf: fileURL)
-        }
-        return share["photoData"] as? Data
-    }
+    @State private var loadedPhotoData: Data? = nil
+    @State private var loadedPhotoImage: UIImage? = nil  // pre-decoded image — dismiss anında ana thread sync I/O olmasın
+    @State private var showFriendProfile = false  // v2.6 — public profile sheet
+    @State private var showCommentSheet = false
+    @State private var commentCount: Int? = nil
     
     private var moodColorHex: String {
         share["moodColor"] as? String ?? "#5B8DEF"
@@ -83,27 +87,43 @@ struct FriendShareDetailView: View {
         ZStack {
             // Background
             ONETokens.oneCream.ignoresSafeArea()
-            
+
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     // Header
                     headerSection
-                    
+
                     // Main Card
                     mainCard
-                    
-                    // Emoji reaction row
-                    emojiSection
-                    
+
+                    commentThreadSection
+
                     // Close button
                     closeButton
                 }
             }
-        }
-        .fullScreenCover(isPresented: $showPhotoViewer) {
-            if let data = photoData, let uiImage = UIImage(data: data) {
-                PhotoDataViewerSheet(image: uiImage, isPresented: $showPhotoViewer)
+            .scrollDismissesKeyboard(.interactively)
+
+            if showPhotoViewer, let img = loadedPhotoImage {
+                PhotoDataViewerSheet(image: img, isPresented: $showPhotoViewer)
+                    .transition(.opacity)
+                    .zIndex(999)
             }
+        }
+        .liquidGlassSheetBackground()
+        .sheet(isPresented: $showFriendProfile) {
+            // v2.6 — Arkadaşın aggregate profili
+            PublicProfileView(userID: targetUserID())
+        }
+        .sheet(isPresented: $showCommentSheet) {
+            CommentThreadView(
+                shareRecordName: share.recordID.recordName,
+                shareOwnerID: targetUserID(),
+                showComposer: true
+            )
+            .id(share.recordID.recordName)
+            .presentationDetents([.large])
+            .presentationDragIndicator(.hidden)
         }
         .alert(NSLocalizedString("circle.removeFriend", comment: ""), isPresented: $showRemoveAlert) {
             Button(NSLocalizedString("circle.removeAction", comment: ""), role: .destructive) { removeFriend() }
@@ -117,20 +137,54 @@ struct FriendShareDetailView: View {
         } message: {
             Text(String(format: NSLocalizedString("circle.blockConfirmMessage", comment: ""), getUserDisplayName()))
         }
-        .overlay(
-            Group {
-                if isLoading {
-                    Color.black.opacity(0.3).ignoresSafeArea()
+        .overlay {
+            if isLoading {
+                ZStack {
+                    ONETokens.oneCream.opacity(0.7).ignoresSafeArea()
                     ProgressView()
-                        .padding()
-                        .background(ONETokens.onePaper)
-                        .cornerRadius(10)
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(ONETokens.onePaper)
+                                .shadow(color: .black.opacity(0.06), radius: 12, y: 4)
+                        )
                 }
+                .transition(.opacity)
             }
-        )
+        }
         .onAppear {
-            loadSentEmoji()
             withAnimation(ONEAnimation.screenTransition) { appeared = true }
+            CloudKitManager.shared.fetchCommentCount(shareRecordName: share.recordID.recordName) { count in
+                self.commentCount = count
+            }
+        }
+        .task {
+            guard loadedPhotoData == nil else { return }
+            await Task.detached(priority: .userInitiated) {
+                if let asset = share["photoAsset"] as? CKAsset,
+                   let url = asset.fileURL,
+                   let data = try? Data(contentsOf: url) {
+                    let decoded = UIImage(data: data)
+                    await MainActor.run {
+                        loadedPhotoData = data
+                        loadedPhotoImage = decoded
+                    }
+                } else if let data = share["photoData"] as? Data {
+                    let decoded = UIImage(data: data)
+                    await MainActor.run {
+                        loadedPhotoData = data
+                        loadedPhotoImage = decoded
+                    }
+                }
+            }.value
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .commentCountChanged)) { notif in
+            guard let name = notif.object as? String,
+                  name == share.recordID.recordName else { return }
+            CloudKitManager.shared.commentCountCache.removeValue(forKey: name)
+            CloudKitManager.shared.fetchCommentCount(shareRecordName: share.recordID.recordName) { count in
+                self.commentCount = count
+            }
         }
     }
     
@@ -139,21 +193,26 @@ struct FriendShareDetailView: View {
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                // Friend info
-                HStack(spacing: 10) {
-                    Circle()
-                        .fill(moodColor)
-                        .frame(width: 28, height: 28)
-                        .overlay(
-                            Text(getInitial())
-                                .monoSM(tracking: 0)
-                                .foregroundColor(.white.opacity(0.9))
-                        )
-                    
-                    Text(getUserDisplayName().uppercased())
-                        .monoSM(tracking: 1.6)
-                        .foregroundColor(ONETokens.oneAsh)
+                // Friend info — v2.6: tap → public profile
+                Button {
+                    if !targetUserID().isEmpty { showFriendProfile = true }
+                } label: {
+                    HStack(spacing: 10) {
+                        Circle()
+                            .fill(moodColor)
+                            .frame(width: 28, height: 28)
+                            .overlay(
+                                Text(getInitial())
+                                    .monoSM(tracking: 0)
+                                    .foregroundColor(.white.opacity(0.9))
+                            )
+
+                        Text(getUserDisplayName().uppercased())
+                            .monoSM(tracking: 1.6)
+                            .foregroundColor(ONETokens.oneAsh)
+                    }
                 }
+                .buttonStyle(.plain)
                 
                 Spacer()
                 
@@ -172,9 +231,10 @@ struct FriendShareDetailView: View {
                         }
                     } label: {
                         Image(systemName: "ellipsis")
-                            .font(.system(size: 14, weight: .semibold))
+                            .bodySM()
+                            .fontWeight(.semibold)
                             .foregroundColor(ONETokens.oneStone)
-                            .frame(width: 32, height: 32)
+                            .frame(width: 44, height: 44)
                             .contentShape(Rectangle())
                     }
                 }
@@ -200,8 +260,8 @@ struct FriendShareDetailView: View {
         VStack(spacing: 0) {
             // Photo or Mood gradient header
             ZStack(alignment: .bottomLeading) {
-                if let photoData = photoData, !photoData.isEmpty,
-                   let uiImage = UIImage(data: photoData) {
+                if let loadedPhotoData = loadedPhotoData, !loadedPhotoData.isEmpty,
+                   let uiImage = UIImage(data: loadedPhotoData) {
                     // Photo background — tappable
                     Button(action: {
                         withAnimation(ONEAnimation.panelSpring) {
@@ -217,7 +277,8 @@ struct FriendShareDetailView: View {
                                 ZStack {
                                     Color.black.opacity(0.02)
                                     Image(systemName: "arrow.up.left.and.arrow.down.right")
-                                        .font(.system(size: 14, weight: .medium))
+                                        .bodySM()
+                                        .fontWeight(.medium)
                                         .foregroundColor(.white.opacity(0.6))
                                 }
                             )
@@ -439,51 +500,46 @@ struct FriendShareDetailView: View {
         .animation(ONEAnimation.panelSpring.delay(0.2), value: appeared)
     }
     
-    // MARK: - Emoji Section
-    
-    private let emojis = ["🤍", "🌊", "✨", "🫶", "🔥"]
-    
-    private var emojiSection: some View {
-        HStack(spacing: ONETokens.spacingSM) {
-            ForEach(emojis, id: \.self) { emoji in
-                Button(action: { sendEmoji(emoji) }) {
-                    Text(emoji)
-                        .font(.system(size: 16))
-                        .frame(width: 44, height: 44)
-                        .background(
-                            Circle()
-                                .fill(sentEmoji == emoji ? moodColor.opacity(0.15) : ONETokens.oneCreamLow)
-                                .overlay(
-                                    Circle()
-                                        .stroke(sentEmoji == emoji ? moodColor.opacity(0.3) : Color.clear, lineWidth: 1)
-                                )
-                        )
-                }
-                .accessibilityLabel(emoji)
-                .disabled(sentEmoji != nil && sentEmoji != emoji)
-                .scaleEffect(sentEmoji == emoji ? 1.1 : 1.0)
-                .animation(ONEAnimation.micro, value: sentEmoji)
+    // MARK: - Comment Thread (v2.5)
+    // showComposer: false — composer lives in stickyComposer / safeAreaInset
+
+    private var commentThreadSection: some View {
+        Button(action: {
+            showCommentSheet = true
+        }) {
+            HStack(spacing: 8) {
+                Image(systemName: "bubble.left.fill")
+                    .bodySM()
+                Text(commentCount.map { "\($0) Yorum" } ?? "Yorumlar")
+                    .monoBase(tracking: 0.5)
+                Spacer()
+                Image(systemName: "chevron.up")
+                    .monoBase()
+                    .fontWeight(.semibold)
             }
-            
-            Spacer()
-            
-            Text(NSLocalizedString("circle.heard", comment: ""))
-                .monoMicro(tracking: 1.4)
-                .foregroundColor(ONETokens.oneStone)
+            .foregroundColor(ONETokens.oneCharcoal)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(ONETokens.oneCreamLow)
+            )
         }
+        .buttonStyle(.plain)
         .padding(.horizontal, 20)
-        .padding(.top, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
         .opacity(appeared ? 1 : 0)
-        .animation(.easeOut(duration: ONEAnimation.durationLong).delay(0.35), value: appeared)
+        .animation(.easeOut(duration: 0.3).delay(0.3), value: appeared)
     }
-    
+
     // MARK: - Close Button
     
     private var closeButton: some View {
         Button(action: { dismiss() }) {
             HStack(spacing: 8) {
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 10))
+                    .monoMicro()
                 Text(NSLocalizedString("general.close", comment: ""))
                     .monoBase(tracking: 1.0)
             }
@@ -509,11 +565,9 @@ struct FriendShareDetailView: View {
     }
     
     private func getUserDisplayName() -> String {
-        // Try displayName field first, fall back to userID
-        if let displayName = share["displayName"] as? String, !displayName.isEmpty {
-            return displayName
-        }
-        return share["userID"] as? String ?? "Friend"
+        if !friendDisplayName.isEmpty { return friendDisplayName }
+        if let displayName = share["displayName"] as? String, !displayName.isEmpty { return displayName }
+        return "Arkadaş"
     }
     
     private func getRelativeTime() -> String {
@@ -528,49 +582,6 @@ struct FriendShareDetailView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: date)
-    }
-    
-    private func sendEmoji(_ emoji: String) {
-        guard sentEmoji == nil else { return }
-
-        withAnimation(ONEAnimation.micro) {
-            sentEmoji = emoji
-        }
-
-        // Anında yerel kayıt — hızlı feedback için
-        let key = "emoji_sent_\(share.recordID.recordName)_\(dateKey())"
-        UserDefaults.standard.set(emoji, forKey: key)
-
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-
-        // CloudKit'e kalıcı olarak kaydet
-        cloudKitManager.sendEmojiReaction(shareRecordName: share.recordID.recordName, emoji: emoji) { result in
-            if case .failure(let error) = result {
-                ONELogger.error("Emoji CloudKit'e kaydedilemedi: \(error)", category: .circle)
-            }
-        }
-    }
-
-    private func loadSentEmoji() {
-        // Önce yerel cache'e bak (anlık yükleme)
-        let key = "emoji_sent_\(share.recordID.recordName)_\(dateKey())"
-        if let local = UserDefaults.standard.string(forKey: key) {
-            sentEmoji = local
-            return
-        }
-
-        // Yerel cache yoksa CloudKit'ten yükle
-        cloudKitManager.fetchEmojiReaction(shareRecordName: share.recordID.recordName) { emoji in
-            guard let emoji else { return }
-            sentEmoji = emoji
-            UserDefaults.standard.set(emoji, forKey: key)
-        }
-    }
-    
-    private func dateKey() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
     }
     
     // MARK: - Connections Management
@@ -600,6 +611,23 @@ struct FriendShareDetailView: View {
     }
 }
 
+// MARK: - Photo Viewer Full Screen
+
+struct PhotoViewerFullScreen: View {
+    let image: UIImage
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+        }
+        .onTapGesture { dismiss() }
+    }
+}
+
 // MARK: - Photo Data Viewer (for Data-based images)
 
 struct PhotoDataViewerSheet: View {
@@ -608,22 +636,25 @@ struct PhotoDataViewerSheet: View {
 
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
-    @State private var dismissOffset: CGFloat = 0
-    @State private var backgroundOpacity: Double = 1.0
+    @State private var dragOffset: CGFloat = 0          // @State → spring-back çalışır
+    @State private var isDismissing = false
 
-    private let dismissThreshold: CGFloat = 120
+    private var backgroundOpacity: Double {
+        isDismissing ? 0 : Double(max(0.15, 1.0 - dragOffset / 280))
+    }
 
     var body: some View {
         ZStack {
-            // Arka plan — sadece opacity ile solar, offset almaz
             Color.black.opacity(backgroundOpacity).ignoresSafeArea()
+                .animation(.linear(duration: 0.01), value: dragOffset)
 
-            // Fotoğraf + buton aynı anda kayar
             ZStack {
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
+                    .drawingGroup()
                     .scaleEffect(scale)
+                    .offset(y: dragOffset)
                     .gesture(
                         SimultaneousGesture(
                             MagnificationGesture()
@@ -639,48 +670,49 @@ struct PhotoDataViewerSheet: View {
                                         }
                                     }
                                 },
-                            DragGesture()
-                                .onChanged { val in
+                            DragGesture(minimumDistance: 5)
+                                .onChanged { value in
                                     guard scale <= 1.01 else { return }
-                                    let dy = val.translation.height
-                                    if dy > 0 {
-                                        dismissOffset = dy
-                                        backgroundOpacity = Double(max(0.3, 1.0 - dy / 300))
-                                    }
+                                    let dy = value.translation.height
+                                    if dy > 0 { dragOffset = dy }
                                 }
-                                .onEnded { val in
+                                .onEnded { value in
                                     guard scale <= 1.01 else { return }
-                                    let velocity = val.predictedEndTranslation.height - val.translation.height
-                                    let shouldDismiss = val.translation.height > dismissThreshold
-                                        || (val.translation.height > 30 && velocity > 250)
+                                    let vel = value.velocity.height
+                                    let dy  = value.translation.height
+                                    let shouldDismiss = dy > 90 || (dy > 20 && vel > 600)
                                     if shouldDismiss {
                                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                        withAnimation(.easeOut(duration: 0.18)) {
-                                            dismissOffset = UIScreen.main.bounds.height
-                                            backgroundOpacity = 0
+                                        withAnimation(.easeOut(duration: 0.28)) {
+                                            dragOffset = UIScreen.main.bounds.height
+                                            isDismissing = true
                                         }
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                                            var t = Transaction()
-                                            t.disablesAnimations = true
-                                            withTransaction(t) { isPresented = false }
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                            isPresented = false
                                         }
                                     } else {
-                                        withAnimation(.spring(response: 0.32, dampingFraction: 0.76)) {
-                                            dismissOffset = 0
-                                            backgroundOpacity = 1.0
+                                        withAnimation(.spring(response: 0.38, dampingFraction: 0.72)) {
+                                            dragOffset = 0
                                         }
                                     }
                                 }
                         )
                     )
 
-                // Kapat butonu — fotoğrafla aynı container'da, birlikte kayar
                 VStack {
                     HStack {
                         Spacer()
-                        Button(action: { isPresented = false }) {
+                        Button(action: {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            withAnimation(.easeOut(duration: 0.22)) {
+                                dragOffset = UIScreen.main.bounds.height
+                                isDismissing = true
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) { isPresented = false }
+                        }) {
                             Image(systemName: "xmark")
-                                .font(.system(size: 16, weight: .semibold))
+                                .bodyLG()
+                                .fontWeight(.semibold)
                                 .foregroundColor(.white)
                                 .frame(width: 44, height: 44)
                                 .background(
@@ -692,20 +724,16 @@ struct PhotoDataViewerSheet: View {
                         .padding(20)
                     }
                     Spacer()
-                }
-
-                // Aşağı kaydır ipucu
-                VStack {
-                    Spacer()
                     Image(systemName: "chevron.compact.down")
-                        .font(.system(size: 24, weight: .light))
+                        .displayMD()
+                        .fontWeight(.light)
                         .foregroundColor(.white.opacity(0.3))
                         .padding(.bottom, 24)
-                        .opacity(dismissOffset == 0 ? 1 : 0)
+                        .opacity(dragOffset < 5 ? 1 : 0)
                 }
             }
-            .offset(y: dismissOffset)
         }
-        .statusBar(hidden: true)
+        .ignoresSafeArea()
+        .statusBarHidden(true)
     }
 }

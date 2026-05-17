@@ -10,6 +10,7 @@
 
 import Foundation
 import CloudKit
+import Combine
 import UserNotifications
 import UIKit
 
@@ -21,9 +22,12 @@ extension CloudKitManager {
     private static let friendShareSubID    = "friend-daily-share-notification-v6"
     private static let friendAcceptSubID   = "friend-accept-notification-v6"
     private static let emojiReactionSubID  = "emoji-reaction-notification-v4"
+    // v2.5 — yorum notification'ı
+    private static let commentSubID        = "comment-notification-v1"
 
     // Subscription version — artırınca tüm subscriptionlar silinip yeniden kaydedilir
-    private static let currentSubVersion   = 6
+    // v8: Yorum subscription eklendi, emoji kaldırıldı.
+    private static let currentSubVersion   = 8
     private static let subVersionKey       = "cloudkit_subscription_version"
 
     // Eski subscription ID'leri (temizleme için)
@@ -44,7 +48,14 @@ extension CloudKitManager {
         "friend-request-notification-v5",
         "friend-daily-share-notification-v5",
         "friend-accept-notification-v5",
-        "emoji-reaction-notification-v4"
+        "emoji-reaction-notification-v4",
+        // v6 → v7 migration (generic alertBody removed → silent push)
+        "friend-request-notification-v6",
+        "friend-daily-share-notification-v6",
+        "friend-accept-notification-v6",
+        // v7 → v8 migration (emoji reactions removed → yorum sistemi)
+        // Emoji subscription ID'sini buraya ekle — migration'da silinsin.
+        // (emoji-reaction-notification-v4 yukarıda zaten var, çift eklemiyoruz)
     ]
 
     // MARK: - Register all subscriptions
@@ -62,7 +73,10 @@ extension CloudKitManager {
                 self?.registerFriendRequestSubscription()
                 self?.registerFriendShareSubscription()
                 self?.registerFriendAcceptSubscription()
-                self?.registerEmojiReactionSubscription()
+                self?.registerCommentSubscription()
+                // v2.5 — emoji subscription artık kayıt edilmiyor (v8)
+                // Eski kayıt legacy list'te silindi. Tutulan handler back-compat
+                // için — yeni sub olmadığı için handler hiç tetiklenmez.
                 UserDefaults.standard.set(Self.currentSubVersion, forKey: Self.subVersionKey)
                 ONELogger.success("Subscriptions migrated to v\(Self.currentSubVersion)", category: .notification)
             }
@@ -70,7 +84,65 @@ extension CloudKitManager {
             registerFriendRequestSubscription()
             registerFriendShareSubscription()
             registerFriendAcceptSubscription()
-            registerEmojiReactionSubscription()
+            registerCommentSubscription()
+        }
+    }
+
+    // MARK: - 5. Comment Subscription (paylaşımıma yorum geldi) — v2.5
+
+    /// Paylaşımıma gelen yorumları push ile dinler.
+    /// `shareOwnerID == me` predicate — yorum yazarı ben olsam da push gelir
+    /// (handler tarafta filtrelenir: kendi yorumumsa ignore edilir).
+    func registerCommentSubscription() {
+        guard currentUser?["userID"] as? String != nil else { return }
+
+        let subID = Self.commentSubID
+        publicDatabase.fetch(withSubscriptionID: subID) { [weak self] existing, _ in
+            guard let self else { return }
+            if existing != nil { return }
+
+            guard let currentUserID = self.currentUser?["userID"] as? String else { return }
+
+            // Yorumun paylaşım sahibine + yazarın reply'ladığı yoruma ait paylaşım sahibine
+            // fan-out için iki yönlü filtre. CloudKit public DB single-predicate desteklediği
+            // için en basit: shareOwnerID == me. Reply detection handler tarafında
+            // parentCommentID lookup ile yapılır.
+            let predicate = NSPredicate(format: "shareOwnerID == %@ AND moderationStatus == %@",
+                                        currentUserID, "active")
+            let sub = CKQuerySubscription(
+                recordType: "Comment",
+                predicate: predicate,
+                subscriptionID: subID,
+                options: [.firesOnRecordCreation]
+            )
+            let info = CKSubscription.NotificationInfo()
+            // Silent push — lokal bildirim bundler'dan çıkacak (tekil veya batch)
+            info.alertBody                  = nil
+            info.shouldSendContentAvailable = true
+            info.shouldBadge                = true
+            info.collapseIDKey              = "shareRecordName"
+            info.desiredKeys                = [
+                "shareRecordName",
+                "shareOwnerID",
+                "authorUserID",
+                "body",
+                "parentCommentID"
+            ]
+            sub.notificationInfo = info
+
+            self.publicDatabase.save(sub) { _, error in
+                if let ckError = error as? CKError {
+                    if ckError.code == .invalidArguments || ckError.code == .unknownItem {
+                        ONELogger.info("Comment schema CloudKit'te henüz yok — subscription atlandı. Dashboard'dan deploy edin.", category: .notification)
+                    } else {
+                        ONELogger.error("Comment sub failed", error: ckError, category: .notification)
+                    }
+                } else if let error {
+                    ONELogger.error("Comment sub failed", error: error, category: .notification)
+                } else {
+                    ONELogger.success("Comment subscription registered (v1 silent)", category: .notification)
+                }
+            }
         }
     }
 
@@ -117,9 +189,9 @@ extension CloudKitManager {
     /// server-side subscription that fires for ANY new DailyShare; the
     /// app then filters locally. This is the recommended pattern for fan-out.
     ///
-    /// Visible alertBody ensures APNs delivers the notification even when the
-    /// app is killed. The push handler replaces it with a personalized local
-    /// notification only when the app is in the foreground.
+    /// Silent push (alertBody = nil): APNs never shows a visible notification.
+    /// The push handler schedules a personalized local notification after
+    /// isFriendWith filtering, eliminating duplicate/generic notifications.
     func registerFriendShareSubscription() {
         guard let currentUserID = currentUser?["userID"] as? String else { return }
 
@@ -138,20 +210,19 @@ extension CloudKitManager {
                 options: [.firesOnRecordCreation]
             )
             let info = CKSubscription.NotificationInfo()
-            // APNs görünür bildirim — uygulama kapalıyken de teslim edilir.
-            // App açıkken/arka plandayken handleFriendSharePush kişiselleştirilmiş
-            // yerel bildirim gönderir; uygulama kapalıyken bu generic metin kullanılır.
-            info.alertBody               = "Çevrende yeni bir şey var 🎵"
-            info.soundName               = "default"
-            info.shouldBadge             = true
-            info.shouldSendContentAvailable = true  // Arka plan işleme için
-            info.collapseIDKey           = "userID" // Aynı kişinin pushları birleşir
-            info.desiredKeys             = ["userID"]
-            sub.notificationInfo         = info
+            // Silent push — no visible APNs alert; app-side local notification is the only one shown.
+            // This prevents duplicate "generic + personalized" notifications and
+            // false-positive generic alerts from non-friend users.
+            info.alertBody                  = nil
+            info.shouldSendContentAvailable = true  // Triggers background processing
+            info.shouldBadge                = true
+            info.collapseIDKey              = "userID" // Aynı kişinin pushları birleşir
+            info.desiredKeys                = ["userID"]
+            sub.notificationInfo            = info
 
             self.publicDatabase.save(sub) { _, error in
                 if let error { ONELogger.error("Friend share sub failed", error: error, category: .notification) }
-                else { ONELogger.success("Friend daily share subscription registered (v6)", category: .notification) }
+                else { ONELogger.success("Friend daily share subscription registered (v7 silent)", category: .notification) }
             }
         }
     }
@@ -254,11 +325,136 @@ extension CloudKitManager {
             handleFriendAcceptPush(notification: notification, completion: completion)
 
         case Self.emojiReactionSubID:
+            // v2.5 — emoji reactions deprecated. Kayıt olmuyor; handler back-compat için.
             handleEmojiReactionPush(notification: notification, completion: completion)
+
+        case Self.commentSubID:
+            handleCommentPush(notification: notification, completion: completion)
 
         default:
             completion()
         }
+    }
+
+    // MARK: - Comment push handler (v2.5)
+
+    private func handleCommentPush(notification: CKQueryNotification, completion: @escaping () -> Void) {
+        guard let shareRecordName = notification.recordFields?["shareRecordName"] as? String,
+              let shareOwnerID   = notification.recordFields?["shareOwnerID"]    as? String,
+              let authorUserID   = notification.recordFields?["authorUserID"]    as? String,
+              let rawBody        = notification.recordFields?["body"]            as? String
+        else { completion(); return }
+        let body = String(rawBody.trimmingCharacters(in: .whitespacesAndNewlines).prefix(500))
+
+        // P1 fix: use the actual CKRecord recordName from the notification
+        let commentID = notification.recordID?.recordName
+            ?? "comment_\(authorUserID)_\(Int(Date().timeIntervalSince1970))"
+
+        // Self-filter — kendi yorumumuz push ettiyse gösterme
+        guard let currentUserID = currentUser?["userID"] as? String,
+              authorUserID != currentUserID
+        else { completion(); return }
+
+        // Block filter — engelli kullanıcının yorumunu gösterme
+        if hasBlockRelation(with: authorUserID) {
+            ONELogger.info("Comment push dropped (block relation) from \(authorUserID)", category: .notification)
+            completion(); return
+        }
+
+        let parentCommentID = notification.recordFields?["parentCommentID"] as? String
+
+        // Reply mi? parentCommentID varsa ve parent yazarı ben isem → commentReply
+        if let parentCommentID {
+            checkIfCommentAuthoredByMe(commentID: parentCommentID) { [weak self] isMine in
+                guard let self else { completion(); return }
+                self.dispatchCommentNotification(
+                    commentID: commentID,
+                    isReply: isMine,
+                    shareRecordName: shareRecordName,
+                    shareOwnerID: shareOwnerID,
+                    authorUserID: authorUserID,
+                    body: body
+                )
+                completion()
+            }
+        } else {
+            dispatchCommentNotification(
+                commentID: commentID,
+                isReply: false,
+                shareRecordName: shareRecordName,
+                shareOwnerID: shareOwnerID,
+                authorUserID: authorUserID,
+                body: body
+            )
+            completion()
+        }
+    }
+
+    private func dispatchCommentNotification(
+        commentID: String,
+        isReply: Bool,
+        shareRecordName: String,
+        shareOwnerID: String,
+        authorUserID: String,
+        body: String
+    ) {
+        fetchDisplayName(for: authorUserID) { [weak self] name in
+            // Paylaşımın mood rengi — rich attachment için
+            self?.fetchShareMoodHex(shareRecordName: shareRecordName) { moodHex in
+                // Circle notifikasyon store'a düş
+                let notif = CircleNotification(
+                    id: "comment_\(commentID)",
+                    type: .comment,
+                    title: isReply ? "\(name) yorumuna yanıt verdi 💬" : "\(name) paylaşımına yorum bıraktı 💬",
+                    body: body,
+                    date: Date(),
+                    isRead: false,
+                    relatedUserID: authorUserID,
+                    emoji: nil,
+                    moodColorHex: moodHex,
+                    shareRecordName: shareRecordName
+                )
+                Task { @MainActor in CircleNotificationStore.shared.add(notif) }
+
+                CommentNotificationBundler.shared.ingest(
+                    commentID: commentID,
+                    shareRecordName: shareRecordName,
+                    authorUserID: authorUserID,
+                    authorDisplayName: name,
+                    bodyExcerpt: body,
+                    moodColorHex: moodHex,
+                    isReplyToMe: isReply
+                )
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .init("circleDataNeedsRefresh"), object: nil)
+                }
+            }
+        }
+    }
+
+    private func checkIfCommentAuthoredByMe(commentID: String, completion: @escaping (Bool) -> Void) {
+        guard let currentUserID = currentUser?["userID"] as? String else {
+            completion(false); return
+        }
+        let recordID = CKRecord.ID(recordName: commentID)
+        publicDatabase.fetch(withRecordID: recordID) { record, _ in
+            let isMine = (record?["authorUserID"] as? String) == currentUserID
+            completion(isMine)
+        }
+    }
+
+    private func fetchShareMoodHex(shareRecordName: String, completion: @escaping (String?) -> Void) {
+        let recordID = CKRecord.ID(recordName: shareRecordName)
+        publicDatabase.fetch(withRecordID: recordID) { record, _ in
+            let raw = record?["moodColor"] as? String
+            completion(raw.flatMap { Self.validatedHex($0) })
+        }
+    }
+
+    private static func validatedHex(_ hex: String) -> String? {
+        let stripped = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        guard [3, 6, 8].contains(stripped.count), stripped.allSatisfy(\.isHexDigit) else { return nil }
+        return "#\(stripped)"
     }
 
     // MARK: - Friend request push handler
@@ -270,6 +466,21 @@ extension CloudKitManager {
         else { completion(); return }
 
         fetchDisplayName(for: senderID) { name in
+            // Store'a friendRequest bildirimi ekle — birleşik akışta gösterim için
+            let notif = CircleNotification(
+                id: "friendRequest_\(senderID)_\(Int(Date().timeIntervalSince1970))",
+                type: .friendRequest,
+                title: "\(name) seni çevresine eklemek istiyor",
+                body: "Kabul et veya incele.",
+                date: Date(),
+                isRead: false,
+                relatedUserID: senderID,
+                emoji: nil,
+                requestRecordName: notification.recordID?.recordName,
+                requestStatus: "pending"
+            )
+            Task { @MainActor in CircleNotificationStore.shared.add(notif) }
+
             self.scheduleLocalNotification(
                 title: "Çevrenden yeni davet 🎵",
                 body:  "\(name) seni ONE çevresine çağırıyor.",
@@ -292,6 +503,16 @@ extension CloudKitManager {
             completion(); return
         }
 
+        // BUG FIX (v2.5.1) — Block check.
+        // Block sistemi friendship kaydını silmiyor; bu yüzden engellenmiş kullanıcının
+        // paylaşımı isFriendWith=true döner ama Circle feed filter'ı kayıt göstermez →
+        // kullanıcı "yeni paylaşım var dediler ama yok" hatası yaşar.
+        if isBlockedByMe(sharerID) || isBlockedByThem(sharerID) {
+            ONELogger.info("Friend share push dropped — block relation exists with \(sharerID)", category: .notification)
+            completion()
+            return
+        }
+
         isFriendWith(userID: sharerID) { [weak self] result in
             guard let self else { completion(); return }
 
@@ -301,39 +522,76 @@ extension CloudKitManager {
                 completion()
 
             case .success(true):
-                // Onaylı arkadaş — her durumda (foreground/background/arka plan) kişisel bildirim gönder.
-                // Uygulama kapalıyken APNs generic alertBody'yi zaten gösterdi; kişisel bildirim
-                // onu tamamlar ve arkadaşın ismini taşır.
+                let notifID = "friendShare_\(sharerID)_\(Self.todayDateKey())"
+
+                // BUG FIX (v2.5.1) — Generic placeholder kaldırıldı.
+                // v2.5 spec: arkadaşın adı her zaman title'da olur; "Bir arkadaşın paylaştı"
+                // jenerik metni ASLA kullanılmaz. Placeholder bu spec'i ihlal ediyordu.
+                // Kişiselleştirme isimsiz fail olursa hiç bildirim gönderme — silent push
+                // olduğu için kayıp kabul edilebilir.
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .init("circleDataNeedsRefresh"), object: nil)
+                }
+
+                // Background processing bitti; kişiselleştirme arka planda devam eder.
+                completion()
+
                 self.fetchDisplayName(for: sharerID) { name in
-                    DispatchQueue.main.async {
-                        let notifID = "friendShare_\(sharerID)_\(Self.todayDateKey())"
-                        let notif = CircleNotification(
-                            id: notifID,
-                            type: .friendShare,
-                            title: "\(name) paylaşım yaptı 🎵",
-                            body: "\(name) bugün mood'unu ve şarkısını seçti.",
-                            date: Date(),
-                            isRead: false,
-                            relatedUserID: sharerID,
-                            emoji: nil
-                        )
-                        CircleNotificationStore.shared.add(notif)
-
-                        // Uygulama durumundan bağımsız: kişisel bildirim her zaman gönderilir.
-                        // Foreground'da APNs görsel alert zaten gösterilmez; background/killed'da
-                        // hem APNs generic hem de bu kişisel bildirim kullanıcıya ulaşır.
-                        self.scheduleLocalNotification(
-                            title: "\(name) paylaşım yaptı 🎵",
-                            body:  "\(name) bugün mood'unu ve şarkısını seçti. Bakmak ister misin?",
-                            category: "FRIEND_SHARED",
-                            identifier: notifID,
-                            userInfo: ["type": "friend_shared", "sharerID": sharerID]
-                        )
-                        NotificationCenter.default.post(name: .init("circleDataNeedsRefresh"), object: nil)
+                    // İsim alınamadıysa (AppUser silinmiş, network) → bildirim gönderme.
+                    guard name != "Birisi" else {
+                        ONELogger.info("Friend share push dropped — could not resolve displayName for \(sharerID)", category: .notification)
+                        return
                     }
-
-                    // Dynamic Island + Çevre Yankısı — arkadaş paylaşım kaydını çek
                     self.fetchDailyShare(for: sharerID, date: Date()) { shareResult in
+                        let moodLabel: String?
+                        let moodColorHex: String?
+                        if case .success(let record) = shareResult {
+                            moodLabel    = record["moodWord"] as? String
+                            moodColorHex = record["moodColor"] as? String
+                        } else {
+                            moodLabel = nil
+                            moodColorHex = nil
+                        }
+
+                        let moodBody: String = {
+                            if let mood = moodLabel {
+                                return "\(name) bugün \(mood) hissediyor — dinlemek ister misin?"
+                            }
+                            return "\(name) bugün mood'unu ve şarkısını seçti. Bakmak ister misin?"
+                        }()
+
+                        DispatchQueue.main.async {
+                            let notif = CircleNotification(
+                                id: notifID,
+                                type: .friendShare,
+                                title: "\(name) paylaşım yaptı 🎵",
+                                body: moodBody,
+                                date: Date(),
+                                isRead: false,
+                                relatedUserID: sharerID,
+                                emoji: nil,
+                                moodColorHex: moodColorHex,
+                                shareRecordName: sharerID
+                            )
+                            CircleNotificationStore.shared.add(notif)
+
+                            var userInfo: [String: Any] = [
+                                "type": "friend_shared",
+                                "sharerID": sharerID,
+                                "friendName": name
+                            ]
+                            if let hex = moodColorHex { userInfo["moodColorHex"] = hex }
+                            if let mood = moodLabel { userInfo["moodLabel"] = mood }
+
+                            self.scheduleLocalNotification(
+                                title: "\(name) paylaşım yaptı 🎵",
+                                body:  moodBody,
+                                category: "FRIEND_SHARED",
+                                identifier: notifID,
+                                userInfo: userInfo
+                            )
+                        }
+
                         if case .success(let record) = shareResult {
                             let moodColorHex = record["moodColor"] as? String ?? "#5B8DEF"
 
@@ -362,14 +620,13 @@ extension CloudKitManager {
                                 }
                             }
                         }
-                        completion()
                     }
                 }
 
             case .failure:
-                // Network error — arkadaşlık bilinmiyor. APNs generic alertBody yeterli,
-                // ekstra bildirim gösterme (false positive riski).
-                ONELogger.info("isFriendWith network error — APNs alertBody yeterli, yerel bildirim atlandı", category: .notification)
+                // Network error — arkadaşlık bilinmiyor. Sessizce geç; silent push olduğu için
+                // kullanıcıya yanlış generic bildirim gösterilmiyor.
+                ONELogger.info("isFriendWith network error — silent push, no visible alert shown", category: .notification)
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .init("circleDataNeedsRefresh"), object: nil)
                 }
@@ -389,8 +646,8 @@ extension CloudKitManager {
             let notif = CircleNotification(
                 id: "friendAccepted_\(accepterID)_\(Self.todayDateKey())",
                 type: .friendAccepted,
-                title: "Çevrene yeni biri katıldı ✨",
-                body: "\(name) senin çevrende artık.",
+                title: "\(name) artık çevrende 🎉",
+                body: "İlk paylaşımını görmeye hazır mısın?",
                 date: Date(),
                 isRead: false,
                 relatedUserID: accepterID,
@@ -477,6 +734,12 @@ extension CloudKitManager {
     }
 
     private func isFriendWith(userID: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        // Cache hit — background processing için kritik hızlandırma
+        if Date().timeIntervalSince(cachedFriendIDsTimestamp) < friendCacheTTL {
+            completion(.success(cachedFriendIDs.contains(userID)))
+            return
+        }
+
         fetchFriends { result in
             switch result {
             case .success(let friends):
@@ -486,6 +749,9 @@ extension CloudKitManager {
                     guard let me = self.currentUser?["userID"] as? String else { return nil }
                     return u1 == me ? u2 : u1
                 }
+                // Cache güncelle
+                self.cachedFriendIDs = Set(ids)
+                self.cachedFriendIDsTimestamp = Date()
                 completion(.success(ids.contains(userID)))
             case .failure(let error):
                 completion(.failure(error))
@@ -504,22 +770,35 @@ extension CloudKitManager {
         content.categoryIdentifier = category
         content.userInfo = userInfo
 
-        // Deterministik identifier sağlanırsa aynı event için çift bildirim önlenir.
-        // Sağlanmazsa UUID ile benzersiz ID üret (streak, discovery vb. için gerekli).
+        // Mood rengi payload'da varsa rich attachment ekle.
+        let moodHex = userInfo["moodColorHex"] as? String
         let notificationID = identifier ?? "\(category)_\(UUID().uuidString)"
-
-        let request = UNNotificationRequest(
-            identifier: notificationID,
-            content: content,
-            trigger: nil   // deliver immediately
-        )
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error {
-                ONELogger.error("Failed to schedule notification", error: error, category: .notification)
-            } else {
-                ONELogger.success("Notification scheduled: \(title)", category: .notification)
-            }
+        if let att = RichAttachmentFactory.attachment(forMoodHex: moodHex,
+                                                      identifier: notificationID) {
+            content.attachments = [att]
         }
+
+        // Kind tespiti — category → NotificationKind map'i.
+        let kind: NotificationKind = {
+            switch category {
+            case "FRIEND_REQUEST":   return .friendRequest
+            case "FRIEND_ACCEPTED":  return .friendAccepted
+            case "FRIEND_SHARED":    return .friendShared
+            case "EMOJI_REACTION":   return .friendReaction
+            case "MOOD_RESONANCE":   return .moodResonance
+            default:                 return .circleActivity
+            }
+        }()
+
+        // Social event'ler reactive — quiet hours bypass için .critical/.high
+        // priority zaten kind tarafında set edilmiş. Orchestrator'dan geçerek
+        // dedup + analytics kazanırız.
+        _ = NotificationOrchestrator.shared.schedule(
+            kind: kind,
+            identifier: notificationID,
+            trigger: nil,
+            content: content
+        )
     }
 
     private static func todayDateKey() -> String {
@@ -552,7 +831,8 @@ extension CloudKitManager {
                 (Self.friendRequestSubID,  { self.registerFriendRequestSubscription() }),
                 (Self.friendShareSubID,    { self.registerFriendShareSubscription() }),
                 (Self.friendAcceptSubID,   { self.registerFriendAcceptSubscription() }),
-                (Self.emojiReactionSubID,  { self.registerEmojiReactionSubscription() })
+                (Self.commentSubID,        { self.registerCommentSubscription() })
+                // v2.5 — emojiReactionSubID kaldırıldı.
             ]
 
             for (subID, register) in required where !existingIDs.contains(subID) {
@@ -566,7 +846,8 @@ extension CloudKitManager {
 
     func removeAllSubscriptions() {
         let allIDs = [Self.friendRequestSubID, Self.friendShareSubID,
-                      Self.friendAcceptSubID, Self.emojiReactionSubID]
+                      Self.friendAcceptSubID, Self.emojiReactionSubID,
+                      Self.commentSubID]
             + Self.legacySubIDs
         for subID in allIDs {
             publicDatabase.delete(withSubscriptionID: subID) { _, _ in }

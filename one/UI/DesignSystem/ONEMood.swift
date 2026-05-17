@@ -3,237 +3,222 @@
 //  one
 //
 //  Design System - Mood System
-//  Defines the mood enum with 8 emotional states and their visual properties
 //
 
 import SwiftUI
 
-/// Mood represents one of twelve emotional states in the ONE app
-/// Each mood has associated visual properties for consistent representation
-///
-/// The twelve moods cover the full emotional spectrum (color-psychology aligned):
-/// - atesli    (Ateşli):    Passionate, intense — red
-/// - enerjik   (Coşkulu):   Enthusiastic, excited — orange
-/// - isikli    (Mutlu):     Joyful, optimistic — yellow
-/// - taze      (Taze):      Fresh, vital, renewed — lime
-/// - sakin     (Huzurlu):   Peaceful, balanced — green
-/// - ozgur     (Özgür):     Free, open, expansive — teal
-/// - derin     (Derin):     Reflective, profound — blue
-/// - nostaljik (Nostaljik): Longing, memory — indigo
-/// - gizemli   (Gizemli):   Mysterious, dreamy — purple
-/// - hassas    (Hassas):    Sensitive, gentle — rose
-/// - bos       (Sessiz):    Still, minimal, void — dark
-/// - temiz     (Sade):      Simple, natural, clear — ivory
 enum ONEMood: String, Codable, CaseIterable, Identifiable {
-    case atesli    // Ateşli   - passionate, intense
-    case enerjik   // Coşkulu  - enthusiastic, excited
-    case isikli    // Mutlu    - joyful, optimistic
-    case taze      // Taze     - fresh, vital, renewed
-    case sakin     // Huzurlu  - peaceful, balanced
-    case ozgur     // Özgür    - free, open, expansive
-    case derin     // Derin    - reflective, profound
-    case nostaljik // Nostaljik - longing, memory
-    case gizemli   // Gizemli  - mysterious, dreamy
-    case hassas    // Hassas   - sensitive, gentle
-    case bos       // Sessiz   - still, minimal, void
-    case temiz     // Sade     - simple, natural, clear
-    
+    case atesli    // tutkulu  - red
+    case isikli    // mutlu    - yellow
+    case enerjik   // enerjik  - orange
+    case taze      // doğal    - lime
+    case sakin     // huzurlu  - green
+    case nostaljik // heyecanlı - coral
+    case ozgur     // sakin    - teal
+    case derin     // stabil   - blue
+    case uzgun     // üzgün    - indigo
+    case stresli   // stresli  - stress orange-red
+    case yorgun    // yorgun   - slate grey
+    case sinirli   // sinirli  - dark crimson
+
     var id: String { rawValue }
-    
-    /// Primary color for this mood
-    /// Purpose: Defines the visual identity and emotional tone of each mood
-    /// Usage: Mood selection UI, gradient backgrounds, mood indicators
+
     var color: Color {
         switch self {
-        case .atesli:    return ONETokens.oneRed
-        case .enerjik:   return ONETokens.moodOrange
+        case .atesli:    return ONETokens.moodTutkulu
         case .isikli:    return ONETokens.moodYellow
+        case .enerjik:   return ONETokens.moodOrange
         case .taze:      return ONETokens.moodLime
-        case .sakin:     return ONETokens.oneGreen
+        case .sakin:     return ONETokens.moodHuzurlu
+        case .nostaljik: return ONETokens.moodExcited
         case .ozgur:     return ONETokens.moodTeal
-        case .derin:     return ONETokens.oneBlue
-        case .nostaljik: return ONETokens.moodIndigo
-        case .gizemli:   return ONETokens.moodPurple
-        case .hassas:    return ONETokens.moodRose
-        case .bos:       return ONETokens.moodDark
-        case .temiz:     return ONETokens.oneIvory
+        case .derin:     return ONETokens.moodStabil
+        case .uzgun:     return ONETokens.moodIndigo
+        case .stresli:   return ONETokens.moodStress
+        case .yorgun:    return ONETokens.moodSlate
+        case .sinirli:   return ONETokens.moodAngry
         }
     }
-    
-    /// Hex string representation of the mood color
-    /// Purpose: Provides hex format for persistence and external integrations
-    /// Usage: Data persistence, API communication, color picker displays
+
+    var pastelColor: Color {
+        switch self {
+        case .atesli:    return ONETokens.moodPastelRed
+        case .isikli:    return ONETokens.moodPastelYellow
+        case .enerjik:   return ONETokens.moodPastelOrange
+        case .taze:      return ONETokens.moodPastelMint
+        case .sakin:     return ONETokens.moodPastelGreen
+        case .nostaljik: return ONETokens.moodPastelRose
+        case .ozgur:     return ONETokens.moodPastelBlue
+        case .derin:     return ONETokens.moodPastelIndigo
+        case .uzgun:     return ONETokens.moodPastelLavender
+        case .stresli:   return ONETokens.moodPastelStress
+        case .yorgun:    return ONETokens.moodPastelSlate
+        case .sinirli:   return ONETokens.moodPastelAngry
+        }
+    }
+
+    func atmosphereGradient(startPoint: UnitPoint = .topLeading,
+                            endPoint: UnitPoint = .bottomTrailing) -> LinearGradient {
+        LinearGradient(
+            stops: [
+                .init(color: pastelColor.opacity(0.18), location: 0.0),
+                .init(color: pastelColor.opacity(0.06), location: 0.55),
+                .init(color: .clear,                    location: 1.0)
+            ],
+            startPoint: startPoint,
+            endPoint: endPoint
+        )
+    }
+
     var hex: String {
         switch self {
-        case .atesli:    return "#E84040"
-        case .enerjik:   return "#FF8C42"
-        case .isikli:    return "#F5C842"
-        case .taze:      return "#7CC874"
-        case .sakin:     return "#4CAF82"
-        case .ozgur:     return "#3BBFCF"
-        case .derin:     return "#5B8DEF"
-        case .nostaljik: return "#5560B8"
-        case .gizemli:   return "#9B7FD4"
-        case .hassas:    return "#E8829C"
-        case .bos:       return "#2C2C2C"
-        case .temiz:     return "#E8E6E0"
+        case .atesli:    return "#E53935"
+        case .isikli:    return "#FDD835"
+        case .enerjik:   return "#FB6F3B"
+        case .taze:      return "#4CAF50"
+        case .sakin:     return "#26A69A"
+        case .nostaljik: return "#EC407A"
+        case .ozgur:     return "#42A5F5"
+        case .derin:     return "#3F51B5"
+        case .uzgun:     return "#78909C"
+        case .stresli:   return "#FF7043"
+        case .yorgun:    return "#90A4AE"
+        case .sinirli:   return "#B71C1C"
         }
     }
-    
-    /// Display label for the mood (Turkish)
-    /// Purpose: Provides localized Turkish name for UI display
-    /// Usage: Mood selection labels, mood display text, user-facing mood names
+
     var label: String {
         switch self {
-        case .atesli:    return "ateş"
-        case .enerjik:   return "enerji"
-        case .isikli:    return "ışık"
-        case .taze:      return "taze"
-        case .sakin:     return "huzur"
-        case .ozgur:     return "özgür"
-        case .derin:     return "derin"
-        case .nostaljik: return "özlem"
-        case .gizemli:   return "loş"
-        case .hassas:    return "kırılgan"
-        case .bos:       return "boşluk"
-        case .temiz:     return "sessiz"
+        case .atesli:    return "tutkulu"
+        case .isikli:    return "mutlu"
+        case .enerjik:   return "enerjik"
+        case .taze:      return "doğal"
+        case .sakin:     return "huzurlu"
+        case .nostaljik: return "heyecanlı"
+        case .ozgur:     return "sakin"
+        case .derin:     return "stabil"
+        case .uzgun:     return "üzgün"
+        case .stresli:   return "stresli"
+        case .yorgun:    return "yorgun"
+        case .sinirli:   return "sinirli"
         }
     }
-    
-    /// Semantic meaning of the mood
-    /// Purpose: Provides descriptive Turkish text explaining the mood's emotional character
-    /// Usage: Mood descriptions, tooltips, help text, emotional context
+
     var meaning: String {
         switch self {
         case .atesli:    return "içim yanıyor"
-        case .enerjik:   return "taşıp duruyor"
         case .isikli:    return "içimden parlıyor"
+        case .enerjik:   return "taşıp duruyor"
         case .taze:      return "yeni başlıyor"
         case .sakin:     return "her şey yolunda"
-        case .ozgur:     return "hafif, özgür"
-        case .derin:     return "içimde kaybolmuş"
-        case .nostaljik: return "bir şeyleri özlüyor"
-        case .gizemli:   return "gerçek ötesi"
-        case .hassas:    return "hassas, savunmasız"
-        case .bos:       return "içi boş, sessiz"
-        case .temiz:     return "temiz sayfa"
+        case .nostaljik: return "coşkuyla doluyum"
+        case .ozgur:     return "hafif, dingin"
+        case .derin:     return "dengede, sabit"
+        case .uzgun:     return "içim sıkışmış"
+        case .stresli:   return "altında eziliyorum"
+        case .yorgun:    return "bitkin, tükenmişim"
+        case .sinirli:   return "içimde fırtına var"
         }
     }
-    
-    /// SF Symbol icon representing this mood — used for accessibility labels and color-blind support
-    /// Purpose: VoiceOver announces mood name + icon context; icon is NOT rendered visually by default
-    /// Usage: .accessibilityLabel("\(label) — \(meaning)"), future icon overlay feature
+
     var icon: String {
         switch self {
         case .atesli:    return "flame.fill"
-        case .enerjik:   return "bolt.fill"
         case .isikli:    return "sun.max.fill"
+        case .enerjik:   return "bolt.fill"
         case .taze:      return "leaf.fill"
         case .sakin:     return "water.waves"
+        case .nostaljik: return "star.fill"
         case .ozgur:     return "wind"
-        case .derin:     return "moon.fill"
-        case .nostaljik: return "clock.fill"
-        case .gizemli:   return "sparkles"
-        case .hassas:    return "heart.fill"
-        case .bos:       return "circle.dotted"
-        case .temiz:     return "snowflake"
+        case .derin:     return "anchor"
+        case .uzgun:     return "cloud.rain.fill"
+        case .stresli:   return "exclamationmark.triangle.fill"
+        case .yorgun:    return "moon.zzz.fill"
+        case .sinirli:   return "bolt.trianglebadge.exclamationmark.fill"
         }
     }
 
-    /// Whether this mood uses dark text (false) or light text (true)
-    /// Purpose: Determines text color for optimal contrast on mood backgrounds
-    /// Usage: Text color selection, accessibility, contrast calculations
     var isDark: Bool {
-        // Light-background moods need dark text for contrast
         switch self {
-        case .isikli, .taze, .temiz: return false
+        case .isikli, .taze: return false
         default: return true
         }
     }
-    
-    /// Wave height for mood visualization (used in WaveStrip)
-    /// Purpose: Defines the amplitude of wave animations to match mood energy
-    /// Usage: WaveStrip component, mood-based animations, visual intensity
-    /// Higher values = more energetic moods, lower values = calmer moods
+
     var waveHeight: CGFloat {
         switch self {
-        case .atesli:    return 28  // yüksek enerji
-        case .enerjik:   return 32  // en enerjik
-        case .isikli:    return 24  // neşeli, orta-yüksek
-        case .taze:      return 20  // canlı ama sakin
-        case .sakin:     return 16  // düşük, huzurlu
-        case .ozgur:     return 22  // akan, açık
-        case .derin:     return 20  // orta, içsel
-        case .nostaljik: return 18  // hafif dalgalı, derin
-        case .gizemli:   return 26  // dalgalı, gizemli
-        case .hassas:    return 14  // nazik, yumuşak
-        case .bos:       return 8   // minimal
-        case .temiz:     return 12  // sade, hafif
+        case .atesli:    return 28
+        case .isikli:    return 24
+        case .enerjik:   return 32
+        case .taze:      return 20
+        case .sakin:     return 16
+        case .nostaljik: return 30
+        case .ozgur:     return 22
+        case .derin:     return 18
+        case .uzgun:     return 14
+        case .stresli:   return 26
+        case .yorgun:    return 10
+        case .sinirli:   return 34
         }
     }
-    
-    /// Gradient configuration for background
-    /// Purpose: Creates mood-specific gradient backgrounds with Wabi-Sabi aesthetic
-    /// Usage: Background gradients, mood atmosphere, visual depth
-    /// Returns array of gradient stops: [mood color, blended, dark base]
-    /// Formula: Pure mood color → 40% opacity blend → deep dark base
+
     var gradientStops: [Color] {
         let darkBase = ONETokens.oneVoid
-        return [
-            color,                  // Stop 1: Pure mood color
-            color.opacity(0.4),     // Stop 2: Mood color at 40% opacity
-            darkBase                // Stop 3: Dark base
-        ]
+        return [color, color.opacity(0.4), darkBase]
     }
-    
-    /// Gradient start point for background
-    /// Purpose: Defines where the mood gradient begins (top-leading corner)
-    /// Usage: LinearGradient startPoint parameter
-    var gradientStart: UnitPoint {
-        .topLeading
-    }
-    
-    /// Gradient end point for background
-    /// Purpose: Defines where the mood gradient ends (bottom-trailing corner)
-    /// Usage: LinearGradient endPoint parameter
-    var gradientEnd: UnitPoint {
-        .bottomTrailing
-    }
+
+    var gradientStart: UnitPoint { .topLeading }
+    var gradientEnd: UnitPoint { .bottomTrailing }
 }
 
 extension ONEMood {
-    /// Initialize from hex string (for persistence and legacy compatibility)
     init?(hex: String) {
         let normalized = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted).uppercased()
         switch normalized {
-        // Pastel hex values (new entries)
-        case "FFB5A7": self = .atesli
-        case "FFCBA4": self = .enerjik
-        case "FFF0B3": self = .isikli
-        case "B8F0D4": self = .taze
-        case "A8D5B5": self = .sakin
-        case "A8D4F5": self = .ozgur
-        case "B8C5F0": self = .derin
-        case "C5B8F0": self = .nostaljik
-        case "D4B8F0": self = .gizemli
-        case "FFB8CC": self = .hassas
-        case "CDD5E8": self = .bos
-        case "F0EDE8": self = .temiz
-        // Legacy saturated hex values (kept for existing saved entries)
+        // Current colors
+        case "E53935": self = .atesli
+        case "FDD835": self = .isikli
+        case "FB6F3B": self = .enerjik
+        case "4CAF50": self = .taze
+        case "26A69A": self = .sakin
+        case "EC407A": self = .nostaljik
+        case "42A5F5": self = .ozgur
+        case "3F51B5": self = .derin
+        case "78909C": self = .uzgun
+        case "FF7043": self = .stresli
+        case "90A4AE": self = .yorgun
+        case "B71C1C": self = .sinirli
+        // Legacy v2 colors
         case "E84040": self = .atesli
-        case "FF8C42": self = .enerjik
         case "F5C842": self = .isikli
+        case "FF8C42": self = .enerjik
         case "7CC874": self = .taze
         case "4CAF82": self = .sakin
+        case "FF6154": self = .nostaljik
         case "3BBFCF": self = .ozgur
         case "5B8DEF": self = .derin
-        case "5560B8": self = .nostaljik
-        case "9B7FD4": self = .gizemli
-        case "E8829C": self = .hassas
-        case "2C2C2C": self = .bos
-        case "E8E6E0": self = .temiz
-        case "607D8B": self = .derin   // old moodSlate → derin
-        case "C97840": self = .enerjik // old moodAmber → enerjik
+        case "5560B8": self = .uzgun
+        case "D4572A": self = .stresli
+        case "607D8B": self = .yorgun
+        case "B53030": self = .sinirli
+        // Legacy pastel mappings
+        case "FFB5A7": self = .atesli
+        case "FFF0B3": self = .isikli
+        case "FFCBA4": self = .enerjik
+        case "B8F0D4": self = .taze
+        case "A8D5B5": self = .sakin
+        case "FFB8CC": self = .nostaljik
+        case "A8D4F5": self = .ozgur
+        case "B8C5F0": self = .derin
+        case "C5B8F0": self = .uzgun
+        case "CDD5E8": self = .yorgun
+        case "D4B8F0": self = .sinirli
+        // Legacy v1 cases
+        case "9B7FD4": self = .ozgur
+        case "E8829C": self = .atesli
+        case "2C2C2C": self = .derin
+        case "E8E6E0": self = .sakin
+        case "C97840": self = .enerjik
         default: return nil
         }
     }

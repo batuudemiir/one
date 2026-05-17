@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DoneScreen: View {
     @ObservedObject var vm: ColorPickerViewModel
+    let moodCoreNS: Namespace.ID
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // Wave animation
@@ -16,26 +17,71 @@ struct DoneScreen: View {
     @State private var waveOpacity: Double = 1
     @State private var backgroundTinted = false
 
+    // Vivid burst — Apple Watch full-bleed moment
+    @State private var vividBurstScale: CGFloat = 0
+    @State private var vividBurstOpacity: Double = 0
+
+    // Contour flow background — Watch yavaş akan kontur dalgaları
+    @State private var contourVisible = false
+
     // Staggered content reveal
     @State private var showCheck = false
     @State private var showTitle = false
     @State private var showMeta = false
     @State private var showMedia = false
 
+    // Live waveform — soldan sağa çizilen Watch kalp ritmi çizgisi
+    @State private var waveformProgress: CGFloat = 0
+
     private var moodColor: Color { vm.selectedMood?.color ?? ONETokens.oneInk }
+    private var moodPastelColor: Color { vm.selectedMood?.pastelColor ?? ONETokens.oneCreamMid }
 
     var body: some View {
         ZStack {
             // Faz 2: Settling background tint (mood renginin %12 opaklığı)
             ONETokens.oneCream
-                .overlay(moodColor.opacity(backgroundTinted ? 0.12 : 0))
+                .overlay(moodPastelColor.opacity(backgroundTinted ? 0.18 : 0))
                 .animation(.easeInOut(duration: ONEAnimation.durationLong), value: backgroundTinted)
                 .ignoresSafeArea()
+
+            // Contour flow — burst geçtikten sonra yavaşça açılan dalga çizgileri
+            ContourBackground(color: moodColor)
+                .opacity(contourVisible ? 1 : 0)
+                .animation(.easeIn(duration: 1.0).delay(0.5), value: contourVisible)
+                .ignoresSafeArea()
+
+            // Faz 0: matchedGeometryEffect landing — mood dairesi ConfirmScreen'den uçup gelir
+            // waveOpacity ile birlikte solar (dalga genişlerken kaybolur)
+            GeometryReader { geo in
+                Circle()
+                    .fill(moodPastelColor)
+                    .frame(width: 56, height: 56)
+                    .matchedGeometryEffect(id: "moodCore", in: moodCoreNS)
+                    .opacity(waveOpacity)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                    .allowsHitTesting(false)
+            }
+            .ignoresSafeArea()
+
+            // Vivid burst — Apple Watch "workout complete" anı: doygun renk, hızlı gelir hızlı gider
+            GeometryReader { geo in
+                Circle()
+                    .fill(moodColor)
+                    .frame(
+                        width: max(geo.size.width, geo.size.height) * 2.8,
+                        height: max(geo.size.width, geo.size.height) * 2.8
+                    )
+                    .scaleEffect(vividBurstScale)
+                    .opacity(vividBurstOpacity)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                    .allowsHitTesting(false)
+            }
+            .ignoresSafeArea()
 
             // Faz 1: Renk dalgası — merkezden yayılan daire
             GeometryReader { geo in
                 Circle()
-                    .fill(moodColor)
+                    .fill(moodPastelColor)
                     .frame(
                         width: max(geo.size.width, geo.size.height) * 2.8,
                         height: max(geo.size.width, geo.size.height) * 2.8
@@ -89,6 +135,15 @@ struct DoneScreen: View {
                         value: showMeta
                     )
 
+                // Live waveform
+                if let mood = vm.selectedMood {
+                    LiveWaveformView(mood: mood, progress: waveformProgress)
+                        .opacity(showMeta ? 1 : 0)
+                        .padding(.horizontal, 48)
+                        .padding(.top, 4)
+                        .animation(.easeIn(duration: 0.3).delay(0.65), value: showMeta)
+                }
+
                 if vm.calendarSyncEnabled {
                     HStack(spacing: 6) {
                         Image(systemName: "calendar.badge.checkmark")
@@ -131,6 +186,8 @@ struct DoneScreen: View {
                         .displayMD()
                         .foregroundColor(ONETokens.oneInk)
                 }
+                .padding(28)
+                .liquidGlass(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
                 .opacity(showMedia ? 1 : 0)
                 .scaleEffect(reduceMotion ? 1 : (showMedia ? 1 : 0.92))
                 .animation(
@@ -143,16 +200,26 @@ struct DoneScreen: View {
         }
         .onAppear {
             if reduceMotion {
-                // Reduce Motion: dalga ve arka plan animasyonu atlanır,
-                // içerik anında görünür
+                // Reduce Motion: tüm animasyonlar atlanır, içerik anında görünür
                 waveOpacity = 0
                 backgroundTinted = true
+                contourVisible = false
+                waveformProgress = 0
                 showCheck = true
                 showTitle = true
                 showMeta = true
                 showMedia = true
             } else {
-                // Faz 1: Dalga yayılır ve solar
+                // Vivid burst: doygun renk hızla patlar, hemen solar
+                withAnimation(.easeOut(duration: 0.22)) {
+                    vividBurstScale = 1
+                    vividBurstOpacity = 0.78
+                }
+                withAnimation(.easeIn(duration: 0.28).delay(0.18)) {
+                    vividBurstOpacity = 0
+                }
+
+                // Faz 1: Pastel dalga yayılır ve solar
                 withAnimation(.easeOut(duration: 0.7)) {
                     waveScale = 1
                 }
@@ -165,6 +232,14 @@ struct DoneScreen: View {
                     backgroundTinted = true
                 }
 
+                // Contour dalgaları burst bittikten sonra açılır
+                contourVisible = true
+
+                // Waveform: dalga geçtikten sonra çizilmeye başlar
+                withAnimation(.easeInOut(duration: 1.5).delay(0.65)) {
+                    waveformProgress = 1.0
+                }
+
                 // Faz 3: İçerik staggered giriş
                 showCheck = true
                 showTitle = true
@@ -172,5 +247,82 @@ struct DoneScreen: View {
                 showMedia = true
             }
         }
+    }
+}
+
+// MARK: - Live Waveform
+
+private struct LiveWaveformView: View {
+    let mood: ONEMood
+    let progress: CGFloat
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1 / 30)) { tl in
+            Canvas { ctx, size in
+                guard progress > 0.01 else { return }
+                let t     = tl.date.timeIntervalSinceReferenceDate
+                let drawW = size.width * progress
+                let amp   = min(CGFloat(mood.waveHeight) * 0.52, size.height * 0.36)
+                let yMid  = size.height / 2
+                var path  = Path()
+                var first = true
+
+                stride(from: 0.0, through: drawW, by: 1.5).forEach { x in
+                    let y  = yMid + amp * sin(x / 26.0 + t * 1.7)
+                    let pt = CGPoint(x: x, y: y)
+                    if first { path.move(to: pt); first = false } else { path.addLine(to: pt) }
+                }
+
+                ctx.stroke(
+                    path,
+                    with: .color(mood.color.opacity(0.48)),
+                    style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round)
+                )
+
+                if drawW > 5 {
+                    let capY = yMid + amp * sin(drawW / 26.0 + t * 1.7)
+                    ctx.fill(
+                        Path(ellipseIn: CGRect(x: drawW - 3, y: capY - 3, width: 6, height: 6)),
+                        with: .color(mood.color.opacity(0.9))
+                    )
+                }
+            }
+        }
+        .frame(height: 30)
+        .allowsHitTesting(false)
+    }
+}
+
+// MARK: - Contour Background
+
+private struct ContourBackground: View {
+    let color: Color
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1 / 20)) { tl in
+            Canvas { ctx, size in
+                let t = tl.date.timeIntervalSinceReferenceDate
+                for i in 0..<5 {
+                    let fi = Double(i)
+                    var path = Path()
+                    let yBase  = size.height * (0.15 + fi * 0.18)
+                    let amp    = size.height * (0.022 + fi * 0.004)
+                    let freq   = 1.3  + fi * 0.25
+                    let speed  = 0.10 + fi * 0.02
+                    let phase  = fi   * 1.3
+                    var first  = true
+
+                    stride(from: 0.0, through: size.width, by: 3.0).forEach { x in
+                        let y  = yBase + amp * sin(x / size.width * .pi * 2 * freq + t * speed + phase)
+                        let pt = CGPoint(x: x, y: y)
+                        if first { path.move(to: pt); first = false } else { path.addLine(to: pt) }
+                    }
+
+                    let opacity = max(0.02, 0.055 - fi * 0.007)
+                    ctx.stroke(path, with: .color(color.opacity(opacity)), lineWidth: 0.8)
+                }
+            }
+        }
+        .allowsHitTesting(false)
     }
 }

@@ -46,6 +46,36 @@ enum WidgetDataWriter {
         ONELogger.debug("WidgetDataWriter: widget data updated for '\(songName)'", category: .general)
     }
 
+    // MARK: - Friend Shares
+
+    /// Write friends' daily share data so the CircleWidget can display them.
+    /// Each item is a lightweight dictionary: [name, songName, artistName, moodColorHex, moodWord]
+    static func writeFriendShares(_ friends: [[String: String]]) {
+        guard let defaults = sharedDefaults else { return }
+
+        // Cap at 8 friends to keep UserDefaults payload small
+        let capped = Array(friends.prefix(8))
+        do {
+            let data = try JSONSerialization.data(withJSONObject: capped)
+            defaults.set(data, forKey: "widget_friendShares")
+            defaults.set(Date(), forKey: "widget_friendSharesUpdatedAt")
+        } catch {
+            ONELogger.error("WidgetDataWriter: Failed to serialize friend shares: \(error)", category: .general)
+        }
+
+        WidgetCenter.shared.reloadAllTimelines()
+        ONELogger.debug("WidgetDataWriter: \(capped.count) friend shares written", category: .general)
+    }
+
+    // MARK: - Streak
+
+    /// Write current streak count so widgets can display it.
+    static func writeStreak(_ streak: Int) {
+        guard let defaults = sharedDefaults else { return }
+        defaults.set(streak, forKey: "widget_streak")
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
     // MARK: - Clear (call on midnight reset or sign-out)
 
     static func clear() {
@@ -65,7 +95,9 @@ enum WidgetDataWriter {
         // Clear today's keys
         ["widget_songName", "widget_artistName", "widget_moodLabel",
          "widget_moodColorHex", "widget_savedAt", "widget_note",
-         "widget_entryCount"].forEach { defaults.removeObject(forKey: $0) }
+         "widget_entryCount", "widget_friendShares",
+         "widget_friendSharesUpdatedAt", "widget_streak"
+        ].forEach { defaults.removeObject(forKey: $0) }
 
         WidgetCenter.shared.reloadAllTimelines()
     }
