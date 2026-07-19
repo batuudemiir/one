@@ -54,14 +54,36 @@ enum EngagementTracker {
 
     // MARK: - Akıllı Bildirim Saati
 
+    /// İlk kurulum tarihi. **Keychain'de** tutulur: uygulama silinip yeniden
+    /// kurulunca sıfırlanırsa "ilk 3 gün" aktivasyon penceresi ve ileride
+    /// D14 paywall kapısı yanlış hesaplanır. UserDefaults'taki eski değer
+    /// ilk okumada Keychain'e taşınır.
     static var firstLaunchDate: Date? {
-        defaults.object(forKey: Key.firstLaunchDate) as? Date
+        if let fromKeychain = KeychainHelper.date(forKey: Key.firstLaunchDate) {
+            return fromKeychain
+        }
+        // One-time migration: UserDefaults → Keychain
+        guard let legacy = defaults.object(forKey: Key.firstLaunchDate) as? Date else { return nil }
+        KeychainHelper.set(legacy, forKey: Key.firstLaunchDate)
+        defaults.removeObject(forKey: Key.firstLaunchDate)
+        ONELogger.info("Migrated firstLaunchDate to Keychain", category: .general)
+        return legacy
+    }
+
+    /// Kurulumdan bu yana geçen tam gün sayısı. Analytics'te global
+    /// `days_since_install` property'si olarak her event'e ekleniyor.
+    static var daysSinceInstall: Int? {
+        guard let first = firstLaunchDate else { return nil }
+        return Calendar.current.dateComponents(
+            [.day], from: Calendar.current.startOfDay(for: first),
+            to: Calendar.current.startOfDay(for: Date())
+        ).day
     }
 
     /// Yeni açılışı timestamp log'a ekler; ilk açılışta firstLaunchDate'i set eder.
     private static func recordOpenTimestamp(_ date: Date) {
-        if defaults.object(forKey: Key.firstLaunchDate) == nil {
-            defaults.set(date, forKey: Key.firstLaunchDate)
+        if firstLaunchDate == nil {
+            KeychainHelper.set(date, forKey: Key.firstLaunchDate)
         }
         var log = defaults.array(forKey: Key.openTimestampLog) as? [Double] ?? []
         log.append(date.timeIntervalSinceReferenceDate)

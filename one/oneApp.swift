@@ -380,13 +380,17 @@ struct oneApp: App {
         }
     }
 
+    /// Cold start'ta **izin İSTEMEZ.** Eskiden burada koşulsuz bir
+    /// `requestAuthorization` vardı; sistem prompt'u kullanıcı daha Welcome
+    /// ekranındayken, uygulamanın ne olduğunu bilmeden çıkıyordu — reddetme
+    /// oranının en yüksek olduğu an. Dahası izin `.notDetermined` olmaktan
+    /// çıktığı için onboarding'in soft-ask adımı ve `TodayCompletedView`
+    /// soft-ask banner'ı ikisi de sessizce ölüyordu.
+    ///
+    /// İzin isteme yetkisi artık yalnız iki yerde: onboarding `notifSoftAsk`
+    /// adımı ve tamamlandı ekranındaki soft-ask banner'ı. Burada sadece
+    /// izin gerektirmeyen abonelik kaydı kalır.
     private func setupPushNotifications() {
-        NotificationManager.shared.requestAuthorization { granted in
-            if granted {
-                ONELogger.success("Notification permission granted", category: .notification)
-            }
-        }
-
         // Dönen kullanıcı için immediate kayıt.
         // İlk yüklemede currentUser henüz nil; .onChange(of: currentUser) bu durumu yakalar.
         if cloudKitManager.currentUser != nil {

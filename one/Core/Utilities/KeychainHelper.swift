@@ -22,6 +22,20 @@ enum KeychainHelper {
         return data.first == 1
     }
 
+    /// Kurulum tarihi gibi, uygulama silinip yeniden kurulsa da korunması
+    /// gereken tarihler için. `timeIntervalSinceReferenceDate` olarak yazılır.
+    static func set(_ value: Date, forKey key: String) {
+        var interval = value.timeIntervalSinceReferenceDate
+        let data = withUnsafeBytes(of: &interval) { Data($0) }
+        set(data, forKey: key)
+    }
+
+    static func date(forKey key: String) -> Date? {
+        guard let data = get(forKey: key), data.count == MemoryLayout<Double>.size else { return nil }
+        let interval = data.withUnsafeBytes { $0.loadUnaligned(as: Double.self) }
+        return Date(timeIntervalSinceReferenceDate: interval)
+    }
+
     static func remove(forKey key: String) {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,

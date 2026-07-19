@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import CloudKit
+import CoreData
 
 struct ContentView: View {
     @State private var isActive = false
@@ -58,6 +59,12 @@ struct ContentView: View {
                 ONELogger.debug("Onboarding completed, checking profile status", category: .general)
                 checkProfileStatus()
             }
+        }
+        // İlk kayıttan sonra profil formunu aç. `checkProfileStatus` kendi
+        // içinde "kayıt var mı" kontrolü yaptığı için mevcut kullanıcılarda
+        // bu bildirim zararsız bir tekrar kontrolünden ibaret.
+        .onReceive(NotificationCenter.default.publisher(for: .init("todaySongSaved"))) { _ in
+            checkProfileStatus()
         }
         .onChange(of: isActive) { _, active in
             if active {
@@ -141,9 +148,29 @@ struct ContentView: View {
         }
     }
     
+    /// Kullanıcı hiç kayıt yapmadan profil formu göstermeyi engeller.
+    ///
+    /// Faz 4: form eskiden onboarding biter bitmez, `interactiveDismissDisabled`
+    /// ile çıkıyordu — ilk 60 saniyedeki en büyük friction ve kullanıcı henüz
+    /// uygulamanın ne işe yaradığını görmemişken. Form silinemez (CloudKit
+    /// profili olmadan Çevre çalışmaz), ama ilk kayda kadar bekleyebilir.
+    private var hasAnyEntry: Bool {
+        let request = DailySong.fetchRequest()
+        request.fetchLimit = 1
+        let count = (try? PersistenceController.shared.container.viewContext.count(for: request)) ?? 0
+        return count > 0
+    }
+
     private func checkProfileStatus() {
         // Keychain is the source of truth — survives app deletion and reinstall
         let hasCreatedProfile = KeychainHelper.bool(forKey: "hasCreatedProfile")
+
+        // Değeri gördükten sonra sor. `todaySongSaved` bildirimi ilk kayıttan
+        // sonra bu kontrolü yeniden tetikliyor.
+        guard hasCreatedProfile || hasAnyEntry else {
+            ONELogger.debug("Henüz kayıt yok — profil formu erteleniyor", category: .general)
+            return
+        }
 
         ONELogger.debug("Checking profile status:", category: .general)
         ONELogger.debug("hasCreatedProfile flag: \(hasCreatedProfile)", category: .general)

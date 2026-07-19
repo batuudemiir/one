@@ -382,7 +382,14 @@ class TodayViewModel: ObservableObject {
             return
         }
 
-        AppAnalytics.shared.track(.entrySaved(hasPhoto: photo != nil, hasNote: !note.isEmpty))
+        // Sayaç aşağıda da tazeleniyor ama orası bir closure'ın içinde —
+        // event'in `entry_index`'i bu kaydı İÇERMELİ, o yüzden burada bir kez.
+        loadTotalEntryCount()
+        AppAnalytics.shared.track(.entrySaved(
+            hasPhoto: photo != nil,
+            hasNote: !note.isEmpty,
+            entryIndex: totalEntryCount
+        ))
 
         // A4 — İlk entry sonrası Çevre davet kancası (one-shot)
         evaluateFirstEntryInviteHook()

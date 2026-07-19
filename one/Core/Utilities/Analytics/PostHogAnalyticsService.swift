@@ -34,9 +34,16 @@ final class PostHogAnalyticsService: AnalyticsService {
     }
 
     func track(event: AnalyticsEvent) {
+        // Aktivasyon penceresi ("ilk 3 gün") her event'te kesilebilmeli —
+        // tek tek event'lere eklemek yerine burada bir kez ekleniyor.
+        var properties = event.properties
+        if let days = EngagementTracker.daysSinceInstall {
+            properties["days_since_install"] = days
+        }
+
         PostHogSDK.shared.capture(
             event.name,
-            properties: event.properties.isEmpty ? nil : event.properties
+            properties: properties.isEmpty ? nil : properties
         )
     }
 

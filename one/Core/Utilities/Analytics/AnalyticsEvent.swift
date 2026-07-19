@@ -27,9 +27,16 @@ enum AnalyticsEvent {
     case moodSelected(mood: String)
     case photoAdded(method: String)                  // "camera" | "library"
     case noteAdded(length: Int)
-    case entrySaved(hasPhoto: Bool, hasNote: Bool)
+    /// Faz 4 — `entryIndex` aktivasyon eşiği ("ilk 3 günde ≥2 entry") için şart:
+    /// event bazında kaçıncı kayıt olduğu bilinmeden eşik hesaplanamıyordu.
+    case entrySaved(hasPhoto: Bool, hasNote: Bool, entryIndex: Int)
     case streakFreezeConsumed                        // B1 — soft streak freeze devreye girdi
     case entryBackfilled(daysAgo: Int)               // Faz 3 — geri tarihli (telafi) giriş
+    /// Faz 4 — izin prompt'unun NE ZAMAN çıktığını ölçen tek şey. Prompt'u
+    /// cold start'tan onboarding'e taşımanın işe yarayıp yaramadığı ancak
+    /// bununla görülür.
+    case notifPermissionPrompted
+    case notifPermissionResult(granted: Bool)
     case weekRhythmCompleted(filledDays: Int)        // Faz 3 — haftada 4+ gün doldu
 
     // ── Circle (social) ────────────────────────────────────────────
@@ -96,6 +103,8 @@ enum AnalyticsEvent {
         case .entrySaved:                return "entry_saved"
         case .streakFreezeConsumed:      return "streak_freeze_consumed"
         case .entryBackfilled:           return "entry_backfilled"
+        case .notifPermissionPrompted:   return "notif_permission_prompted"
+        case .notifPermissionResult:     return "notif_permission_result"
         case .weekRhythmCompleted:       return "week_rhythm_completed"
         case .circleOpened:              return "circle_opened"
         case .friendInviteSent:          return "friend_invite_sent"
@@ -143,7 +152,8 @@ enum AnalyticsEvent {
              .commentCreated, .commentEdited, .commentDeleted, .commentReported,
              .commentAuthorProfileOpened, .userBlocked, .userUnblocked,
              .firstEntryInviteHookShown,
-             .streakFreezeConsumed:
+             .streakFreezeConsumed,
+             .notifPermissionPrompted:
             return [:]
         case .firstEntryInviteHookAction(let action):
             return ["action": action]
@@ -171,8 +181,10 @@ enum AnalyticsEvent {
             return ["method": method]
         case .noteAdded(let length):
             return ["length": length]
-        case .entrySaved(let hasPhoto, let hasNote):
-            return ["has_photo": hasPhoto, "has_note": hasNote]
+        case .entrySaved(let hasPhoto, let hasNote, let entryIndex):
+            return ["has_photo": hasPhoto, "has_note": hasNote, "entry_index": entryIndex]
+        case .notifPermissionResult(let granted):
+            return ["granted": granted]
         case .friendInviteSent(let method):
             return ["method": method]
         case .recommendationTapped(let source):

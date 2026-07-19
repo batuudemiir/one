@@ -28,15 +28,37 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         }
     }
     
+    /// Sistem izin prompt'unu gösterir — **yalnızca daha önce sorulmamışsa.**
+    ///
+    /// `.notDetermined` guard'ı savunma katmanı: prompt kullanıcıya hayatında
+    /// bir kez gösterilir, o yüzden hangi an'da gösterildiği geri alınamaz bir
+    /// karar. Bu guard olmadan herhangi bir çağrı yeri (cold start, günlük
+    /// hatırlatıcı planlama) prompt'u yanlış ana çekebiliyordu ve soft-ask
+    /// katmanları sessizce ölüyordu.
+    ///
+    /// Zaten karar verilmişse mevcut durumla döner, prompt göstermez.
     func requestAuthorization(completion: @escaping (Bool) -> Void) {
         let center = UNUserNotificationCenter.current()
-        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            DispatchQueue.main.async {
-                self.isAuthorized = granted
-                completion(granted)
-                
-                if let error = error {
-                    ONELogger.debug("Notification Authorization Error: \(error.localizedDescription)", category: .notification)
+        center.getNotificationSettings { settings in
+            guard settings.authorizationStatus == .notDetermined else {
+                let alreadyAuthorized = settings.authorizationStatus == .authorized
+                DispatchQueue.main.async {
+                    self.isAuthorized = alreadyAuthorized
+                    completion(alreadyAuthorized)
+                }
+                return
+            }
+
+            AppAnalytics.shared.track(.notifPermissionPrompted)
+            center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                DispatchQueue.main.async {
+                    self.isAuthorized = granted
+                    AppAnalytics.shared.track(.notifPermissionResult(granted: granted))
+                    completion(granted)
+
+                    if let error = error {
+                        ONELogger.debug("Notification Authorization Error: \(error.localizedDescription)", category: .notification)
+                    }
                 }
             }
         }

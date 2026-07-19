@@ -100,6 +100,16 @@ class ColorPickerViewModel: ObservableObject {
             }
         }
         
+        // Faz 4 — bu ikinci (legacy) kayıt yolu `entry_saved` atmıyordu;
+        // entry sayımı iki yol arasında tutarsızdı ve aktivasyon eşiği
+        // ("ilk 3 günde ≥2 entry") olduğundan düşük görünüyordu.
+        let entryCount = (try? context.count(for: DailySong.fetchRequest())) ?? 0
+        AppAnalytics.shared.track(.entrySaved(
+            hasPhoto: selectedPhoto != nil,
+            hasNote: !dailyNote.isEmpty,
+            entryIndex: entryCount
+        ))
+
         // Reload archive data
         loadArchiveData(context: context)
         loadPatternData(context: context)

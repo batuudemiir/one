@@ -138,6 +138,9 @@ struct OnboardingView: View {
     private func completeOnboarding() {
         if let mood = selectedMood {
             UserDefaults.standard.set(mood.rawValue, forKey: "onboardingFirstMood")
+            // Funnel'ın orta noktası: event tanımlıydı ama hiçbir yerden
+            // atılmıyordu — onboarding'in neresinde düşüldüğü görünmüyordu.
+            AppAnalytics.shared.track(.onboardingFirstColorPicked(mood: mood.rawValue))
         }
 
         let finish: () -> Void = {
