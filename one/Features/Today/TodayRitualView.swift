@@ -42,8 +42,39 @@ struct TodayRitualView: View {
         // Top bar pinned as overlay — independent of scroll content
         .overlay(alignment: .top) {
             VStack(alignment: .leading, spacing: 10) {
-                RitualProgressDots(current: coordinator.step.rawValue, total: RitualStep.allCases.count)
-                    .frame(maxWidth: .infinity)
+                // Prototipteki `.rit-top`: solda çıkış/geri, ortada adım
+                // noktaları, sağda "1 / 2". Sayaç noktaların yanında dursun
+                // ki kaç adım kaldığı tahmin edilmesin.
+                HStack {
+                    Button {
+                        if coordinator.step.rawValue > 0 {
+                            coordinator.back()
+                        } else {
+                            coordinator.onFinish?()
+                        }
+                    } label: {
+                        Image(systemName: coordinator.step.rawValue > 0 ? "chevron.left" : "xmark")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(ONETokens.oneAsh)
+                            .frame(width: 44, height: 44, alignment: .leading)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(coordinator.step.rawValue > 0 ? "Geri" : "Kapat")
+
+                    Spacer()
+
+                    RitualProgressDots(
+                        current: coordinator.step.rawValue,
+                        total: RitualStep.allCases.count
+                    )
+
+                    Spacer()
+
+                    Text("\(coordinator.step.rawValue + 1) / \(RitualStep.allCases.count)")
+                        .monoLabel(tracking: 1.3)
+                        .foregroundColor(ONETokens.oneStone)
+                        .frame(width: 44, alignment: .trailing)
+                }
 
                 // Faz 3 — telafi modunda hangi günü doldurduğun net olsun.
                 if let date = coordinator.backfillDate {
