@@ -1032,3 +1032,25 @@
 "echo.mostlyPrefix" = " warst du meistens ";
 "echo.mostlySuffix" = ".";
 "echo.repeatedFormat" = "Du hast diesen Song %d mal hinterlassen.";
+
+"milestones.title" = "Meilensteine";
+"milestones.subtitle" = "auch gesperrt sichtbar. Vorfreude ist auch eine Belohnung.";
+"milestones.unlocked" = "freigeschaltet";
+"milestones.locked" = "gesperrt";
+"milestones.entryThreshold" = "Eintrag %d";
+"milestones.streakThreshold" = "%d Tage Serie";
+"milestones.friendThreshold" = "Freund %d";
+"milestones.hidden" = "verborgen";
+"milestones.entriesLeft" = "in %d Einträgen frei";
+"milestones.daysLeft" = "in %d Tagen frei";
+"comeback.eyebrow" = "willkommen zurück";
+"comeback.headline" = "du warst %d Tage weg.
+du hast nichts verpasst.";
+"comeback.reassurance" = "keine Serien. mach einfach weiter.";
+"comeback.whileAway" = "während du weg warst";
+"comeback.friendsShared" = "%d Freunde haben eine Farbe hinterlassen.";
+"comeback.fillIfYouWant" = "füll sie auf, wenn du magst";
+"comeback.add" = "hinzufügen";
+"comeback.yesterday" = "gestern";
+"comeback.dayBefore" = "vorgestern";
+"comeback.markToday" = "heute markieren";

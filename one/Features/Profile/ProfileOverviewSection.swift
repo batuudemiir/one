@@ -20,6 +20,8 @@ struct ProfileOverviewSection: View {
     @Binding var showFriendsList: Bool
     @Binding var showSettings: Bool
 
+    @State private var showMilestones = false
+
     @State private var stats: ProfileStats = .empty
 
     var body: some View {
@@ -42,7 +44,17 @@ struct ProfileOverviewSection: View {
         }
         .padding(.horizontal, ONETokens.spacingXL)
         .task { stats = await ProfileStats.load(context: context) }
+        .sheet(isPresented: $showMilestones) {
+            MilestonesView(
+                totalEntries: stats.totalEntries,
+                streakDays: stats.currentStreak
+            )
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+        }
     }
+
+    private var unlockedCount: Int { BadgeManager.shared.unlocked.count }
 
     // MARK: Identity
 
@@ -159,6 +171,11 @@ struct ProfileOverviewSection: View {
             row("music.note", NSLocalizedString("profile.row.musicSource", comment: ""), musicPlatform) {
                 showSettings = true
             }
+            // Kilometre taşları: `BadgeGalleryView` yıllardır ölü koddu,
+            // rozetlerin hiçbir görünür yeri yoktu.
+            row("flag", NSLocalizedString("milestones.title", comment: ""), "\(unlockedCount)") {
+                showMilestones = true
+            }
             row("person.2", NSLocalizedString("profile.row.friends", comment: ""), "\(vm.friendCount)") {
                 showFriendsList = true
             }
@@ -235,10 +252,13 @@ struct ProfileStats {
     let topMoodLabel: String?
     /// Son 7 gün, en eskiden yeniye. Boş günler nil.
     let recentColors: [String?]
+    /// Kilometre taşlarında "N gün sonra açılıyor" için gereken güncel seri.
+    let currentStreak: Int
 
     static let empty = ProfileStats(
         totalEntries: 0, fullWeeks: 0, distinctColors: 0,
-        topMoodLabel: nil, recentColors: Array(repeating: nil, count: 7)
+        topMoodLabel: nil, recentColors: Array(repeating: nil, count: 7),
+        currentStreak: 0
     )
 
     static func load(context: NSManagedObjectContext) async -> ProfileStats {
@@ -275,12 +295,29 @@ struct ProfileStats {
                 return byDay[day]?.last?.1.moodColorHex
             }
 
+            // Güncel seri: bugünden (ya da dünden) geriye kesintisiz gün.
+            // Bugün henüz boşsa dünden başlamak seriyi gün ortasında
+            // sıfırlamamak için — gün bitmeden kaybedilmiş sayılmaz.
+            let filledDays = Set(byDay.keys)
+            let today = calendar.startOfDay(for: Date())
+            let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
+            var streak = 0
+            if filledDays.contains(today) || filledDays.contains(yesterday) {
+                var cursor = filledDays.contains(today) ? today : yesterday
+                while filledDays.contains(cursor) {
+                    streak += 1
+                    guard let prev = calendar.date(byAdding: .day, value: -1, to: cursor) else { break }
+                    cursor = prev
+                }
+            }
+
             return ProfileStats(
                 totalEntries: byDay.count,
                 fullWeeks: fullWeeks,
                 distinctColors: Set(hexes).count,
                 topMoodLabel: topLabel,
-                recentColors: recent
+                recentColors: recent,
+                currentStreak: streak
             )
         }
     }

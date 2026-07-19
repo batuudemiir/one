@@ -1032,3 +1032,25 @@
 "echo.mostlyPrefix" = " tu étais surtout ";
 "echo.mostlySuffix" = ".";
 "echo.repeatedFormat" = "Tu as laissé ce morceau %d fois.";
+
+"milestones.title" = "jalons";
+"milestones.subtitle" = "visible même verrouillé. l'attente est aussi une récompense.";
+"milestones.unlocked" = "débloqué";
+"milestones.locked" = "verrouillé";
+"milestones.entryThreshold" = "entrée %d";
+"milestones.streakThreshold" = "série de %d jours";
+"milestones.friendThreshold" = "ami %d";
+"milestones.hidden" = "caché";
+"milestones.entriesLeft" = "débloqué dans %d entrées";
+"milestones.daysLeft" = "débloqué dans %d jours";
+"comeback.eyebrow" = "content de te revoir";
+"comeback.headline" = "tu étais absent %d jours.
+tu n'as rien manqué.";
+"comeback.reassurance" = "pas de série. reprends où tu t'es arrêté.";
+"comeback.whileAway" = "pendant ton absence";
+"comeback.friendsShared" = "%d amis ont laissé une couleur.";
+"comeback.fillIfYouWant" = "remplis-les si tu veux";
+"comeback.add" = "ajouter";
+"comeback.yesterday" = "hier";
+"comeback.dayBefore" = "avant-hier";
+"comeback.markToday" = "marquer aujourd'hui";

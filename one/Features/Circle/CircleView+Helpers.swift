@@ -93,6 +93,17 @@ extension CircleView {
         weekRhythm = WeekRhythm.days(filled: filled, today: today, calendar: cal)
     }
 
+    /// Geri dönüş ekranındaki halkalar: kullanıcı yokken renk bırakmış
+    /// arkadaşların mood renkleri. Kimlik göstermiyoruz — sayı ve renk yeter.
+    var comebackFriendColors: [Color] {
+        friendsShares.compactMap { data in
+            guard let share = data.share,
+                  !(share["songName"] as? String ?? "").isEmpty,
+                  let hex = share["moodColorHex"] as? String else { return nil }
+            return Color(hex: hex)
+        }
+    }
+
     func getTimeString(from date: Date?) -> String {
         guard let date = date else { return "" }
         let formatter = DateFormatter()

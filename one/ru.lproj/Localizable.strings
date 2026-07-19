@@ -1033,3 +1033,25 @@
 "echo.mostlyPrefix" = " ты чаще всего был ";
 "echo.mostlySuffix" = ".";
 "echo.repeatedFormat" = "Ты оставил эту песню %d раз.";
+
+"milestones.title" = "вехи";
+"milestones.subtitle" = "видно даже пока закрыто. ожидание — тоже награда.";
+"milestones.unlocked" = "открыто";
+"milestones.locked" = "закрыто";
+"milestones.entryThreshold" = "запись %d";
+"milestones.streakThreshold" = "серия %d дней";
+"milestones.friendThreshold" = "друг %d";
+"milestones.hidden" = "скрыто";
+"milestones.entriesLeft" = "откроется через %d записей";
+"milestones.daysLeft" = "откроется через %d дней";
+"comeback.eyebrow" = "с возвращением";
+"comeback.headline" = "тебя не было %d дней.
+ты ничего не пропустил.";
+"comeback.reassurance" = "никаких серий. продолжай с того же места.";
+"comeback.whileAway" = "пока тебя не было";
+"comeback.friendsShared" = "%d друзей оставили цвет.";
+"comeback.fillIfYouWant" = "заполни, если хочешь";
+"comeback.add" = "добавить";
+"comeback.yesterday" = "вчера";
+"comeback.dayBefore" = "позавчера";
+"comeback.markToday" = "отметить сегодня";

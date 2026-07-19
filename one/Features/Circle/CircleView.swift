@@ -45,6 +45,11 @@ struct CircleView: View {
     @State var localCurrentStreak: Int = 0
     /// Faz 3 — başlıktaki haftalık 7 nokta (salt gösterim).
     @State var weekRhythm: [WeekRhythm.Day] = []
+    /// Uzun aradan sonra dönüldüyse Frekans üstünde geri dönüş ekranı.
+    /// Karar `markOpened` sırasında verilip bayrağa yazılıyor; burada
+    /// sadece okunuyor — view'ın kurulma anına bağlı değil.
+    @State var showComeback: Bool = EngagementTracker.pendingComebackDays != nil
+    @State var comebackDays: Int = EngagementTracker.pendingComebackDays ?? 0
     @State var hasLoadedOnce: Bool = false
     @State var receivedReactions: [EmojiReactionItem] = []
     @State var isViewVisible: Bool = false
@@ -168,6 +173,23 @@ struct CircleView: View {
             }
         }
         .navigationBarHidden(true)
+        .sheet(isPresented: $showComeback, onDismiss: { EngagementTracker.consumeComeback() }) {
+            ComebackView(
+                daysAway: comebackDays,
+                friendColors: comebackFriendColors,
+                backfillableDays: weekRhythm.filter(\.isBackfillable).map(\.date),
+                onBackfill: { _ in
+                    // Telafi ritüeli Bugün ekranında; önce oraya götür.
+                    showComeback = false
+                    onNavigateToToday?()
+                },
+                onStartToday: {
+                    showComeback = false
+                    onNavigateToToday?()
+                }
+            )
+            .presentationDetents([.large])
+        }
         .sheet(item: $selectedShareItem) { item in
             FriendShareDetailView(
                 share: item.record,

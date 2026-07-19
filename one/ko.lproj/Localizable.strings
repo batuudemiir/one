@@ -1033,3 +1033,25 @@
 "echo.mostlyPrefix" = "엔 주로 ";
 "echo.mostlySuffix" = "였어.";
 "echo.repeatedFormat" = "이 곡을 %d번 남겼어.";
+
+"milestones.title" = "마일스톤";
+"milestones.subtitle" = "잠겨 있어도 보여. 기다림도 보상이야.";
+"milestones.unlocked" = "해금";
+"milestones.locked" = "잠김";
+"milestones.entryThreshold" = "%d번째 기록";
+"milestones.streakThreshold" = "%d일 연속";
+"milestones.friendThreshold" = "친구 %d명째";
+"milestones.hidden" = "비공개";
+"milestones.entriesLeft" = "%d개 더 쓰면 열려";
+"milestones.daysLeft" = "%d일 더 지나면 열려";
+"comeback.eyebrow" = "다시 만나서 반가워";
+"comeback.headline" = "%d일 동안 없었네.
+놓친 건 없어.";
+"comeback.reassurance" = "연속 기록 같은 건 없어. 그냥 이어서.";
+"comeback.whileAway" = "네가 없는 동안";
+"comeback.friendsShared" = "친구 %d명이 색을 남겼어.";
+"comeback.fillIfYouWant" = "원하면 채워봐";
+"comeback.add" = "추가";
+"comeback.yesterday" = "어제";
+"comeback.dayBefore" = "그저께";
+"comeback.markToday" = "오늘 표시하기";

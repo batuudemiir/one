@@ -1032,3 +1032,25 @@
 "echo.mostlyPrefix" = "は主に";
 "echo.mostlySuffix" = "だった。";
 "echo.repeatedFormat" = "この曲を%d回残した。";
+
+"milestones.title" = "マイルストーン";
+"milestones.subtitle" = "ロック中も見える。期待もごほうび。";
+"milestones.unlocked" = "解放";
+"milestones.locked" = "ロック中";
+"milestones.entryThreshold" = "%d件目";
+"milestones.streakThreshold" = "%d日連続";
+"milestones.friendThreshold" = "友だち%d人目";
+"milestones.hidden" = "非公開";
+"milestones.entriesLeft" = "あと%d件で解放";
+"milestones.daysLeft" = "あと%d日で解放";
+"comeback.eyebrow" = "おかえり";
+"comeback.headline" = "%d日いなかったね。
+何も逃してないよ。";
+"comeback.reassurance" = "連続記録なんてない。続きから。";
+"comeback.whileAway" = "いない間に";
+"comeback.friendsShared" = "友だち%d人が色を残した。";
+"comeback.fillIfYouWant" = "よければ埋めてみて";
+"comeback.add" = "追加";
+"comeback.yesterday" = "昨日";
+"comeback.dayBefore" = "おととい";
+"comeback.markToday" = "今日を記録する";

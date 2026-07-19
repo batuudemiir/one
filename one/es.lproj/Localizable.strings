@@ -1032,3 +1032,25 @@
 "echo.mostlyPrefix" = " estuviste sobre todo ";
 "echo.mostlySuffix" = ".";
 "echo.repeatedFormat" = "Dejaste esta canción %d veces.";
+
+"milestones.title" = "hitos";
+"milestones.subtitle" = "visible aunque esté bloqueado. la espera también es un premio.";
+"milestones.unlocked" = "desbloqueado";
+"milestones.locked" = "bloqueado";
+"milestones.entryThreshold" = "registro %d";
+"milestones.streakThreshold" = "racha de %d días";
+"milestones.friendThreshold" = "amigo %d";
+"milestones.hidden" = "oculto";
+"milestones.entriesLeft" = "se abre en %d registros";
+"milestones.daysLeft" = "se abre en %d días";
+"comeback.eyebrow" = "bienvenido de vuelta";
+"comeback.headline" = "estuviste fuera %d días.
+no te perdiste nada.";
+"comeback.reassurance" = "sin rachas. sigue donde lo dejaste.";
+"comeback.whileAway" = "mientras no estabas";
+"comeback.friendsShared" = "%d amigos dejaron un color.";
+"comeback.fillIfYouWant" = "rellénalos si quieres";
+"comeback.add" = "añadir";
+"comeback.yesterday" = "ayer";
+"comeback.dayBefore" = "anteayer";
+"comeback.markToday" = "marcar hoy";

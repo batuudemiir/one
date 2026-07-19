@@ -1030,3 +1030,25 @@
 "echo.mostlyPrefix" = "，你大多是";
 "echo.mostlySuffix" = "。";
 "echo.repeatedFormat" = "你留下这首歌 %d 次。";
+
+"milestones.title" = "里程碑";
+"milestones.subtitle" = "锁着也看得见。期待本身也是奖励。";
+"milestones.unlocked" = "已解锁";
+"milestones.locked" = "未解锁";
+"milestones.entryThreshold" = "第 %d 条记录";
+"milestones.streakThreshold" = "连续 %d 天";
+"milestones.friendThreshold" = "第 %d 位好友";
+"milestones.hidden" = "隐藏";
+"milestones.entriesLeft" = "再写 %d 条就解锁";
+"milestones.daysLeft" = "再过 %d 天就解锁";
+"comeback.eyebrow" = "欢迎回来";
+"comeback.headline" = "你离开了 %d 天。
+什么都没错过。";
+"comeback.reassurance" = "没有连续记录。接着来就好。";
+"comeback.whileAway" = "你不在的时候";
+"comeback.friendsShared" = "%d 位好友留下了颜色。";
+"comeback.fillIfYouWant" = "想补就补上";
+"comeback.add" = "添加";
+"comeback.yesterday" = "昨天";
+"comeback.dayBefore" = "前天";
+"comeback.markToday" = "标记今天";

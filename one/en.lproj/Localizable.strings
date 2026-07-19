@@ -1158,3 +1158,25 @@
 "echo.mostlyPrefix" = " you were mostly ";
 "echo.mostlySuffix" = " this month.";
 "echo.repeatedFormat" = "You left this song %d times.";
+
+"milestones.title" = "milestones";
+"milestones.subtitle" = "visible even while locked. anticipation is a reward too.";
+"milestones.unlocked" = "unlocked";
+"milestones.locked" = "locked";
+"milestones.entryThreshold" = "entry %d";
+"milestones.streakThreshold" = "%d-day streak";
+"milestones.friendThreshold" = "friend %d";
+"milestones.hidden" = "hidden";
+"milestones.entriesLeft" = "unlocks in %d entries";
+"milestones.daysLeft" = "unlocks in %d days";
+"comeback.eyebrow" = "welcome back";
+"comeback.headline" = "you were away %d days.
+you missed nothing.";
+"comeback.reassurance" = "no streaks here. just pick up where you left off.";
+"comeback.whileAway" = "while you were away";
+"comeback.friendsShared" = "%d friends left a colour.";
+"comeback.fillIfYouWant" = "fill them in if you like";
+"comeback.add" = "add";
+"comeback.yesterday" = "yesterday";
+"comeback.dayBefore" = "the day before";
+"comeback.markToday" = "mark today";

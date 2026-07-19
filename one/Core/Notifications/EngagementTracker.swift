@@ -34,6 +34,9 @@ enum EngagementTracker {
     // MARK: - Sessions
 
     static func markOpened(_ date: Date = Date()) {
+        // Geri dönüş kararı burada, lastOpenedDate güncellenmeden ÖNCE
+        // verilmeli — sonra aradaki boşluk kaybolur ve ekran hiç açılmaz.
+        evaluateComeback(now: date)
         defaults.set(date, forKey: Key.lastOpenedDate)
         defaults.set(sessionCount + 1, forKey: Key.sessionCount)
         recordOpenTimestamp(date)
@@ -50,6 +53,34 @@ enum EngagementTracker {
     static func daysSinceLastOpen(now: Date = Date()) -> Int? {
         guard let last = lastOpenedDate else { return nil }
         return Calendar.current.dateComponents([.day], from: last, to: now).day
+    }
+
+    /// Geri dönüş ekranının eşiği. 7 gün: bir haftadan kısa aralar "dönüş"
+    /// sayılmaz, kullanıcı zaten akıştadır ve ekstra bir ekran araya girmek
+    /// gereksiz sürtünme olur.
+    static let comebackThresholdDays = 7
+
+    private static let comebackPendingKey = "engagement.comebackPending"
+    private static let comebackDaysKey    = "engagement.comebackDays"
+
+    /// `markOpened` içinden, `lastOpenedDate` güncellenmeden çağrılır.
+    /// Kararı bir bayrağa yazar; UI o bayrağı okur. Böylece ekranın
+    /// açılması view'ın ne zaman kurulduğuna bağlı olmaz.
+    private static func evaluateComeback(now: Date) {
+        guard let days = daysSinceLastOpen(now: now), days >= comebackThresholdDays else { return }
+        defaults.set(true, forKey: comebackPendingKey)
+        defaults.set(days, forKey: comebackDaysKey)
+    }
+
+    /// Bekleyen bir geri dönüş var mı? Kaç gün uzak kalındığını da döner.
+    static var pendingComebackDays: Int? {
+        guard defaults.bool(forKey: comebackPendingKey) else { return nil }
+        return defaults.integer(forKey: comebackDaysKey)
+    }
+
+    /// Ekran gösterildikten sonra bayrağı düşür — aynı dönüşte tekrar çıkmasın.
+    static func consumeComeback() {
+        defaults.set(false, forKey: comebackPendingKey)
     }
 
     // MARK: - Akıllı Bildirim Saati

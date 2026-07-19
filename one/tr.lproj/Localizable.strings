@@ -1175,3 +1175,25 @@
 "echo.mostlyPrefix" = "'da en çok ";
 "echo.mostlySuffix" = " geçtin.";
 "echo.repeatedFormat" = "Bu şarkıyı %d kez bıraktın.";
+
+"milestones.title" = "kilometre taşları";
+"milestones.subtitle" = "kilitliyken de görünür. beklenti de bir ödül.";
+"milestones.unlocked" = "açıldı";
+"milestones.locked" = "kilitli";
+"milestones.entryThreshold" = "%d. kayıt";
+"milestones.streakThreshold" = "%d günlük seri";
+"milestones.friendThreshold" = "%d. arkadaş";
+"milestones.hidden" = "gizli";
+"milestones.entriesLeft" = "%d kayıt sonra açılıyor";
+"milestones.daysLeft" = "%d gün sonra açılıyor";
+"comeback.eyebrow" = "tekrar hoş geldin";
+"comeback.headline" = "%d gündür yoktun.
+bir şey kaçırmadın.";
+"comeback.reassurance" = "seri falan yok. kaldığın yerden.";
+"comeback.whileAway" = "sen yokken";
+"comeback.friendsShared" = "%d arkadaşın renk bıraktı.";
+"comeback.fillIfYouWant" = "istersen doldur";
+"comeback.add" = "ekle";
+"comeback.yesterday" = "dün";
+"comeback.dayBefore" = "önceki gün";
+"comeback.markToday" = "bugünü işaretle";
