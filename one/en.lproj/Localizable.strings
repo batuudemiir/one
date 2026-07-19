@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "Share in Circle";
 
 /* ── CIRCLE ── */
-"circle.title" = "circle";
+"circle.title" = "frequency";
 "circle.sharedCount" = "%d/%d shared";
 "circle.removeFriend" = "remove from friends?";
 "circle.setupCTA" = "Set up your Circle";
@@ -716,7 +716,7 @@
 "nav.discover" = "discover";
 "nav.archive" = "archive";
 "nav.today" = "today";
-"nav.circle" = "circle";
+"nav.circle" = "frequency";
 "nav.profile" = "profile";
 "nav.tabAccessibility" = "%@ tab";
 "nav.todayHint" = "Log today's mood";

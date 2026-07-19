@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "Im Kreis teilen";
 
 /* ── KREIS ── */
-"circle.title" = "kreis";
+"circle.title" = "Frequenz";
 "circle.sharedCount" = "%d/%d geteilt";
 "circle.removeFriend" = "aus Freunden entfernen?";
 "circle.setupCTA" = "Deinen Kreis erstellen";
@@ -534,7 +534,7 @@
 "nav.discover" = "entdecken";
 "nav.archive" = "archiv";
 "nav.today" = "heute";
-"nav.circle" = "kreis";
+"nav.circle" = "Frequenz";
 "nav.profile" = "profil";
 "nav.tabAccessibility" = "%@ Tab";
 

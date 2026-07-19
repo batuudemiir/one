@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "Çevre'de paylaş";
 
 /* ── ÇEVRE ── */
-"circle.title" = "çevre";
+"circle.title" = "frekans";
 "circle.sharedCount" = "%d/%d paylaştı";
 "circle.removeFriend" = "arkadaşlıktan çıkarılsın mı?";
 "circle.setupCTA" = "Çevreni kur";
@@ -775,7 +775,7 @@
 "nav.discover" = "keşfet";
 "nav.archive" = "arşiv";
 "nav.today" = "bugün";
-"nav.circle" = "çevre";
+"nav.circle" = "frekans";
 "nav.profile" = "profil";
 "nav.tabAccessibility" = "%@ sekmesi";
 "nav.todayHint" = "Bugünün mood'unu kaydet";

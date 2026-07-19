@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "在圈子中分享";
 
 /* ── 圈子 ── */
-"circle.title" = "圈子";
+"circle.title" = "频率";
 "circle.sharedCount" = "%d/%d 已分享";
 "circle.removeFriend" = "从好友中删除？";
 "circle.setupCTA" = "创建你的圈子";
@@ -532,7 +532,7 @@
 "nav.discover" = "发现";
 "nav.archive" = "存档";
 "nav.today" = "今天";
-"nav.circle" = "圈子";
+"nav.circle" = "频率";
 "nav.profile" = "个人";
 "nav.tabAccessibility" = "%@标签";
 

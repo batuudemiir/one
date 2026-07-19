@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "서클에서 공유";
 
 /* ── 서클 ── */
-"circle.title" = "서클";
+"circle.title" = "주파수";
 "circle.sharedCount" = "%d/%d 공유됨";
 "circle.removeFriend" = "친구에서 삭제할까요?";
 "circle.setupCTA" = "서클 만들기";
@@ -535,7 +535,7 @@
 "nav.discover" = "발견";
 "nav.archive" = "아카이브";
 "nav.today" = "오늘";
-"nav.circle" = "서클";
+"nav.circle" = "주파수";
 "nav.profile" = "프로필";
 "nav.tabAccessibility" = "%@ 탭";
 

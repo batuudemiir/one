@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "サークルでシェア";
 
 /* ── サークル ── */
-"circle.title" = "サークル";
+"circle.title" = "周波数";
 "circle.sharedCount" = "%d/%d がシェア済み";
 "circle.removeFriend" = "友達から削除しますか？";
 "circle.setupCTA" = "サークルを作る";
@@ -535,7 +535,7 @@
 "nav.discover" = "発見";
 "nav.archive" = "アーカイブ";
 "nav.today" = "今日";
-"nav.circle" = "サークル";
+"nav.circle" = "周波数";
 "nav.profile" = "プロフィール";
 "nav.tabAccessibility" = "%@タブ";
 

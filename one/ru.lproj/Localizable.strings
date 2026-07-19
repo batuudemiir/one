@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "Поделиться в Круге";
 
 /* ── КРУГ ── */
-"circle.title" = "круг";
+"circle.title" = "частота";
 "circle.sharedCount" = "%d/%d поделились";
 "circle.removeFriend" = "удалить из друзей?";
 "circle.setupCTA" = "Создать свой Круг";
@@ -535,7 +535,7 @@
 "nav.discover" = "открыть";
 "nav.archive" = "архив";
 "nav.today" = "сегодня";
-"nav.circle" = "круг";
+"nav.circle" = "частота";
 "nav.profile" = "профиль";
 "nav.tabAccessibility" = "вкладка %@";
 

@@ -281,7 +281,10 @@ struct ONEColorPickerView: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            BottomNavigation(currentScreen: $vm.currentScreen)
+            BottomNavigation(
+                currentScreen: $vm.currentScreen,
+                todayMoodColorHex: vm.todayMoodColorHex
+            )
         }
     }
 

@@ -62,6 +62,13 @@ class ColorPickerViewModel: ObservableObject {
     @Published var selectedYear: Int = Calendar.current.component(.year, from: Date())
     @Published var selectedMonth: Int = Calendar.current.component(.month, from: Date())
     
+    /// Bugün kayıt varsa o günün mood rengi. Sekme çubuğundaki "+" bunu
+    /// okuyup mood rengine boyanmış bir onaya dönüşüyor (prototip `.fab.done`).
+    var todayMoodColorHex: String? {
+        let today = Calendar.current.startOfDay(for: Date())
+        return archiveData[today]?.moodColorHex
+    }
+
     func saveTodaysSong(context: NSManagedObjectContext) {
         guard let song = selectedSong, let mood = selectedMood else { return }
         
