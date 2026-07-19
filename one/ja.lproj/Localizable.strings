@@ -1010,3 +1010,8 @@
 "circle.empty.closing" = "今日の色を残せば、友だちもきみを見られるようになる。";
 
 "circle.empty.status" = "まだ誰ともつながっていない";
+
+"archive.title" = "アーカイブ";
+"archive.subtitle" = "育つほど美しくなる。";
+"archive.empty" = "最初の色を残すと、ここが埋まりはじめる。";
+"archive.lastYearLabel" = "今日 · 去年";

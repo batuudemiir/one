@@ -1010,3 +1010,8 @@
 "circle.empty.closing" = "Quand tu laisses ta couleur du jour, tes amis te verront aussi.";
 
 "circle.empty.status" = "pas encore connecté à personne";
+
+"archive.title" = "archive";
+"archive.subtitle" = "plus ça grandit, plus c'est beau.";
+"archive.empty" = "Cet espace se remplit dès que tu laisses ta première couleur.";
+"archive.lastYearLabel" = "aujourd'hui · l'an dernier";

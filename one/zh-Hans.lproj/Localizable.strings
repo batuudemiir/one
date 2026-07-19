@@ -1008,3 +1008,8 @@
 "circle.empty.closing" = "留下你今天的颜色，朋友们也会看见你。";
 
 "circle.empty.status" = "还没有和任何人连接";
+
+"archive.title" = "档案";
+"archive.subtitle" = "越积累越好看。";
+"archive.empty" = "留下第一个颜色后，这里就会开始填满。";
+"archive.lastYearLabel" = "今天 · 去年";

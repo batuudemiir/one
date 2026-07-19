@@ -6,10 +6,11 @@
 import SwiftUI
 import CoreData
 
-/// Container view that manages navigation between Month and Year archive views
+/// Arşiv kabuğu. Prototipte ay/yıl geçişi yok — tek sürekli akış.
+/// `MonthArchiveView` / `YearArchiveView` şimdilik dosyada duruyor ama
+/// buradan çağrılmıyor; ilk yeşil build'den sonra temizlenecek.
 struct ArchiveContainerView: View {
     @StateObject private var archiveStore: ArchiveStore
-    @State private var showYearView = false
 
     init(context: NSManagedObjectContext) {
         _archiveStore = StateObject(wrappedValue: ArchiveStore(context: context))
@@ -22,35 +23,12 @@ struct ArchiveContainerView: View {
             if archiveStore.isLoading && archiveStore.yearData.isEmpty {
                 ArchiveSkeletonView()
             } else {
-                if showYearView {
-                    YearArchiveView(
-                        yearData: archiveStore.yearData,
-                        onMonthTap: { month in
-                            archiveStore.loadSpecificMonth(month: month)
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                showYearView = false
-                            }
-                        },
-                        onAyTap: { showYearView = false }
-                    )
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
-                    ))
-                } else {
-                    MonthArchiveView(
-                        summary: archiveStore.currentMonth,
-                        onDayTap: { _ in },
-                        onYearTap: { showYearView = true }
-                    )
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .leading).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
-                    ))
-                }
+                ArchiveMosaicView(
+                    months: archiveStore.yearData,
+                    lastYearToday: archiveStore.lastYearToday
+                )
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.82), value: showYearView)
         .task { await archiveStore.loadDataAsync() }
         .onReceive(NotificationCenter.default.publisher(for: .init("todaySongSaved"))) { _ in
             Task { await archiveStore.loadDataAsync() }

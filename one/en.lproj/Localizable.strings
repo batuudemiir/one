@@ -1136,3 +1136,8 @@
 "circle.empty.closing" = "When you leave today's colour, your friends will see you too.";
 
 "circle.empty.status" = "not connected with anyone yet";
+
+"archive.title" = "archive";
+"archive.subtitle" = "it gets better as it grows.";
+"archive.empty" = "This fills up once you leave your first colour.";
+"archive.lastYearLabel" = "today · last year";

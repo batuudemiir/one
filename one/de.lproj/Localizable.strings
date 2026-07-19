@@ -1010,3 +1010,8 @@
 "circle.empty.closing" = "Wenn du heute deine Farbe hinterlässt, sehen deine Freunde dich auch.";
 
 "circle.empty.status" = "noch mit niemandem verbunden";
+
+"archive.title" = "Archiv";
+"archive.subtitle" = "wird schöner, je mehr es wächst.";
+"archive.empty" = "Hier füllt es sich, sobald du deine erste Farbe hinterlässt.";
+"archive.lastYearLabel" = "heute · letztes Jahr";

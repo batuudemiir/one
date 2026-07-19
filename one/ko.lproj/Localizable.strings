@@ -1011,3 +1011,8 @@
 "circle.empty.closing" = "오늘의 색을 남기면 친구들도 너를 보게 돼.";
 
 "circle.empty.status" = "아직 아무와도 연결되지 않았어";
+
+"archive.title" = "아카이브";
+"archive.subtitle" = "쌓일수록 아름다워져.";
+"archive.empty" = "첫 색을 남기면 여기가 채워지기 시작해.";
+"archive.lastYearLabel" = "오늘 · 작년";

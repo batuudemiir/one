@@ -1153,3 +1153,8 @@
 "circle.empty.closing" = "Bugünkü rengini bıraktığında arkadaşların da seni görecek.";
 
 "circle.empty.status" = "henüz kimseyle bağlı değilsin";
+
+"archive.title" = "arşiv";
+"archive.subtitle" = "büyüdükçe güzelleşiyor.";
+"archive.empty" = "İlk rengini bıraktığında burası dolmaya başlar.";
+"archive.lastYearLabel" = "bugün · geçen yıl";

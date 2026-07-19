@@ -11,6 +11,9 @@ class ArchiveStore: ObservableObject {
     @Published var currentMonth: MonthSummary
     @Published var yearData: [MonthSummary]
     @Published var isLoading: Bool = false
+    /// Prototipteki "bugün · geçen yıl" içgörüsü. Geçen yıl aynı günde kayıt
+    /// yoksa nil — kart o zaman hiç çizilmez, uydurma metin gösterilmez.
+    @Published var lastYearToday: DailyEntry?
 
     private let context: NSManagedObjectContext
 
@@ -33,17 +36,36 @@ class ArchiveStore: ObservableObject {
         let currentMonthNum = calendar.component(.month, from: now)
 
         let bg = PersistenceController.shared.container.newBackgroundContext()
-        let (newCurrentMonth, newYearData) = await bg.perform {
+        let (newCurrentMonth, newYearData, lastYear) = await bg.perform {
             let month = self.loadMonth(year: currentYear, month: currentMonthNum, context: bg)
             let year  = (1...12).map { self.loadMonth(year: currentYear, month: $0, context: bg) }
-            return (month, year)
+            return (month, year, self.loadLastYearToday(now: now, context: bg))
         }
 
         await MainActor.run {
             self.currentMonth = newCurrentMonth
             self.yearData = newYearData
+            self.lastYearToday = lastYear
             self.isLoading = false
         }
+    }
+
+    /// Bir yıl önce bugüne ait kayıt. Tek günlük dar sorgu — arşivin geri
+    /// kalanı zaten yüklenirken aynı arka plan bağlamında koşar.
+    private func loadLastYearToday(now: Date, context ctx: NSManagedObjectContext) -> DailyEntry? {
+        let calendar = Calendar.current
+        guard let lastYear = calendar.date(byAdding: .year, value: -1, to: now) else { return nil }
+        let start = calendar.startOfDay(for: lastYear)
+        guard let end = calendar.date(byAdding: .day, value: 1, to: start) else { return nil }
+
+        let request: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "date >= %@ AND date < %@", start as NSDate, end as NSDate
+        )
+        request.fetchLimit = 1
+
+        guard let item = try? ctx.fetch(request).first else { return nil }
+        return createEntry(from: item, using: calendar)
     }
 
     /// Yıl görünümünden seçilen aya geçiş için: o aya ait veriyi yükler.
