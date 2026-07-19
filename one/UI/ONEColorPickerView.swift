@@ -68,7 +68,13 @@ struct ONEColorPickerView: View {
                         ))
                 case .today:
                     // Ritüel artık sekme değil — "+" ile açılan tam ekran eylem.
-                    TodayView(context: viewContext, entryStep: $todayEntryStep)
+                    TodayView(
+                        context: viewContext,
+                        entryStep: $todayEntryStep,
+                        onClose: {
+                            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .circle }
+                        }
+                    )
                         .overlay(alignment: .topLeading) { ritualDismissButton }
                         .transition(.asymmetric(
                             insertion: .move(edge: .bottom).combined(with: .opacity),

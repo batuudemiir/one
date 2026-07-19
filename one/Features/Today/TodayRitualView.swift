@@ -46,6 +46,11 @@ struct TodayRitualView: View {
                 // noktaları, sağda "1 / 2". Sayaç noktaların yanında dursun
                 // ki kaç adım kaldığı tahmin edilmesin.
                 HStack {
+                    // İlk adımda ✕ yalnız kapatacak bir yer varsa görünür
+                    // (telafi sheet'i ya da Frekans'a dönüş). Yoksa ölü bir
+                    // buton göstermektense hiç gösterme.
+                    let canClose = coordinator.step.rawValue > 0 || coordinator.onFinish != nil
+
                     Button {
                         if coordinator.step.rawValue > 0 {
                             coordinator.back()
@@ -59,6 +64,8 @@ struct TodayRitualView: View {
                             .frame(width: 44, height: 44, alignment: .leading)
                     }
                     .buttonStyle(.plain)
+                    .opacity(canClose ? 1 : 0)
+                    .disabled(!canClose)
                     .accessibilityLabel(coordinator.step.rawValue > 0 ? "Geri" : "Kapat")
 
                     Spacer()

@@ -44,9 +44,19 @@ struct TodayView: View {
     @State private var extraPhotoItem: PhotosPickerItem? = nil
     @State private var extraNoteText: String = ""
 
-    init(context: NSManagedObjectContext, entryStep: Binding<Step>) {
+    /// Ritüelin sol üstündeki ✕ — kullanıcıyı geldiği yere (Frekans) döndürür.
+    /// nil ise ✕ gizlenir; kapatacak bir yer yoksa ölü bir buton göstermek
+    /// yanlış olur.
+    var onClose: (() -> Void)? = nil
+
+    init(
+        context: NSManagedObjectContext,
+        entryStep: Binding<Step>,
+        onClose: (() -> Void)? = nil
+    ) {
         _vm = StateObject(wrappedValue: TodayViewModel(context: context))
         _entryStep = entryStep
+        self.onClose = onClose
     }
 
     var body: some View {
@@ -55,7 +65,7 @@ struct TodayView: View {
             Group {
                 switch vm.todayState {
                 case .empty:
-                    TodayRitualView(vm: vm)
+                    TodayRitualView(vm: vm, onFinish: onClose)
                         .transition(.asymmetric(
                             insertion: .opacity,
                             removal: .scale(scale: 0.96).combined(with: .opacity)
