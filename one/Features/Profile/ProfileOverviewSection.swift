@@ -215,10 +215,10 @@ struct ProfileOverviewSection: View {
     // MARK: Shared chrome
 
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: ONETokens.radiusCardLG, style: .continuous)
+        RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
             .fill(Color.white.opacity(0.70))
             .overlay(
-                RoundedRectangle(cornerRadius: ONETokens.radiusCardLG, style: .continuous)
+                RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
                     .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
             )
     }

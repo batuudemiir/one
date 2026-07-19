@@ -134,11 +134,11 @@ struct WeekRhythmView: View {
         .padding(.horizontal, ONETokens.spacingLG)
         .padding(.vertical, 13)
         .background(
-            RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
+            RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
                 .fill(Color.white.opacity(0.72))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
+            RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
                 .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
         )
         .accessibilityElement(children: .contain)
