@@ -185,8 +185,8 @@
 "discover.thisWeekDiscover" = "THIS WEEK'S PICKS";
 
 /* ── ECHO ── */
-"echo.title" = "Echo";
-"echo.subtitle" = "Your mood history, habits, and moments that intersect with your circle.";
+"echo.title" = "echo";
+"echo.subtitle" = "the last 30 days.";
 "echo.loading" = "Preparing Echo…";
 "echo.thisMonth" = "This Month";
 "echo.allTime" = "All Time";
@@ -1152,3 +1152,9 @@
 "profile.row.friends" = "friends";
 "profile.row.settings" = "settings";
 "profile.friendCountFormat" = "%d friends";
+
+"echo.glance" = "at a glance";
+"echo.musicMood" = "music × mood";
+"echo.mostlyPrefix" = " you were mostly ";
+"echo.mostlySuffix" = " this month.";
+"echo.repeatedFormat" = "You left this song %d times.";

@@ -235,8 +235,8 @@
 "discover.thisWeekDiscover" = "BU HAFTA KEŞFEDİLECEKLER";
 
 /* ── YANKÜ ── */
-"echo.title" = "Yankı";
-"echo.subtitle" = "Mood geçmişin, alışkanlıkların ve çevrenle kesişen anların burada.";
+"echo.title" = "yankı";
+"echo.subtitle" = "son 30 gün.";
 "echo.loading" = "Yankı hazırlanıyor…";
 "echo.thisMonth" = "Bu Ay";
 "echo.allTime" = "Tüm Zamanlar";
@@ -1169,3 +1169,9 @@
 "profile.row.friends" = "arkadaşlar";
 "profile.row.settings" = "ayarlar";
 "profile.friendCountFormat" = "%d arkadaş";
+
+"echo.glance" = "tek bakışta";
+"echo.musicMood" = "müzik × mood";
+"echo.mostlyPrefix" = "'da en çok ";
+"echo.mostlySuffix" = " geçtin.";
+"echo.repeatedFormat" = "Bu şarkıyı %d kez bıraktın.";

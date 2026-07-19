@@ -141,8 +141,8 @@
 "discover.thisWeekDiscover" = "ESTA SEMANA";
 
 /* ── ECHO ── */
-"echo.title" = "Eco";
-"echo.subtitle" = "Tu historial de humor, hábitos y momentos que se cruzan con tu círculo.";
+"echo.title" = "eco";
+"echo.subtitle" = "los últimos 30 días.";
 "echo.loading" = "Preparando Eco…";
 "echo.thisMonth" = "Este mes";
 "echo.allTime" = "Todo el tiempo";
@@ -1026,3 +1026,9 @@
 "profile.row.friends" = "amigos";
 "profile.row.settings" = "ajustes";
 "profile.friendCountFormat" = "%d amigos";
+
+"echo.glance" = "de un vistazo";
+"echo.musicMood" = "música × ánimo";
+"echo.mostlyPrefix" = " estuviste sobre todo ";
+"echo.mostlySuffix" = ".";
+"echo.repeatedFormat" = "Dejaste esta canción %d veces.";

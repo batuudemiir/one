@@ -141,8 +141,8 @@
 "discover.thisWeekDiscover" = "CETTE SEMAINE";
 
 /* ── ECHO ── */
-"echo.title" = "Écho";
-"echo.subtitle" = "Ton historique d'humeur, tes habitudes et les moments qui croisent ton cercle.";
+"echo.title" = "écho";
+"echo.subtitle" = "les 30 derniers jours.";
 "echo.loading" = "Préparation de l'écho…";
 "echo.thisMonth" = "Ce mois";
 "echo.allTime" = "Tout le temps";
@@ -1026,3 +1026,9 @@
 "profile.row.friends" = "amis";
 "profile.row.settings" = "réglages";
 "profile.friendCountFormat" = "%d amis";
+
+"echo.glance" = "en un coup d'œil";
+"echo.musicMood" = "musique × humeur";
+"echo.mostlyPrefix" = " tu étais surtout ";
+"echo.mostlySuffix" = ".";
+"echo.repeatedFormat" = "Tu as laissé ce morceau %d fois.";

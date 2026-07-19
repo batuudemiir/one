@@ -142,7 +142,7 @@
 
 /* ── ECHO ── */
 "echo.title" = "回声";
-"echo.subtitle" = "您的心情历史、习惯以及与圈子交汇的时刻。";
+"echo.subtitle" = "最近 30 天。";
 "echo.loading" = "正在准备回声…";
 "echo.thisMonth" = "本月";
 "echo.allTime" = "全部时间";
@@ -1024,3 +1024,9 @@
 "profile.row.friends" = "好友";
 "profile.row.settings" = "设置";
 "profile.friendCountFormat" = "%d 位好友";
+
+"echo.glance" = "一眼看懂";
+"echo.musicMood" = "音乐 × 心情";
+"echo.mostlyPrefix" = "，你大多是";
+"echo.mostlySuffix" = "。";
+"echo.repeatedFormat" = "你留下这首歌 %d 次。";

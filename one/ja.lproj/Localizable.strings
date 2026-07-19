@@ -142,7 +142,7 @@
 
 /* ── ECHO ── */
 "echo.title" = "エコー";
-"echo.subtitle" = "あなたのムード履歴、習慣、サークルと交差する瞬間。";
+"echo.subtitle" = "直近30日。";
 "echo.loading" = "エコーを準備中…";
 "echo.thisMonth" = "今月";
 "echo.allTime" = "全期間";
@@ -1026,3 +1026,9 @@
 "profile.row.friends" = "友だち";
 "profile.row.settings" = "設定";
 "profile.friendCountFormat" = "友だち%d人";
+
+"echo.glance" = "ひと目で";
+"echo.musicMood" = "音楽 × 気分";
+"echo.mostlyPrefix" = "は主に";
+"echo.mostlySuffix" = "だった。";
+"echo.repeatedFormat" = "この曲を%d回残した。";

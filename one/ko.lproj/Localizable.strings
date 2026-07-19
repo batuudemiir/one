@@ -142,7 +142,7 @@
 
 /* ── ECHO ── */
 "echo.title" = "에코";
-"echo.subtitle" = "나의 기분 기록, 습관, 그리고 서클과 교차하는 순간들.";
+"echo.subtitle" = "최근 30일.";
 "echo.loading" = "에코 준비 중…";
 "echo.thisMonth" = "이번 달";
 "echo.allTime" = "전체 기간";
@@ -1027,3 +1027,9 @@
 "profile.row.friends" = "친구";
 "profile.row.settings" = "설정";
 "profile.friendCountFormat" = "친구 %d명";
+
+"echo.glance" = "한눈에";
+"echo.musicMood" = "음악 × 무드";
+"echo.mostlyPrefix" = "엔 주로 ";
+"echo.mostlySuffix" = "였어.";
+"echo.repeatedFormat" = "이 곡을 %d번 남겼어.";

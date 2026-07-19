@@ -141,8 +141,8 @@
 "discover.thisWeekDiscover" = "НА ЭТОЙ НЕДЕЛЕ";
 
 /* ── ECHO ── */
-"echo.title" = "Эхо";
-"echo.subtitle" = "Твоя история настроений, привычки и моменты, пересекающиеся с кругом.";
+"echo.title" = "эхо";
+"echo.subtitle" = "последние 30 дней.";
 "echo.loading" = "Подготовка Эхо…";
 "echo.thisMonth" = "Этот месяц";
 "echo.allTime" = "За всё время";
@@ -1027,3 +1027,9 @@
 "profile.row.friends" = "друзья";
 "profile.row.settings" = "настройки";
 "profile.friendCountFormat" = "%d друзей";
+
+"echo.glance" = "одним взглядом";
+"echo.musicMood" = "музыка × настроение";
+"echo.mostlyPrefix" = " ты чаще всего был ";
+"echo.mostlySuffix" = ".";
+"echo.repeatedFormat" = "Ты оставил эту песню %d раз.";

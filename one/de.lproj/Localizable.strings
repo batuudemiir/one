@@ -142,7 +142,7 @@
 
 /* ── ECHO ── */
 "echo.title" = "Echo";
-"echo.subtitle" = "Deine Stimmungsgeschichte, Gewohnheiten und Momente, die sich mit deinem Kreis überschneiden.";
+"echo.subtitle" = "die letzten 30 Tage.";
 "echo.loading" = "Echo wird vorbereitet…";
 "echo.thisMonth" = "Dieser Monat";
 "echo.allTime" = "Alle Zeiten";
@@ -1026,3 +1026,9 @@
 "profile.row.friends" = "Freunde";
 "profile.row.settings" = "Einstellungen";
 "profile.friendCountFormat" = "%d Freunde";
+
+"echo.glance" = "auf einen Blick";
+"echo.musicMood" = "Musik × Stimmung";
+"echo.mostlyPrefix" = " warst du meistens ";
+"echo.mostlySuffix" = ".";
+"echo.repeatedFormat" = "Du hast diesen Song %d mal hinterlassen.";

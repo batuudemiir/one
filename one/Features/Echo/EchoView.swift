@@ -31,30 +31,13 @@ struct EchoView: View {
                 // A5 — Echo'da hiç data yok: zenginleştirme yerine ilk adımı öner
                 echoEmptyState
             } else {
+                // Prototip: yedi bölümlü pano değil, iki içgörü kartı.
+                // Eski bölümler (statsSection, weekSection, hourSection…)
+                // dosyada duruyor ama çağrılmıyor — ilk yeşil build'den
+                // sonra temizlenecek.
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        header
-                            .padding(.top, onDismiss != nil ? 90 : 56)
-                            .padding(.horizontal, 24)
-
-                        // ── Bu Ay / Tüm Zamanlar toggle ──
-                        periodToggle
-                            .padding(.horizontal, 16)
-                            .padding(.top, 16)
-
-                        // ── Bölümler — sosyal proof önce ──
-                        sectionCard { statsSection }
-                        sectionCard { weekSection }
-                        sectionCard { moodDistributionSection }
-                        if vm.data.syncCount > 0 {
-                            sectionCard { syncSection }
-                        }
-                        sectionCard { repeatedSongsSection }
-                        sectionCard { hourSection }
-                        sectionCard { streakSection }
-
-                        Spacer().frame(height: 100)
-                    }
+                    EchoOverviewView(data: vm.data)
+                        .padding(.top, onDismiss != nil ? 90 : ONETokens.spacingXL3)
                 }
             }
 
