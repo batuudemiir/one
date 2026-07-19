@@ -1004,3 +1004,7 @@
 "circle.empty.invite" = "邀请朋友";
 "circle.empty.startAlone" = "先自己开始";
 "nav.echo" = "回声";
+
+"circle.empty.closing" = "留下你今天的颜色，朋友们也会看见你。";
+
+"circle.empty.status" = "还没有和任何人连接";

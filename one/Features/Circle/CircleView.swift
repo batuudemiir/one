@@ -80,7 +80,10 @@ struct CircleView: View {
         let hour  = Calendar.current.component(.hour, from: Date())
 
         if total == 0 {
-            return NSLocalizedString("circle.subtitle", comment: "")
+            // Prototip: arkadaşsız kullanıcıya ürünün ne yaptığını anlatan
+            // uzun cümle değil, durumunu söyleyen kısa bir satır. Değer
+            // önerisi zaten hemen altındaki önizlemede.
+            return NSLocalizedString("circle.empty.status", comment: "")
         } else if sharedCount == total {
             return total == 1
                 ? NSLocalizedString("circle.oneShared", comment: "")
@@ -380,10 +383,17 @@ struct CircleView: View {
 
                 Spacer()
 
-                discoverHeaderButton
-                addFriendHeaderButton
-                quickAddHeaderButton
-                notificationsHeaderButton
+                // Prototipte arkadaşsız ekranda tek bir "+" var. Dört ikon,
+                // hiçbirinin henüz karşılığı olmayan bir hesapta gürültü —
+                // tek iş arkadaş eklemek.
+                if hasNoCircleYet {
+                    addFriendHeaderButton
+                } else {
+                    discoverHeaderButton
+                    addFriendHeaderButton
+                    quickAddHeaderButton
+                    notificationsHeaderButton
+                }
             }
 
             Text(NSLocalizedString("circle.title", comment: ""))
@@ -404,7 +414,11 @@ struct CircleView: View {
 
             // Faz 3 — kendi haftalık ritmin. Arkadaşların renkleri aşağıda,
             // bu satır "sen neredesin"in sessiz cevabı.
-            if !weekRhythm.isEmpty {
+            //
+            // Arkadaşsız kullanıcıda gizli: prototipte boş ekranın tek işi
+            // davet etmek. Ritim satırı oraya ikinci bir mesaj sokuyor ve
+            // "1/4 gün" daha ilk açılışta bir eksiklik gibi okunuyor.
+            if !weekRhythm.isEmpty && !hasNoCircleYet {
                 WeekRhythmView(days: weekRhythm)
                     .padding(.top, 4)
             }

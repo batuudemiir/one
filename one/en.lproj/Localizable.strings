@@ -1132,3 +1132,7 @@
 "circle.empty.invite" = "Invite a friend";
 "circle.empty.startAlone" = "Start on my own for now";
 "nav.echo" = "echo";
+
+"circle.empty.closing" = "When you leave today's colour, your friends will see you too.";
+
+"circle.empty.status" = "not connected with anyone yet";

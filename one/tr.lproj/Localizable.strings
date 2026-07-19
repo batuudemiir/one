@@ -1149,3 +1149,7 @@
 "circle.empty.invite" = "Arkadaş davet et";
 "circle.empty.startAlone" = "Şimdilik tek başıma başla";
 "nav.echo" = "yankı";
+
+"circle.empty.closing" = "Bugünkü rengini bıraktığında arkadaşların da seni görecek.";
+
+"circle.empty.status" = "henüz kimseyle bağlı değilsin";

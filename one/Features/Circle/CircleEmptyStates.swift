@@ -25,59 +25,83 @@ struct CircleEmptyState: View {
     private let previewMoods: [ONEMood] = [.sakin, .enerjik, .uzgun, .nostaljik, .derin]
 
     var body: some View {
-        VStack(spacing: ONETokens.spacingXL) {
-            Spacer(minLength: ONETokens.spacingMD)
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: ONETokens.spacingXL) {
+                ZStack {
+                    previewStack
+                        .blur(radius: 3.6)
+                        .opacity(0.55)
+                        .accessibilityHidden(true)
 
-            ZStack {
-                previewStack
-                    .blur(radius: 3.5)
-                    .opacity(0.55)
-                    .accessibilityHidden(true)
+                    // Perde. Prototipte metin bulanık kartların üstünde değil,
+                    // krem bir gradyanın üstünde duruyor — bu olmadan başlık
+                    // kartlarla karışıp okunmaz hale geliyordu.
+                    LinearGradient(
+                        colors: [
+                            ONETokens.oneCream.opacity(0.35),
+                            ONETokens.oneCream.opacity(0.90)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+
+                    VStack(spacing: ONETokens.spacingSM) {
+                        Text(NSLocalizedString("circle.empty.previewTitle", comment: ""))
+                            .displayMD()
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(ONETokens.oneInk)
+                        Text(NSLocalizedString("circle.empty.previewSubtitle", comment: ""))
+                            .bodySM()
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(ONETokens.oneAsh)
+                    }
+                    .padding(.horizontal, ONETokens.spacingXL)
+                }
+                .fixedSize(horizontal: false, vertical: true)
 
                 VStack(spacing: ONETokens.spacingSM) {
-                    Text(NSLocalizedString("circle.empty.previewTitle", comment: ""))
-                        .displayMD()
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(ONETokens.oneInk)
-                    Text(NSLocalizedString("circle.empty.previewSubtitle", comment: ""))
+                    // Prototip: düz marka rengi, 26pt yarıçap, 44pt min yükseklik.
+                    // Gradyan yoktu — tek düz renk daha net bir çağrı.
+                    Button(action: { showAddFriend = true }) {
+                        Text(NSLocalizedString("circle.empty.invite", comment: ""))
+                            .bodySMMedium()
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(
+                                Capsule(style: .continuous).fill(ONETokens.oneBrand)
+                            )
+                    }
+                    .accessibilityLabel(NSLocalizedString("accessibility.circle.setupCircle", comment: ""))
+
+                    if let onStartAlone {
+                        Button(action: onStartAlone) {
+                            Text(NSLocalizedString("circle.empty.startAlone", comment: ""))
+                                .bodySMMedium()
+                                .foregroundColor(ONETokens.oneAsh)
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                        }
+                    }
+                }
+                .padding(.horizontal, ONETokens.spacingXL2)
+
+                // Kapanış: davetin neden işe yaradığını söyleyen tek cümle.
+                VStack(spacing: ONETokens.spacingXL) {
+                    Rectangle()
+                        .fill(ONETokens.oneInk.opacity(0.09))
+                        .frame(height: 1)
+
+                    Text(NSLocalizedString("circle.empty.closing", comment: ""))
                         .bodySM()
                         .multilineTextAlignment(.center)
                         .foregroundColor(ONETokens.oneAsh)
+                        .padding(.horizontal, ONETokens.spacingXL)
                 }
-                .padding(.horizontal, ONETokens.spacingXL)
+                .padding(.horizontal, ONETokens.spacingXL2)
             }
-
-            VStack(spacing: ONETokens.spacingSM) {
-                Button(action: { showAddFriend = true }) {
-                    Text(NSLocalizedString("circle.empty.invite", comment: ""))
-                        .bodySMMedium()
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, ONETokens.spacingMD)
-                        .background(
-                            LinearGradient(
-                                colors: [ONETokens.oneBrand, ONETokens.oneBrandLight],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                }
-                .accessibilityLabel(NSLocalizedString("accessibility.circle.setupCircle", comment: ""))
-
-                if let onStartAlone {
-                    Button(action: onStartAlone) {
-                        Text(NSLocalizedString("circle.empty.startAlone", comment: ""))
-                            .bodySMMedium()
-                            .foregroundColor(ONETokens.oneAsh)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, ONETokens.spacingMD)
-                    }
-                }
-            }
-            .padding(.horizontal, ONETokens.spacingXL2)
-
-            Spacer(minLength: ONETokens.spacingXL4)
+            .padding(.top, ONETokens.spacingLG)
+            // Sekme çubuğu içeriği kesmesin — ekran görüntüsünde "şimdilik tek
+            // başıma başla" dock'un altında kalıyordu.
+            .padding(.bottom, 116)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

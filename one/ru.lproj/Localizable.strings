@@ -1007,3 +1007,7 @@
 "circle.empty.invite" = "Пригласить друга";
 "circle.empty.startAlone" = "Пока начну один";
 "nav.echo" = "эхо";
+
+"circle.empty.closing" = "Оставь свой сегодняшний цвет — и друзья увидят тебя.";
+
+"circle.empty.status" = "пока ни с кем не связан";

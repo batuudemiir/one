@@ -1007,3 +1007,7 @@
 "circle.empty.invite" = "친구 초대하기";
 "circle.empty.startAlone" = "일단 혼자 시작하기";
 "nav.echo" = "메아리";
+
+"circle.empty.closing" = "오늘의 색을 남기면 친구들도 너를 보게 돼.";
+
+"circle.empty.status" = "아직 아무와도 연결되지 않았어";

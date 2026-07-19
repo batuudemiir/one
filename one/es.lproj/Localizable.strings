@@ -1006,3 +1006,7 @@
 "circle.empty.invite" = "Invitar a un amigo";
 "circle.empty.startAlone" = "Empezar solo por ahora";
 "nav.echo" = "eco";
+
+"circle.empty.closing" = "Cuando dejes tu color de hoy, tus amigos también te verán.";
+
+"circle.empty.status" = "aún no estás conectado con nadie";

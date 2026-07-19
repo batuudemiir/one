@@ -116,32 +116,39 @@ struct WeekRhythmView: View {
     private var filledCount: Int { WeekRhythm.filledCount(days) }
     private var isComplete: Bool { WeekRhythm.isComplete(days) }
 
+    /// Prototip düzeni: yatay kart — noktalar solda, hedef sağda.
+    /// Gün harfleri (P S Ç…) bilinçli olarak yok; hangi günün hangisi olduğu
+    /// noktanın konumundan zaten okunuyor ve harfler satırı kalabalıklaştırıp
+    /// ritmi bir takvime çeviriyordu. Gün adları VoiceOver'da korunuyor.
     var body: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 0) {
+        HStack(spacing: 9) {
+            HStack(spacing: 6) {
                 ForEach(days) { day in
-                    dayColumn(day)
-                        .frame(maxWidth: .infinity)
+                    dayDot(day)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            summaryLabel
+            goalLabel
         }
+        .padding(.horizontal, ONETokens.spacingLG)
+        .padding(.vertical, 13)
+        .background(
+            RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
+                .fill(Color.white.opacity(0.72))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
+                .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+        )
         .accessibilityElement(children: .contain)
     }
 
-    // MARK: Day column
+    // MARK: Day dot
 
     @ViewBuilder
-    private func dayColumn(_ day: WeekRhythm.Day) -> some View {
-        let content = VStack(spacing: 6) {
-            dot(day)
-                .frame(width: 22, height: 22)
-            Text(weekdayInitial(day.date))
-                .monoLabel(tracking: 0.4)
-                .foregroundColor(day.isToday ? ONETokens.oneInk : ONETokens.oneAsh)
-                .opacity(day.isFuture ? 0.4 : 1)
-        }
+    private func dayDot(_ day: WeekRhythm.Day) -> some View {
+        let content = dot(day).frame(width: 19, height: 19)
 
         if day.isBackfillable {
             Button { onBackfill(day.date) } label: { content }
@@ -155,61 +162,63 @@ struct WeekRhythmView: View {
         }
     }
 
+    /// Prototipteki `.rd`: 19pt çember. Dolu gün rengi tamamen doldurur,
+    /// bugün çift halkayla ayrışır, telafi edilebilir gün kesikli.
     @ViewBuilder
     private func dot(_ day: WeekRhythm.Day) -> some View {
         if let hex = day.moodColorHex {
             Circle()
                 .fill(Color(hex: hex))
-                .frame(width: 12, height: 12)
-                .overlay {
-                    if day.isToday {
-                        Circle()
-                            .stroke(ONETokens.oneInk.opacity(0.35), lineWidth: 1.5)
-                            .frame(width: 20, height: 20)
-                    }
-                }
+                .overlay { if day.isToday { todayRing } }
         } else if day.isToday {
             // Bugün henüz boş — davet: içi boş ama net bir halka.
             Circle()
-                .stroke(ONETokens.oneInk, lineWidth: 1.5)
-                .frame(width: 12, height: 12)
-                .overlay {
-                    Circle()
-                        .stroke(ONETokens.oneInk.opacity(0.18), lineWidth: 1)
-                        .frame(width: 20, height: 20)
-                }
+                .strokeBorder(ONETokens.oneInk.opacity(0.14), lineWidth: 1.5)
+                .overlay { todayRing }
         } else if day.isBackfillable {
-            // Telafi edilebilir — kesikli çember dokunulabilirliği işaret eder.
+            // Kesikli çember dokunulabilirliği işaret eder.
             Circle()
                 .strokeBorder(
                     ONETokens.oneAsh,
                     style: StrokeStyle(lineWidth: 1.2, dash: [2.5, 2.5])
                 )
-                .frame(width: 12, height: 12)
         } else {
             Circle()
-                .fill(ONETokens.oneSilver)
-                .frame(width: 6, height: 6)
+                .strokeBorder(ONETokens.oneInk.opacity(0.14), lineWidth: 1.5)
                 .opacity(day.isFuture ? 0.5 : 1)
         }
     }
 
-    // MARK: Summary
+    /// Prototipteki `box-shadow:0 0 0 2px cream, 0 0 0 3.5px ink` — noktanın
+    /// dışında krem bir boşluk, onun dışında ince mürekkep halka.
+    private var todayRing: some View {
+        Circle()
+            .stroke(ONETokens.oneCream, lineWidth: 2)
+            .overlay(
+                Circle().stroke(ONETokens.oneInk, lineWidth: 1.5)
+                    .padding(-1.75)
+            )
+            .padding(-1)
+    }
 
-    private var summaryLabel: some View {
-        HStack(spacing: 6) {
-            if isComplete {
-                Circle()
-                    .fill(ONETokens.oneBrand)
-                    .frame(width: 6, height: 6)
-                    .accessibilityHidden(true)
-            }
-            Text(summaryText)
-                .bodyXS()
-                .foregroundColor(isComplete ? ONETokens.oneInk : ONETokens.oneAsh)
+    // MARK: Goal
+
+    /// Sağ kolon: "bu hafta" / "3/4 gün" — iki satır, sağa yaslı mono.
+    private var goalLabel: some View {
+        VStack(alignment: .trailing, spacing: 1) {
+            Text("bu hafta")
+                .monoLabel(tracking: 0.2)
+                .foregroundColor(ONETokens.oneAsh)
+            Text(goalText)
+                .monoLabel(tracking: 0.2)
+                .foregroundColor(ONETokens.oneInk)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(summaryText)
+    }
+
+    private var goalText: String {
+        isComplete ? "\(filledCount) gün ✓" : "\(filledCount)/\(WeekRhythm.completionTarget) gün"
     }
 
     private var summaryText: String {
@@ -220,12 +229,6 @@ struct WeekRhythmView: View {
 
     // MARK: Helpers
 
-    private func weekdayInitial(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale.current
-        formatter.setLocalizedDateFormatFromTemplate("EEEEE")
-        return formatter.string(from: date).uppercased()
-    }
 
     private func accessibilityLabel(_ day: WeekRhythm.Day) -> String {
         let formatter = DateFormatter()
