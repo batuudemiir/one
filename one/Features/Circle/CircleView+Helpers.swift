@@ -70,6 +70,29 @@ extension CircleView {
         localCurrentStreak = streak
     }
 
+    // MARK: - Faz 3 — Haftalık ritim (Core Data)
+
+    /// Frekans başlığındaki 7 nokta için bu haftanın dolu günlerini okur.
+    /// Telafi aksiyonu burada yok — Frekans bir işaret yüzeyi, giriş yüzeyi değil.
+    func loadWeekRhythm() {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        guard let weekStart = cal.date(
+            from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
+        ) else { return }
+        let weekEnd = cal.date(byAdding: .day, value: 7, to: weekStart) ?? today
+
+        let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        req.predicate = NSPredicate(format: "date >= %@ AND date < %@", weekStart as NSDate, weekEnd as NSDate)
+        let songs = (try? context.fetch(req)) ?? []
+
+        let filled = songs.reduce(into: [Date: String]()) { acc, s in
+            guard let d = s.date, let hex = s.moodColorHex else { return }
+            acc[cal.startOfDay(for: d)] = hex
+        }
+        weekRhythm = WeekRhythm.days(filled: filled, today: today, calendar: cal)
+    }
+
     func getTimeString(from date: Date?) -> String {
         guard let date = date else { return "" }
         let formatter = DateFormatter()
@@ -246,6 +269,7 @@ extension CircleView {
     @MainActor
     func refreshData() async {
         computeLocalStreak()
+        loadWeekRhythm()
         cloudKitManager.invalidateCircleCache()
         loadFriendsShares()
         loadPendingCount()

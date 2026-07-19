@@ -43,6 +43,8 @@ struct CircleView: View {
     @State var showBlockConfirmation = false
     @State var friendToBlock: CloudKitManager.FriendCircleData? = nil
     @State var localCurrentStreak: Int = 0
+    /// Faz 3 — başlıktaki haftalık 7 nokta (salt gösterim).
+    @State var weekRhythm: [WeekRhythm.Day] = []
     @State var hasLoadedOnce: Bool = false
     @State var receivedReactions: [EmojiReactionItem] = []
     @State var isViewVisible: Bool = false
@@ -199,6 +201,7 @@ struct CircleView: View {
 
             AppAnalytics.shared.track(.circleOpened)
             computeLocalStreak()
+            loadWeekRhythm()
             if !cloudKitManager.isFetchingUser {
                 initializeUser()
             }
@@ -226,6 +229,7 @@ struct CircleView: View {
         .onReceive(NotificationCenter.default.publisher(for: .init("todaySongSaved"))) { _ in
             // CloudKit save'in yayılması için kısa bekleme
             computeLocalStreak()
+            loadWeekRhythm()
             Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(1500))
                 guard isViewVisible else { return }
@@ -396,6 +400,13 @@ struct CircleView: View {
                     .monoSM(tracking: 1.0)
                     .foregroundColor(ONETokens.oneBrand)
                     .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
+            // Faz 3 — kendi haftalık ritmin. Arkadaşların renkleri aşağıda,
+            // bu satır "sen neredesin"in sessiz cevabı.
+            if !weekRhythm.isEmpty {
+                WeekRhythmView(days: weekRhythm)
+                    .padding(.top, 4)
             }
         }
         .padding(.top, ONETokens.spacingXL4)
