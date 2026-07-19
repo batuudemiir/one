@@ -284,7 +284,14 @@ struct oneApp: App {
                     if url.scheme == "ones" && url.host == "spotify-callback" {
                         SpotifyManager.shared.handleCallback(url: url)
                     }
-                    // 2. Handle Friend Invitation Deep Links
+                    // 2. Widget / kilit ekranı deep link: ones://today
+                    // `MoodWidget` bunu gönderiyordu ama karşılığı yoktu —
+                    // widget'a dokunmak uygulamayı açıp hiçbir yere götürmüyordu.
+                    else if url.scheme == "ones" && url.host == "today" {
+                        ONELogger.info("Received widget deep link: today", category: .general)
+                        NotificationCenter.default.post(name: .openMoodPicker, object: nil)
+                    }
+                    // 3. Handle Friend Invitation Deep Links
                     // expected format: ones://add-friend?code=ABC123
                     else if url.scheme == "ones" && url.host == "add-friend" {
                         if let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
@@ -313,10 +320,7 @@ struct oneApp: App {
                     // kullanıcıyı picker'a getirmek için bildirim yayınlanır.
                     if url.path.hasPrefix("/event/mood") {
                         ONELogger.info("Received in-app event universal link: mood", category: .general)
-                        NotificationCenter.default.post(
-                            name: NSNotification.Name("OpenMoodPicker"),
-                            object: nil
-                        )
+                        NotificationCenter.default.post(name: .openMoodPicker, object: nil)
                         return
                     }
 

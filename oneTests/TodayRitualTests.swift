@@ -218,3 +218,75 @@ struct TodayCoordinatorTests {
         #expect(coordinator.step == .mood)
     }
 }
+
+// MARK: - Backfill Mode Tests (Faz 3.5)
+
+/// Telafi (geri tarihli) modun state makinesi. Buradaki asıl mesele bir
+/// veri kaybı bug'ıydı: `cancelBackfill` state'i temizliyordu ama sunum
+/// katmanına haber vermiyordu — sheet açık kalıp normal "bugün" ritüeline
+/// dönüyor, akış tamamlanınca bugünün kaydını eziyordu.
+struct BackfillModeTests {
+
+    private var yesterday: Date {
+        Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+    }
+
+    @Test("Varsayılan mod telafi değil")
+    func testDefaultIsNotBackfill() {
+        let coordinator = TodayCoordinator()
+        #expect(coordinator.backfillDate == nil)
+        #expect(coordinator.isBackfill == false)
+    }
+
+    @Test("startBackfill modu açar ve draft'ı sıfırlar")
+    func testStartBackfill() {
+        let coordinator = TodayCoordinator()
+        coordinator.draft.feeling = "eski"
+        coordinator.step = .song
+
+        coordinator.startBackfill(for: yesterday)
+
+        #expect(coordinator.isBackfill == true)
+        #expect(coordinator.backfillDate == yesterday)
+        #expect(coordinator.draft.feeling == "")
+        #expect(coordinator.step == .mood)
+    }
+
+    @Test("cancelBackfill onFinish'i tetikler — sheet'in kapanma sinyali")
+    func testCancelFiresOnFinish() {
+        let coordinator = TodayCoordinator()
+        var finishCount = 0
+        coordinator.onFinish = { finishCount += 1 }
+
+        coordinator.startBackfill(for: yesterday)
+        #expect(finishCount == 0)
+
+        coordinator.cancelBackfill()
+        #expect(finishCount == 1)
+    }
+
+    @Test("cancelBackfill telafi modunu tamamen temizler")
+    func testCancelClearsMode() {
+        let coordinator = TodayCoordinator()
+        coordinator.startBackfill(for: yesterday)
+        coordinator.draft.feeling = "yarım"
+
+        coordinator.cancelBackfill()
+
+        // Kritik: backfillDate nil olduğu için sonraki commit() normal
+        // "bugün" dalına düşer. Sunum katmanı onFinish ile kapanmazsa
+        // kullanıcı bugünün kaydını ezebilir — bu yüzden ikisi bir arada.
+        #expect(coordinator.backfillDate == nil)
+        #expect(coordinator.isBackfill == false)
+        #expect(coordinator.draft.feeling == "")
+        #expect(coordinator.step == .mood)
+    }
+
+    @Test("onFinish bağlı değilse cancelBackfill çökmemeli")
+    func testCancelWithoutObserver() {
+        let coordinator = TodayCoordinator()
+        coordinator.startBackfill(for: yesterday)
+        coordinator.cancelBackfill()
+        #expect(coordinator.backfillDate == nil)
+    }
+}

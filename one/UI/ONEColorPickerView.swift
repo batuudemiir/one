@@ -82,6 +82,12 @@ struct ONEColorPickerView: View {
             .animation(ONEAnimation.cardSpring, value: vm.currentScreen)
         }
         // Remember the last primary tab whenever the user actually lands on one.
+        // Widget / kilit ekranı / universal link → giriş ritüeli.
+        // Bildirimi `oneApp` hem `ones://today` hem `/event/mood` için yayınlıyor;
+        // dinleyicisi olmadığı için ikisi de bugüne kadar ölüydü.
+        .onReceive(NotificationCenter.default.publisher(for: .openMoodPicker)) { _ in
+            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .today }
+        }
         .onChange(of: vm.currentScreen) { _, screen in
             if primaryTabs.contains(screen) { lastTab = screen }
             if screen != .today { todayEntryStep = .search }

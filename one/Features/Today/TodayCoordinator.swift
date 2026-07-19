@@ -38,6 +38,15 @@ final class TodayCoordinator: ObservableObject {
     @Published var backfillDate: Date? = nil
     weak var vm: TodayViewModel?
 
+    /// Telafi oturumu bittiğinde (kaydedildi ya da vazgeçildi) çağrılır.
+    /// Sunum katmanı bunu dinleyip sheet'i kapatır — ritüelin kendisi
+    /// nasıl sunulduğunu bilmez.
+    ///
+    /// Bu sinyal olmadan "vazgeç" sheet'i açık bırakıyor ve ritüel normal
+    /// "bugün" akışına dönüyordu; sheet zaten bugün DOLU olduğu için
+    /// açılmıştı, dolayısıyla akış tamamlanırsa bugünün kaydı eziliyordu.
+    var onFinish: (() -> Void)?
+
     var isBackfill: Bool { backfillDate != nil }
 
     init(vm: TodayViewModel? = nil) {
@@ -51,11 +60,12 @@ final class TodayCoordinator: ObservableObject {
         step = .mood
     }
 
-    /// Telafi modundan çıkar, normal bugün akışına döner.
+    /// Telafi modundan vazgeçer. Sunum katmanı `onFinish` ile kapanır.
     func cancelBackfill() {
         draft = DraftEntry()
         backfillDate = nil
         step = .mood
+        onFinish?()
     }
 
     func next() {
@@ -87,6 +97,8 @@ final class TodayCoordinator: ObservableObject {
             guard let song = draft.song, let mood = draft.mood else { return }
             let moodOption = MoodOption.all.first { $0.key == mood.rawValue } ?? MoodOption.all[4]
             vm.backfillEntry(song: song, mood: moodOption, on: date, note: draft.feeling)
+            // cancelBackfill state'i sıfırlar ve onFinish'i tetikler —
+            // kayıt sonrası da sunum katmanının kapanması gerekiyor.
             cancelBackfill()
             return
         }

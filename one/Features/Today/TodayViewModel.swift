@@ -41,9 +41,6 @@ class TodayViewModel: ObservableObject {
     @Published var thisWeekEntries: [(date: Date, moodColorHex: String)] = []
     /// Faz 3 — haftalık ritim: 7 günün dolu/boş/telafi durumu.
     @Published var weekRhythm: [WeekRhythm.Day] = []
-    /// Faz 3 — ritüel hangi gün için açıldı? nil = bugün.
-    /// Telafi (geri tarihli) girişte `WeekRhythmView`'dan set edilir.
-    @Published var backfillDate: Date? = nil
     /// Total entry count ever (for milestone insights).
     @Published var totalEntryCount: Int = 0
     /// Days since last entry before today (nil = no prior entry).
@@ -555,8 +552,11 @@ class TodayViewModel: ObservableObject {
     ) -> Bool {
         let cal = Calendar.current
         let day = cal.startOfDay(for: date)
+        // Tek referans an: pencere kontrolü ile daysAgo hesabı ayrı `Date()`
+        // çağırırsa gece yarısı geçişinde tutarsız değer üretirler.
+        let now = Date()
 
-        guard WeekRhythm.isBackfillable(day, calendar: cal) else {
+        guard WeekRhythm.isBackfillable(day, today: now, calendar: cal) else {
             ONELogger.error("backfillEntry: \(day) telafi penceresi dışında", category: .general)
             ErrorHandler.shared.handle(AppError.unknown(message: "Bu gün artık doldurulamıyor."))
             return false
@@ -600,9 +600,16 @@ class TodayViewModel: ObservableObject {
         }
 
         let daysAgo = cal.dateComponents(
-            [.day], from: day, to: cal.startOfDay(for: Date())
+            [.day], from: day, to: cal.startOfDay(for: now)
         ).day ?? 0
         AppAnalytics.shared.track(.entryBackfilled(daysAgo: daysAgo))
+
+        // Telafi ritüel içinde yerinde de yapılabiliyor (sheet yok, ekran
+        // değişmiyor) — geri bildirim olmazsa kullanıcı kaydın olduğunu
+        // anlamıyor. Dil suçlayıcı değil: kayıp değil, tamamlanmış bir gün.
+        ErrorHandler.shared.showInfo(
+            daysAgo == 1 ? "Dün de tamamlandı." : "\(daysAgo) gün öncesi tamamlandı."
+        )
 
         // loadTodayEntry streak'i de yeniden hesaplar — dünü doldurmak
         // bugünkü streak'i uzatabilir, bu yüzden şart.

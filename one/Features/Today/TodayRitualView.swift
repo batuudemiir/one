@@ -10,12 +10,16 @@ struct TodayRitualView: View {
     @StateObject private var coordinator: TodayCoordinator
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// - Parameter backfillDate: verilirse ritüel doğrudan o geçmiş gün için
-    ///   telafi modunda açılır (bugün zaten doluyken kullanılır).
-    init(vm: TodayViewModel, backfillDate: Date? = nil) {
+    /// - Parameters:
+    ///   - backfillDate: verilirse ritüel doğrudan o geçmiş gün için telafi
+    ///     modunda açılır (bugün zaten doluyken kullanılır).
+    ///   - onFinish: telafi oturumu bitince (kayıt ya da vazgeçme) çağrılır.
+    ///     Sheet olarak sunulduğunda kapanmayı bu tetikler.
+    init(vm: TodayViewModel, backfillDate: Date? = nil, onFinish: (() -> Void)? = nil) {
         self.vm = vm
         let coordinator = TodayCoordinator(vm: vm)
         coordinator.backfillDate = backfillDate
+        coordinator.onFinish = onFinish
         _coordinator = StateObject(wrappedValue: coordinator)
     }
 
@@ -96,7 +100,7 @@ struct TodayRitualView: View {
             Button {
                 coordinator.cancelBackfill()
             } label: {
-                Text("bugüne dön")
+                Text("vazgeç")
                     .monoLabel(tracking: 0.4)
                     .foregroundColor(ONETokens.oneAsh)
             }

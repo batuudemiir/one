@@ -237,15 +237,11 @@ struct TodayView: View {
         // Faz 3 — telafi ritüeli. Bugün dolu olduğu için ana akış
         // TodayCompletedView'da; geçmiş gün burada modal olarak doldurulur.
         .sheet(item: $backfillTarget) { target in
-            TodayRitualView(vm: vm, backfillDate: target.date)
-                .presentationDetents([.large])
-        }
-        .onChange(of: vm.weekRhythm) { _, days in
-            // Hedef gün dolunca sheet kendini kapatır.
-            guard let target = backfillTarget else { return }
-            if days.contains(where: { $0.date == target.date && $0.isFilled }) {
+            TodayRitualView(vm: vm, backfillDate: target.date) {
+                // Kayıt da vazgeçme de buraya düşer — tek çıkış noktası.
                 backfillTarget = nil
             }
+            .presentationDetents([.large])
         }
         // ── Kayıt sonrası opsiyonel ekler ──────────────────────────────
         .photosPicker(isPresented: $showExtraPhotoPicker,
