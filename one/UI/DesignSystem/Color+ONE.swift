@@ -50,6 +50,18 @@ extension String {
     }
 }
 
+extension Color {
+    func darkened(by amount: Double) -> Color {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a)
+        return Color(
+            red: max(0, Double(r) * (1 - amount)),
+            green: max(0, Double(g) * (1 - amount)),
+            blue: max(0, Double(b) * (1 - amount))
+        )
+    }
+}
+
 extension UIColor {
     /// Initialize a UIColor from a hex string (for adaptive trait-based colors)
     convenience init(hex: String) {

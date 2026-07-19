@@ -34,7 +34,6 @@
 "today.title" = "Bugünün şarkısını seç";
 "today.subtitle" = "Mood'unu ve gününü buradan başlat.";
 "today.moodSection" = "nasıl hissediyorsun?";
-"today.feelingSection" = "bu şarkı sende ne bıraktı?";
 "today.noteSection" = "bir not bırak";
 "today.notePlaceholder" = "düşüncelerini yaz...";
 "today.photoChange" = "değiştir";
@@ -427,6 +426,7 @@
 "onboarding.noSubscriptionHint" = "Abonelik gerekmez — sadece arama için";
 "onboarding.noSubscriptionRequired" = "Abonelik gerekmez";
 "onboarding.noDataSelling" = "Verilerini satmıyoruz, her şey cihazında";
+"onboarding.spotifyAlsoWorks" = "Spotify kullanıcıları da şarkı ekleyebilir";
 
 /* --- FRIEND REQUESTS --- */
 "friendRequests.title" = "Bildirimler";
@@ -618,7 +618,6 @@
 "search.appleMusicPermission" = "Apple Music izni gerekli. Lütfen Ayarlar'dan izin verin.";
 
 /* --- CONFIRM SCREEN --- */
-"confirm.question" = "BU ŞARKI SENDE NE UYANDIRIYOR?";
 
 /* --- DONE SCREEN --- */
 "done.saved" = "Kaydedildi.";
@@ -1015,6 +1014,10 @@
 "badges.streak3.desc" = "İlk halka kapandı";
 "badges.streak14.title" = "14 Gün";
 "badges.streak14.desc" = "İki hafta üst üste";
+"badges.totalEntry7.title" = "7 Gün";
+"badges.totalEntry7.desc" = "Yedi günü geride bıraktın";
+"badges.totalEntry30.title" = "30 Gün";
+"badges.totalEntry30.desc" = "Otuz günü geride bıraktın";
 
 /* B5 — Widget kurulum nudge */
 "widget.nudge.title" = "Tek dokunuşla mood";
@@ -1120,6 +1123,7 @@
 
 /* P1.6 — Onboarding streak freeze hint */
 "onboarding.notif.freezeHint" = "Bir gün kaçırırsan serin sıfırlanmaz — haftada bir freeze hediye.";
+"onboarding.notif.reminderTime" = "Hatırlatma saati";
 
 /* Accessibility — DayCell */
 "accessibility.dayCell.hasPhoto" = "fotoğraflı";
@@ -1132,3 +1136,16 @@
 "moodbarstrip.empty" = "Aylık mood dağılımı: kayıt yok";
 "moodbarstrip.summary" = "Aylık mood dağılımı: %@";
 "profile.monthlySummary.lockedDesc" = "%d gün sonra açılır";
+"today.passButton" = "bugün geçti";
+"today.passedDay.title" = "bugün geçti.";
+"today.passedDay.sub" = "Streak'in korunuyor.\nYarın tekrar başlarsın.";
+"today.passedDay.cta" = "yine de kaydet";
+"confirm.songMicro.confirm" = "tamam.";
+"confirm.songMicro.cancel" = "değiştir";
+
+/* Circle — arkadaşı olmayan kullanıcı için değer önizlemesi */
+"circle.empty.previewTitle" = "5 arkadaşın olsa bugün bunları görürdün.";
+"circle.empty.previewSubtitle" = "Renkler onların. Sen sadece bakarsın.";
+"circle.empty.invite" = "Arkadaş davet et";
+"circle.empty.startAlone" = "Şimdilik tek başıma başla";
+"nav.echo" = "yankı";

@@ -35,6 +35,14 @@ struct SongRecommendation: Identifiable, Codable, Hashable {
     }
 }
 
+// MARK: - Saved Song
+
+struct SavedSong: Codable {
+    let name: String
+    let artist: String
+    let genre: String?
+}
+
 // MARK: - Taste Profile
 
 struct TasteProfile: Codable {
@@ -54,6 +62,14 @@ struct TasteProfile: Codable {
     var weightedGenres: [String] { _weightedGenres ?? topGenres }
     private let _weightedGenres: [String]?
 
+    /// Kullanıcının 14+ gün önce seçtiği şarkılardan rastgele seçilmiş nostalji önerileri.
+    /// RecommendationEngine bu şarkıları yeni keşiflerle karıştırır.
+    var rediscoverySongs: [RediscoverySong] { _rediscoverySongs ?? [] }
+    private let _rediscoverySongs: [RediscoverySong]?
+
+    var topSongs: [SavedSong] { _topSongs ?? [] }
+    private let _topSongs: [SavedSong]?
+
     // Memberwise init that fills _weightedGenres (used by TasteProfileAnalyzer)
     init(topGenres: [String],
          topArtists: [String],
@@ -62,7 +78,9 @@ struct TasteProfile: Codable {
          totalEntries: Int,
          averageMoodScore: Double,
          createdAt: Date,
-         weightedGenres: [String]? = nil) {
+         weightedGenres: [String]? = nil,
+         rediscoverySongs: [RediscoverySong]? = nil,
+         topSongs: [SavedSong]? = nil) {
         self.topGenres       = topGenres
         self.topArtists      = topArtists
         self.topTrackIds     = topTrackIds
@@ -71,6 +89,8 @@ struct TasteProfile: Codable {
         self.averageMoodScore = averageMoodScore
         self.createdAt       = createdAt
         self._weightedGenres = weightedGenres
+        self._rediscoverySongs = rediscoverySongs
+        self._topSongs       = topSongs
     }
 }
 
@@ -88,10 +108,16 @@ struct CachedRecommendations: Codable {
     let recommendations: [SongRecommendation]
     let timestamp: Date
     let profileSnapshot: TasteProfile?
-    
-    func isValid(maxAge: TimeInterval) -> Bool {
-        let age = Date().timeIntervalSince(timestamp)
-        return age < maxAge
+    let cachedTotalEntries: Int?
+
+    func isValid(currentTotalEntries: Int? = nil) -> Bool {
+        guard Calendar.current.isDateInToday(timestamp) else { return false }
+        if let current = currentTotalEntries,
+           let cached = cachedTotalEntries,
+           current > cached {
+            return false
+        }
+        return true
     }
 }
 
@@ -117,5 +143,31 @@ enum RecommendationError: Error, LocalizedError {
         case .cacheError:
             return "Önbellek hatası"
         }
+    }
+}
+
+// MARK: - Rediscovery Song
+
+/// Kullanıcının geçmişte seçtiği şarkıdan oluşturulan nostalji öneri modeli.
+struct RediscoverySong: Codable {
+    let songName: String
+    let artistName: String
+    let genre: String?
+    let artworkURL: String?
+    let spotifyURL: String?
+    let date: Date
+
+    /// `SongRecommendation`'a dönüştürür.
+    func toRecommendation() -> SongRecommendation {
+        SongRecommendation(
+            id: "rediscovery-\(songName.lowercased().replacingOccurrences(of: " ", with: "-"))-\(artistName.lowercased().replacingOccurrences(of: " ", with: "-"))",
+            name: songName,
+            artist: artistName,
+            coverURL: artworkURL.flatMap { URL(string: $0) },
+            spotifyURL: spotifyURL,
+            genre: genre,
+            recommendationReason: nil,
+            source: spotifyURL?.contains("spotify") == true ? .spotify : .appleMusic
+        )
     }
 }

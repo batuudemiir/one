@@ -26,7 +26,8 @@ struct DailyEntry: Identifiable, Hashable, Equatable {
     let spotifyURL: URL?
     let platform: String          // "Spotify" or "Apple Music"
     let note: String?             // Günlük not
-    
+    let passed: Bool              // #10 — "Bugün geçti" pas günü
+
     // Hashable: sadece id üzerinden eşitlik ve hash (Color Hashable değil)
     static func == (lhs: DailyEntry, rhs: DailyEntry) -> Bool {
         lhs.id == rhs.id
@@ -144,6 +145,7 @@ extension DailyEntry {
         dailySong.weatherDesc = self.weatherDesc
         dailySong.platform = self.platform
         dailySong.dailyNote = self.note
+        dailySong.passed = self.passed
         
         // Convert time string back to date
         if let createdAt = parseTimeToDate(timeString: self.time, baseDate: self.date) {

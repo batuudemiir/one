@@ -445,9 +445,15 @@ struct FriendShareLiveActivity: Widget {
 /// bounce animasyonu uygular. iOS 17+ `.symbolEffect(.bounce)` kullanır,
 /// iOS 16'da hiçbir efekt eklemez (image olduğu gibi kalır).
 struct BouncingSealModifier: ViewModifier {
+    @State private var trigger = 0
+
     func body(content: Content) -> some View {
         if #available(iOS 17.0, *) {
-            content.symbolEffect(.bounce)
+            content
+                .symbolEffect(.bounce, value: trigger)
+                .onAppear {
+                    trigger += 1
+                }
         } else {
             content
         }

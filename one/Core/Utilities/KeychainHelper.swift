@@ -42,7 +42,10 @@ enum KeychainHelper {
             kSecAttrAccessible: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         ]
         SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
+        let status = SecItemAdd(query as CFDictionary, nil)
+        if status != errSecSuccess {
+            ONELogger.error("Keychain write failed for key '\(key)': OSStatus \(status)", category: .general)
+        }
     }
 
     private static func get(forKey key: String) -> Data? {

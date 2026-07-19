@@ -322,17 +322,26 @@ struct AddFriendView: View {
                 label: NSLocalizedString("addFriend.shareSMS", comment: "Rehber"),
                 icon: "person.crop.circle.badge.plus",
                 primary: true
-            ) { showContactsInvite = true }
+            ) {
+                AppAnalytics.shared.track(.friendInviteSent(method: "contact"))
+                showContactsInvite = true
+            }
 
             shareOptionBtn(
                 label: NSLocalizedString("addFriend.share", comment: "Paylaş"),
                 icon: "square.and.arrow.up"
-            ) { showInviteShareSheet = true }
+            ) {
+                AppAnalytics.shared.track(.friendInviteSent(method: "link"))
+                showInviteShareSheet = true
+            }
 
             shareOptionBtn(
                 label: NSLocalizedString("addFriend.showQR", comment: "QR Kod"),
                 icon: "qrcode"
-            ) { showQRCode = true }
+            ) {
+                AppAnalytics.shared.track(.friendInviteSent(method: "qr"))
+                showQRCode = true
+            }
         }
     }
 

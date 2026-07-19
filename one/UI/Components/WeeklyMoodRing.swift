@@ -24,8 +24,8 @@ struct WeeklyMoodRing: View {
                 let segStart = 360.0 / 7.0 * Double(i) + gapDeg / 2 - 90
                 let segEnd   = segStart + 360.0 / 7.0 - gapDeg
                 let entry     = entryFor(dayIndex: i)
-                let rawColor  = entry.map { Color(hex: $0.moodColorHex) ?? Color.gray }
-                let color: Color = rawColor ?? .clear
+                let entryColor: Color = entry.flatMap { Color(hex: $0.moodColorHex) } ?? .gray
+                let color: Color = entry != nil ? entryColor : .clear
                 let filled    = entry != nil
 
                 ArcShape(from: .degrees(segStart), to: .degrees(segEnd))

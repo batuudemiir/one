@@ -11,11 +11,10 @@ import MusicKit
 import CoreData
 
 class ColorPickerViewModel: ObservableObject {
-    @Published var currentScreen: ScreenType = .today
+    @Published var currentScreen: ScreenType = Experiment.defaultLaunchScreen
     @Published var searchQuery: String = ""
     @Published var selectedSong: Song? = nil
     @Published var selectedMood: ONEMood? = nil
-    @Published var selectedFeeling: FeelingOption? = nil
 
     /// P1.2 — Onboarding'de seçilen mood ilk entry için pre-fill edilir.
     /// Kullanıcı ilk save'ini hızlı tamamlayabilsin diye ConfirmScreen

@@ -72,7 +72,9 @@ enum NotificationKind: String, CaseIterable {
         case .streakWarning, .streakEscalation, .streakMilestone,
              .friendRequest, .friendAccepted:
             return .critical
-        case .friendShared, .friendReaction, .moodResonance, .circleActivity,
+        case .friendShared:
+            return .critical
+        case .friendReaction, .moodResonance, .circleActivity,
              .commentReceived, .commentReply, .commentMention, .commentBatch:
             return .high
         case .dailyReminder, .weeklySummary, .monthEndSummary,

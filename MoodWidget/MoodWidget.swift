@@ -3,8 +3,10 @@
 //  MoodWidget
 //
 //  Unified ONE widget — mood + friends in a single cohesive experience.
-//  Small = sen, Medium = sen + arkadaş özeti, Large = sen + tam çevre.
-//  App Group (group.com.batudemir.ones) üzerinden ana uygulamadan veri okur.
+//  Small  = sen + arkadaş ipucu
+//  Medium = sen + arkadaş özeti
+//  Large  = sen + tam çevre listesi
+//  Lock Screen = Circular / Rectangular / Inline
 //
 
 import WidgetKit
@@ -13,6 +15,10 @@ import SwiftUI
 // MARK: - App Group
 
 let appGroupID = "group.com.batudemir.ones"
+
+// MARK: - Deep Link
+
+private let widgetDeepLink = URL(string: "ones://today")!
 
 // MARK: - Design Tokens
 
@@ -28,7 +34,7 @@ enum WToken {
 
 // MARK: - Data Models
 
-struct FriendShareItem: Decodable, Identifiable {
+struct FriendShareItem: Codable, Identifiable {
     let name: String
     let songName: String
     let artistName: String
@@ -37,8 +43,6 @@ struct FriendShareItem: Decodable, Identifiable {
 
     var id: String { name }
     var hasShared: Bool { !songName.isEmpty }
-
-    static let empty = FriendShareItem(name: "", songName: "", artistName: "", moodColorHex: "#5B8DEF", moodWord: "")
 }
 
 struct MoodEntry: TimelineEntry {
@@ -49,7 +53,6 @@ struct MoodEntry: TimelineEntry {
     let moodColorHex: String
     let note: String
     let entryCount: Int
-    let isPremium: Bool
     let streak: Int
     var isYesterday: Bool = false
     let friends: [FriendShareItem]
@@ -60,7 +63,7 @@ struct MoodEntry: TimelineEntry {
     static let empty = MoodEntry(
         date: Date(), songName: "", artistName: "", moodLabel: "",
         moodColorHex: "#5B8DEF", note: "", entryCount: 0,
-        isPremium: false, streak: 0, friends: []
+        streak: 0, friends: []
     )
 }
 
@@ -74,7 +77,7 @@ struct MoodWidgetProvider: TimelineProvider {
         MoodEntry(
             date: Date(), songName: "Sycamore", artistName: "The National",
             moodLabel: "Nostaljik", moodColorHex: "#8B6FA8",
-            note: "", entryCount: 1, isPremium: true, streak: 5,
+            note: "bugün biraz böyle hissettim", entryCount: 1, streak: 5,
             friends: [
                 FriendShareItem(name: "Elif", songName: "Sycamore", artistName: "The National", moodColorHex: "#8B6FA8", moodWord: "Nostaljik"),
                 FriendShareItem(name: "Can", songName: "Redbone", artistName: "Childish Gambino", moodColorHex: "#E07A5F", moodWord: "Enerjik"),
@@ -84,16 +87,34 @@ struct MoodWidgetProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (MoodEntry) -> Void) {
-        completion(readEntry())
+        completion(context.isPreview ? placeholder(in: context) : readEntry())
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<MoodEntry>) -> Void) {
-        let entry = readEntry()
-        var comps = Calendar.current.dateComponents([.year, .month, .day], from: Date())
-        comps.day! += 1
-        comps.hour = 0; comps.minute = 1
-        let nextMidnight = Calendar.current.date(from: comps) ?? Date().addingTimeInterval(86_400)
-        completion(Timeline(entries: [entry], policy: .after(nextMidnight)))
+        let now = Date()
+        let calendar = Calendar.current
+        let current = readEntry()
+
+        // policy: .after(date) WidgetKit'e "bu tarihte getTimeline'ı tekrar çağır"
+        // der ve o çağrıda UserDefaults'tan taze veri okunur.
+        // reloadAllTimelines() ise entry kaydedildiğinde anında tetiklenir.
+        // Gün içi checkpoint'ler: 08:00, 13:00, 19:00 → gece yarısına kadar biriktirip
+        // bir sonraki checkpoint'e policy ayarlanır.
+        let checkHours = [8, 13, 19]
+        let nextCheckpoint: Date = checkHours
+            .compactMap { hour -> Date? in
+                var comps = calendar.dateComponents([.year, .month, .day], from: now)
+                comps.hour = hour; comps.minute = 0; comps.second = 0
+                return calendar.date(from: comps)
+            }
+            .first(where: { $0 > now })
+            ?? {
+                var comps = calendar.dateComponents([.year, .month, .day], from: now)
+                comps.day! += 1; comps.hour = 0; comps.minute = 1
+                return calendar.date(from: comps) ?? now.addingTimeInterval(86_400)
+            }()
+
+        completion(Timeline(entries: [current], policy: .after(nextCheckpoint)))
     }
 
     private func readEntry() -> MoodEntry {
@@ -111,7 +132,6 @@ struct MoodWidgetProvider: TimelineProvider {
                 moodColorHex: d?.string(forKey: "widget_moodColorHex") ?? "#5B8DEF",
                 note:         d?.string(forKey: "widget_note")         ?? "",
                 entryCount:   d?.integer(forKey: "widget_entryCount")  ?? 0,
-                isPremium:    d?.bool(forKey: "widget_isPremium")      ?? false,
                 streak:       streak,
                 isYesterday:  false,
                 friends:      friends
@@ -128,7 +148,6 @@ struct MoodWidgetProvider: TimelineProvider {
                 moodColorHex: d?.string(forKey: "widget_prev_moodColorHex") ?? "#5B8DEF",
                 note:         "",
                 entryCount:   0,
-                isPremium:    d?.bool(forKey: "widget_isPremium") ?? false,
                 streak:       streak,
                 isYesterday:  true,
                 friends:      friends
@@ -138,7 +157,7 @@ struct MoodWidgetProvider: TimelineProvider {
         return MoodEntry(
             date: Date(), songName: "", artistName: "", moodLabel: "",
             moodColorHex: "#5B8DEF", note: "", entryCount: 0,
-            isPremium: false, streak: streak, friends: friends
+            streak: streak, friends: friends
         )
     }
 
@@ -202,7 +221,23 @@ struct StreakPill: View {
     }
 }
 
-// MARK: - Lock Screen Views
+// MARK: - Lock Screen: Inline
+
+struct InlineView: View {
+    let entry: MoodEntry
+
+    var body: some View {
+        if entry.songName.isEmpty {
+            Label("Bugün ne hissediyorsun?", systemImage: "music.note")
+                .widgetAccentable()
+        } else {
+            Label("\(entry.songName)  ·  \(entry.moodLabel)", systemImage: "music.note")
+                .widgetAccentable()
+        }
+    }
+}
+
+// MARK: - Lock Screen: Rectangular
 
 struct RectangularView: View {
     let entry: MoodEntry
@@ -211,14 +246,15 @@ struct RectangularView: View {
         if entry.songName.isEmpty {
             HStack(spacing: 4) {
                 Image(systemName: "music.note").font(.caption2)
-                Text("Bugün seç").font(.caption2.weight(.medium))
+                Text("Bugün şarkını seç").font(.caption2.weight(.medium))
             }
             .widgetAccentable()
         } else {
             VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: 4) {
                     Circle().fill(Color(hex: entry.moodColorHex)).frame(width: 6, height: 6)
-                    Text(entry.moodLabel).font(.caption2.weight(.semibold)).widgetAccentable()
+                    Text(entry.isYesterday ? "Dün · \(entry.moodLabel)" : entry.moodLabel)
+                        .font(.caption2.weight(.semibold)).widgetAccentable()
                 }
                 Text(entry.songName).font(.caption.weight(.medium)).lineLimit(1)
                 Text(entry.artistName).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
@@ -226,6 +262,8 @@ struct RectangularView: View {
         }
     }
 }
+
+// MARK: - Lock Screen: Circular
 
 struct CircularView: View {
     let entry: MoodEntry
@@ -259,7 +297,7 @@ struct MoodWidget: Widget {
         .configurationDisplayName("ONE")
         .description("Bugünkü ruh halin, şarkın ve arkadaşlarının paylaşımları.")
         .supportedFamilies([
-            .accessoryRectangular, .accessoryCircular,
+            .accessoryInline, .accessoryRectangular, .accessoryCircular,
             .systemSmall, .systemMedium, .systemLarge
         ])
     }
@@ -273,6 +311,9 @@ struct MoodWidgetView: View {
 
     var body: some View {
         switch family {
+        case .accessoryInline:
+            InlineView(entry: entry)
+                .containerBackground(.clear, for: .widget)
         case .accessoryCircular:
             CircularView(entry: entry)
                 .containerBackground(.clear, for: .widget)
@@ -281,6 +322,7 @@ struct MoodWidgetView: View {
                 .containerBackground(.clear, for: .widget)
         case .systemSmall:
             SmallView(entry: entry)
+                .widgetURL(widgetDeepLink)
                 .containerBackground(for: .widget) {
                     if !entry.songName.isEmpty {
                         LinearGradient(
@@ -295,9 +337,11 @@ struct MoodWidgetView: View {
                 }
         case .systemMedium:
             MediumView(entry: entry)
+                .widgetURL(widgetDeepLink)
                 .containerBackground(for: .widget) { WToken.cream }
         case .systemLarge:
             LargeView(entry: entry)
+                .widgetURL(widgetDeepLink)
                 .containerBackground(for: .widget) { WToken.cream }
         default:
             RectangularView(entry: entry)
@@ -314,7 +358,13 @@ struct SmallView: View {
     var body: some View {
         if !entry.songName.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
-                if entry.streak > 0 { StreakPill(streak: entry.streak, tint: true) }
+                HStack {
+                    if entry.streak > 0 { StreakPill(streak: entry.streak, tint: true) }
+                    Spacer()
+                    if !entry.sharedFriends.isEmpty {
+                        friendHintBadge
+                    }
+                }
                 Spacer()
                 VStack(alignment: .leading, spacing: 1) {
                     Text(entry.songName)
@@ -343,14 +393,36 @@ struct SmallView: View {
                         .font(.system(size: 16, weight: .light)).foregroundStyle(WToken.accent.opacity(0.5))
                 }
                 VStack(spacing: 2) {
-                    Text("Bugün şarkını seç")
-                        .font(.system(size: 10, weight: .semibold)).foregroundStyle(WToken.ink.opacity(0.5))
-                    Text("Ruh halini yansıt")
-                        .font(.system(size: 8, weight: .medium)).foregroundStyle(WToken.stone)
+                    Text("Bugün ne hissediyorsun?")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(WToken.ink.opacity(0.5))
+                        .multilineTextAlignment(.center)
+                    Text("Şarkını seç, ruh halini yansıt")
+                        .font(.system(size: 8, weight: .medium))
+                        .foregroundStyle(WToken.stone)
+                        .multilineTextAlignment(.center)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+
+    private var friendHintBadge: some View {
+        HStack(spacing: 3) {
+            ForEach(entry.sharedFriends.prefix(2)) { f in
+                Circle()
+                    .fill(Color(hex: f.moodColorHex))
+                    .frame(width: 6, height: 6)
+            }
+            if entry.sharedFriends.count > 1 {
+                Text("+\(entry.sharedFriends.count - 1)")
+                    .font(.system(size: 6, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.7))
+            }
+        }
+        .padding(.horizontal, 5)
+        .padding(.vertical, 3)
+        .background(Capsule().fill(.white.opacity(0.2)))
     }
 }
 
@@ -360,6 +432,54 @@ struct MediumView: View {
     let entry: MoodEntry
 
     var body: some View {
+        if entry.songName.isEmpty {
+            emptyState
+        } else {
+            filledState
+        }
+    }
+
+    private var emptyState: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(WToken.accent.opacity(0.08))
+                    .frame(width: 52, height: 52)
+                Circle()
+                    .strokeBorder(WToken.accent.opacity(0.2), lineWidth: 1.5)
+                    .frame(width: 52, height: 52)
+                Image(systemName: "music.note")
+                    .font(.system(size: 22, weight: .light))
+                    .foregroundStyle(WToken.accent.opacity(0.5))
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Bugün ne hissediyorsun?")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(WToken.ink.opacity(0.6))
+                Text("Şarkını seç, ruh halini çevrenle paylaş.")
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(WToken.stone)
+                    .lineLimit(2)
+                if !entry.sharedFriends.isEmpty {
+                    HStack(spacing: 4) {
+                        ForEach(entry.sharedFriends.prefix(3)) { f in
+                            MoodBubble(colorHex: f.moodColorHex,
+                                       initial: String(f.name.prefix(1)).uppercased(),
+                                       size: 18)
+                        }
+                        Text("paylaştı")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(WToken.stone)
+                    }
+                }
+            }
+            Spacer()
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var filledState: some View {
         HStack(spacing: 0) {
             // Left: Mood color panel
             ZStack {
@@ -368,34 +488,39 @@ struct MediumView: View {
                     colors: [Color.white.opacity(0.12), .clear],
                     center: .topTrailing, startRadius: 0, endRadius: 80
                 )
-                VStack(spacing: 8) {
+                VStack(spacing: 6) {
                     Image(systemName: "music.note")
                         .font(.system(size: 22, weight: .semibold)).foregroundStyle(.white)
-                    Text(entry.moodLabel)
-                        .font(.system(size: 10, weight: .heavy)).tracking(0.8)
-                        .foregroundStyle(.white.opacity(0.75))
+                    if !entry.moodLabel.isEmpty {
+                        Text(entry.moodLabel)
+                            .font(.system(size: 9, weight: .heavy)).tracking(0.8)
+                            .foregroundStyle(.white.opacity(0.8))
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                    }
+                    if entry.isYesterday {
+                        Text("DÜN")
+                            .font(.system(size: 7, weight: .heavy)).tracking(1)
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
                 }
+                .padding(.horizontal, 6)
             }
-            .frame(width: 96)
+            .frame(width: 92)
             .clipShape(RoundedRectangle(cornerRadius: WToken.cornerMd, style: .continuous))
 
             // Right: Song + friends
             VStack(alignment: .leading, spacing: 0) {
-                // Song info
-                if !entry.songName.isEmpty {
-                    Text(entry.songName)
-                        .font(.system(size: 16, weight: .bold)).foregroundStyle(WToken.ink).lineLimit(1)
-                    Text(entry.artistName)
-                        .font(.system(size: 12, weight: .medium)).foregroundStyle(WToken.ash).lineLimit(1)
-                        .padding(.top, 1)
-                    if !entry.note.isEmpty {
-                        Text(entry.note)
-                            .font(.system(size: 10, weight: .regular)).foregroundStyle(WToken.stone)
-                            .lineLimit(1).padding(.top, 3)
-                    }
-                } else {
-                    Text("Bugün bir şarkı seç")
-                        .font(.system(size: 14, weight: .semibold)).foregroundStyle(WToken.ink.opacity(0.5))
+                Text(entry.songName)
+                    .font(.system(size: 15, weight: .bold)).foregroundStyle(WToken.ink).lineLimit(1)
+                Text(entry.artistName)
+                    .font(.system(size: 11, weight: .medium)).foregroundStyle(WToken.ash).lineLimit(1)
+                    .padding(.top, 1)
+                if !entry.note.isEmpty {
+                    Text(entry.note)
+                        .font(.system(size: 10)).italic()
+                        .foregroundStyle(WToken.stone)
+                        .lineLimit(1).padding(.top, 3)
                 }
 
                 Spacer()
@@ -418,7 +543,6 @@ struct MediumView: View {
                     HStack {
                         Spacer()
                         if entry.streak > 0 { StreakPill(streak: entry.streak) }
-                        Circle().fill(Color(hex: entry.moodColorHex)).frame(width: 8, height: 8)
                     }
                 }
             }
@@ -483,6 +607,13 @@ struct LargeView: View {
                         Text(entry.artistName)
                             .font(.system(size: 9, weight: .medium))
                             .foregroundStyle(WToken.stone).lineLimit(1)
+                        if !entry.note.isEmpty {
+                            Text("\"\(entry.note)\"")
+                                .font(.system(size: 9)).italic()
+                                .foregroundStyle(WToken.stone.opacity(0.8))
+                                .lineLimit(1)
+                                .padding(.top, 1)
+                        }
                     }
                     Spacer()
                 }
@@ -494,7 +625,8 @@ struct LargeView: View {
 
             // Friends list
             if !entry.sharedFriends.isEmpty {
-                ForEach(entry.sharedFriends.prefix(5)) { friend in
+                let capped = Array(entry.sharedFriends.prefix(5))
+                ForEach(capped) { friend in
                     HStack(spacing: 10) {
                         MoodBubble(
                             colorHex: friend.moodColorHex,
@@ -528,7 +660,7 @@ struct LargeView: View {
                     }
                     .padding(.vertical, 5)
 
-                    if friend.id != entry.sharedFriends.prefix(5).last?.id {
+                    if friend.id != capped.last?.id {
                         Rectangle().fill(WToken.ink.opacity(0.04)).frame(height: 0.5)
                             .padding(.leading, 42)
                     }
@@ -562,16 +694,19 @@ struct LargeView: View {
                 .padding(.top, 5)
             }
 
-            // Empty friends state
+            // Full empty state
             if entry.friends.isEmpty && entry.songName.isEmpty {
                 Spacer()
                 VStack(spacing: 6) {
                     Image(systemName: "music.note")
                         .font(.system(size: 20, weight: .light))
                         .foregroundStyle(WToken.accent.opacity(0.4))
-                    Text("Bugün şarkını seç")
+                    Text("Bugün ne hissediyorsun?")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(WToken.ink.opacity(0.4))
+                    Text("Şarkını seç, ruh halini yansıt.")
+                        .font(.system(size: 10))
+                        .foregroundStyle(WToken.stone)
                 }
                 .frame(maxWidth: .infinity)
                 Spacer()
@@ -599,13 +734,13 @@ extension Color {
 
 // MARK: - Preview
 
-#Preview(as: .systemMedium) {
+#Preview(as: .systemLarge) {
     MoodWidget()
 } timeline: {
     MoodEntry(
         date: .now, songName: "Sycamore", artistName: "The National",
         moodLabel: "Nostaljik", moodColorHex: "#8B6FA8",
-        note: "", entryCount: 1, isPremium: true, streak: 5,
+        note: "bugün biraz böyle hissettim", entryCount: 1, streak: 7,
         friends: [
             FriendShareItem(name: "Elif", songName: "Sycamore", artistName: "The National", moodColorHex: "#8B6FA8", moodWord: "Nostaljik"),
             FriendShareItem(name: "Can", songName: "Redbone", artistName: "Childish Gambino", moodColorHex: "#E07A5F", moodWord: "Enerjik"),

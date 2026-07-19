@@ -43,8 +43,14 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     /// The lproj folder name to look up in Bundle.main.
     var bundleCode: String {
         switch self {
-        case .system: return Locale.current.language.languageCode?.identifier ?? "en"
-        default:      return rawValue
+        case .system:
+            // Locale.preferredLanguages is the most reliable cross-version API.
+            // It returns BCP-47 tags like "tr-TR", "en-US", "zh-Hans-CN".
+            let preferred = Locale.preferredLanguages.first ?? "en"
+            if preferred.hasPrefix("zh-Hans") { return "zh-Hans" }
+            return String(preferred.prefix(2))
+        default:
+            return rawValue
         }
     }
 

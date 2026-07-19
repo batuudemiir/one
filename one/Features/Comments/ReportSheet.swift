@@ -54,9 +54,9 @@ struct ReportSheet: View {
             Form {
                 Section {
                     Text(target.displayTitle)
-                        .font(.headline)
+                        .font(ONETypography.displayXS)
                     Text("Bildirimler 24 saat içinde değerlendirilir. Yinelenen şikâyetler içeriği otomatik gizleyebilir.")
-                        .font(.footnote)
+                        .font(ONETypography.bodyXS)
                         .foregroundStyle(.secondary)
                 }
 
@@ -77,7 +77,7 @@ struct ReportSheet: View {
 
                 if let errorMessage {
                     Section {
-                        Text(errorMessage).foregroundStyle(.red).font(.footnote)
+                        Text(errorMessage).foregroundStyle(.red).font(ONETypography.bodyXS)
                     }
                 }
 

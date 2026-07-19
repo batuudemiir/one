@@ -31,6 +31,24 @@ struct WhatsNewView: View {
             title: "Gelişmiş Kamera",
             body: "Daha hızlı, daha temiz fotoğraf deneyimi.\nYeni filtreler."
         ),
+        .init(
+            icon: "music.note.list",
+            color: Color(hex: "#7C5CBF"),
+            title: "16 Şarkı Önerisi",
+            body: "Bugün için 16 kişisel öneri.\nHer gün sıfırdan yenilenir."
+        ),
+        .init(
+            icon: "sparkles",
+            color: Color(hex: "#F4A228"),
+            title: "Kayıt Kutlaması",
+            body: "Mood'unu kaydettiğinde seni\nözel bir an karşılıyor."
+        ),
+        .init(
+            icon: "play.circle.fill",
+            color: Color(hex: "#E63946"),
+            title: "Şarkı Önizleme",
+            body: "Şarkı seçiminde ve arkadaş paylaşımlarında\ndokunarak dinle."
+        ),
     ]
 
     private var isLastPage: Bool { currentPage == features.count - 1 }

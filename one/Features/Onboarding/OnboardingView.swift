@@ -150,7 +150,9 @@ struct OnboardingView: View {
         }
 
         guard notificationsOptIn else {
+            let appGroup = UserDefaults(suiteName: "group.com.batudemir.ones") ?? .standard
             UserDefaults.standard.set(false, forKey: "notificationsEnabled")
+            appGroup.set(false, forKey: "notificationsEnabled")
             DispatchQueue.main.async { finish() }
             return
         }
@@ -159,7 +161,9 @@ struct OnboardingView: View {
             DispatchQueue.main.async {
                 if granted {
                     let defaults = UserDefaults.standard
+                    let appGroup = UserDefaults(suiteName: "group.com.batudemir.ones") ?? .standard
                     defaults.set(true, forKey: "notificationsEnabled")
+                    appGroup.set(true, forKey: "notificationsEnabled")
                     defaults.set(true, forKey: "streakNotificationsEnabled")
                     defaults.set(true, forKey: "weeklySummaryEnabled")
                     defaults.set(true, forKey: "discoveryNotificationsEnabled")
@@ -834,6 +838,8 @@ private struct MusicPermissionPage: View {
                          text: NSLocalizedString("onboarding.noSubscriptionRequired", comment: ""))
                 InfoPill(icon: "lock.fill", color: ONETokens.oneAsh,
                          text: NSLocalizedString("onboarding.noDataSelling", comment: ""))
+                InfoPill(icon: "music.note", color: ONETokens.oneStone,
+                         text: NSLocalizedString("onboarding.spotifyAlsoWorks", comment: ""))
             }
             .padding(.top, 20)
 
@@ -909,6 +915,13 @@ private struct NotificationSoftAskPage: View {
     let complete: () -> Void
 
     @State private var contentOpacity: Double = 0
+    @State private var reminderTime: Date = {
+        let storedHour = UserDefaults.standard.integer(forKey: "dailyReminderHour")
+        var comps = DateComponents()
+        comps.hour = storedHour == 0 ? 21 : storedHour
+        comps.minute = UserDefaults.standard.integer(forKey: "dailyReminderMinute")
+        return Calendar.current.date(from: comps) ?? Date()
+    }()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -943,12 +956,34 @@ private struct NotificationSoftAskPage: View {
                         .lineSpacing(3)
                 }
                 .padding(.top, 4)
+
+                HStack {
+                    Text(NSLocalizedString("onboarding.notif.reminderTime", comment: ""))
+                        .monoSM(tracking: 0.4)
+                        .foregroundColor(ONETokens.oneStone)
+                    Spacer()
+                    DatePicker("", selection: $reminderTime, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                        .colorScheme(.light)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(ONETokens.onePaper)
+                )
+                .padding(.top, 4)
             }
 
             Spacer()
 
             VStack(spacing: 10) {
                 Button(action: {
+                    let cal = Calendar.current
+                    let hour = cal.component(.hour, from: reminderTime)
+                    let minute = cal.component(.minute, from: reminderTime)
+                    UserDefaults.standard.set(hour, forKey: "dailyReminderHour")
+                    UserDefaults.standard.set(minute, forKey: "dailyReminderMinute")
                     optIn = true
                     AppAnalytics.shared.track(.onboardingNotifSoftAsk(optIn: true))
                     complete()

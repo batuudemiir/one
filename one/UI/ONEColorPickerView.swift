@@ -19,11 +19,12 @@ struct ONEColorPickerView: View {
     @Namespace private var moodCoreNS
     /// Last tab the user was on — used to coerce TabView selection when
     /// `vm.currentScreen` becomes a non-tab screen (e.g. .confirm/.done).
-    @State private var lastTab: ScreenType = .today
+    @State private var lastTab: ScreenType = Experiment.defaultLaunchScreen
 
-    /// The 5 primary tabs (in display order) — other screens (confirm, done,
-    /// echo, search) are routed outside the TabView as full-screen overlays.
-    private let primaryTabs: [ScreenType] = [.discover, .archive, .today, .circle, .profile]
+    /// Sekme çubuğu — tek kaynak `PrimaryTab`. Bugün/confirm/done/search burada
+    /// yok; kökte tam ekran yönlendiriliyorlar. Ritüel bir yer değil, ortadaki
+    /// "+" butonuyla açılan bir eylem.
+    private var primaryTabs: [ScreenType] { PrimaryTab.screens }
 
     var body: some View {
         ZStack {
@@ -65,6 +66,14 @@ struct ONEColorPickerView: View {
                             insertion: .scale.combined(with: .opacity),
                             removal:   .opacity
                         ))
+                case .today:
+                    // Ritüel artık sekme değil — "+" ile açılan tam ekran eylem.
+                    TodayView(context: viewContext, entryStep: $todayEntryStep)
+                        .overlay(alignment: .topLeading) { ritualDismissButton }
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .bottom).combined(with: .opacity),
+                            removal:   .move(edge: .bottom).combined(with: .opacity)
+                        ))
                 default:
                     mainTabsView
                         .transition(.opacity)
@@ -78,9 +87,14 @@ struct ONEColorPickerView: View {
             if screen != .today { todayEntryStep = .search }
         }
         .onAppear {
+            if primaryTabs.contains(vm.currentScreen) { lastTab = vm.currentScreen }
+        }
+        .task {
+            // Arşiv/pattern senkron Core Data fetch'leri. Açılış Çevre olduğunda
+            // CloudKit `initializeUser()` ile aynı anda main thread'i tutuyorlardı —
+            // artık ilk kare çizildikten sonra çalışıyorlar.
             vm.loadArchiveData(context: viewContext)
             vm.loadPatternData(context: viewContext)
-            if primaryTabs.contains(vm.currentScreen) { lastTab = vm.currentScreen }
         }
         .onChange(of: notificationManager.shouldNavigateToCircle) { _, shouldNavigate in
             if shouldNavigate {
@@ -96,8 +110,8 @@ struct ONEColorPickerView: View {
         }
         .onChange(of: notificationManager.shouldNavigateToEcho) { _, shouldNavigate in
             if shouldNavigate {
-                // Yankı profil içinde — profil tab'ına git
-                withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .profile }
+                // Yankı artık kendi sekmesi
+                withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .echo }
                 notificationManager.shouldNavigateToEcho = false
             }
         }
@@ -106,6 +120,15 @@ struct ONEColorPickerView: View {
                 withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .discover }
                 notificationManager.shouldNavigateToDiscovery = false
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .init("switchToTodayTab"))) { _ in
+            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .today }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .init("switchToEchoTab"))) { _ in
+            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .echo }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .init("openCitySettings"))) { _ in
+            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .profile }
         }
         .overlay {
             if let url = globalUI.archivePhotoURL {
@@ -158,26 +181,69 @@ struct ONEColorPickerView: View {
     @available(iOS 26.0, *)
     private var liquidGlassTabView: some View {
         TabView(selection: tabBinding) {
-            Tab(NSLocalizedString("nav.discover", comment: ""), systemImage: "sparkles", value: ScreenType.discover) {
-                DiscoverView(context: viewContext)
-            }
-            Tab(NSLocalizedString("nav.archive", comment: ""), systemImage: "calendar", value: ScreenType.archive) {
-                ArchiveContainerView(context: viewContext)
-            }
-            Tab(NSLocalizedString("nav.today", comment: ""), systemImage: "music.note", value: ScreenType.today) {
-                TodayView(context: viewContext, entryStep: $todayEntryStep)
-            }
-            Tab(value: ScreenType.circle) {
-                CircleView()
+            Tab(value: PrimaryTab.circle.screen) {
+                CircleView(
+                    onNavigateToToday: { vm.currentScreen = .today },
+                    onNavigateToDiscover: { vm.currentScreen = .discover }
+                )
                     .badge(cloudKit.unseenFriendShareCount)
             } label: {
-                Label(NSLocalizedString("nav.circle", comment: ""), systemImage: "person.2.fill")
+                Label(PrimaryTab.circle.title, systemImage: PrimaryTab.circle.icon)
             }
-            Tab(NSLocalizedString("nav.profile", comment: ""), systemImage: "person.fill", value: ScreenType.profile) {
+            Tab(PrimaryTab.archive.title, systemImage: PrimaryTab.archive.icon,
+                value: PrimaryTab.archive.screen) {
+                ArchiveContainerView(context: viewContext)
+            }
+            Tab(PrimaryTab.echo.title, systemImage: PrimaryTab.echo.icon,
+                value: PrimaryTab.echo.screen) {
+                EchoView(context: viewContext)
+            }
+            Tab(PrimaryTab.profile.title, systemImage: PrimaryTab.profile.icon,
+                value: PrimaryTab.profile.screen) {
                 ProfileView(isFromTab: true)
             }
         }
         .tint(ONETokens.oneRed)
+        // Native TabView'ın çubuğuna ortadan buton eklenemiyor. `safeAreaInset`
+        // kullanıyoruz: sabit padding'in aksine çubuğun gerçek yüksekliğine göre
+        // yer ayırır, böylece FAB ne çubuğu örter ne de içeriğin üstüne biner.
+        .safeAreaInset(edge: .bottom) {
+            ritualFAB.padding(.bottom, ONETokens.spacingSM)
+        }
+    }
+
+    /// Kalıcı birincil eylem: bugünkü rengini bırak.
+    /// Her sekmeden erişilebilir — brief'in 4. kırmızı çizgisi.
+    private var ritualFAB: some View {
+        Button {
+            ONEHaptics.tabSwitch()
+            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .today }
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 22, weight: .medium))
+                .foregroundColor(ONETokens.oneCream)
+                .frame(width: 58, height: 58)
+                .background(Circle().fill(ONETokens.oneInk))
+                .shadow(color: ONETokens.oneInk.opacity(0.32), radius: 12, x: 0, y: 6)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(NSLocalizedString("nav.todayHint", comment: ""))
+    }
+
+    /// Ritüel tam ekran açıldığı için kendi kapatma yolu gerekiyor.
+    private var ritualDismissButton: some View {
+        Button {
+            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = lastTab }
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(ONETokens.oneAsh)
+                .frame(width: 44, height: 44)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.leading, 8)
+        .padding(.top, 4)
+        .accessibilityLabel(NSLocalizedString("general.close", comment: ""))
     }
 
     /// iOS < 26: fall back to the custom floating bar we've had.
@@ -190,13 +256,21 @@ struct ONEColorPickerView: View {
                 case .archive:
                     ArchiveContainerView(context: viewContext)
                 case .circle:
-                    CircleView()
+                    CircleView(
+                    onNavigateToToday: { vm.currentScreen = .today },
+                    onNavigateToDiscover: { vm.currentScreen = .discover }
+                )
                 case .profile:
                     ProfileView(isFromTab: true)
                 case .echo:
                     EchoView(context: viewContext)
                 default:
-                    TodayView(context: viewContext, entryStep: $todayEntryStep)
+                    // Bugün artık kökte tam ekran yönlendiriliyor; buraya
+                    // beklenmedik bir durum düşerse açılış ekranına dön.
+                    CircleView(
+                    onNavigateToToday: { vm.currentScreen = .today },
+                    onNavigateToDiscover: { vm.currentScreen = .discover }
+                )
                 }
             }
         }

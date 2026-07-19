@@ -11,56 +11,104 @@ import SwiftUI
 
 // MARK: - Empty State (no friends yet)
 
+/// Arkadaşı olmayan kullanıcının gördüğü ekran.
+///
+/// Boş ekran değil, **değer önizlemesi**: bulanık örnek kartlar kullanıcıya ne
+/// kaçırdığını gösterir. Solo D30 %0 / Sosyal D30 %20.7 — arkadaş edinmek bu
+/// üründe bir tercih değil, kalmanın ön koşulu.
 struct CircleEmptyState: View {
     @Binding var showAddFriend: Bool
+    /// "Şimdilik tek başıma başla" — ritüele götürür. nil ise buton gizlenir.
+    var onStartAlone: (() -> Void)? = nil
+
+    /// Önizleme kartlarının renkleri — gerçek mood paletinden, sabit hex yok.
+    private let previewMoods: [ONEMood] = [.sakin, .enerjik, .uzgun, .nostaljik, .derin]
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
+        VStack(spacing: ONETokens.spacingXL) {
+            Spacer(minLength: ONETokens.spacingMD)
 
-            VStack(spacing: ONETokens.spacingXL) {
-                // Mascot
-                VStack(spacing: ONETokens.spacingXL) {
-                    OneMascotView(pose: .noState, size: 120, message: "")
+            ZStack {
+                previewStack
+                    .blur(radius: 3.5)
+                    .opacity(0.55)
+                    .accessibilityHidden(true)
 
-                    VStack(spacing: ONETokens.spacingSM) {
-                        Text("Çevren henüz boş.")
-                            .displayMD()
-                            .foregroundColor(ONETokens.oneInk)
-                        Text("Bir arkadaşını davet et,\nonun moodunu gör.")
-                            .bodySM()
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(ONETokens.oneAsh)
-                    }
+                VStack(spacing: ONETokens.spacingSM) {
+                    Text(NSLocalizedString("circle.empty.previewTitle", comment: ""))
+                        .displayMD()
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(ONETokens.oneInk)
+                    Text(NSLocalizedString("circle.empty.previewSubtitle", comment: ""))
+                        .bodySM()
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(ONETokens.oneAsh)
                 }
+                .padding(.horizontal, ONETokens.spacingXL)
+            }
 
-                // Buttons
-                VStack(spacing: ONETokens.spacingMD) {
-                    Button(action: { showAddFriend = true }) {
-                        Text("Davet Et")
+            VStack(spacing: ONETokens.spacingSM) {
+                Button(action: { showAddFriend = true }) {
+                    Text(NSLocalizedString("circle.empty.invite", comment: ""))
+                        .bodySMMedium()
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, ONETokens.spacingMD)
+                        .background(
+                            LinearGradient(
+                                colors: [ONETokens.oneBrand, ONETokens.oneBrandLight],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+                .accessibilityLabel(NSLocalizedString("accessibility.circle.setupCircle", comment: ""))
+
+                if let onStartAlone {
+                    Button(action: onStartAlone) {
+                        Text(NSLocalizedString("circle.empty.startAlone", comment: ""))
                             .bodySMMedium()
-                            .foregroundColor(.white)
+                            .foregroundColor(ONETokens.oneAsh)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, ONETokens.spacingMD)
-                            .background(
-                                LinearGradient(
-                                    colors: [ONETokens.oneBrand, ONETokens.oneBrandLight],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
-                    .accessibilityLabel(NSLocalizedString("accessibility.circle.setupCircle", comment: ""))
-                    .padding(.horizontal, ONETokens.spacingXL2)
                 }
             }
-            .padding(.horizontal, ONETokens.spacingXL)
+            .padding(.horizontal, ONETokens.spacingXL2)
 
-            Spacer()
-            Spacer() // double spacer → content biraz yukarda durur (nav bar'dan uzak)
+            Spacer(minLength: ONETokens.spacingXL4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// Gerçek arkadaş kartlarının silüeti — içerik uydurmadan biçimi gösterir.
+    private var previewStack: some View {
+        VStack(spacing: ONETokens.spacingSM) {
+            ForEach(previewMoods, id: \.self) { mood in
+                HStack(spacing: ONETokens.spacingMD) {
+                    Circle()
+                        .fill(mood.color)
+                        .frame(width: 46, height: 46)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                            .fill(ONETokens.oneInk.opacity(0.18))
+                            .frame(width: 76, height: 11)
+                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                            .fill(ONETokens.oneInk.opacity(0.10))
+                            .frame(width: 132, height: 9)
+                    }
+                    Spacer()
+                }
+                .padding(ONETokens.spacingMD)
+                .background(
+                    RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
+                        .fill(ONETokens.oneCreamMid)
+                )
+            }
+        }
+        .padding(.horizontal, ONETokens.spacingXL)
     }
 }
 

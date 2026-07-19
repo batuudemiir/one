@@ -203,7 +203,8 @@ class ArchiveStore: ObservableObject {
             weatherDesc: item.weatherDesc ?? "—",
             spotifyURL: item.spotifyURL.flatMap { URL(string: $0) },
             platform: "Spotify",
-            note: item.dailyNote
+            note: item.dailyNote,
+            passed: item.passed
         )
     }
     

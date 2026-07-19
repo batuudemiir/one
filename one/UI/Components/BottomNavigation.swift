@@ -18,19 +18,10 @@ struct BottomNavigation: View {
         cloudKitManager.currentUser?["avatarColor"] as? String ?? "#5B8DEF"
     }
 
-    private struct Tab {
-        let title: String
-        let icon: String
-        let screen: ScreenType
-    }
-
-    private var tabs: [Tab] {[
-        Tab(title: NSLocalizedString("nav.discover", comment: ""), icon: "sparkles",   screen: .discover),
-        Tab(title: NSLocalizedString("nav.archive",  comment: ""), icon: "calendar",   screen: .archive),
-        Tab(title: NSLocalizedString("nav.today",    comment: ""), icon: "music.note", screen: .today),
-        Tab(title: NSLocalizedString("nav.circle",   comment: ""), icon: "person.2",   screen: .circle),
-        Tab(title: NSLocalizedString("nav.profile",  comment: ""), icon: "person",     screen: .profile)
-    ]}
+    /// Sekme tanımları `PrimaryTab`'dan gelir — tek kaynak.
+    /// Ortadaki "+" bir sekme değil, kalıcı birincil eylem.
+    private var leadingTabs: [PrimaryTab] { [.circle, .archive] }
+    private var trailingTabs: [PrimaryTab] { [.echo, .profile] }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -47,42 +38,27 @@ struct BottomNavigation: View {
             .frame(height: 120)
             .allowsHitTesting(false)
 
-            LiquidGlassContainer(spacing: 24) {
-                HStack(spacing: 0) {
-                    ForEach(tabs, id: \.title) { tab in
-                        if tab.screen == .profile {
-                            ProfileNavItem(
-                                title: tab.title,
-                                isSelected: isSelected(tab.screen),
-                                namespace: tabIndicatorNamespace,
-                                profileImage: profileImage,
-                                avatarColorHex: avatarColorHex
-                            ) {
-                                withAnimation(ONEAnimation.tabSwitch) {
-                                    currentScreen = tab.screen
-                                }
-                            }
-                        } else {
-                            NavItem(
-                                title: tab.title,
-                                icon: tab.icon,
-                                isSelected: isSelected(tab.screen),
-                                namespace: tabIndicatorNamespace,
-                                badge: tab.screen == .circle ? cloudKitManager.unseenFriendShareCount : 0
-                            ) {
-                                withAnimation(ONEAnimation.tabSwitch) {
-                                    currentScreen = tab.screen
-                                }
-                            }
+            // Tek GlassEffectContainer: çubuk ve "+" birlikte morph olsun diye
+            // ikisi de içeride. Ayrı konteynerlerde iOS 26 onları birbirinden
+            // bağımsız cam yüzeyler olarak çizer ve geçiş efekti kaybolur.
+            LiquidGlassContainer(spacing: 20) {
+                HStack(spacing: 12) {
+                    HStack(spacing: 0) {
+                        ForEach(leadingTabs, id: \.self) { tab in
+                            navItem(for: tab)
+                            Spacer(minLength: 8)
                         }
-                        if tab.title != tabs.last?.title {
-                            Spacer()
+                        ForEach(trailingTabs, id: \.self) { tab in
+                            if tab != trailingTabs.first { Spacer(minLength: 8) }
+                            navItem(for: tab)
                         }
                     }
+                    .padding(.horizontal, 22)
+                    .padding(.vertical, 14)
+                    .liquidGlass(.regular, in: Capsule())
+
+                    ritualButton
                 }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 14)
-                .liquidGlass(.regular, in: Capsule())
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 24)
@@ -90,6 +66,48 @@ struct BottomNavigation: View {
         .onReceive(NotificationCenter.default.publisher(for: .profilePhotoDidChange)) { _ in
             profileImage = ProfileViewModel.loadProfilePhotoFromDisk()
         }
+    }
+
+    @ViewBuilder
+    private func navItem(for tab: PrimaryTab) -> some View {
+        if tab == .profile {
+            ProfileNavItem(
+                title: tab.title,
+                isSelected: isSelected(tab.screen),
+                namespace: tabIndicatorNamespace,
+                profileImage: profileImage,
+                avatarColorHex: avatarColorHex
+            ) {
+                withAnimation(ONEAnimation.tabSwitch) { currentScreen = tab.screen }
+            }
+        } else {
+            NavItem(
+                title: tab.title,
+                icon: tab.icon,
+                isSelected: isSelected(tab.screen),
+                namespace: tabIndicatorNamespace,
+                badge: tab == .circle ? cloudKitManager.unseenFriendShareCount : 0
+            ) {
+                withAnimation(ONEAnimation.tabSwitch) { currentScreen = tab.screen }
+            }
+        }
+    }
+
+    /// Bugünkü rengini bırak — her sekmeden tek dokunuş.
+    private var ritualButton: some View {
+        Button {
+            ONEHaptics.tabSwitch()
+            withAnimation(ONEAnimation.cardSpring) { currentScreen = .today }
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 22, weight: .medium))
+                .foregroundColor(ONETokens.oneCream)
+                .frame(width: 56, height: 56)
+                .background(Circle().fill(ONETokens.oneInk))
+                .shadow(color: ONETokens.oneInk.opacity(0.32), radius: 12, x: 0, y: 6)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(NSLocalizedString("nav.todayHint", comment: ""))
     }
 
     private func isSelected(_ screen: ScreenType) -> Bool {
@@ -206,6 +224,12 @@ struct NavItem: View {
                             .transition(.scale.combined(with: .opacity))
                     }
                 }
+
+                // Prototipteki gibi: simge + etiket
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: isSelected ? .semibold : .regular))
+                    .foregroundColor(isSelected ? ONETokens.oneInk : ONETokens.oneAsh)
+                    .animation(ONEAnimation.tabSwitch, value: isSelected)
 
                 Text(title.uppercased())
                     .monoSM(tracking: 2)

@@ -73,7 +73,7 @@ struct RecommendationsSection: View {
             GridItem(.flexible(), spacing: 12),
             GridItem(.flexible(), spacing: 12)
         ], spacing: 16) {
-            ForEach(0..<4, id: \.self) { _ in
+            ForEach(0..<6, id: \.self) { _ in
                 VStack(alignment: .leading, spacing: 10) {
                     RoundedRectangle(cornerRadius: 14)
                         .fill(ONETokens.oneSilver)

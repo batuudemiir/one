@@ -164,11 +164,6 @@ struct DayDetailCarouselView: View {
                     .font(ONETypography.bodySM)
                     .foregroundStyle(ONETokens.oneAsh)
 
-                // Feeling
-                Text(entry.feelingLabel)
-                    .font(ONETypography.bodySM)
-                    .foregroundStyle(ONETokens.oneCharcoal)
-
                 // Note
                 if let note = entry.note, !note.isEmpty {
                     Text(note)

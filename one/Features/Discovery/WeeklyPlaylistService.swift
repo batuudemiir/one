@@ -69,7 +69,8 @@ class WeeklyPlaylistService: ObservableObject {
                     weatherDesc: item.weatherDesc ?? "",
                     spotifyURL: nil,
                     platform: item.platform ?? "Spotify",
-                    note: item.dailyNote
+                    note: item.dailyNote,
+                    passed: item.passed
                 )
             }
 

@@ -19,7 +19,7 @@ class EventCache {
 
     private struct Cached: Codable {
         let events: [MoodEvent]
-        let moodKey: String   // "\(moodColorHex)_\(moodLabel)"
+        let moodKey: String   // "\(moodColorHex)_\(moodLabel)_\(city)"
         let dateKey: String   // "yyyy-MM-dd"
         let timestamp: Date
 
@@ -31,10 +31,10 @@ class EventCache {
 
     // MARK: - Save
 
-    func save(_ events: [MoodEvent], moodColorHex: String, moodLabel: String) {
+    func save(_ events: [MoodEvent], moodColorHex: String, moodLabel: String, city: String) {
         let cached = Cached(
             events: events,
-            moodKey: cacheKey(hex: moodColorHex, label: moodLabel),
+            moodKey: cacheKey(hex: moodColorHex, label: moodLabel, city: city),
             dateKey: todayString(),
             timestamp: Date()
         )
@@ -51,7 +51,7 @@ class EventCache {
 
     // MARK: - Load
 
-    func get(moodColorHex: String, moodLabel: String) -> [MoodEvent]? {
+    func get(moodColorHex: String, moodLabel: String, city: String) -> [MoodEvent]? {
         guard let data = UserDefaults.standard.data(forKey: cacheKey) else { return nil }
 
         let decoder = JSONDecoder()
@@ -61,7 +61,7 @@ class EventCache {
             return nil
         }
 
-        let key  = cacheKey(hex: moodColorHex, label: moodLabel)
+        let key  = cacheKey(hex: moodColorHex, label: moodLabel, city: city)
         let date = todayString()
         guard cached.isValid(maxAge: maxAge, moodKey: key, dateKey: date) else {
             clear()
@@ -81,7 +81,7 @@ class EventCache {
 
     // MARK: - Helpers
 
-    private func cacheKey(hex: String, label: String) -> String { "\(hex)_\(label)" }
+    private func cacheKey(hex: String, label: String, city: String) -> String { "\(hex)_\(label)_\(city)" }
 
     private func todayString() -> String {
         let f = DateFormatter()

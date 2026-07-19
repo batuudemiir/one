@@ -11,6 +11,7 @@
 import Foundation
 import CloudKit
 import Combine
+import UIKit
 
 // MARK: - Errors
 
@@ -192,16 +193,20 @@ extension CloudKitManager {
             desiredKeys: ["userID", "displayName", "avatarColor", "profilePhoto"],
             resultsLimit: max(uniqueIDs.count, 1)
         ) { result in
+            // Background thread — CKRecord'lar scope'da iken decode et.
             var nameMap: [String: String] = [:]
             var colorMap: [String: String] = [:]
-            var photoMap: [String: URL] = [:]
+            var imageMap: [String: UIImage] = [:]
             if case .success(let (matches, _)) = result {
                 for rec in matches.compactMap({ try? $0.1.get() }) {
                     guard let uid = rec["userID"] as? String else { continue }
                     if let n = rec["displayName"] as? String { nameMap[uid] = n }
                     if let c = rec["avatarColor"] as? String { colorMap[uid] = c }
-                    if let asset = rec["profilePhoto"] as? CKAsset, let url = asset.fileURL {
-                        photoMap[uid] = url
+                    if let asset = rec["profilePhoto"] as? CKAsset,
+                       let url = asset.fileURL,
+                       let data = try? Data(contentsOf: url),
+                       let img = UIImage(data: data) {
+                        imageMap[uid] = img
                     }
                 }
             }
@@ -209,8 +214,12 @@ extension CloudKitManager {
                 var copy = c
                 copy.authorDisplayName = nameMap[c.authorUserID] ?? copy.authorDisplayName
                 copy.authorAvatarColorHex = colorMap[c.authorUserID] ?? copy.authorAvatarColorHex
-                copy.authorProfilePhotoFileURL = photoMap[c.authorUserID] ?? copy.authorProfilePhotoFileURL
                 return copy
+            }
+            // Fotoğrafları UserProfileStore'a da yaz — CommentRowView reaktif olarak alır.
+            let capturedImages = imageMap
+            Task { @MainActor in
+                UserProfileStore.shared.upsertImages(capturedImages)
             }
             completion(enriched)
         }

@@ -6,10 +6,10 @@
 //
 
 import SwiftUI
+import UIKit
 import CoreData
 import CloudKit
 import UserNotifications
-import AppTrackingTransparency
 // MARK: - App Delegate for Push Notifications
 
 class AppDelegate: NSObject, UIApplicationDelegate {
@@ -204,15 +204,36 @@ struct oneApp: App {
     @State private var pendingDeepLinkCode: String? = nil
 
     init() {
+        // One-time migration: notificationsEnabled was written to UserDefaults.standard
+        // but NotificationOrchestrator reads from the App Group container. Sync once.
+        let migrationKey = "notificationsEnabled_appGroupMigrated_v1"
+        if !UserDefaults.standard.bool(forKey: migrationKey) {
+            let appGroup = UserDefaults(suiteName: "group.com.batudemir.ones") ?? .standard
+            let value = UserDefaults.standard.bool(forKey: "notificationsEnabled")
+            appGroup.set(value, forKey: "notificationsEnabled")
+            UserDefaults.standard.set(true, forKey: migrationKey)
+        }
+
         // Register background task for midnight reset
         MidnightResetManager.shared.registerBackgroundTask()
 
-        // Observability bootstrap — real SDK registration lives in
-        // docs/OBSERVABILITY_SETUP.md (Sentry + PostHog). Default stack
-        // is console-only so DEBUG builds still see event flow.
+        // Observability bootstrap.
+        // DEBUG: console logger (eventler Console.app'te görünür)
+        // RELEASE: PostHog (analytics) + Sentry (crash reporting)
         #if DEBUG
         AppAnalytics.shared.register(ConsoleAnalyticsService())
+        #else
+        // TODO: Kendi API key ve DSN değerlerini gir.
+        // PostHog → https://eu.posthog.com → Project Settings → API Key
+        // Sentry  → app.sentry.io → Settings → Client Keys (DSN)
+        #if canImport(PostHog)
+        AppAnalytics.shared.register(
+            PostHogAnalyticsService(apiKey: "phc_tK3yiMVDwQFCHvmacqu93f42FB4sSRHbqHQ58SWy6Bkg")
+        )
         #endif
+        #endif
+
+        Experiment.assign()
     }
 
     var body: some Scene {
@@ -320,9 +341,10 @@ struct oneApp: App {
                 }
                 .onChange(of: cloudKitManager.currentUser?.recordID.recordName) { _, newValue in
                     if let userID = newValue {
-                        if ATTrackingManager.trackingAuthorizationStatus == .authorized {
-                            AppAnalytics.shared.identify(userID: userID)
-                        }
+                        AppAnalytics.shared.identify(
+                            userID: userID,
+                            properties: Experiment.analyticsProperties
+                        )
                         CrashReporter.shared.setUser(id: userID)
                         cloudKitManager.registerAllSubscriptions()
                         // Fire any deep link that arrived before currentUser was ready

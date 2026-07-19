@@ -55,7 +55,7 @@ struct CommentSongSearchView: View {
                 .font(.system(size: 14))
                 .foregroundColor(ONETokens.oneAsh)
             TextField("Şarkı veya sanatçı ara…", text: $query)
-                .font(.subheadline)
+                .font(ONETypography.bodySM)
                 .focused($searchFocused)
         }
         .padding(.horizontal, 12)
@@ -101,11 +101,11 @@ struct CommentSongSearchView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.name)
-                    .font(.subheadline.weight(.medium))
+                    .font(ONETypography.bodySMMedium)
                     .foregroundStyle(ONETokens.oneInk)
                     .lineLimit(1)
                 Text(item.artist)
-                    .font(.caption)
+                    .font(ONETypography.bodyXS)
                     .foregroundStyle(ONETokens.oneAsh)
                     .lineLimit(1)
             }
@@ -152,7 +152,7 @@ struct CommentSongSearchView: View {
                 .font(.system(size: 36, weight: .ultraLight))
                 .foregroundStyle(ONETokens.oneAsh)
             Text(query.isEmpty ? "Henüz entry yok" : "Sonuç bulunamadı")
-                .font(.subheadline)
+                .font(ONETypography.bodySM)
                 .foregroundStyle(ONETokens.oneAsh)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

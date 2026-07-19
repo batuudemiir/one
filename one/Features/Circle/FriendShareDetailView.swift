@@ -20,6 +20,7 @@ struct FriendShareDetailView: View {
     @Environment(\.dismiss) var dismiss
     let share: CKRecord
     var friendDisplayName: String = ""
+    var friendProfilePhoto: UIImage? = nil
     @StateObject private var cloudKitManager = CloudKitManager.shared
     @State private var appeared = false
     @State private var showPhotoViewer = false
@@ -29,6 +30,8 @@ struct FriendShareDetailView: View {
     @State private var loadedPhotoData: Data? = nil
     @State private var loadedPhotoImage: UIImage? = nil  // pre-decoded image — dismiss anında ana thread sync I/O olmasın
     @State private var showFriendProfile = false  // v2.6 — public profile sheet
+    @ObservedObject private var previewer = SongPreviewPlayer.shared
+    @State private var stableSong: SongResult? = nil
     @State private var showCommentSheet = false
     @State private var commentCount: Int? = nil
     
@@ -157,7 +160,20 @@ struct FriendShareDetailView: View {
             CloudKitManager.shared.fetchCommentCount(shareRecordName: share.recordID.recordName) { count in
                 self.commentCount = count
             }
+            if stableSong == nil, !songName.isEmpty {
+                stableSong = SongResult(
+                    id: UUID(),
+                    name: songName,
+                    artist: artistName,
+                    genre: genre,
+                    coverURL: nil,
+                    spotifyURL: nil,
+                    artworkURLString: share["albumArtURL"] as? String
+                )
+            }
+            if let song = stableSong { previewer.toggle(song) }
         }
+        .onDisappear { previewer.stop() }
         .task {
             guard loadedPhotoData == nil else { return }
             await Task.detached(priority: .userInitiated) {
@@ -198,14 +214,28 @@ struct FriendShareDetailView: View {
                     if !targetUserID().isEmpty { showFriendProfile = true }
                 } label: {
                     HStack(spacing: 10) {
-                        Circle()
-                            .fill(moodColor)
-                            .frame(width: 28, height: 28)
-                            .overlay(
-                                Text(getInitial())
-                                    .monoSM(tracking: 0)
-                                    .foregroundColor(.white.opacity(0.9))
-                            )
+                        ZStack {
+                            if let img = friendProfilePhoto {
+                                Image(uiImage: img)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 32, height: 32)
+                                    .clipShape(Circle())
+                                    .overlay(
+                                        Circle()
+                                            .stroke(moodColor.opacity(0.35), lineWidth: 1.5)
+                                    )
+                            } else {
+                                Circle()
+                                    .fill(moodColor)
+                                    .frame(width: 32, height: 32)
+                                    .overlay(
+                                        Text(getInitial())
+                                            .monoSM(tracking: 0)
+                                            .foregroundColor(.white.opacity(0.9))
+                                    )
+                            }
+                        }
 
                         Text(getUserDisplayName().uppercased())
                             .monoSM(tracking: 1.6)
@@ -260,8 +290,7 @@ struct FriendShareDetailView: View {
         VStack(spacing: 0) {
             // Photo or Mood gradient header
             ZStack(alignment: .bottomLeading) {
-                if let loadedPhotoData = loadedPhotoData, !loadedPhotoData.isEmpty,
-                   let uiImage = UIImage(data: loadedPhotoData) {
+                if let uiImage = loadedPhotoImage {
                     // Photo background — tappable
                     Button(action: {
                         withAnimation(ONEAnimation.panelSpring) {
@@ -382,6 +411,36 @@ struct FriendShareDetailView: View {
                     )
                     .padding(20)
                 }
+
+                // Play / pause button — top trailing
+                if let song = stableSong {
+                    HStack(spacing: 0) {
+                        Spacer()
+                        Button(action: { previewer.toggle(song) }) {
+                            Group {
+                                if previewer.playingID == song.id {
+                                    AudioWaveform()
+                                        .padding(10)
+                                        .background(Circle().fill(Color.black.opacity(0.35)))
+                                } else if previewer.loadingID == song.id {
+                                    ProgressView().scaleEffect(0.7).tint(.white)
+                                        .frame(width: 36, height: 36)
+                                        .background(Circle().fill(Color.black.opacity(0.35)))
+                                } else {
+                                    Image(systemName: "play.fill")
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundStyle(.white)
+                                        .frame(width: 36, height: 36)
+                                        .background(Circle().fill(Color.black.opacity(0.35)))
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .padding(14)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .frame(height: 180, alignment: .top)
+                }
             }
             .frame(height: 180)
             .frame(maxWidth: .infinity)
@@ -426,22 +485,6 @@ struct FriendShareDetailView: View {
                         )
                     }
                     
-                    // Feeling
-                    if !feelingLabel.isEmpty {
-                        HStack(spacing: 6) {
-                            FeelingIconView(type: feeling)
-                                .frame(width: 20, height: 16)
-                            Text(feelingLabel.uppercased())
-                                .monoLabel(tracking: 1.2)
-                                .foregroundColor(ONETokens.oneCharcoal)
-                        }
-                        .padding(.horizontal, ONETokens.spacingMD)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .fill(ONETokens.oneCreamMid)
-                        )
-                    }
                 }
                 
                 // Weather & Platform info (matching TodayCompletedView)

@@ -3,6 +3,7 @@
 //  one
 //
 //  Analyzes user listening history to build taste profile
+//  v2: Recency-weighted analysis + rediscovery song extraction
 //
 
 import Foundation
@@ -10,6 +11,18 @@ import CoreData
 
 struct TasteProfileAnalyzer {
     
+    // MARK: - Recency Weight Tiers
+    
+    /// Son 7 gün → 3× ağırlık, son 30 gün → 2×, 30+ gün → 1×
+    /// Kullanıcının güncel zevki daha belirleyici olur.
+    private func recencyWeight(for date: Date?) -> Double {
+        guard let date = date else { return 1.0 }
+        let daysAgo = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 0
+        if daysAgo <= 7 { return 3.0 }
+        if daysAgo <= 30 { return 2.0 }
+        return 1.0
+    }
+
     // MARK: - Main Analysis Method
     
     func analyzeTasteProfile(context: NSManagedObjectContext) async -> TasteProfile? {
@@ -28,16 +41,16 @@ struct TasteProfileAnalyzer {
                 return nil
             }
             
-            // Step 3: Extract top genres
+            // Step 3: Extract top genres (recency-weighted)
             let topGenres = self.extractTopGenres(from: entries, limit: 5)
 
             // Step 3b: Build frequency-weighted genre pool for smarter seed selection
             let weightedGenres = self.extractWeightedGenres(from: entries, maxRepeats: 3)
 
-            // Step 4: Extract top artists
+            // Step 4: Extract top artists (recency-weighted)
             let topArtists = self.extractTopArtists(from: entries, limit: 5)
 
-            // Step 4b: Extract Spotify track IDs from saved entries
+            // Step 4b: Extract Spotify track IDs from saved entries (recency-biased)
             let topTrackIds = self.extractSpotifyTrackIds(from: entries, limit: 5)
 
             // Step 5: Calculate mood patterns
@@ -46,7 +59,13 @@ struct TasteProfileAnalyzer {
             // Step 6: Calculate average mood score
             let averageMoodScore = self.calculateAverageMoodScore(from: entries)
 
-            // Step 7: Build and return profile
+            // Step 7: Extract rediscovery songs (14+ gün öncesi, max 2)
+            let rediscoverySongs = self.extractRediscoverySongs(from: entries, limit: 2)
+
+            // Step 7b: Extract top songs (name+artist pairs for direct seed resolution)
+            let topSongs = self.extractTopSongs(from: entries, limit: 5)
+
+            // Step 8: Build and return profile
             return TasteProfile(
                 topGenres: topGenres,
                 topArtists: topArtists,
@@ -55,53 +74,51 @@ struct TasteProfileAnalyzer {
                 totalEntries: entries.count,
                 averageMoodScore: averageMoodScore,
                 createdAt: Date(),
-                weightedGenres: weightedGenres
+                weightedGenres: weightedGenres,
+                rediscoverySongs: rediscoverySongs,
+                topSongs: topSongs
             )
         }
     }
     
-    // MARK: - Genre Extraction
+    // MARK: - Genre Extraction (Recency-Weighted)
 
     func extractTopGenres(from entries: [DailySong], limit: Int) -> [String] {
-        var genreFrequency: [String: Int] = [:]
+        var genreWeight: [String: Double] = [:]
 
         for entry in entries {
             if let genre = entry.genre, !genre.isEmpty {
-                genreFrequency[genre, default: 0] += 1
+                let weight = recencyWeight(for: entry.date)
+                genreWeight[genre, default: 0] += weight
             }
         }
 
-        return genreFrequency
+        return genreWeight
             .sorted { $0.value > $1.value }
             .prefix(limit)
             .map { $0.key }
     }
 
     /// Returns a frequency-weighted genre pool where each genre appears proportional
-    /// to how often the user has logged it. More-played genres are repeated up to
-    /// `maxRepeats` times; less-played genres appear at least once.
-    ///
-    /// Example (maxRepeats=3): pop×10, indie×6, rock×4, jazz×2
-    ///   → [pop, pop, pop, indie, indie, rock, rock, jazz]
-    ///
-    /// Shuffling this pool and taking prefix(N) naturally biases toward dominant genres
-    /// without excluding variety.
+    /// to how often the user has logged it, boosted by recency. More-played genres
+    /// are repeated up to `maxRepeats` times; less-played genres appear at least once.
     func extractWeightedGenres(from entries: [DailySong], maxRepeats: Int = 3) -> [String] {
-        var genreFrequency: [String: Int] = [:]
+        var genreWeight: [String: Double] = [:]
         for entry in entries {
             if let genre = entry.genre, !genre.isEmpty {
-                genreFrequency[genre, default: 0] += 1
+                let weight = recencyWeight(for: entry.date)
+                genreWeight[genre, default: 0] += weight
             }
         }
-        guard !genreFrequency.isEmpty else { return [] }
+        guard !genreWeight.isEmpty else { return [] }
 
-        let sorted = genreFrequency.sorted { $0.value > $1.value }
-        let maxCount = Double(sorted.first?.value ?? 1)
+        let sorted = genreWeight.sorted { $0.value > $1.value }
+        let maxWeight = sorted.first?.value ?? 1.0
 
         var weighted: [String] = []
-        for (genre, count) in sorted {
+        for (genre, weight) in sorted {
             // Scale: top genre gets maxRepeats slots, others scale proportionally (min 1)
-            let slots = max(1, Int((Double(count) / maxCount * Double(maxRepeats)).rounded()))
+            let slots = max(1, Int((weight / maxWeight * Double(maxRepeats)).rounded()))
             for _ in 0..<slots {
                 weighted.append(genre)
             }
@@ -109,18 +126,19 @@ struct TasteProfileAnalyzer {
         return weighted
     }
     
-    // MARK: - Artist Extraction
+    // MARK: - Artist Extraction (Recency-Weighted)
     
     func extractTopArtists(from entries: [DailySong], limit: Int) -> [String] {
-        var artistFrequency: [String: Int] = [:]
+        var artistWeight: [String: Double] = [:]
         
         for entry in entries {
             if let artist = entry.artistName, !artist.isEmpty {
-                artistFrequency[artist, default: 0] += 1
+                let weight = recencyWeight(for: entry.date)
+                artistWeight[artist, default: 0] += weight
             }
         }
         
-        return artistFrequency
+        return artistWeight
             .sorted { $0.value > $1.value }
             .prefix(limit)
             .map { $0.key }
@@ -149,24 +167,82 @@ struct TasteProfileAnalyzer {
         }.sorted { $0.frequency > $1.frequency }
     }
     
-    // MARK: - Spotify Track ID Extraction
+    // MARK: - Spotify Track ID Extraction (Recency-Biased)
 
-    /// Extracts Spotify track IDs from `spotifyURL` field (format: https://open.spotify.com/track/{id}).
-    /// These IDs are used as `seed_tracks` for highly personalised recommendations.
+    /// Extracts Spotify track IDs from `spotifyURL` field.
+    /// Recent entries (son 14 gün) are prioritized as seeds for better personalization.
     func extractSpotifyTrackIds(from entries: [DailySong], limit: Int) -> [String] {
+        var recentIds: [String] = []
+        var olderIds: [String] = []
         var seen = Set<String>()
-        var ids: [String] = []
+        
         for entry in entries {
-            guard ids.count < limit,
-                  let raw = entry.spotifyURL,
+            guard let raw = entry.spotifyURL,
                   let url = URL(string: raw) else { continue }
             let parts = url.pathComponents
-            if let idx = parts.firstIndex(of: "track"), parts.count > idx + 1 {
-                let tid = parts[idx + 1]
-                if seen.insert(tid).inserted { ids.append(tid) }
+            guard let idx = parts.firstIndex(of: "track"), parts.count > idx + 1 else { continue }
+            let tid = parts[idx + 1]
+            guard seen.insert(tid).inserted else { continue }
+            
+            let daysAgo = Calendar.current.dateComponents([.day], from: entry.date ?? Date(), to: Date()).day ?? 0
+            if daysAgo <= 14 {
+                recentIds.append(tid)
+            } else {
+                olderIds.append(tid)
             }
         }
-        return ids
+        
+        // Recent entries first, fill remaining with older
+        var result = Array(recentIds.prefix(limit))
+        if result.count < limit {
+            result.append(contentsOf: olderIds.prefix(limit - result.count))
+        }
+        return result
+    }
+
+    // MARK: - Rediscovery Song Extraction
+
+    /// Kullanıcının en az 14 gün önce seçtiği şarkılardan rastgele birkaç tanesini
+    /// `SongRecommendation` formatında döndürür. "Tekrar keşfet" nostalji özelliği.
+    func extractRediscoverySongs(from entries: [DailySong], limit: Int) -> [RediscoverySong] {
+        let threshold = Calendar.current.date(byAdding: .day, value: -14, to: Date()) ?? Date()
+        
+        // 14+ gün önceki unique şarkılar
+        var seen = Set<String>()
+        let eligible = entries.filter { entry in
+            guard let date = entry.date, date < threshold,
+                  let name = entry.songName, !name.isEmpty,
+                  let artist = entry.artistName, !artist.isEmpty else { return false }
+            let key = "\(name.lowercased())|\(artist.lowercased())"
+            return seen.insert(key).inserted
+        }
+        
+        // Rastgele seç
+        let selected = Array(eligible.shuffled().prefix(limit))
+        
+        return selected.map { entry in
+            RediscoverySong(
+                songName: entry.songName ?? "",
+                artistName: entry.artistName ?? "",
+                genre: entry.genre,
+                artworkURL: entry.artworkURL,
+                spotifyURL: entry.spotifyURL,
+                date: entry.date ?? Date()
+            )
+        }
+    }
+
+    // MARK: - Top Songs Extraction
+
+    func extractTopSongs(from entries: [DailySong], limit: Int) -> [SavedSong] {
+        var seen = Set<String>()
+        return entries.compactMap { entry -> SavedSong? in
+            guard let name = entry.songName, !name.isEmpty,
+                  let artist = entry.artistName, !artist.isEmpty else { return nil }
+            let key = "\(name.lowercased())|\(artist.lowercased())"
+            guard seen.insert(key).inserted else { return nil }
+            return SavedSong(name: name, artist: artist, genre: entry.genre)
+        }.prefix(limit).map { $0 }
     }
 
     // MARK: - Mood Score Calculation

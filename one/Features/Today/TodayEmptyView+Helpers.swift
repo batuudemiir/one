@@ -53,14 +53,12 @@ extension TodayEmptyView {
         withAnimation(ONEAnimation.panelSpring) {
             selectedSong    = nil
             selectedMood    = nil
-            selectedFeeling = nil
             photoImage      = nil
             dailyNote       = ""
             sharePhoto      = false
             searchText      = ""
             showPhotoRow    = false
             showMoodSection    = false
-            showFeelingSection = false
             showNoteSection    = false
             showSaveButton     = false
             currentStep     = .search

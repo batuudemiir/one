@@ -193,7 +193,7 @@ extension TodayEmptyView {
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white)
+                    .fill(ONETokens.onePaper)
                     .shadow(color: Color.black.opacity(0.07), radius: 12, x: 0, y: 4)
             )
         }

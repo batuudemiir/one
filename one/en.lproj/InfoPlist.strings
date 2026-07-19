@@ -9,4 +9,3 @@
 "NSPhotoLibraryUsageDescription" = "Used to pick a profile photo and add images to your daily card.";
 "NSPhotoLibraryAddUsageDescription" = "Used to save your monthly poster or share card to your photo library.";
 "NSLocationWhenInUseUsageDescription" = "Used to surface events and weather-aware suggestions in your city.";
-"NSUserTrackingUsageDescription" = "Optional permission for more relevant recommendations and shareable cards.";

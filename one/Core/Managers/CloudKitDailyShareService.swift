@@ -131,41 +131,57 @@ extension CloudKitManager {
                     ONELogger.debug("Failed to write photoData to temp file for CKAsset: \(error)", category: .cloudkit)
                 }
             }
-            
+
+            // Tracks whether the temp file has been cleaned up — prevents double-delete
+            // and ensures cleanup happens even when the conflict-resolution nested save
+            // completes after the operation's completionBlock fires.
+            var tempCleaned = false
+            let cleanupTemp: () -> Void = {
+                guard !tempCleaned, let tempURL = tempFileURL else { return }
+                tempCleaned = true
+                try? FileManager.default.removeItem(at: tempURL)
+            }
+
             let operation = CKModifyRecordsOperation(recordsToSave: [shareRecord], recordIDsToDelete: nil)
             operation.savePolicy = .changedKeys
             operation.perRecordSaveBlock = { [weak self] _, result in
                 switch result {
                 case .success(let saved):
+                    cleanupTemp()
                     self?.invalidateCircleCache()
                     completion(.success(saved))
                 case .failure(let error):
                     if let ckError = error as? CKError, ckError.code == .serverRecordChanged,
                        let serverRecord = ckError.serverRecord {
-                        // Server'daki versiyonu al ve yerel değişiklikleri üzerine uygula
-                        serverRecord["songName"]    = shareRecord["songName"]
-                        serverRecord["artistName"]  = shareRecord["artistName"]
-                        serverRecord["moodWord"]    = shareRecord["moodWord"]
-                        serverRecord["moodColor"]   = shareRecord["moodColor"]
-                        serverRecord["moodTheme"]   = shareRecord["moodTheme"]
-                        serverRecord["dailyNote"]   = shareRecord["dailyNote"]
-                        serverRecord["feeling"]     = shareRecord["feeling"]
+                        // Apply local changes onto the server record version.
+                        serverRecord["songName"]     = shareRecord["songName"]
+                        serverRecord["artistName"]   = shareRecord["artistName"]
+                        serverRecord["moodWord"]     = shareRecord["moodWord"]
+                        serverRecord["moodColor"]    = shareRecord["moodColor"]
+                        serverRecord["moodTheme"]    = shareRecord["moodTheme"]
+                        serverRecord["dailyNote"]    = shareRecord["dailyNote"]
+                        serverRecord["feeling"]      = shareRecord["feeling"]
                         serverRecord["feelingLabel"] = shareRecord["feelingLabel"]
-                        serverRecord["createdAt"]   = shareRecord["createdAt"]
+                        serverRecord["createdAt"]    = shareRecord["createdAt"]
+                        // Preserve photo if present — temp file still alive at this point.
+                        if let asset = shareRecord["photoAsset"] as? CKAsset {
+                            serverRecord["photoAsset"] = asset
+                        }
                         self?.publicDatabase.save(serverRecord) { [weak self] saved, _ in
+                            // Cleanup after the nested save finishes — not before.
+                            cleanupTemp()
                             if let saved { self?.invalidateCircleCache(); completion(.success(saved)) }
                             else { completion(.failure(error)) }
                         }
                     } else {
+                        cleanupTemp()
                         completion(.failure(error))
                     }
                 }
             }
-            operation.completionBlock = {
-                if let tempURL = tempFileURL {
-                    try? FileManager.default.removeItem(at: tempURL)
-                }
-            }
+            // Fallback: if the operation finishes without perRecordSaveBlock firing
+            // (e.g. operation-level error), ensure temp file is cleaned up.
+            operation.completionBlock = { cleanupTemp() }
             self?.publicDatabase.add(operation)
         }
     }
@@ -283,7 +299,7 @@ extension CloudKitManager {
                     let user2 = friendship["user2ID"] as? String
                     let currentID = self?.currentUser?["userID"] as? String
                     return user1 == currentID ? user2 : user1
-                }
+                }.filter { !(self?.hasBlockRelation(with: $0) ?? false) }
 
                 guard !friendIDs.isEmpty else {
                     completion(.success([]))

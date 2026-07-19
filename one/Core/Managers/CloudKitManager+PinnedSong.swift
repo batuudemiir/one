@@ -64,7 +64,7 @@ extension CloudKitManager {
 
         var theirIDs: Set<String> = []
 
-        func fetch(query: CKQuery) async -> [CKRecord] {
+        @Sendable func fetch(query: CKQuery) async -> [CKRecord] {
             await withCheckedContinuation { (cont: CheckedContinuation<[CKRecord], Never>) in
                 publicDatabase.fetch(withQuery: query, inZoneWith: nil,
                                      desiredKeys: ["user1ID", "user2ID"],

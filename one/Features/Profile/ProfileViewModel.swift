@@ -66,6 +66,7 @@ final class ProfileViewModel: ObservableObject {
     @Published var notificationsEnabled: Bool {
         didSet {
             UserDefaults.standard.set(notificationsEnabled, forKey: "notificationsEnabled")
+            (UserDefaults(suiteName: "group.com.batudemir.ones") ?? .standard).set(notificationsEnabled, forKey: "notificationsEnabled")
             writeSettingToICloud(key: "notificationsEnabled", value: notificationsEnabled)
         }
     }
@@ -426,11 +427,11 @@ final class ProfileViewModel: ObservableObject {
         op.qualityOfService = .userInitiated
         op.modifyRecordsResultBlock = { [weak self] result in
             try? FileManager.default.removeItem(at: tempURL)
-            if case .success = result {
-                DispatchQueue.main.async {
-                    self?.cloudKitManager.currentUser = record
-                    UserProfileStore.shared.invalidateCurrentUser()
-                }
+            guard case .success = result else { return }
+            // Always mutate @Published properties and ObservableObject state on main.
+            Task { @MainActor [weak self] in
+                self?.cloudKitManager.currentUser = record
+                UserProfileStore.shared.invalidateCurrentUser()
             }
         }
         cloudKitManager.publicDatabase.add(op)
@@ -454,13 +455,17 @@ final class ProfileViewModel: ObservableObject {
         "privacy.musicTasteVisible", "privacy.moodHistoryVisible"
     ]
 
+    private var iCloudStoreAvailable: Bool {
+        // synchronize() returns false when the ubiquity-kvstore entitlement is missing
+        NSUbiquitousKeyValueStore.default.synchronize()
+    }
+
     func syncSettingsFromICloud() {
+        guard iCloudStoreAvailable else { return }
         let store = NSUbiquitousKeyValueStore.default
-        store.synchronize()
         let ud = UserDefaults.standard
         for key in Self.icloudKeys {
             if let value = store.object(forKey: "one.\(key)") {
-                // Only restore if UserDefaults doesn't have the value yet (fresh install)
                 if ud.object(forKey: key) == nil {
                     ud.set(value, forKey: key)
                 }
@@ -469,12 +474,14 @@ final class ProfileViewModel: ObservableObject {
     }
 
     func writeSettingToICloud(key: String, value: Any) {
+        guard iCloudStoreAvailable else { return }
         let store = NSUbiquitousKeyValueStore.default
         store.set(value, forKey: "one.\(key)")
         store.synchronize()
     }
 
     func syncAllSettingsToICloud() {
+        guard iCloudStoreAvailable else { return }
         let ud = UserDefaults.standard
         let store = NSUbiquitousKeyValueStore.default
         for key in Self.icloudKeys {

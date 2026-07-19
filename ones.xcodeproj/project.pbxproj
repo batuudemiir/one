@@ -13,6 +13,7 @@
 		2DA82E7E2F768BF00090C0F0 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DA82E7D2F768BEF0090C0F0 /* WidgetKit.framework */; };
 		2DA82E802F768BF00090C0F0 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DA82E7F2F768BF00090C0F0 /* SwiftUI.framework */; };
 		2DA82E912F768BF20090C0F0 /* OneActivityExtensionExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2DA82E7B2F768BEF0090C0F0 /* OneActivityExtensionExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		88E45249B7CF4B0989B43096 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 0B990B53FB974E9F9E9145F5 /* PostHog */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -169,6 +170,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				88E45249B7CF4B0989B43096 /* PostHog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -279,6 +281,9 @@
 				2D91B35E2F4BAF85001C70F2 /* one */,
 			);
 			name = one;
+			packageProductDependencies = (
+				0B990B53FB974E9F9E9145F5 /* PostHog */,
+			);
 			productName = one;
 			productReference = 2D91B35C2F4BAF85001C70F2 /* OneDailyBatuhan.app */;
 			productType = "com.apple.product-type.application";
@@ -394,6 +399,7 @@
 			mainGroup = 2D91B3532F4BAF85001C70F2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				1398A916540B494EB1EC20C2 /* XCRemoteSwiftPackageReference "posthog-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2D91B35D2F4BAF85001C70F2 /* Products */;
@@ -517,7 +523,7 @@
 				CODE_SIGN_ENTITLEMENTS = MoodWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_ASSET_PATHS = MoodWidget/CircleWidget.swift;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -551,7 +557,7 @@
 				CODE_SIGN_ENTITLEMENTS = MoodWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_ASSET_PATHS = MoodWidget/CircleWidget.swift;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -711,12 +717,12 @@
 				CODE_SIGN_ENTITLEMENTS = one/one.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 22;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = one/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "ONE+";
+				INFOPLIST_KEY_CFBundleDisplayName = "One Mood";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Bu uygulamanın müzik kütüphanenize erişebilmesi için izni gereklidir.";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "Günlük şarkı seçimlerinizi takviminize kaydetmek için izin gereklidir.";
@@ -756,12 +762,12 @@
 				CODE_SIGN_ENTITLEMENTS = one/one.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 22;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = one/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "ONE+";
+				INFOPLIST_KEY_CFBundleDisplayName = "One Mood";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Bu uygulamanın müzik kütüphanenize erişebilmesi için izni gereklidir.";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "Günlük şarkı seçimlerinizi takviminize kaydetmek için izin gereklidir.";
@@ -883,7 +889,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OneActivityExtension/Info.plist;
@@ -915,7 +921,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = T4L7QU56YY;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OneActivityExtension/Info.plist;
@@ -998,6 +1004,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		1398A916540B494EB1EC20C2 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0B990B53FB974E9F9E9145F5 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1398A916540B494EB1EC20C2 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2D91B3542F4BAF85001C70F2 /* Project object */;
 }

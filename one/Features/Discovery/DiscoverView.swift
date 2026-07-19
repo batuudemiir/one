@@ -1,780 +1,261 @@
-//
-//  DiscoverView.swift
-//  one
-//
-//  Keşfet sekmesi — Minimalist Redesign
-//  İki sekme: Etkinlikler (Biletix) + Müzik (kişisel öneriler)
-//
-
 import SwiftUI
 import CoreData
 
+struct KesfetFooterView: View {
+    var body: some View {
+        VStack(spacing: 6) {
+            Text("ONE")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(2.5)
+                .foregroundColor(ONETokens.oneInk.opacity(0.35))
+            Text("Hisset. Keşfet. Paylaş.")
+                .font(.system(size: 13, weight: .regular))
+                .foregroundColor(ONETokens.oneInk.opacity(0.35))
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 32)
+    }
+}
+
+struct SectionHeaderView: View {
+    let title: String
+
+    var body: some View {
+        Text(title)
+            .font(ONETypography.displayLgAlt)
+            .foregroundColor(ONETokens.oneInk)
+            .padding(.horizontal, 24)
+            .padding(.top, 16)
+            .padding(.bottom, 4)
+    }
+}
+
 struct DiscoverView: View {
-    @StateObject private var vm: DiscoverViewModel
+    @StateObject private var kesfetVM = KesfetViewModel()
+    @StateObject private var discoverVM: DiscoverViewModel
     @AppStorage(ONETokens.cityPreferenceKey) private var preferredCity: String = ONETokens.defaultCity
-    @Namespace private var tabNamespace
-    @State private var appeared = true
     private let context: NSManagedObjectContext
 
     init(context: NSManagedObjectContext) {
         self.context = context
-        _vm = StateObject(wrappedValue: DiscoverViewModel(context: context))
+        _discoverVM = StateObject(wrappedValue: DiscoverViewModel(context: context))
     }
-
-    private var moodColor: Color {
-        vm.todayEntry?.moodColor ?? ONETokens.oneBrand
-    }
-
-    // MARK: - Body
 
     var body: some View {
-        ZStack(alignment: .top) {
-            ONETokens.oneCream.ignoresSafeArea()
+        ZStack {
+            LinearGradient(
+                colors: [kesfetVM.mood?.color.opacity(0.12) ?? ONETokens.oneCream, ONETokens.oneCream],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            .animation(.easeInOut(duration: 0.4), value: kesfetVM.selectedMoodId)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    KesfetTopBar(vm: kesfetVM)
+                    
+                    if kesfetVM.selectedMoodId != nil {
+                        MoodHeroView(vm: kesfetVM)
+                    } else {
+                        VStack(spacing: 8) {
+                            Text("Nasıl hissediyorsun?")
+                                .font(ONETypography.displayMD)
+                                .foregroundColor(ONETokens.oneInk)
+                            Text("Bugün hissettiğin bir mood seç. Sana yakın müzik ve etkinlikler seni bekliyor.")
+                                .font(ONETypography.bodySM)
+                                .foregroundColor(ONETokens.oneAsh)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 32)
+                            Button {
+                                NotificationCenter.default.post(name: NSNotification.Name("switchToTodayTab"), object: nil)
+                            } label: {
+                                Text("Bugünü kaydet")
+                                    .font(ONETypography.monoBase)
+                                    .foregroundColor(ONETokens.oneCream)
+                                    .padding(.horizontal, 24)
+                                    .padding(.vertical, 12)
+                                    .background(ONETokens.oneInk)
+                                    .clipShape(Capsule())
+                            }
+                            .padding(.top, 8)
+                        }
+                        .padding(.vertical, 32)
+                    }
+                    
+                    if discoverVM.isLoadingEvents || discoverVM.isLoadingMusic {
+                        ProgressView()
+                            .padding(.top, 40)
+                    } else if kesfetVM.selectedMoodId != nil &&
+                              discoverVM.musicRecommendations.isEmpty &&
+                              discoverVM.recommendationSections.isEmpty &&
+                              discoverVM.socialMusicRecommendations.isEmpty {
+                        // Mood seçili ama içerik yok — empty state
+                        VStack(spacing: 10) {
+                            Image(systemName: "music.note.list")
+                                .font(.system(size: 36, weight: .ultraLight))
+                                .foregroundStyle(ONETokens.oneAsh)
+                            Text("Bu his için henüz öneri yok.")
+                                .font(ONETypography.bodySMMedium)
+                                .foregroundStyle(ONETokens.oneAsh)
+                            Text("Yakında burada olacak.")
+                                .font(ONETypography.bodyXS)
+                                .foregroundStyle(ONETokens.oneMist)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 48)
+                    } else {
+                        // MARK: - Müzik Önerileri
+                        if !discoverVM.musicRecommendations.isEmpty {
+                            VStack(alignment: .leading, spacing: 16) {
+                                SectionHeaderView(title: "Senin İçin")
+                                
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 16) {
+                                        ForEach(discoverVM.musicRecommendations) { rec in
+                                            RecommendationCardView(
+                                                recommendation: rec,
+                                                onTap: {
+                                                    if let urlString = rec.spotifyURL, let url = URL(string: urlString) {
+                                                        UIApplication.shared.open(url)
+                                                    }
+                                                },
+                                                onDismiss: {
+                                                    discoverVM.recommendationEngine.dismissRecommendation(rec)
+                                                }
+                                            )
+                                            .frame(width: 140)
+                                        }
+                                    }
+                                    .padding(.horizontal, 24)
+                                }
+                            }
+                            .padding(.bottom, 16)
+                        }
 
-            VStack(spacing: 0) {
-                // ── Sabit header ─────────────────────────────────────────
-                headerRow
-                    .padding(.top, 56)
-                    .padding(.horizontal, 24)
+                        // MARK: - Etkinlik Bölümleri
+                        ForEach(discoverVM.recommendationSections) { section in
+                            VStack(alignment: .leading, spacing: 16) {
+                                SectionHeaderView(title: section.title)
+                                
+                                ForEach(section.items) { event in
+                                    DiscoverEventCard(event: event, moodColor: kesfetVM.mood?.color ?? ONETokens.oneBrand)
+                                        .padding(.horizontal, 24)
+                                }
+                            }
+                        }
 
-                // ── Mood context strip ───────────────────────────────────
-                moodContextStrip
-                    .padding(.horizontal, 24)
-                    .padding(.top, 18)
 
-                // C1 — Mood DNA durum şeridi (D7 unlock affordance)
-                moodDNABanner
-                    .padding(.horizontal, 24)
-                    .padding(.top, 14)
 
-                // ── Tab switcher ─────────────────────────────────────────
-                tabSwitcher
-                    .padding(.top, 22)
+                        // MARK: - Çevrendeki Ritim (Sosyal Keşif)
+                        if !discoverVM.socialMusicRecommendations.isEmpty {
+                            VStack(alignment: .leading, spacing: 16) {
+                                SectionHeaderView(title: "Çevrendeki Ritim")
+                                
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 16) {
+                                        ForEach(discoverVM.socialMusicRecommendations) { rec in
+                                            RecommendationCardView(
+                                                recommendation: rec,
+                                                onTap: {
+                                                    if let urlString = rec.spotifyURL, let url = URL(string: urlString) {
+                                                        UIApplication.shared.open(url)
+                                                    }
+                                                },
+                                                onDismiss: {
+                                                    // No op for social recs for now
+                                                }
+                                            )
+                                            .frame(width: 140)
+                                        }
+                                    }
+                                    .padding(.horizontal, 24)
+                                }
+                            }
+                            .padding(.bottom, 16)
+                        }
 
-                // ── Tab içeriği ──────────────────────────────────────────
-                tabContent
+                        // MARK: - Genel Müzik Önerileri (Her Zaman Görünür)
+                        if !discoverVM.generalMusicRecommendations.isEmpty {
+                            VStack(alignment: .leading, spacing: 16) {
+                                SectionHeaderView(title: "Günün Öne Çıkanları")
+                                
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 16) {
+                                        ForEach(discoverVM.generalMusicRecommendations) { rec in
+                                            RecommendationCardView(
+                                                recommendation: rec,
+                                                onTap: {
+                                                    if let urlString = rec.spotifyURL, let url = URL(string: urlString) {
+                                                        UIApplication.shared.open(url)
+                                                    }
+                                                },
+                                                onDismiss: {
+                                                    discoverVM.recommendationEngine.dismissRecommendation(rec)
+                                                }
+                                            )
+                                            .frame(width: 140)
+                                        }
+                                    }
+                                    .padding(.horizontal, 24)
+                                }
+                            }
+                            .padding(.bottom, 16)
+                        }
+
+                        // MARK: - Genel Etkinlikler (Her Zaman Görünür)
+                        ForEach(discoverVM.generalSections) { section in
+                            VStack(alignment: .leading, spacing: 16) {
+                                SectionHeaderView(title: section.title)
+                                
+                                ForEach(section.items) { event in
+                                    // Saturated ONE brand color since no mood is tied
+                                    DiscoverEventCard(event: event, moodColor: Color(hex: "#4BBFA8"))
+                                        .padding(.horizontal, 24)
+                                }
+                            }
+                            .padding(.bottom, 24)
+                        }
+                    }
+                    KesfetFooterView()
+                }
+                .padding(.bottom, 120)
+            }
+            .sheet(item: $kesfetVM.venueSheetPayload) { payload in
+                VenueDetailSheet(payload: payload)
             }
         }
         .navigationBarHidden(true)
-        .task {
+        .onAppear {
             AppAnalytics.shared.track(.discoverOpened)
-            await vm.fetchContent()
-            withAnimation(ONEAnimation.cardSpring) { appeared = true }
-        }
-    }
-
-    // MARK: - Header
-
-    private var headerRow: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(NSLocalizedString("discover.title", comment: ""))
-                    .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
-                Text(greetingText)
-                    .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
-            }
-            Spacer()
-            cityPill
-        }
-    }
-
-    private var cityPill: some View {
-        HStack(spacing: 5) {
-            Image(systemName: "location.fill")
-                .monoMicro()
-                .fontWeight(.semibold)
-            Text(preferredCity)
-                .monoSM(tracking: 0.5)
-        }
-        .foregroundColor(ONETokens.oneStone)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .background(Capsule().fill(ONETokens.oneIvory))
-        .overlay(Capsule().stroke(ONETokens.oneMist, lineWidth: 1))
-        .accessibilityLabel(String(format: NSLocalizedString("accessibility.discover.city", comment: ""), preferredCity))
-    }
-
-    private var greetingText: String {
-        let h = Calendar.current.component(.hour, from: Date())
-        if h < 12 { return NSLocalizedString("discover.greeting.morning", comment: "") }
-        if h < 18 { return NSLocalizedString("discover.greeting.afternoon", comment: "") }
-        return NSLocalizedString("discover.greeting.evening", comment: "")
-    }
-
-    // MARK: - C1 — Mood DNA banner (D7 unlock)
-
-    /// 7 entry'den az: ilerleme şeridi. >= 7 ve henüz kutlanmadı: bir
-    /// kez "Mood DNA'n hazır" rozeti.
-    @ViewBuilder
-    private var moodDNABanner: some View {
-        let target = 7
-        let total = vm.totalEntries
-        if total < target {
-            HStack(spacing: 12) {
-                Image(systemName: "circle.dotted")
-                    .bodyLG()
-                    .fontWeight(.light)
-                    .foregroundColor(ONETokens.oneAsh)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(NSLocalizedString("discover.moodDNA.shaping", comment: ""))
-                        .bodySMMedium()
-                        .foregroundColor(ONETokens.oneInk)
-                    // Progress shred
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule().fill(ONETokens.oneSilver)
-                            Capsule()
-                                .fill(moodColor.opacity(0.85))
-                                .frame(width: geo.size.width * CGFloat(min(total, target)) / CGFloat(target))
-                        }
-                    }
-                    .frame(height: 4)
-                    Text(String(format: NSLocalizedString("discover.moodDNA.progress", comment: ""), total, target))
-                        .monoLabel(tracking: 0.6)
-                        .foregroundColor(ONETokens.oneAsh)
-                }
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(ONETokens.oneCreamMid.opacity(0.45))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(ONETokens.oneSilver, lineWidth: 1)
-                    )
-            )
-        } else if !UserDefaults.standard.bool(forKey: "discoveryUnlockCelebrated") {
-            HStack(spacing: 12) {
-                Image(systemName: "sparkle")
-                    .bodyLG()
-                    .fontWeight(.medium)
-                    .foregroundColor(moodColor)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("discover.moodDNA.ready", comment: ""))
-                        .bodySMMedium()
-                        .foregroundColor(ONETokens.oneInk)
-                    Text(NSLocalizedString("discover.moodDNA.readyBody", comment: ""))
-                        .monoSM(tracking: 0.4)
-                        .foregroundColor(ONETokens.oneAsh)
-                }
-                Spacer()
-                Button {
-                    UserDefaults.standard.set(true, forKey: "discoveryUnlockCelebrated")
-                } label: {
-                    Image(systemName: "xmark")
-                        .monoSM()
-                        .fontWeight(.semibold)
-                        .foregroundColor(ONETokens.oneStone)
-                        .frame(width: 28, height: 28)
-                }
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(moodColor.opacity(0.10))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(moodColor.opacity(0.35), lineWidth: 1)
-                    )
-            )
-        } else {
-            EmptyView()
-        }
-    }
-
-    // MARK: - Mood Context Strip
-
-    @ViewBuilder
-    private var moodContextStrip: some View {
-        if let entry = vm.todayEntry {
-            HStack(spacing: 14) {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(
-                        LinearGradient(
-                            colors: [entry.moodColor, entry.moodColor.opacity(0.35)],
-                            startPoint: .top, endPoint: .bottom
-                        )
-                    )
-                    .frame(width: 3, height: 40)
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(entry.songName)
-                        .bodySMMedium()
-                        .foregroundColor(ONETokens.oneInk)
-                        .lineLimit(1)
-                    Text(entry.artistName)
-                        .monoSM(tracking: 0)
-                        .foregroundColor(ONETokens.oneAsh)
-                        .lineLimit(1)
-                }
-
-                Spacer(minLength: 8)
-
-                if !entry.normalizedMoodLabel.isEmpty {
-                    Text(entry.normalizedMoodLabel)
-                        .monoLabel(tracking: 0.8)
-                        .foregroundColor(entry.moodColor)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Capsule().fill(entry.moodColor.opacity(0.12)))
-                }
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(entry.songName), \(entry.artistName), \(entry.normalizedMoodLabel)")
-        }
-        // todayEntry yoksa strip gösterilmez
-    }
-
-    // MARK: - Tab Switcher
-
-    private var tabSwitcher: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                ForEach(DiscoverTab.allCases, id: \.self) { tab in
-                    Button {
-                        withAnimation(ONEAnimation.tabSwitch) {
-                            vm.selectedTab = tab
-                        }
-                    } label: {
-                        VStack(spacing: 0) {
-                            Text(tab.rawValue)
-                                .bodySMMedium()
-                                .foregroundColor(
-                                    vm.selectedTab == tab
-                                        ? ONETokens.oneInk
-                                        : ONETokens.oneAsh
-                                )
-                                .padding(.vertical, 12)
-                                .frame(maxWidth: .infinity)
-
-                            // Aktif sekme alt çizgisi
-                            if vm.selectedTab == tab {
-                                Rectangle()
-                                    .fill(moodColor)
-                                    .frame(height: 2)
-                                    .matchedGeometryEffect(id: "tabLine", in: tabNamespace)
-                            } else {
-                                Rectangle()
-                                    .fill(Color.clear)
-                                    .frame(height: 2)
-                            }
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .accessibilityLabel(tab.rawValue)
-                    .accessibilityAddTraits(vm.selectedTab == tab ? [.isSelected] : [])
-                }
-            }
-            .padding(.horizontal, 24)
-
-            Divider()
-                .background(ONETokens.oneCreamMid)
-                .accessibilityHidden(true)
-        }
-    }
-
-    // MARK: - Tab İçeriği
-
-    @ViewBuilder
-    private var tabContent: some View {
-        switch vm.selectedTab {
-        case .etkinlikler:
-            EtkinliklerTabView(
-                events: vm.upcomingEvents,
-                isLoading: vm.isLoadingEvents,
-                moodColor: moodColor,
-                hasTodayEntry: vm.todayEntry != nil,
-                appeared: appeared,
-                onRefresh: { await vm.refresh() }
-            )
-            .transition(.opacity)
-        case .muzik:
-            MuzikTabView(
-                engine: vm.recommendationEngine,
-                moodColor: moodColor,
-                appeared: appeared,
-                context: context,
-                onRefresh: { await vm.refresh() },
-                onTap: { openSong($0) }
-            )
-            .transition(.opacity)
-        }
-    }
-
-    // MARK: - Helper
-
-    private func openSong(_ rec: SongRecommendation) {
-        if let urlStr = rec.spotifyURL, let url = URL(string: urlStr) {
-            UIApplication.shared.open(url)
-        }
-    }
-}
-
-// MARK: - Etkinlikler Tab
-
-private struct EtkinliklerTabView: View {
-    let events: [MoodEvent]
-    let isLoading: Bool
-    let moodColor: Color
-    let hasTodayEntry: Bool
-    let appeared: Bool
-    let onRefresh: () async -> Void
-
-    // ── Data split ───────────────────────────────────────────────────────
-    private var featuredEvent: MoodEvent? {
-        events.sorted {
-            let aArtist = $0.kind == .artistConcert || $0.kind == .similarConcert
-            let bArtist = $1.kind == .artistConcert || $1.kind == .similarConcert
-            if aArtist != bArtist { return aArtist }
-            return $0.matchPercent > $1.matchPercent
-        }.first
-    }
-
-    private var gridEvents: [MoodEvent] {
-        guard let featured = featuredEvent else { return events }
-        return events.filter { $0.id != featured.id }
-    }
-
-    // ── Grid columns ─────────────────────────────────────────────────────
-    private let gridColumns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12)
-    ]
-
-    var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                if !hasTodayEntry {
-                    emptyMoodState
-                        .padding(.top, 52)
-                        .padding(.horizontal, 24)
-                } else if isLoading {
-                    skeletonView
-                } else if events.isEmpty {
-                    emptyEventsState
-                        .padding(.top, 52)
-                        .padding(.horizontal, 24)
-                } else {
-                    // ── Featured card (single, full-width) ────────────────
-                    if let featured = featuredEvent {
-                        sectionLabel("BİZİM ÖNERİMİZ")
-                            .padding(.horizontal, 24)
-                            .padding(.top, 16)
-
-                        DiscoverFeaturedEventCard(event: featured, moodColor: moodColor)
-                            .padding(.horizontal, 24)
-                            .padding(.top, 12)
-                            .opacity(appeared ? 1 : 0)
-                            .offset(y: appeared ? 0 : 12)
-                            .animation(ONEAnimation.cardSpring, value: appeared)
-                    }
-
-                    // ── 2-column grid ─────────────────────────────────────
-                    if !gridEvents.isEmpty {
-                        sectionLabel("ETKİNLİKLER")
-                            .padding(.horizontal, 24)
-                            .padding(.top, 8)
-
-                        LazyVGrid(columns: gridColumns, spacing: 12) {
-                            ForEach(Array(gridEvents.enumerated()), id: \.element.id) { index, event in
-                                DiscoverGridEventCard(event: event, moodColor: moodColor)
-                                    .opacity(appeared ? 1 : 0)
-                                    .offset(y: appeared ? 0 : 10)
-                                    .animation(
-                                        ONEAnimation.cardSpring.delay(Double(index) * 0.04 + 0.18),
-                                        value: appeared
-                                    )
-                            }
-                        }
-                        .padding(.horizontal, 24)
-                        .padding(.top, 8)
-                    }
-                }
-            }
-            .padding(.bottom, 120)
-        }
-        .refreshable { await onRefresh() }
-    }
-
-    // MARK: - Skeleton
-
-    private var skeletonView: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Featured skeleton
-            sectionLabel("BİZİM ÖNERİMİZ")
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
-            RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                .fill(ONETokens.oneCreamMid)
-                .frame(maxWidth: .infinity, minHeight: 200)
-                .padding(.horizontal, 24)
-                .padding(.top, 12)
-                .shimmering()
-            // Grid skeleton
-            sectionLabel("ETKİNLİKLER")
-                .padding(.horizontal, 24)
-                .padding(.top, 8)
-            LazyVGrid(columns: gridColumns, spacing: 12) {
-                ForEach(0..<4, id: \.self) { _ in
-                    RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                        .fill(ONETokens.oneCreamMid)
-                        .frame(height: 148)
-                        .shimmering()
-                }
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 8)
-        }
-    }
-
-    // MARK: - Empty states
-
-    private var emptyMoodState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "sparkles")
-                .displayMD()
-                .fontWeight(.light)
-                .foregroundColor(ONETokens.oneAsh)
-            Text(NSLocalizedString("discover.selectMood", comment: ""))
-                .displayXS()
-                .foregroundColor(ONETokens.oneInk)
-            Text(NSLocalizedString("discover.noSuggestionsHint", comment: ""))
-                .bodySM()
-                .foregroundColor(ONETokens.oneAsh)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
-            // A5 — Next-action: kullanıcıyı bugünü kaydetmeye yönlendir
-            Button {
-                NotificationCenter.default.post(name: .init("switchToTodayTab"), object: nil)
-            } label: {
-                Text(NSLocalizedString("discover.emptyCta", comment: ""))
-                    .monoSM(tracking: 0.8)
-                    .foregroundColor(ONETokens.oneCream)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 11)
-                    .background(Capsule().fill(ONETokens.oneInk))
-            }
-            .padding(.top, 4)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private var emptyEventsState: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "calendar.badge.exclamationmark")
-                .displayMD()
-                .fontWeight(.light)
-                .foregroundColor(ONETokens.oneAsh)
-            VStack(spacing: 6) {
-                Text(NSLocalizedString("discover.noEvents", comment: ""))
-                    .displayXS()
-                    .foregroundColor(ONETokens.oneInk)
-                Text(NSLocalizedString("discover.selectMoodHint", comment: ""))
-                    .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-            }
-            // Biletix CTA
-            if let url = URL(string: "https://www.biletix.com") {
-                Button {
-                    UIApplication.shared.open(url)
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "ticket.fill")
-                            .monoSM()
-                            .fontWeight(.semibold)
-                        Text(NSLocalizedString("discover.searchBiletix", comment: ""))
-                            .monoBase(tracking: 0.5)
-                        Image(systemName: "arrow.up.right")
-                            .monoMicro()
-                            .fontWeight(.semibold)
-                    }
-                    .foregroundColor(ONETokens.oneBrand)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(
-                        Capsule()
-                            .fill(ONETokens.oneBrand.opacity(0.08))
-                            .overlay(Capsule().stroke(ONETokens.oneBrand.opacity(0.2), lineWidth: 1))
-                    )
-                }
+            discoverVM.loadTodayEntry()
+            if let mood = discoverVM.todayEntry?.normalizedMoodLabel {
+                kesfetVM.configure(from: mood)
             }
         }
-        .frame(maxWidth: .infinity)
-    }
-
-    // MARK: - Helpers
-
-    private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .monoLabel(tracking: 1.4)
-            .foregroundColor(ONETokens.oneAsh)
-    }
-}
-
-// MARK: - Grid Event Card
-
-private struct DiscoverGridEventCard: View {
-    let event: MoodEvent
-    let moodColor: Color
-
-    private var isOutdoor: Bool {
-        event.kind == .microActivity || event.category == .aktivite
-    }
-
-    private var actionURL: URL? {
-        isOutdoor
-            ? appleMapsURL(venue: event.venue, city: event.city)
-            : event.sourceURL
-    }
-
-    var body: some View {
-        Button(action: {
-            ONEHaptics.feelingSelected()
-            if let url = actionURL {
-                UIApplication.shared.open(url)
+        .onReceive(NotificationCenter.default.publisher(for: .init("todaySongSaved"))) { _ in
+            discoverVM.loadTodayEntry()
+            if let mood = discoverVM.todayEntry?.normalizedMoodLabel {
+                kesfetVM.configure(from: mood)
             }
-        }) {
-            VStack(alignment: .leading, spacing: 0) {
-
-                // ── Category accent band ──────────────────────────────────
-                ZStack {
-                    RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                        .fill(event.category.accentColor.opacity(0.10))
-                        .frame(height: 52)
-                    Image(systemName: categoryIcon(event.category))
-                        .displaySM()
-                        .fontWeight(.light)
-                        .foregroundColor(event.category.accentColor.opacity(0.8))
-                }
-                .frame(maxWidth: .infinity)
-
-                // ── Text content ──────────────────────────────────────────
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(event.title)
-                        .bodySM()
-                        .fontWeight(.semibold)
-                        .foregroundColor(ONETokens.oneInk)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    if !event.venue.isEmpty {
-                        Text(event.venue)
-                            .monoSM(tracking: 0)
-                            .foregroundColor(ONETokens.oneAsh)
-                            .lineLimit(1)
-                    }
-
-                    HStack(spacing: 4) {
-                        if !event.timing.isEmpty {
-                            Text(event.timing)
-                                .monoLabel(tracking: 0)
-                                .foregroundColor(ONETokens.oneStone)
-                                .lineLimit(1)
-                        }
-                        if !event.price.isEmpty {
-                            Text("·")
-                                .monoLabel(tracking: 0)
-                                .foregroundColor(ONETokens.oneStone)
-                            Text(event.price == "Ücretsiz" ? NSLocalizedString("discover.free", comment: "") : event.price)
-                                .monoLabel(tracking: 0)
-                                .foregroundColor(event.price == "Ücretsiz" ? ONETokens.oneGreen : ONETokens.oneStone)
-                                .lineLimit(1)
-                        }
-                    }
-
-                    // Mood accent line at bottom
-                    RoundedRectangle(cornerRadius: 1)
-                        .fill(moodColor.opacity(0.5))
-                        .frame(height: 2)
-                        .padding(.top, 4)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-            }
-            .liquidGlass(.clear, in: RoundedRectangle(cornerRadius: ONETokens.radiusCard))
-            .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
         }
-        .buttonStyle(PlainButtonStyle())
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(event.title), \(event.venue), \(event.timing), \(event.price)")
-        .accessibilityHint(NSLocalizedString("accessibility.discover.eventHint", comment: ""))
-        .accessibilityAddTraits(.isButton)
-    }
-
-    private func appleMapsURL(venue: String, city: String) -> URL? {
-        let parts = [venue, city].filter { !$0.isEmpty }
-        guard !parts.isEmpty,
-              let encoded = parts.joined(separator: ", ")
-                .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
-        else { return nil }
-        return URL(string: "https://maps.apple.com/?q=\(encoded)")
-    }
-
-    private func categoryIcon(_ category: EventCategory) -> String {
-        switch category {
-        case .aktivite: return "figure.walk"
-        case .konser:   return "music.mic"
-        case .spor:     return "sportscourt"
-        case .sinema:   return "film"
-        case .tiyatro:  return "theatermasks"
-        case .sergi:    return "paintpalette"
+        .onChange(of: discoverVM.todayEntry?.normalizedMoodLabel) { _, new in
+            if let new { kesfetVM.configure(from: new) }
+        }
+        .onChange(of: kesfetVM.selectedMoodId) { _, newId in
+            Task {
+                await discoverVM.fetchContentFor(moodId: newId, kesfetMood: kesfetVM.mood)
+            }
+        }
+        .onChange(of: preferredCity) { _, newCity in
+            discoverVM.preferredCity = newCity
+            Task {
+                await discoverVM.fetchContentFor(moodId: kesfetVM.selectedMoodId, kesfetMood: kesfetVM.mood)
+            }
+        }
+        .task { 
+            await discoverVM.fetchContentFor(moodId: kesfetVM.selectedMoodId, kesfetMood: kesfetVM.mood) 
         }
     }
-}
-
-// MARK: - Müzik Tab
-
-private struct MuzikTabView: View {
-    @ObservedObject var engine: RecommendationEngine
-    let moodColor: Color
-    let appeared: Bool
-    let context: NSManagedObjectContext
-    let onRefresh: () async -> Void
-    let onTap: (SongRecommendation) -> Void
-
-    private let gridColumns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12)
-    ]
-
-    var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-
-                // ── Genre chips (dinleme geçmişinden) ───────────────
-                if let profile = engine.tasteProfile, !profile.topGenres.isEmpty {
-                    GenreChipsView(
-                        genres: profile.topGenres,
-                        artists: profile.topArtists,
-                        selectedGenre: Binding(
-                            get: { engine.pinnedGenre },
-                            set: { _ in }
-                        ),
-                        onGenreSelected: { genre in
-                            Task { await engine.filterByGenre(genre) }
-                        }
-                    )
-                    .padding(.bottom, 20)
-                    .opacity(appeared ? 1 : 0)
-                    .animation(ONEAnimation.cardSpring.delay(0.05), value: appeared)
-                }
-
-                if engine.isLoading && engine.recommendations.isEmpty {
-                    // Yükleniyor
-                    RecommendationsSection(engine: engine) { onTap($0) }
-
-                } else if !engine.recommendations.isEmpty {
-
-                    // ── "SENİN İÇİN" — featured ──────────────────────
-                    sectionLabel("SENİN İÇİN")
-                        .padding(.bottom, 12)
-                        .opacity(appeared ? 1 : 0)
-                        .animation(ONEAnimation.cardSpring.delay(0.08), value: appeared)
-
-                    if let featured = engine.recommendations.first {
-                        FeaturedSongCard(
-                            recommendation: featured,
-                            moodColor: moodColor,
-                            onTap: { onTap(featured) }
-                        )
-                        .opacity(appeared ? 1 : 0)
-                        .animation(ONEAnimation.cardSpring, value: appeared)
-                        .padding(.bottom, 28)
-                    }
-
-                    // ── Keşfiyat grid ────────────────────────────────
-                    if engine.recommendations.count > 1 {
-                        sectionLabel("KEŞFET")
-                            .padding(.bottom, 12)
-                            .opacity(appeared ? 1 : 0)
-                            .animation(ONEAnimation.cardSpring.delay(0.12), value: appeared)
-
-                        LazyVGrid(columns: gridColumns, spacing: 16) {
-                            ForEach(Array(engine.recommendations.dropFirst().enumerated()), id: \.element.id) { index, rec in
-                                RecommendationCardView(recommendation: rec) { onTap(rec) }
-                                    .opacity(appeared ? 1 : 0)
-                                    .offset(y: appeared ? 0 : 12)
-                                    .animation(
-                                        ONEAnimation.cardSpring.delay(Double(index) * 0.04 + 0.14),
-                                        value: appeared
-                                    )
-                            }
-                        }
-                    }
-
-                } else if engine.error != nil {
-                    // Hata durumu
-                    RecommendationsSection(engine: engine) { onTap($0) }
-                } else {
-                    // Boş durum — müzik servisi bağlı değil / giriş yok
-                    emptyMusicState
-                }
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 16)
-            .padding(.bottom, 120)
-        }
-        .refreshable { await onRefresh() }
-    }
-
-    // MARK: - Helpers
-
-    private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .monoLabel(tracking: 1.4)
-            .foregroundColor(ONETokens.oneAsh)
-    }
-
-    private var emptyMusicState: some View {
-        VStack(spacing: 14) {
-            Image(systemName: "waveform.badge.magnifyingglass")
-                .displayMD()
-                .fontWeight(.light)
-                .foregroundColor(ONETokens.oneAsh)
-            Text(NSLocalizedString("discover.music.connect", comment: ""))
-                .displayXS()
-                .foregroundColor(ONETokens.oneInk)
-                .multilineTextAlignment(.center)
-            Text(NSLocalizedString("discover.music.connectHint", comment: ""))
-                .bodySM()
-                .foregroundColor(ONETokens.oneAsh)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
-        }
-        .padding(.top, 60)
-        .frame(maxWidth: .infinity)
-    }
-}
-
-// MARK: - Shimmer
-
-private struct ShimmerModifier: ViewModifier {
-    @State private var phase: CGFloat = 0
-
-    func body(content: Content) -> some View {
-        content
-            .overlay(
-                LinearGradient(
-                    gradient: Gradient(colors: [.clear, .white.opacity(0.35), .clear]),
-                    startPoint: .init(x: phase - 0.5, y: 0.5),
-                    endPoint: .init(x: phase + 0.5, y: 0.5)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusCard))
-            )
-            .onAppear {
-                withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
-                    phase = 1.5
-                }
-            }
-    }
-}
-
-private extension View {
-    func shimmering() -> some View { modifier(ShimmerModifier()) }
 }

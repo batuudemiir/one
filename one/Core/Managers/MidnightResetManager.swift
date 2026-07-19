@@ -94,6 +94,10 @@ class MidnightResetManager {
             // Lock Screen widget'ı günlük sıfırla (yeni gün = yeni seçim)
             WidgetDataWriter.clear()
 
+            // Günlük şarkı önerisi cache'ini temizle — sabah taze öneriler yüklensin
+            UserDefaults.standard.removeObject(forKey: "recommendedSongsCache_v1")
+            UserDefaults.standard.removeObject(forKey: "recommendedSongsCacheDate_v1")
+
             // Gece yarısında tüm Live Activity'leri kapat
             if #available(iOS 16.1, *) {
                 Task {

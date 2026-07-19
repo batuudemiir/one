@@ -6,9 +6,12 @@
 //  Sheet olarak açılır. .self_ durumunda hiçbir şey göstermez (caller guard).
 //
 
-import SwiftUI
+@preconcurrency import SwiftUI
 import Combine
 import CloudKit
+
+private final class TokenBox: @unchecked Sendable { var token: NSObjectProtocol? }
+private final class ResumedBox: @unchecked Sendable { var value = false }
 
 // MARK: - ViewModel
 
@@ -61,22 +64,23 @@ final class PublicProfileViewModel: ObservableObject {
         // Profil cache'de yoksa store fetch'inin tamamlanmasını bekle (en fazla 4 sn)
         if profile == nil {
             await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
-                var token: NSObjectProtocol?
-                var resumed = false
-                token = NotificationCenter.default.addObserver(
+                let box = TokenBox()
+                let resumed = ResumedBox()
+                let observer = NotificationCenter.default.addObserver(
                     forName: .userProfileDidChange, object: nil, queue: .main
                 ) { [weak self] notif in
                     guard let self,
                           let uid = notif.object as? String, uid == self.userID else { return }
-                    if let t = token { NotificationCenter.default.removeObserver(t) }
-                    guard !resumed else { return }
-                    resumed = true
+                    if let t = box.token { NotificationCenter.default.removeObserver(t) }
+                    guard !resumed.value else { return }
+                    resumed.value = true
                     cont.resume()
                 }
+                box.token = observer
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-                    if let t = token { NotificationCenter.default.removeObserver(t) }
-                    guard !resumed else { return }
-                    resumed = true
+                    if let t = box.token { NotificationCenter.default.removeObserver(t) }
+                    guard !resumed.value else { return }
+                    resumed.value = true
                     cont.resume()
                 }
             }

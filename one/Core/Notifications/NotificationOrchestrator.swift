@@ -31,10 +31,13 @@ final class NotificationOrchestrator: NSObject {
         static let dedupDayKey                = "notificationDedupDayKey"
         static let dedupWeekKey               = "notificationDedupWeekKey"
         static let milestonesCelebrated       = "milestonesCelebrated"
+        static let dailyReminderHour          = "dailyReminderHour"
+        static let dailyReminderMinute        = "dailyReminderMinute"
+        static let smartReminderLastHour      = "smartReminderLastAppliedHour"
     }
 
     private let center = UNUserNotificationCenter.current()
-    private var defaults: UserDefaults { .standard }
+    private var defaults: UserDefaults { UserDefaults(suiteName: "group.com.batudemir.ones") ?? .standard }
 
     // Max iOS pending limit is 64. Leave headroom for urgent schedules.
     private let pendingSoftLimit = 56
@@ -55,6 +58,7 @@ final class NotificationOrchestrator: NSObject {
         SundayReflectionScheduler.rescheduleAll()
         scheduleEchoReadyIfNeeded()
         MonthlyPortraitScheduler.rescheduleAll()
+        applySmartReminderIfReady()
     }
 
     // MARK: - Public: Quiet Hours
@@ -214,6 +218,7 @@ final class NotificationOrchestrator: NSObject {
     /// ve pending win-back zincirini resetler (Phase 2'de kullanılır).
     func onAppOpened() {
         EngagementTracker.markOpened()
+        applySmartReminderIfReady()
     }
 
     /// Kullanıcı mood kaydettiğinde çağrılır. Günün daily_reminder'ı iptal
@@ -238,6 +243,37 @@ final class NotificationOrchestrator: NSObject {
     /// senkronu garantiler).
     func onMidnight() {
         rollDailyWindowIfNeeded(force: true)
+    }
+
+    // MARK: - Akıllı Bildirim Saati
+
+    /// İlk 7 gün geçtikten sonra kullanıcının medyan açılış saatine göre
+    /// daily_reminder'ı yeniden programlar. Yalnızca mevcut ayardan ≥1 saat
+    /// fark varsa güncelleme yapar; gereksiz reschedule önlenir.
+    func applySmartReminderIfReady() {
+        guard defaults.bool(forKey: Key.notificationsEnabled) else { return }
+        guard let smartHour = EngagementTracker.computeSmartReminderHour() else { return }
+
+        let storedHour = defaults.integer(forKey: Key.dailyReminderHour)
+        let currentHour = storedHour == 0 ? 20 : storedHour
+        let lastApplied = defaults.integer(forKey: Key.smartReminderLastHour)
+
+        // Zaten bu saate uygulandıysa ve mevcut ayar da aynıysa atla
+        guard smartHour != lastApplied || abs(smartHour - currentHour) >= 1 else { return }
+        guard abs(smartHour - currentHour) >= 1 else { return }
+
+        let jitter = EngagementTracker.stableJitterMinute
+        defaults.set(smartHour, forKey: Key.dailyReminderHour)
+        defaults.set(jitter, forKey: Key.dailyReminderMinute)
+        defaults.set(smartHour, forKey: Key.smartReminderLastHour)
+
+        rescheduleDailyReminderForTomorrow()
+
+        AppAnalytics.shared.track(.smartNotificationScheduled(hour: smartHour))
+        ONELogger.info(
+            "Akıllı bildirim saati uygulandı: \(smartHour):\(String(format: "%02d", jitter)) (önceki: \(currentHour):00)",
+            category: .notification
+        )
     }
 
     // MARK: - Daily reminder helpers

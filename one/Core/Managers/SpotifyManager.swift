@@ -190,6 +190,7 @@ class SpotifyManager: NSObject, ObservableObject {
                 }
             } catch {
                 ONELogger.error("Token exchange decode failed", category: .spotify)
+                CrashReporter.shared.capture(error: error, context: ["operation": "spotifyTokenExchange"])
 #if DEBUG
                 ONELogger.error("Token exchange error detail: \(error)", category: .spotify)
 #endif

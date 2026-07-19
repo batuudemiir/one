@@ -40,8 +40,8 @@ struct CommentRowView: View {
     }
 
     private var resolvedAvatarURL: URL? {
+        // Fallback path — used only when UserProfileStore image cache misses.
         authorProfile?.profilePhotoFileURL
-            ?? comment.authorProfilePhotoFileURL
     }
 
     private var canDelete: Bool {
@@ -84,6 +84,8 @@ struct CommentRowView: View {
             UserProfileStore.shared.prefetch([comment.authorUserID])
             if comment.authorUserID == currentUserID, let img = ProfileViewModel.loadProfilePhotoFromDisk() {
                 avatarImage = img
+            } else if let img = UserProfileStore.shared.profileImage(for: comment.authorUserID) {
+                avatarImage = img
             } else {
                 loadAvatarIfNeeded()
             }
@@ -91,8 +93,12 @@ struct CommentRowView: View {
         .onReceive(NotificationCenter.default.publisher(for: .userProfileDidChange)) { notif in
             guard let uid = notif.object as? String, uid == comment.authorUserID else { return }
             authorProfile = UserProfileStore.shared.snapshot(for: uid)
-            lastLoadedAvatarURL = nil
-            loadAvatarIfNeeded()
+            if let img = UserProfileStore.shared.profileImage(for: uid) {
+                avatarImage = img
+            } else {
+                lastLoadedAvatarURL = nil
+                loadAvatarIfNeeded()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .profilePhotoDidChange)) { _ in
             guard comment.authorUserID == currentUserID else { return }
@@ -160,6 +166,12 @@ struct CommentRowView: View {
 
     /// Profil fotoğrafını background thread'de yükler ve cache'ler.
     private func loadAvatarIfNeeded() {
+        // Fast path: store image cache'i kontrol et.
+        if let img = UserProfileStore.shared.profileImage(for: comment.authorUserID) {
+            avatarImage = img
+            return
+        }
+        // Fallback: profilePhotoFileURL'den yükle (URL hâlâ geçerliyse).
         guard let url = resolvedAvatarURL else {
             avatarImage = nil
             lastLoadedAvatarURL = nil
@@ -185,24 +197,24 @@ struct CommentRowView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(resolvedDisplayName)
-                    .font(.subheadline.weight(.semibold))
+                    .font(ONETypography.bodySMMedium)
                     .foregroundStyle(.primary)
 
                 HStack(spacing: 6) {
                     Image(systemName: "music.note")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(ONETypography.monoLabel)
                         .foregroundStyle(.secondary)
 
                     VStack(alignment: .leading, spacing: 1) {
                         if !songName.isEmpty {
                             Text(songName)
-                                .font(.caption.weight(.medium))
+                                .font(ONETypography.bodyXSMedium)
                                 .foregroundStyle(.primary)
                                 .lineLimit(1)
                         }
                         if !artistName.isEmpty {
                             Text(artistName)
-                                .font(.caption2)
+                                .font(ONETypography.monoSM)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
                         }
@@ -215,15 +227,15 @@ struct CommentRowView: View {
         } else {
             Group {
                 Text(resolvedDisplayName)
-                    .font(.subheadline.weight(.semibold))
+                    .font(ONETypography.bodySMMedium)
                     .foregroundStyle(.primary)
                 + Text("  ")
                 + Text(comment.body)
-                    .font(.subheadline)
+                    .font(ONETypography.bodySM)
                     .foregroundStyle(.primary)
                 + (comment.isEdited
                    ? Text("  düzenlendi")
-                        .font(.caption)
+                        .font(ONETypography.monoSM)
                         .foregroundStyle(.tertiary)
                         .italic()
                    : Text(""))
@@ -238,7 +250,7 @@ struct CommentRowView: View {
 
     private var timeRow: some View {
         Text(relativeTime(comment.createdAt))
-            .font(.caption)
+            .font(ONETypography.monoSM)
             .foregroundStyle(.tertiary)
     }
 
@@ -268,7 +280,7 @@ struct CommentRowView: View {
             }
         } label: {
             Image(systemName: "ellipsis")
-                .font(.caption)
+                .font(ONETypography.monoSM)
                 .foregroundStyle(.tertiary)
                 .frame(width: 36, height: 36)
                 .contentShape(Rectangle())

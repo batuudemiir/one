@@ -34,7 +34,6 @@
 "today.title" = "Pick today's song";
 "today.subtitle" = "Start your mood and day from here.";
 "today.moodSection" = "how are you feeling?";
-"today.feelingSection" = "what did this song leave in you?";
 "today.noteSection" = "leave a note";
 "today.notePlaceholder" = "write your thoughts...";
 "today.photoChange" = "change";
@@ -560,7 +559,6 @@
 "search.appleMusicPermission" = "Apple Music permission required. Please grant it from Settings.";
 
 /* --- CONFIRM SCREEN --- */
-"confirm.question" = "WHAT DOES THIS SONG EVOKE IN YOU?";
 
 /* --- DONE SCREEN --- */
 "done.saved" = "Saved.";
@@ -956,6 +954,10 @@
 "badges.streak3.desc" = "First loop closed";
 "badges.streak14.title" = "14 Days";
 "badges.streak14.desc" = "Two weeks in a row";
+"badges.totalEntry7.title" = "7 Entries";
+"badges.totalEntry7.desc" = "Seven days logged";
+"badges.totalEntry30.title" = "30 Entries";
+"badges.totalEntry30.desc" = "Thirty days logged";
 
 /* B5 — Widget install nudge */
 "widget.nudge.title" = "Mood in one tap";
@@ -1072,3 +1074,61 @@
 /* Accessibility — MoodBarStrip (Req 13) */
 "moodbarstrip.empty" = "Monthly mood distribution: no entries";
 "moodbarstrip.summary" = "Monthly mood distribution: %@";
+"today.passButton" = "skip today";
+"today.passedDay.title" = "skipped today.";
+"today.passedDay.sub" = "Your streak is safe.\nSee you tomorrow.";
+"today.passedDay.cta" = "log anyway";
+"confirm.songMicro.confirm" = "okay.";
+"confirm.songMicro.cancel" = "change";
+
+
+/* Auto-added missing keys */
+"accessibility.addFriend.foundUser" = "%@ found, tap to add";
+"accessibility.addFriend.profileCard" = "%@, invite code: %@";
+"accessibility.addFriend.qrCode" = "QR code: %@";
+"accessibility.camera.cancelTimer" = "Cancel timer";
+"accessibility.camera.filmFilter" = "Film filter";
+"accessibility.camera.flash" = "Flash";
+"accessibility.camera.flip" = "Flip camera";
+"accessibility.camera.grid" = "Grid";
+"accessibility.camera.shutter" = "Take photo";
+"accessibility.camera.shutterHint" = "Press shutter";
+"accessibility.camera.timer" = "Timer";
+"accessibility.circle.friendCardHint" = "Tap to see details";
+"accessibility.circle.premium" = "ONE+ member";
+"accessibility.circle.resonant" = "Same mood as you";
+"accessibility.circle.senCardEmpty" = "You haven\'t shared today";
+"accessibility.circle.senCardHint" = "Go to Today tab to pick your song";
+"accessibility.circle.senCardShared" = "Your share: %@, %@, %@ mood";
+"accessibility.circle.unseen" = "New share";
+"accessibility.discover.city" = "City: %@";
+"accessibility.discover.eventHint" = "Tap to see event details";
+"accessibility.profile.avatar" = "Profile photo";
+"accessibility.profile.avatarHint" = "Tap to enlarge";
+"accessibility.profile.editButton" = "Edit profile";
+"accessibility.profile.stats" = "Profile stats";
+"accessibility.today.changeSong" = "Change selection";
+"accessibility.today.lastYear" = "365 days ago: %@, %@, %@ mood";
+"accessibility.today.photoPreview" = "Attached photo";
+"accessibility.today.photoPreviewHint" = "Tap for full screen";
+"accessibility.today.retakePhoto" = "Retake photo";
+"accessibility.today.searchResult" = "%@, %@";
+"accessibility.today.searchResultHint" = "Select as today\'s song";
+"friendRequests.accept" = "Accept";
+"friendRequests.activitySection" = "Activity";
+"friendRequests.markAllRead" = "Mark All Read";
+"friendRequests.pending" = "Pending";
+"friendRequests.requestsSection" = "Friend Requests";
+"friendRequests.sentYouRequest" = "%@ sent you a friend request";
+"friendRequests.withdraw" = "Withdraw";
+"onboarding.notif.reminderTime" = "Reminder time";
+"onboarding.spotifyAlsoWorks" = "You can also use the app with Spotify";
+"profile.monthlySummary.lockedDesc" = "Unlocks in %d days";
+"today.moodSaved.a11y" = "Today's mood saved";
+
+/* Circle — arkadaşı olmayan kullanıcı için değer önizlemesi */
+"circle.empty.previewTitle" = "If you had 5 friends, this is what today would look like.";
+"circle.empty.previewSubtitle" = "The colors are theirs. You just get to look.";
+"circle.empty.invite" = "Invite a friend";
+"circle.empty.startAlone" = "Start on my own for now";
+"nav.echo" = "echo";

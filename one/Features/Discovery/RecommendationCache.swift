@@ -10,7 +10,6 @@ import Foundation
 class RecommendationCache {
     
     private let cacheKey = "cached_recommendations"
-    private let maxAge: TimeInterval = 3600 // 1 hour (reduced for more frequent refreshes)
     
     // MARK: - Save Recommendations
     
@@ -18,7 +17,8 @@ class RecommendationCache {
         let cached = CachedRecommendations(
             recommendations: recommendations,
             timestamp: Date(),
-            profileSnapshot: profile
+            profileSnapshot: profile,
+            cachedTotalEntries: profile?.totalEntries
         )
         
         let encoder = JSONEncoder()
@@ -35,26 +35,32 @@ class RecommendationCache {
     
     // MARK: - Get Cached Recommendations
     
-    func getCachedRecommendations() -> [SongRecommendation]? {
+    func getCachedRecommendations(currentTotalEntries: Int? = nil) -> [SongRecommendation]? {
         guard let data = UserDefaults.standard.data(forKey: cacheKey) else {
             return nil
         }
-        
+
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        
+
         guard let cached = try? decoder.decode(CachedRecommendations.self, from: data) else {
             ONELogger.warning("Failed to decode cached recommendations, clearing cache", category: .discovery)
             clearCache()
             return nil
         }
-        
-        guard cached.isValid(maxAge: maxAge) else {
-            ONELogger.info("Cache expired, clearing", category: .discovery)
+
+        guard cached.isValid(currentTotalEntries: currentTotalEntries) else {
+            if let current = currentTotalEntries,
+               let cachedCount = cached.cachedTotalEntries,
+               current > cachedCount {
+                ONELogger.info("Cache busted: profile has \(current) entries, cache had \(cachedCount)", category: .discovery)
+            } else {
+                ONELogger.info("Cache expired (not from today), clearing", category: .discovery)
+            }
             clearCache()
             return nil
         }
-        
+
         ONELogger.success("Loaded \(cached.recommendations.count) recommendations from cache", category: .discovery)
         return cached.recommendations
     }
@@ -73,7 +79,7 @@ class RecommendationCache {
             return false
         }
         
-        return cached.isValid(maxAge: maxAge)
+        return cached.isValid()
     }
     
     // MARK: - Clear Cache

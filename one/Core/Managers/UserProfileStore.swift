@@ -19,6 +19,7 @@
 import Foundation
 import CloudKit
 import Combine
+import UIKit
 
 extension Notification.Name {
     /// Belirli bir kullanıcının profili değiştiğinde yayılır.
@@ -40,6 +41,11 @@ final class UserProfileStore: ObservableObject {
 
     /// userID → en son bilinen profil snapshot'ı.
     private var cache: [String: PublicUserProfile] = [:]
+
+    /// userID → decode edilmiş profil fotoğrafı. CKAsset fileURL race-condition'ını önler:
+    /// fotoğraf CloudKit callback'te (background thread'de) decode edilir, CKRecord
+    /// scope dışına çıkmadan önce UIImage olarak burada saklanır.
+    private var imageCache: [String: UIImage] = [:]
 
     /// userID → fetch in-flight (race-condition önler).
     private var inflight: Set<String> = []
@@ -68,6 +74,20 @@ final class UserProfileStore: ObservableObject {
         cache[userID]
     }
 
+    /// Decode edilmiş profil fotoğrafını döndürür. Henüz yüklenmemişse nil.
+    func profileImage(for userID: String) -> UIImage? {
+        imageCache[userID]
+    }
+
+    /// Dışarıdan (ör. attachAuthorInfo) gelen fotoğrafları doğrudan cache'e yazar.
+    /// Her güncellenmiş userID için `.userProfileDidChange` yayar — satırlar reaktif yenilenir.
+    func upsertImages(_ images: [String: UIImage]) {
+        for (uid, img) in images {
+            imageCache[uid] = img
+            NotificationCenter.default.post(name: .userProfileDidChange, object: uid)
+        }
+    }
+
     /// Bir veya daha fazla userID'yi cache'le (henüz yoksa veya TTL geçtiyse).
     /// Tamamlandığında `.userProfileDidChange` notification'ları fire edilir.
     func prefetch(_ userIDs: [String]) {
@@ -89,6 +109,7 @@ final class UserProfileStore: ObservableObject {
     /// TTL'i baypas ederek tek bir kullanıcıyı taze çeker (örn. profile düzenlendiğinde).
     func invalidate(userID: String) {
         lastFetched.removeValue(forKey: userID)
+        imageCache.removeValue(forKey: userID)
         guard !inflight.contains(userID) else { return }
         inflight.insert(userID)
         fetchProfiles(userIDs: [userID])
@@ -111,6 +132,23 @@ final class UserProfileStore: ObservableObject {
             desiredKeys: Self.desiredKeys,
             resultsLimit: max(userIDs.count, 1)
         ) { [weak self] result in
+            // Background thread — CKRecord'lar hâlâ scope'da iken decode et.
+            // CKAsset fileURL'leri CKRecord deallocate olunca geçersiz olabilir;
+            // burada UIImage'e çevirmek stale-URL race'ini ortadan kaldırır.
+            var decodedImages: [String: UIImage] = [:]
+            if case .success(let (matches, _)) = result {
+                for rec in matches.compactMap({ try? $0.1.get() }) {
+                    guard let uid = rec["userID"] as? String else { continue }
+                    if let asset = rec["profilePhoto"] as? CKAsset,
+                       let url = asset.fileURL,
+                       let data = try? Data(contentsOf: url),
+                       let img = UIImage(data: data) {
+                        decodedImages[uid] = img
+                    }
+                }
+            }
+
+            let capturedImages = decodedImages
             Task { @MainActor [weak self] in
                 guard let self else { return }
                 userIDs.forEach { self.inflight.remove($0) }
@@ -124,6 +162,9 @@ final class UserProfileStore: ObservableObject {
                     guard let profile = PublicUserProfile(record: record) else { continue }
                     self.cache[profile.id] = profile
                     self.lastFetched[profile.id] = now
+                    if let img = capturedImages[profile.id] {
+                        self.imageCache[profile.id] = img
+                    }
                     NotificationCenter.default.post(
                         name: .userProfileDidChange,
                         object: profile.id

@@ -226,14 +226,6 @@ struct DayPreviewCard: View {
                             .lineLimit(1)
                     }
 
-                    if !entry.feelingLabel.isEmpty {
-                        Text("·")
-                            .monoMicro(tracking: 0.6)
-                            .foregroundColor(ONETokens.oneStone)
-                        Text(entry.feelingLabel.uppercased())
-                            .monoMicro(tracking: 0.8)
-                            .foregroundColor(ONETokens.oneAsh)
-                    }
                 }
                 .padding(.top, 2)
                 

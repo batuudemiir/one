@@ -19,15 +19,79 @@ struct TodayCompletedView: View {
     let onEdit: () -> Void
     let streakDays: Int
     let isFreezeActive: Bool
+    /// Kayıt sonrası opsiyonel ekler. `onEdit`'ten farklı: o yıkıcı (clearToday),
+    /// bunlar mevcut entry'yi bozmadan alan ekler.
+    let onAddPhoto: (() -> Void)?
+    let onAddNote: (() -> Void)?
 
     init(entry: DailyEntry,
          onEdit: @escaping () -> Void,
          streakDays: Int = 0,
-         isFreezeActive: Bool = false) {
+         isFreezeActive: Bool = false,
+         onAddPhoto: (() -> Void)? = nil,
+         onAddNote: (() -> Void)? = nil) {
         self.entry = entry
         self.onEdit = onEdit
         self.streakDays = streakDays
         self.isFreezeActive = isFreezeActive
+        self.onAddPhoto = onAddPhoto
+        self.onAddNote = onAddNote
+    }
+
+    // MARK: - "İstersen ekle" şeridi
+
+    /// Foto ve not artık ritüelin zorunlu adımları değil. Eksik olanlar
+    /// burada davet olarak duruyor — akışı bloklamadan.
+    @ViewBuilder
+    var optionalExtrasStrip: some View {
+        let needsPhoto = displayedEntry.photoURL == nil && onAddPhoto != nil
+        let needsNote  = (displayedEntry.note?.isEmpty ?? true) && onAddNote != nil
+
+        if needsPhoto || needsNote {
+            VStack(alignment: .leading, spacing: ONETokens.spacingSM) {
+                Text("İSTERSEN EKLE")
+                    .monoSM(tracking: 1.5)
+                    .foregroundStyle(ONETokens.oneMist)
+
+                HStack(spacing: ONETokens.spacingSM) {
+                    if needsPhoto {
+                        extraButton(icon: "camera", title: "fotoğraf", action: onAddPhoto)
+                    }
+                    if needsNote {
+                        extraButton(icon: "pencil", title: "bir şey yaz", action: onAddNote)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, ONETokens.spacingLG)
+        }
+    }
+
+    private func extraButton(icon: String, title: String, action: (() -> Void)?) -> some View {
+        Button(action: { action?() }) {
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundStyle(ONETokens.oneAsh)
+                Text(title)
+                    .font(ONETypography.bodyXS)
+                    .fontWeight(.medium)
+                    .foregroundStyle(ONETokens.oneShadow)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, ONETokens.spacingLG)
+            .background(
+                RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
+                    .fill(ONETokens.oneCreamMid)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
+                            .strokeBorder(ONETokens.oneInk.opacity(0.10),
+                                          style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
     }
 
     @ObservedObject private var globalUI = GlobalUIState.shared
@@ -75,6 +139,16 @@ struct TodayCompletedView: View {
     private func showSubtitle(available: CGFloat) -> Bool { available > 600 }
 
     var body: some View {
+        // #10 — Pas günü: minimal tamamlandı ekranı
+        if entry.passed {
+            PassedDayView(onEdit: onEdit)
+        } else {
+            mainCompletedBody
+        }
+    }
+
+    @ViewBuilder
+    private var mainCompletedBody: some View {
         GeometryReader { geo in
         let available = geo.size.height
         ZStack {
@@ -120,17 +194,6 @@ struct TodayCompletedView: View {
                             .displayLG()
                             .foregroundColor(ONETokens.oneInk)
                             .lineSpacing(2)
-                        // Bu hafta
-                        if !thisWeekEntries.isEmpty {
-                            HStack(spacing: 10) {
-                                WeeklyMoodRing(entries: thisWeekEntries, ringSize: 44)
-                                Text("bu hafta \(min(thisWeekEntries.count, 7)) gün")
-                                    .font(.custom("GeistMono-Regular", size: 10))
-                                    .tracking(0.6)
-                                    .foregroundColor(ONETokens.oneStone)
-                            }
-                            .padding(.top, 2)
-                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, ONETokens.spacingXL2)
@@ -196,14 +259,19 @@ struct TodayCompletedView: View {
                                 .accessibilityHint(NSLocalizedString("accessibility.today.photoPreviewHint", comment: "Fotoğrafı tam ekranda görüntülemek için dokunun"))
                                 .accessibilityAddTraits(.isButton)
                             } else {
-                                // Light Serenity: mood as atmosphere, not host
-                                ZStack {
-                                    ONETokens.onePaper
-                                    if let mood = ONEMood(hex: displayedEntry.moodColorHex) {
-                                        mood.atmosphereGradient()
-                                    }
+                                // No photo — mood color clearly visible
+                                if let mood = ONEMood(hex: displayedEntry.moodColorHex) {
+                                    LinearGradient(
+                                        stops: [
+                                            .init(color: mood.pastelColor,              location: 0.0),
+                                            .init(color: mood.pastelColor.opacity(0.5), location: 1.0)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                } else {
+                                    ONETokens.oneSilver
                                 }
-                                .accessibilityHidden(true)
                             }
                             
                             // Time badge
@@ -279,20 +347,6 @@ struct TodayCompletedView: View {
                                         .fill((ONEMood(hex: displayedEntry.moodColorHex)?.pastelColor ?? displayedEntry.moodColor).opacity(0.12))
                                 )
                                 
-                                // Feeling
-                                HStack(spacing: 6) {
-                                    FeelingIconView(type: displayedEntry.feeling)
-                                        .frame(width: 20, height: 16)
-                                    Text(displayedEntry.feelingLabel.uppercased())
-                                        .monoLabel(tracking: 1.2)
-                                        .foregroundColor(ONETokens.oneCharcoal)
-                                }
-                                .padding(.horizontal, ONETokens.spacingMD)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule()
-                                        .fill(ONETokens.oneCreamMid)
-                                )
                             }
                             
                             // Weather & Share info
@@ -354,6 +408,9 @@ struct TodayCompletedView: View {
                                 )
                                 .padding(.top, ONETokens.spacingLG)
                             }
+
+                            // Ritüel 2 adıma indi — eksik kalanlar burada davet olarak duruyor
+                            optionalExtrasStrip
 
                             // Divider
                             Rectangle()
@@ -622,11 +679,8 @@ struct TodayCompletedView: View {
         }
         .task {
             loadThisWeekEntries()
-            UNUserNotificationCenter.current().getNotificationSettings { settings in
-                DispatchQueue.main.async {
-                    notifStatus = settings.authorizationStatus
-                }
-            }
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            notifStatus = settings.authorizationStatus
             CloudKitManager.shared.fetchFriendsDailyShares(for: Date()) { result in
                 DispatchQueue.main.async {
                     friendsLoading = false
@@ -974,6 +1028,12 @@ struct StoryCardShareSheet: View {
                                 .frame(width: 8, height: 8)
                                 .scaleEffect(breathe ? 1.4 : 0.8)
                                 .opacity(breathe ? 1.0 : 0.4)
+                                .animation(
+                                    isGeneratingCard
+                                        ? .easeInOut(duration: 1.2).repeatForever(autoreverses: true)
+                                        : .default,
+                                    value: breathe
+                                )
                             
                             Text(NSLocalizedString("today.cardLoading", comment: ""))
                                 .monoBase(tracking: 0.5)
@@ -1079,14 +1139,8 @@ struct StoryCardShareSheet: View {
         } message: {
             Text(errorMessage ?? NSLocalizedString("general.error", comment: ""))
         }
-        .onChange(of: isGeneratingCard) { oldValue, newValue in
-            if newValue {
-                withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
-                    breathe = true
-                }
-            } else {
-                breathe = false
-            }
+        .onChange(of: isGeneratingCard) { _, newValue in
+            breathe = newValue
         }
     }
     
@@ -1156,6 +1210,42 @@ struct StoryCardShareSheet: View {
                 errorMessage = error.localizedDescription
                 showError = true
                 ONEHaptics.error()
+            }
+        }
+    }
+}
+
+// MARK: - #10 Pas Günü Görünümü
+
+private struct PassedDayView: View {
+    let onEdit: () -> Void
+
+    var body: some View {
+        ZStack {
+            ONETokens.oneCream.ignoresSafeArea()
+            VStack(spacing: 24) {
+                Spacer()
+                Text("—")
+                    .font(.system(size: 48, weight: .thin))
+                    .foregroundColor(ONETokens.oneMist)
+                VStack(spacing: 8) {
+                    Text(NSLocalizedString("today.passedDay.title", comment: ""))
+                        .displayMD()
+                        .foregroundColor(ONETokens.oneAsh)
+                    Text(NSLocalizedString("today.passedDay.sub", comment: ""))
+                        .monoSM(tracking: 0.4)
+                        .foregroundColor(ONETokens.oneMist)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                }
+                Spacer()
+                Button(action: onEdit) {
+                    Text(NSLocalizedString("today.passedDay.cta", comment: ""))
+                        .monoSM(tracking: 1.0)
+                        .foregroundColor(ONETokens.oneAsh)
+                        .padding(.vertical, 12)
+                }
+                .padding(.bottom, 48)
             }
         }
     }

@@ -127,14 +127,15 @@ final class CommentThreadViewModel: ObservableObject {
     private func fetchShareInfo() {
         let recordID = CKRecord.ID(recordName: shareRecordName)
         CloudKitManager.shared.publicDatabase.fetch(withRecordID: recordID) { [weak self] record, _ in
-            guard let record else { return }
+            guard let self, let record else { return }
+            let info = ShareSongInfo(
+                songName:          record["songName"]    as? String ?? "",
+                artistName:        record["artistName"]  as? String ?? "",
+                albumArtURLString: record["albumArtURL"] as? String,
+                moodColorHex:      record["moodColor"]   as? String ?? "#888888"
+            )
             Task { @MainActor in
-                self?.shareInfo = ShareSongInfo(
-                    songName:          record["songName"]    as? String ?? "",
-                    artistName:        record["artistName"]  as? String ?? "",
-                    albumArtURLString: record["albumArtURL"] as? String,
-                    moodColorHex:      record["moodColor"]   as? String ?? "#888888"
-                )
+                self.shareInfo = info
             }
         }
     }
@@ -260,11 +261,11 @@ struct CommentThreadView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(info.songName)
-                    .font(.subheadline.weight(.semibold))
+                    .font(ONETypography.bodySMMedium)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 Text(info.artistName)
-                    .font(.caption)
+                    .font(ONETypography.bodyXS)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
@@ -295,11 +296,11 @@ struct CommentThreadView: View {
                 // Ortalanmış başlık
                 VStack(spacing: 2) {
                     Text(vm.comments.isEmpty ? "Yorumlar" : "\(vm.comments.count) Yorum")
-                        .font(.headline.weight(.semibold))
+                        .font(ONETypography.displayXS)
                         .foregroundStyle(.primary)
                     if !vm.comments.isEmpty {
                         Text("Konuşmaya katıl")
-                            .font(.caption)
+                            .font(ONETypography.monoSM)
                             .foregroundStyle(.tertiary)
                     }
                 }
@@ -336,7 +337,7 @@ struct CommentThreadView: View {
     private var header: some View {
         HStack(spacing: 6) {
             Text(vm.comments.isEmpty ? "Yorumlar" : "\(vm.comments.count) yorum")
-                .font(.subheadline.weight(.semibold))
+                .font(ONETypography.bodySMMedium)
                 .foregroundStyle(.primary)
 
             Spacer()
@@ -350,7 +351,7 @@ struct CommentThreadView: View {
                     vm.load()
                 } label: {
                     Image(systemName: "arrow.clockwise")
-                        .font(.caption)
+                        .font(ONETypography.monoSM)
                         .foregroundStyle(.tertiary)
                 }
                 .accessibilityLabel("Yorumları yenile")
@@ -414,10 +415,10 @@ struct CommentThreadView: View {
 
             VStack(spacing: 4) {
                 Text("Henüz yorum yok")
-                    .font(.subheadline.weight(.medium))
+                    .font(ONETypography.bodySMMedium)
                     .foregroundStyle(.secondary)
                 Text("İlk sesin sen ol.")
-                    .font(.footnote)
+                    .font(ONETypography.bodyXS)
                     .foregroundStyle(.tertiary)
             }
         }
@@ -437,10 +438,10 @@ struct CommentThreadView: View {
 
             VStack(spacing: 4) {
                 Text("Yorumlar yüklenemedi")
-                    .font(.subheadline.weight(.medium))
+                    .font(ONETypography.bodySMMedium)
                     .foregroundStyle(.secondary)
                 Text(message)
-                    .font(.caption)
+                    .font(ONETypography.bodyXS)
                     .foregroundStyle(.tertiary)
                     .multilineTextAlignment(.center)
             }
@@ -450,7 +451,7 @@ struct CommentThreadView: View {
                 vm.load()
             } label: {
                 Text("Tekrar dene")
-                    .font(.footnote.weight(.semibold))
+                    .font(ONETypography.monoBase)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 7)
                     .background(Color(.systemFill), in: Capsule())
@@ -466,16 +467,16 @@ struct CommentThreadView: View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.circle.fill")
                 .foregroundStyle(.orange)
-                .font(.footnote)
+                .font(ONETypography.bodyXS)
             Text(message)
-                .font(.caption)
+                .font(ONETypography.bodyXS)
                 .foregroundStyle(.secondary)
             Spacer()
             Button {
                 vm.errorMessage = nil
             } label: {
                 Image(systemName: "xmark")
-                    .font(.caption2)
+                    .font(ONETypography.monoSM)
                     .foregroundStyle(.tertiary)
             }
         }

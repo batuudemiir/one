@@ -54,6 +54,16 @@ class SpotifyRecommendationService {
                 }
             }
 
+            // Resolve track IDs from user's saved song names
+            if derivedTrackIds.isEmpty && !profile.topSongs.isEmpty {
+                for song in profile.topSongs.prefix(3) {
+                    if let tid = await resolveTrackId(songName: song.name, artistName: song.artist, token: token) {
+                        derivedTrackIds.append(tid)
+                    }
+                    if derivedTrackIds.count >= 3 { break }
+                }
+            }
+
             if derivedTrackIds.isEmpty {
                 // True fallback: genre + artist seeds (original behaviour)
                 seedGenres = Array(uniqueShuffled.prefix(3))
@@ -163,7 +173,7 @@ class SpotifyRecommendationService {
                     coverURL: track.album.artworkURL,
                     spotifyURL: nil,
                     genre: nil,
-                    recommendationReason: generateReason(track, profile),
+                    recommendationReason: nil,
                     source: .spotify
                 )
             }
@@ -326,6 +336,24 @@ class SpotifyRecommendationService {
         }
     }
     
+    // MARK: - Helper: Resolve Track ID by Song Name
+
+    private func resolveTrackId(songName: String, artistName: String, token: String) async -> String? {
+        let query = "\(songName) \(artistName)"
+            .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let urlStr = "https://api.spotify.com/v1/search?q=\(query)&type=track&limit=1"
+        guard let url = URL(string: urlStr) else { return nil }
+        var req = URLRequest(url: url)
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        guard let (data, resp) = try? await URLSession.shared.data(for: req),
+              (resp as? HTTPURLResponse)?.statusCode == 200,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let tracks = (json["tracks"] as? [String: Any])?["items"] as? [[String: Any]],
+              let firstId = tracks.first?["id"] as? String
+        else { return nil }
+        return firstId
+    }
+
     // MARK: - Helper: Get Top Track for Artist
 
     /// Fetches the #1 track from an artist's top-tracks (market=TR).

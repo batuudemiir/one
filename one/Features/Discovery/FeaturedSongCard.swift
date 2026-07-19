@@ -57,17 +57,6 @@ struct FeaturedSongCard: View {
 
                 // ── Song info (bottom) ─────────────────────────────────
                 VStack(alignment: .leading, spacing: 7) {
-                    // Recommendation reason
-                    if let reason = recommendation.recommendationReason {
-                        HStack(spacing: 4) {
-                            Image(systemName: "sparkles")
-                                .font(.system(size: 8, weight: .medium))
-                            Text(reason.uppercased())
-                                .monoLabel(tracking: 0.9)
-                        }
-                        .foregroundColor(.white.opacity(0.65))
-                    }
-
                     // Song title
                     Text(recommendation.name)
                         .displayXS()

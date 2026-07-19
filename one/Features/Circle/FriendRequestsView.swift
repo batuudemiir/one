@@ -2,14 +2,22 @@
 //  FriendRequestsView.swift
 //  one
 //
-//  Çevre Bildirimleri — tek birleşik Instagram tarzı aktivite akışı
+//  Çevre Bildirimleri — tek birleşik aktivite akışı
 //  Arkadaşlık istekleri + tüm çevre aktiviteleri tek listede
 //
 
 import SwiftUI
 import CloudKit
 
-// MARK: - FriendRequestsView (Birleşik Aktivite Akışı)
+// MARK: - Feed Grouping
+
+private enum FeedSection: String {
+    case today    = "Bugün"
+    case thisWeek = "Bu Hafta"
+    case earlier  = "Daha Önce"
+}
+
+// MARK: - FriendRequestsView
 
 struct FriendRequestsView: View {
     @Environment(\.dismiss) var dismiss
@@ -20,39 +28,42 @@ struct FriendRequestsView: View {
     @State private var isLoading = false
     @State private var processingIDs: Set<String> = []
 
-    // Sheet state
-    @State private var selectedCommentShareName: IdentifiableString? = nil   // comment taps
-    @State private var fetchedFriendShare: IdentifiableCKRecord? = nil        // friendShare taps
+    @State private var selectedCommentShareName: IdentifiableString? = nil
+    @State private var fetchedFriendShare: IdentifiableCKRecord? = nil
     @State private var isFetchingShare = false
 
     // MARK: - Computed
 
-    private var incoming: [FriendNotificationItem] {
-        items.filter { if case .incoming = $0 { return true }; return false }
-    }
-    private var outgoing: [FriendNotificationItem] {
-        items.filter { if case .outgoing = $0 { return true }; return false }
+    private var unifiedFeed: [UnifiedFeedItem] {
+        let requestItems = items.map { UnifiedFeedItem.request($0) }
+        let activityItems = notificationStore.activityNotifications.map { UnifiedFeedItem.activity($0) }
+        return (requestItems + activityItems).sorted { $0.date > $1.date }
     }
 
-    /// Birleşik akış: istek kartları üstte, aktivite akışı altta
-    private var unifiedSections: [NotificationSection] {
-        var sections: [NotificationSection] = []
+    private var groupedFeed: [(section: FeedSection, items: [UnifiedFeedItem])] {
+        let cal = Calendar.current
+        let now = Date()
+        let todayStart  = cal.startOfDay(for: now)
+        let weekStart   = cal.date(byAdding: .day, value: -7, to: now) ?? now
 
-        // Bölüm 1: Bekleyen arkadaşlık istekleri (live CloudKit)
-        let requestItems = (incoming.map { $0 } + outgoing.map { $0 })
-            .sorted { $0.date > $1.date }
-        if !requestItems.isEmpty {
-            sections.append(.requests(requestItems))
+        var today: [UnifiedFeedItem] = []
+        var week: [UnifiedFeedItem] = []
+        var earlier: [UnifiedFeedItem] = []
+
+        for item in unifiedFeed {
+            if item.date >= todayStart        { today.append(item) }
+            else if item.date >= weekStart    { week.append(item) }
+            else                              { earlier.append(item) }
         }
 
-        // Bölüm 2: Aktivite akışı (store'dan)
-        let activities = notificationStore.activityNotifications
-        if !activities.isEmpty {
-            sections.append(.activity(activities))
-        }
-
-        return sections
+        var result: [(section: FeedSection, items: [UnifiedFeedItem])] = []
+        if !today.isEmpty   { result.append((.today, today)) }
+        if !week.isEmpty    { result.append((.thisWeek, week)) }
+        if !earlier.isEmpty { result.append((.earlier, earlier)) }
+        return result
     }
+
+    // MARK: - Body
 
     var body: some View {
         NavigationStack {
@@ -61,7 +72,7 @@ struct FriendRequestsView: View {
 
                 if isLoading && items.isEmpty && notificationStore.notifications.isEmpty {
                     skeletonList
-                } else if unifiedSections.isEmpty {
+                } else if groupedFeed.isEmpty {
                     emptyState
                 } else {
                     unifiedList
@@ -109,189 +120,208 @@ struct FriendRequestsView: View {
         }
     }
 
-    // MARK: - Unified List
+    // MARK: - Unified List (sectioned)
 
     private var unifiedList: some View {
         ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 10) {
-                ForEach(unifiedSections) { section in
-                    switch section {
-                    case .requests(let requestItems):
-                        // İstek bölümü başlığı
-                        SectionHeader(
-                            icon: "person.badge.plus",
-                            title: NSLocalizedString("friendRequests.requestsSection", comment: ""),
-                            count: requestItems.count
-                        )
-                        .padding(.horizontal, 20)
+            LazyVStack(spacing: 0, pinnedViews: []) {
+                ForEach(groupedFeed, id: \.section.rawValue) { group in
+                    sectionHeader(group.section)
 
-                        ForEach(Array(requestItems.enumerated()), id: \.element.id) { index, item in
-                            Group {
+                    ForEach(Array(group.items.enumerated()), id: \.element.id) { index, feedItem in
+                        Group {
+                            switch feedItem {
+                            case .request(let item):
                                 switch item {
                                 case .incoming(let req, let sender):
                                     incomingCard(req: req, sender: sender)
                                 case .outgoing(let req, let receiver):
                                     outgoingCard(req: req, receiver: receiver)
                                 }
+                            case .activity(let notif):
+                                activityCard(notif)
                             }
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                            .animation(
-                                .spring(response: 0.35, dampingFraction: 0.8)
-                                .delay(Double(index) * 0.05),
-                                value: requestItems.count
-                            )
                         }
-
-                    case .activity(let activities):
-                        // Aktivite bölümü başlığı
-                        SectionHeader(
-                            icon: "bell.fill",
-                            title: NSLocalizedString("friendRequests.activitySection", comment: ""),
-                            count: activities.count
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                        .animation(
+                            .spring(response: 0.35, dampingFraction: 0.8)
+                                .delay(Double(index) * 0.04),
+                            value: unifiedFeed.count
                         )
-                        .padding(.horizontal, 20)
-                        .padding(.top, requestSection.isEmpty ? 0 : 12)
 
-                        ForEach(Array(activities.enumerated()), id: \.element.id) { index, notif in
-                            activityCard(notif)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
-                                .animation(
-                                    .spring(response: 0.35, dampingFraction: 0.8)
-                                    .delay(Double(index) * 0.03),
-                                    value: activities.count
-                                )
+                        if index < group.items.count - 1 {
+                            Divider()
+                                .padding(.leading, 76)
+                                .padding(.trailing, 20)
                         }
                     }
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 8)
             .padding(.bottom, 40)
         }
         .refreshable { load() }
     }
 
-    private var requestSection: [FriendNotificationItem] {
-        (incoming + outgoing).sorted { $0.date > $1.date }
-    }
-
     // MARK: - Section Header
 
-    private struct SectionHeader: View {
-        let icon: String
-        let title: String
-        let count: Int
-
-        var body: some View {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .monoBase()
-                    .foregroundColor(ONETokens.oneAsh)
-                Text(title)
-                    .monoSM(tracking: 0.8)
-                    .foregroundColor(ONETokens.oneAsh)
-                if count > 0 {
-                    Text("\(count)")
-                        .monoMicro().fontWeight(.bold)
-                        .foregroundColor(ONETokens.oneCream)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Capsule().fill(ONETokens.oneInk))
-                }
-                Spacer()
-            }
+    private func sectionHeader(_ section: FeedSection) -> some View {
+        HStack(spacing: 10) {
+            Text(section.rawValue.uppercased())
+                .monoSM(tracking: 1.5)
+                .foregroundColor(ONETokens.oneMist)
+            Rectangle()
+                .fill(ONETokens.oneSilver)
+                .frame(height: 1)
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 24)
+        .padding(.bottom, 6)
     }
 
-    // MARK: - Activity Card (Instagram tarzı)
+    // MARK: - Activity Card
 
     @ViewBuilder
     private func activityCard(_ notif: CircleNotification) -> some View {
-        HStack(spacing: 16) {
-            // Sol ikon — mood rengi veya tip ikonu
-            ZStack {
-                Circle()
-                    .fill(activityIconBackground(notif))
-                    .frame(width: 48, height: 48)
-                if let emoji = notif.emoji {
-                    Text(emoji)
-                        .font(.system(size: 22))
+        HStack(alignment: .top, spacing: 0) {
+            // Unread accent bar
+            Group {
+                if !notif.isRead {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(accentColor(for: notif))
+                        .frame(width: 3)
+                        .padding(.vertical, 18)
+                        .padding(.leading, 8)
                 } else {
-                    Image(systemName: activityIcon(notif))
-                        .bodyXL().fontWeight(.medium)
-                        .foregroundColor(activityIconColor(notif))
+                    Color.clear.frame(width: 11)
                 }
             }
 
-            // İçerik
-            VStack(alignment: .leading, spacing: 4) {
-                Text(notif.title)
-                    .bodySM().fontWeight(notif.isRead ? .medium : .bold)
-                    .foregroundColor(ONETokens.oneInk)
-                    .lineLimit(2)
-                
-                if !notif.body.isEmpty {
-                    Text(notif.body)
-                        .bodyXS()
-                        .foregroundColor(ONETokens.oneMist)
-                        .lineLimit(2)
-                }
-                
-                HStack(spacing: 6) {
-                    Text(relativeTime(notif.date))
-                        .monoBase()
-                        .foregroundColor(ONETokens.oneMist)
-                    
-                    if let hex = notif.moodColorHex {
-                        Circle()
-                            .fill(Color(hex: hex))
-                            .frame(width: 8, height: 8)
+            HStack(alignment: .top, spacing: 14) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(activityIconBackground(notif))
+                        .frame(width: 44, height: 44)
+                    if let emoji = notif.emoji {
+                        Text(emoji)
+                            .font(.system(size: 20))
+                    } else {
+                        Image(systemName: activityIcon(notif))
+                            .bodyMD().fontWeight(.medium)
+                            .foregroundColor(activityIconColor(notif))
                     }
                 }
-            }
+                .padding(.top, 2)
 
-            Spacer()
+                // Content
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(notif.title)
+                        .bodySM()
+                        .fontWeight(notif.isRead ? .medium : .semibold)
+                        .foregroundColor(ONETokens.oneInk)
+                        .lineLimit(2)
+
+                    // Type-specific body
+                    if notif.type == .comment && !notif.body.isEmpty {
+                        commentExcerptView(notif.body, moodHex: notif.moodColorHex)
+                    } else if !notif.body.isEmpty {
+                        Text(notif.body)
+                            .bodyXS()
+                            .foregroundColor(ONETokens.oneMist)
+                            .lineLimit(2)
+                    }
+
+                    Text(relativeTime(notif.date))
+                        .monoBase()
+                        .foregroundColor(ONETokens.oneMist.opacity(0.65))
+                        .padding(.top, 1)
+                }
+
+                Spacer(minLength: 8)
+
+                // Unread dot
+                if !notif.isRead {
+                    Circle()
+                        .fill(accentColor(for: notif))
+                        .frame(width: 8, height: 8)
+                        .padding(.top, 8)
+                }
+            }
+            .padding(.vertical, 15)
+            .padding(.trailing, 20)
+            .padding(.leading, 12)
         }
-        .padding(.vertical, 14)
-        .padding(.horizontal, 20)
-        .background(notif.isRead ? Color.clear : ONETokens.oneCreamLow.opacity(0.5))
+        .background(notif.isRead ? Color.clear : ONETokens.oneCreamLow.opacity(0.45))
         .contentShape(Rectangle())
         .onTapGesture { handleActivityTap(notif) }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(notif.title + (notif.body.isEmpty ? "" : ", " + notif.body))
+        .accessibilityHint(notif.isRead ? "" : NSLocalizedString("accessibility.unread", comment: ""))
     }
 
-    // MARK: - Activity Helpers
+    // MARK: - Comment Excerpt View
+
+    @ViewBuilder
+    private func commentExcerptView(_ text: String, moodHex: String?) -> some View {
+        HStack(spacing: 0) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(
+                    moodHex.flatMap { h in h.isValidHexColor ? Color(hex: h) : nil }
+                    ?? ONETokens.oneMist.opacity(0.5)
+                )
+                .frame(width: 3)
+
+            Text(text)
+                .bodyXS()
+                .foregroundColor(ONETokens.oneInk.opacity(0.65))
+                .lineLimit(2)
+                .padding(.horizontal, 9)
+                .padding(.vertical, 6)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(ONETokens.oneCreamLow.opacity(0.7))
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+    }
+
+    // MARK: - Activity Icon Helpers
 
     private func activityIcon(_ notif: CircleNotification) -> String {
         switch notif.type {
-        case .friendAccepted: return "person.fill.checkmark"
-        case .friendShare:    return "music.note"
-        case .emojiReaction:  return "heart.fill"
-        case .friendRequest:  return "person.badge.plus"
-        case .comment:        return "bubble.left.fill"
-        case .moodResonance:  return "wave.3.forward"
-        case .resonance:      return "wave.3.right"
+        case .friendAccepted:  return "person.fill.checkmark"
+        case .friendShare:     return "music.note"
+        case .emojiReaction:   return "heart.fill"
+        case .friendRequest:   return "person.badge.plus"
+        case .comment:         return "bubble.left.fill"
+        case .moodResonance:   return "wave.3.forward"
+        case .resonance:       return "wave.3.right"
         case .outgoingRequest: return "paperplane"
         }
     }
 
     private func activityIconColor(_ notif: CircleNotification) -> Color {
         switch notif.type {
-        case .friendAccepted: return .green
-        case .friendShare:    return .blue
-        case .emojiReaction:  return .orange
-        case .friendRequest:  return ONETokens.oneInk
-        case .comment:        return .purple
-        case .moodResonance:  return Color(hex: (notif.moodColorHex?.isValidHexColor == true ? notif.moodColorHex! : "#888888"))
-        case .resonance:      return Color(hex: (notif.moodColorHex?.isValidHexColor == true ? notif.moodColorHex! : "#888888"))
+        case .friendAccepted:  return Color(hex: "#4CAF82")
+        case .friendShare:     return Color(hex: "#5B8DEF")
+        case .emojiReaction:   return Color(hex: "#FF8C42")
+        case .friendRequest:   return ONETokens.oneInk
+        case .comment:         return Color(hex: "#9B7FD4")
+        case .moodResonance, .resonance:
+            if let hex = notif.moodColorHex, hex.isValidHexColor { return Color(hex: hex) }
+            return ONETokens.oneMist
         case .outgoingRequest: return ONETokens.oneAsh
         }
     }
 
     private func activityIconBackground(_ notif: CircleNotification) -> Color {
-        if let hex = notif.moodColorHex {
-            return Color(hex: hex).opacity(0.15)
+        if let hex = notif.moodColorHex, hex.isValidHexColor {
+            return Color(hex: hex).opacity(0.14)
         }
-        return activityIconColor(notif).opacity(0.15)
+        return activityIconColor(notif).opacity(0.12)
+    }
+
+    private func accentColor(for notif: CircleNotification) -> Color {
+        if let hex = notif.moodColorHex, hex.isValidHexColor { return Color(hex: hex) }
+        return activityIconColor(notif)
     }
 
     private func handleActivityTap(_ notif: CircleNotification) {
@@ -299,12 +329,10 @@ struct FriendRequestsView: View {
 
         switch notif.type {
         case .comment, .resonance:
-            // Kendi paylaşımıma gelen yorum — doğrudan yorum thread'i
             if let shareName = notif.shareRecordName {
                 selectedCommentShareName = IdentifiableString(shareName)
             }
         case .friendShare:
-            // Arkadaşın paylaşımı — CKRecord fetch edip detay aç
             if let shareName = notif.shareRecordName, !isFetchingShare {
                 isFetchingShare = true
                 let recordID = CKRecord.ID(recordName: shareName)
@@ -313,7 +341,6 @@ struct FriendRequestsView: View {
                         self.isFetchingShare = false
                         guard let record else { return }
                         let displayName = notif.relatedUserID.flatMap { _ in
-                            // Title'dan ad parçasını al: "X paylaşım yaptı 🎵"
                             notif.title.components(separatedBy: " paylaşım").first
                         } ?? ""
                         self.fetchedFriendShare = IdentifiableCKRecord(record, displayName: displayName)
@@ -325,75 +352,7 @@ struct FriendRequestsView: View {
         }
     }
 
-    // MARK: - Skeleton
-
-    private var skeletonList: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 0) {
-                ForEach(0..<4, id: \.self) { i in
-                    skeletonCard
-                        .animation(.easeInOut(duration: 0.6).delay(Double(i) * 0.1).repeatForever(autoreverses: true),
-                                   value: isLoading)
-                }
-            }
-            .padding(.top, 8)
-        }
-    }
-
-    private var skeletonCard: some View {
-        HStack(spacing: 16) {
-            Circle()
-                .fill(ONETokens.oneCreamMid)
-                .frame(width: 48, height: 48)
-            VStack(alignment: .leading, spacing: 7) {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(ONETokens.oneCreamMid)
-                    .frame(width: 140, height: 12)
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(ONETokens.oneSilver)
-                    .frame(width: 90, height: 9)
-            }
-            Spacer()
-        }
-        .padding(.vertical, 14)
-        .padding(.horizontal, 20)
-        .shimmeringCircle()
-    }
-
-    // MARK: - Empty State
-
-    private var emptyState: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            VStack(spacing: 20) {
-                ZStack {
-                    Circle()
-                        .fill(ONETokens.oneSilver.opacity(0.4))
-                        .frame(width: 80, height: 80)
-                    Image(systemName: "bell.slash")
-                        .displayHero().fontWeight(.light)
-                        .foregroundColor(ONETokens.oneAsh)
-                }
-
-                VStack(spacing: 8) {
-                    Text(NSLocalizedString("friendRequests.noNotifications", comment: ""))
-                        .bodyXL().fontWeight(.semibold)
-                        .foregroundColor(ONETokens.oneInk)
-                    Text(NSLocalizedString("friendRequests.noNotificationsHint", comment: ""))
-                        .bodySM()
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(ONETokens.oneAsh)
-                        .lineSpacing(3)
-                        .padding(.horizontal, 20)
-                }
-            }
-            .padding(.horizontal, 40)
-            .transition(.opacity.combined(with: .scale(scale: 0.95)))
-            Spacer()
-        }
-    }
-
-    // MARK: - Incoming Card
+    // MARK: - Incoming Request Card
 
     private func incomingCard(req: CKRecord, sender: CKRecord) -> some View {
         let name       = sender["displayName"] as? String ?? NSLocalizedString("friendRequests.unknown", comment: "")
@@ -402,8 +361,8 @@ struct FriendRequestsView: View {
         let recName    = req.recordID.recordName
         let processing = processingIDs.contains(recName)
 
-        return HStack(spacing: 16) {
-            avatarCircle(initial: initial, colorHex: color, size: 52)
+        return HStack(alignment: .top, spacing: 14) {
+            avatarCircle(initial: initial, colorHex: color, size: 50)
                 .overlay(alignment: .bottomTrailing) {
                     ZStack {
                         Circle().fill(ONETokens.oneCream)
@@ -414,11 +373,12 @@ struct FriendRequestsView: View {
                     .frame(width: 22, height: 22)
                     .offset(x: 2, y: 2)
                 }
+                .padding(.top, 2)
 
-            VStack(alignment: .leading, spacing: 10) {
-                VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text(name)
-                        .bodyMD().fontWeight(.bold)
+                        .bodyMD().fontWeight(.semibold)
                         .foregroundColor(ONETokens.oneInk)
                     Text(String(format: NSLocalizedString("friendRequests.sentYouRequest", comment: ""), name))
                         .bodyXS()
@@ -426,37 +386,46 @@ struct FriendRequestsView: View {
                 }
 
                 if processing {
-                    ProgressView().scaleEffect(0.85)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    ProgressView()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 8)
                 } else {
-                    HStack(spacing: 10) {
+                    VStack(spacing: 8) {
                         Button(action: { accept(recName: recName) }) {
                             Text(NSLocalizedString("friendRequests.accept", comment: "Kabul Et"))
-                                .bodyXS().fontWeight(.semibold)
+                                .bodySM().fontWeight(.semibold)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
-                                .background(RoundedRectangle(cornerRadius: 8).fill(ONETokens.oneInk))
+                                .frame(height: 44)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .fill(ONETokens.oneInk)
+                                )
                         }
-                        
+                        .accessibilityLabel(NSLocalizedString("friendRequests.accept", comment: "") + " " + name)
+
                         Button(action: { decline(recName: recName) }) {
                             Text(NSLocalizedString("friendRequests.decline", comment: "Reddet"))
-                                .bodyXS().fontWeight(.semibold)
-                                .foregroundColor(ONETokens.oneInk)
+                                .bodySM().fontWeight(.medium)
+                                .foregroundColor(ONETokens.oneInk.opacity(0.7))
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
-                                .background(RoundedRectangle(cornerRadius: 8).fill(ONETokens.oneSilver.opacity(0.5)))
+                                .frame(height: 40)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .stroke(ONETokens.oneSilver, lineWidth: 1)
+                                )
                         }
+                        .accessibilityLabel(NSLocalizedString("friendRequests.decline", comment: "") + " " + name)
                     }
                 }
             }
         }
-        .padding(.vertical, 16)
+        .padding(.vertical, 18)
         .padding(.horizontal, 20)
-        .background(ONETokens.oneCreamLow.opacity(0.5))
+        .background(ONETokens.oneCreamLow.opacity(0.4))
     }
 
-    // MARK: - Outgoing Card
+    // MARK: - Outgoing Request Card
 
     private func outgoingCard(req: CKRecord, receiver: CKRecord) -> some View {
         let name       = receiver["displayName"] as? String ?? NSLocalizedString("friendRequests.unknown", comment: "")
@@ -465,8 +434,8 @@ struct FriendRequestsView: View {
         let recName    = req.recordID.recordName
         let processing = processingIDs.contains(recName)
 
-        return HStack(spacing: 16) {
-            avatarCircle(initial: initial, colorHex: color, size: 52)
+        return HStack(spacing: 14) {
+            avatarCircle(initial: initial, colorHex: color, size: 50)
                 .overlay(alignment: .bottomTrailing) {
                     ZStack {
                         Circle().fill(ONETokens.oneCream)
@@ -480,7 +449,7 @@ struct FriendRequestsView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(name)
-                    .bodyMD().fontWeight(.bold)
+                    .bodyMD().fontWeight(.semibold)
                     .foregroundColor(ONETokens.oneInk)
                 Text(NSLocalizedString("friendRequests.pending", comment: "Bekliyor"))
                     .bodyXS()
@@ -496,11 +465,14 @@ struct FriendRequestsView: View {
                     cancelOutgoing(req: req, receiverID: receiver["userID"] as? String ?? "")
                 } label: {
                     Text(NSLocalizedString("friendRequests.withdraw", comment: "Geri Çek"))
-                        .bodyXS().fontWeight(.semibold)
+                        .bodyXS().fontWeight(.medium)
                         .foregroundColor(ONETokens.oneAsh)
                         .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(ONETokens.oneSilver.opacity(0.3)))
+                        .frame(height: 36)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(ONETokens.oneSilver, lineWidth: 1)
+                        )
                 }
             }
         }
@@ -508,7 +480,108 @@ struct FriendRequestsView: View {
         .padding(.horizontal, 20)
     }
 
-    // MARK: - Helpers
+    // MARK: - Skeleton
+
+    private static let skeletonWidths: [CGFloat] = [120, 150, 130, 140, 110]
+
+    private var skeletonList: some View {
+        ScrollView(showsIndicators: false) {
+            LazyVStack(spacing: 0) {
+                ForEach(0..<5, id: \.self) { i in
+                    skeletonCard(index: i)
+                        .animation(
+                            .easeInOut(duration: 0.8).delay(Double(i) * 0.1).repeatForever(autoreverses: true),
+                            value: isLoading
+                        )
+                    if i < 4 { Divider().padding(.leading, 76).padding(.trailing, 20) }
+                }
+            }
+            .padding(.top, 16)
+        }
+    }
+
+    private func skeletonCard(index: Int) -> some View {
+        HStack(spacing: 14) {
+            Circle()
+                .fill(ONETokens.oneCreamMid)
+                .frame(width: 44, height: 44)
+            VStack(alignment: .leading, spacing: 8) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(ONETokens.oneCreamMid)
+                    .frame(width: Self.skeletonWidths[index % 5], height: 12)
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(ONETokens.oneSilver)
+                    .frame(width: 80, height: 9)
+            }
+            Spacer()
+        }
+        .padding(.vertical, 14)
+        .padding(.horizontal, 20)
+        .shimmeringCircle()
+    }
+
+    // MARK: - Empty State
+
+    private var emptyState: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            VStack(spacing: 28) {
+                // Mood dots + icon composition
+                ZStack {
+                    // Background mood dots
+                    HStack(spacing: 0) {
+                        Circle()
+                            .fill(Color(hex: "#FFB5A7").opacity(0.5))
+                            .frame(width: 48, height: 48)
+                            .offset(x: 12, y: 10)
+                        Spacer()
+                        Circle()
+                            .fill(Color(hex: "#A8D5B5").opacity(0.5))
+                            .frame(width: 36, height: 36)
+                            .offset(x: -12, y: -8)
+                    }
+                    .frame(width: 120)
+
+                    // Center bell
+                    ZStack {
+                        Circle()
+                            .fill(ONETokens.oneCreamLow)
+                            .frame(width: 72, height: 72)
+                        Image(systemName: "bell")
+                            .font(.system(size: 28, weight: .light))
+                            .foregroundColor(ONETokens.oneAsh)
+                    }
+
+                    // Small accent dot
+                    Circle()
+                        .fill(Color(hex: "#B8C5F0").opacity(0.7))
+                        .frame(width: 20, height: 20)
+                        .offset(x: 42, y: -24)
+                }
+                .frame(height: 100)
+
+                VStack(spacing: 8) {
+                    Text(NSLocalizedString("friendRequests.noNotifications", comment: ""))
+                        .bodyLG().fontWeight(.semibold)
+                        .foregroundColor(ONETokens.oneInk)
+
+                    Text(NSLocalizedString("friendRequests.noNotificationsHint", comment: ""))
+                        .bodySM()
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(ONETokens.oneAsh)
+                        .lineSpacing(4)
+                        .padding(.horizontal, 32)
+                }
+            }
+            .padding(.horizontal, 40)
+            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+
+            Spacer()
+        }
+    }
+
+    // MARK: - Avatar Helper
 
     @ViewBuilder
     private func avatarCircle(initial: String, colorHex: String, size: CGFloat) -> some View {
@@ -517,7 +590,7 @@ struct FriendRequestsView: View {
             .frame(width: size, height: size)
             .overlay(
                 Text(initial)
-                    .font(.system(size: size * 0.4, weight: .bold, design: .default))
+                    .font(.system(size: size * 0.38, weight: .bold))
                     .foregroundColor(.white.opacity(0.95))
             )
     }
@@ -622,21 +695,28 @@ struct FriendRequestsView: View {
     }
 }
 
-// MARK: - Notification Section Model
+// MARK: - UnifiedFeedItem
 
-private enum NotificationSection: Identifiable {
-    case requests([FriendNotificationItem])
-    case activity([CircleNotification])
+private enum UnifiedFeedItem: Identifiable {
+    case request(FriendNotificationItem)
+    case activity(CircleNotification)
 
     var id: String {
         switch self {
-        case .requests: return "requests"
-        case .activity: return "activity"
+        case .request(let item): return "req_\(item.id)"
+        case .activity(let notif): return "act_\(notif.id)"
+        }
+    }
+
+    var date: Date {
+        switch self {
+        case .request(let item): return item.date
+        case .activity(let notif): return notif.date
         }
     }
 }
 
-// MARK: - Friend Notification Item (live CloudKit data)
+// MARK: - FriendNotificationItem
 
 enum FriendNotificationItem: Identifiable {
     case incoming(request: CKRecord, sender: CKRecord)
@@ -644,26 +724,23 @@ enum FriendNotificationItem: Identifiable {
 
     var id: String {
         switch self {
-        case .incoming(let r, _):  return "in_\(r.recordID.recordName)"
-        case .outgoing(let r, _):  return "out_\(r.recordID.recordName)"
+        case .incoming(let r, _): return "in_\(r.recordID.recordName)"
+        case .outgoing(let r, _): return "out_\(r.recordID.recordName)"
         }
     }
 
     var date: Date {
         switch self {
-        case .incoming(let r, _):  return r["createdDate"] as? Date ?? r.creationDate ?? .distantPast
-        case .outgoing(let r, _):  return r["createdDate"] as? Date ?? r.creationDate ?? .distantPast
+        case .incoming(let r, _): return r["createdDate"] as? Date ?? r.creationDate ?? .distantPast
+        case .outgoing(let r, _): return r["createdDate"] as? Date ?? r.creationDate ?? .distantPast
         }
     }
 }
 
-// MARK: - IdentifiableString Helper
+// MARK: - IdentifiableString
 
 struct IdentifiableString: Identifiable {
     let id = UUID()
     let value: String
-
-    init(_ value: String) {
-        self.value = value
-    }
+    init(_ value: String) { self.value = value }
 }

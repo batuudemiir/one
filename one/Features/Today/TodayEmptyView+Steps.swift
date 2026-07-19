@@ -239,9 +239,13 @@ extension TodayEmptyView {
                 ForEach(MoodOption.all) { mood in
                     Button(action: {
                         ONEHaptics.moodSelected()
+                        if selectedMood == nil {
+                            AppAnalytics.shared.track(.moodPickedBeforeLabel)
+                        }
                         withAnimation(ONEAnimation.micro) { selectedMood = mood }
-                        if !showFeelingSection, let proxy = scrollProxy {
-                            reveal("feelingSection", proxy: proxy) { showFeelingSection = true }
+                        AppAnalytics.shared.track(.moodLabelRevealedAfterPick(mood: mood.key))
+                        if !showNoteSection, let proxy = scrollProxy {
+                            reveal("noteSection", proxy: proxy) { showNoteSection = true }
                         }
                     }) {
                         VStack(spacing: 7) {
@@ -259,65 +263,13 @@ extension TodayEmptyView {
                                 .multilineTextAlignment(.center)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
+                                // #02 Renk-önce: label seçimden önce gizli, sonra 200ms fade-in
+                                .opacity(selectedMood == nil ? 0 : (selectedMood?.key == mood.key ? 1 : 0.35))
+                                .animation(.easeIn(duration: 0.2), value: selectedMood?.key)
                         }
                     }
                     .accessibilityLabel(String(format: NSLocalizedString("accessibility.confirm.moodButton", comment: ""), mood.label))
                     .accessibilityAddTraits(selectedMood?.key == mood.key ? .isSelected : [])
-                }
-            }
-        }
-    }
-
-    // MARK: - Feeling Seçimi
-    // 4×2 grid — minimalist metin pill'leri, mood rengini miras alır.
-
-    var feelingSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(NSLocalizedString("today.feelingSection", comment: ""))
-                .bodyLG()
-                .fontWeight(.medium)
-                .tracking(-0.2)
-                .foregroundColor(ONETokens.oneInk)
-
-            LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
-                spacing: 8
-            ) {
-                ForEach(FeelingOption.all) { feel in
-                    let isSelected = selectedFeeling == feel.type
-                    let accent = selectedMood?.color ?? ONETokens.oneCharcoal
-
-                    Button(action: {
-                        ONEHaptics.feelingSelected()
-                        withAnimation(ONEAnimation.micro) { selectedFeeling = feel.type }
-                        if !showNoteSection, let proxy = scrollProxy {
-                            reveal("noteSection", proxy: proxy) { showNoteSection = true }
-                        }
-                    }) {
-                        Text(feel.label)
-                            .monoLabel(tracking: 0.3)
-                            .foregroundColor(isSelected ? accent : ONETokens.oneCharcoal)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 15)
-                            .background(
-                                RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                                    .fill(isSelected
-                                          ? accent.opacity(0.10)
-                                          : ONETokens.oneSilver.opacity(0.55))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                                            .stroke(isSelected ? accent.opacity(0.30) : Color.clear,
-                                                    lineWidth: 1)
-                                    )
-                            )
-                            .scaleEffect(isSelected ? 1.04 : 1.0)
-                            .animation(ONEAnimation.micro, value: selectedFeeling)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .accessibilityLabel(String(format: NSLocalizedString("accessibility.confirm.feelingButton", comment: ""), feel.label))
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
                 }
             }
         }
@@ -347,7 +299,7 @@ extension TodayEmptyView {
             .padding(.horizontal, 14).padding(.vertical, 13)
             .background(
                 RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                    .fill(isNoteFieldFocused ? Color.white : ONETokens.oneSilver)
+                    .fill(isNoteFieldFocused ? ONETokens.onePaper : ONETokens.oneSilver)
                     .shadow(color: isNoteFieldFocused ? Color.black.opacity(0.06) : Color.clear, radius: 8, x: 0, y: 3)
             )
             .animation(ONEAnimation.micro, value: isNoteFieldFocused)
@@ -371,8 +323,8 @@ extension TodayEmptyView {
             .padding(.horizontal, 18).padding(.vertical, 11)
             .background(
                 Capsule()
-                    .fill(enabled ? ONETokens.oneSilver : ONETokens.oneCreamMid)
-                    .overlay(Capsule().stroke(enabled ? ONETokens.oneCreamMid : Color.clear, lineWidth: 1))
+                    .fill(enabled ? Color.primary.opacity(0.07) : Color.primary.opacity(0.03))
+                    .overlay(Capsule().stroke(enabled ? Color.primary.opacity(0.18) : Color.clear, lineWidth: 1))
             )
         }
         .disabled(!enabled)
@@ -385,17 +337,6 @@ extension TodayEmptyView {
 
     var saveButton: some View {
         VStack(spacing: 14) {
-            // Mood + feeling özet pill
-            if let mood = selectedMood, let feeling = selectedFeeling {
-                HStack(spacing: 8) {
-                    Circle().fill(mood.color).frame(width: 10, height: 10)
-                    Text("\(mood.label)  ·  \(FeelingOption.all.first { $0.type == feeling }?.label ?? "")")
-                        .monoSM(tracking: 0.8).foregroundColor(ONETokens.oneAsh)
-                }
-                .padding(.horizontal, 12).padding(.vertical, 7)
-                .background(Capsule().fill(ONETokens.oneSilver))
-            }
-
             // Çevre paylaşım toggle — her zaman göster (fotoğrafsız da paylaşılabilir)
             CircleShareToggle(isOn: $sharePhoto, hasPhoto: photoImage != nil)
 
@@ -406,10 +347,9 @@ extension TodayEmptyView {
             // Ana CTA
             Button(action: {
                 guard let song = selectedSong,
-                      let mood = selectedMood,
-                      let feeling = selectedFeeling else { return }
+                      let mood = selectedMood else { return }
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                vm.saveEntry(song: song, mood: mood, feeling: feeling,
+                vm.saveEntry(song: song, mood: mood,
                              photo: photoImage, note: dailyNote, sharePhoto: sharePhoto)
             }) {
                 Text(NSLocalizedString("confirm.todaySong", comment: ""))
@@ -434,6 +374,21 @@ extension TodayEmptyView {
             .frame(maxWidth: .infinity)
             .padding(.bottom, 8)
         }
+    }
+
+    // MARK: - #10 Pas Butonu
+
+    var passButton: some View {
+        Button(action: {
+            vm.markTodayAsPassed()
+        }) {
+            Text(NSLocalizedString("today.passButton", comment: ""))
+                .monoSM(tracking: 0.8)
+                .foregroundColor(ONETokens.oneStone)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+        }
+        .accessibilityLabel(NSLocalizedString("today.passButton", comment: ""))
     }
 
 }

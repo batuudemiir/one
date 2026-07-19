@@ -13,7 +13,7 @@ enum TodayState {
 }
 
 // MARK: - Song Result (for search)
-struct SongResult: Identifiable {
+struct SongResult: Identifiable, Codable {
     let id: UUID
     let name: String
     let artist: String
@@ -21,6 +21,7 @@ struct SongResult: Identifiable {
     let coverURL: URL?
     let spotifyURL: URL?
     let artworkURLString: String?
+    var previewURL: URL? = nil
 }
 
 // MARK: - Mood Option

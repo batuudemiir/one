@@ -215,6 +215,7 @@ extension CircleView {
             }
             .onTapGesture {
                 ONEHaptics.feelingSelected()
+                AppAnalytics.shared.track(.friendShareViewed)
                 if let uid = data.user["userID"] as? String, !uid.isEmpty {
                     selectedPublicProfileUserID = uid
                 } else {
@@ -308,7 +309,8 @@ extension CircleView {
             if let share = data.share,
                !((share["songName"] as? String) ?? "").isEmpty {
                 // Arkadaş bugün paylaşım yapmış → yorum + rezonans içeren detay view
-                selectedShareItem = IdentifiableCKRecord(share)
+                let profileImg = profilePhotoURL.flatMap { UIImage(contentsOfFile: $0.path) }
+                selectedShareItem = IdentifiableCKRecord(share, displayName: name, profilePhoto: profileImg)
             } else {
                 // Henüz paylaşım yok → bekleme durumunu gösteren view
                 selectedFriendData = data

@@ -26,8 +26,10 @@ extension CloudKitManager {
     private static let commentSubID        = "comment-notification-v1"
 
     // Subscription version — artırınca tüm subscriptionlar silinip yeniden kaydedilir
-    // v8: Yorum subscription eklendi, emoji kaldırıldı.
-    private static let currentSubVersion   = 8
+    // v9: friendShare + comment silent push → visible push (alertBody eklendi).
+    //     Silent push iOS tarafından throttle edildiği için uygulama kapalıyken bildirim
+    //     gelmiyordu. Visible push CloudKit sunucu tarafında APNs'e dönüşür, app state'ten bağımsız.
+    private static let currentSubVersion   = 9
     private static let subVersionKey       = "cloudkit_subscription_version"
 
     // Eski subscription ID'leri (temizleme için)
@@ -116,11 +118,14 @@ extension CloudKitManager {
                 options: [.firesOnRecordCreation]
             )
             let info = CKSubscription.NotificationInfo()
-            // Silent push — lokal bildirim bundler'dan çıkacak (tekil veya batch)
-            info.alertBody                  = nil
+            // Visible push — uygulama kapalıyken de APNs bildirim gösterir.
+            // App arka planda kalktığında handler personalize lokal bildirim üretir ve bu
+            // generic APNs bildirimi temizler (dedup). App tamamen kapalıysa generic metin kalır.
+            info.alertBody                  = "Paylaşımına yeni bir yorum geldi 💬"
             info.shouldSendContentAvailable = true
             info.shouldBadge                = true
             info.collapseIDKey              = "shareRecordName"
+            info.category                   = "COMMENT_NOTIFICATION"
             info.desiredKeys                = [
                 "shareRecordName",
                 "shareOwnerID",
@@ -210,13 +215,17 @@ extension CloudKitManager {
                 options: [.firesOnRecordCreation]
             )
             let info = CKSubscription.NotificationInfo()
-            // Silent push — no visible APNs alert; app-side local notification is the only one shown.
-            // This prevents duplicate "generic + personalized" notifications and
-            // false-positive generic alerts from non-friend users.
-            info.alertBody                  = nil
-            info.shouldSendContentAvailable = true  // Triggers background processing
+            // Visible push — uygulama kapalıyken de APNs bildirim gösterir.
+            // Handler arka planda çalışıp personalize lokal bildirim üretirse generic APNs
+            // bildirimi temizlenir (dedup). App tamamen kapalıysa generic metin kalır.
+            // Not: arkadaş olmayanların paylaşımları handler tarafında isFriendWith ile filtrelenir;
+            // onlar için generic bildirim birkaç saniye görünüp silinir (iOS throttle'ı nedeniyle
+            // kabul edilebilir tradeoff — uygulama kapalıyken tümü kaybolmasından iyi).
+            info.alertBody                  = "Çevrenden birisi paylaşım yaptı 🎵"
+            info.shouldSendContentAvailable = true
             info.shouldBadge                = true
-            info.collapseIDKey              = "userID" // Aynı kişinin pushları birleşir
+            info.collapseIDKey              = "userID"
+            info.category                   = "FRIEND_SHARED"
             info.desiredKeys                = ["userID"]
             sub.notificationInfo            = info
 
@@ -524,22 +533,14 @@ extension CloudKitManager {
             case .success(true):
                 let notifID = "friendShare_\(sharerID)_\(Self.todayDateKey())"
 
-                // BUG FIX (v2.5.1) — Generic placeholder kaldırıldı.
-                // v2.5 spec: arkadaşın adı her zaman title'da olur; "Bir arkadaşın paylaştı"
-                // jenerik metni ASLA kullanılmaz. Placeholder bu spec'i ihlal ediyordu.
-                // Kişiselleştirme isimsiz fail olursa hiç bildirim gönderme — silent push
-                // olduğu için kayıp kabul edilebilir.
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .init("circleDataNeedsRefresh"), object: nil)
                 }
 
-                // Background processing bitti; kişiselleştirme arka planda devam eder.
-                completion()
-
                 self.fetchDisplayName(for: sharerID) { name in
-                    // İsim alınamadıysa (AppUser silinmiş, network) → bildirim gönderme.
                     guard name != "Birisi" else {
                         ONELogger.info("Friend share push dropped — could not resolve displayName for \(sharerID)", category: .notification)
+                        completion()
                         return
                     }
                     self.fetchDailyShare(for: sharerID, date: Date()) { shareResult in
@@ -590,12 +591,12 @@ extension CloudKitManager {
                                 identifier: notifID,
                                 userInfo: userInfo
                             )
+                            completion()
                         }
 
                         if case .success(let record) = shareResult {
                             let moodColorHex = record["moodColor"] as? String ?? "#5B8DEF"
 
-                            // Çevre Yankısı — kullanıcı bugün seçim yaptıysa renk karşılaştır
                             self.checkResonanceForFriendShare(
                                 friendColorHex: moodColorHex,
                                 friendUserID:   sharerID,
@@ -759,6 +760,21 @@ extension CloudKitManager {
         }
     }
 
+    /// CloudKit tarafından iletilen generic APNs bildirimlerini temizler.
+    /// Tanımlama: bizim lokal bildirimlerimizde her zaman "type" anahtarı bulunur;
+    /// CloudKit APNs bildirimlerinde ise "ck" anahtarı vardır, "type" yoktur.
+    private func removeDeliveredCloudKitNotifications(forCategory category: String) {
+        UNUserNotificationCenter.current().getDeliveredNotifications { delivered in
+            let ckIDs = delivered
+                .filter { $0.request.content.categoryIdentifier == category }
+                .filter { $0.request.content.userInfo["type"] == nil }
+                .map { $0.request.identifier }
+            if !ckIDs.isEmpty {
+                UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ckIDs)
+            }
+        }
+    }
+
     func scheduleLocalNotification(title: String, body: String,
                                        category: String,
                                        identifier: String? = nil,
@@ -770,7 +786,6 @@ extension CloudKitManager {
         content.categoryIdentifier = category
         content.userInfo = userInfo
 
-        // Mood rengi payload'da varsa rich attachment ekle.
         let moodHex = userInfo["moodColorHex"] as? String
         let notificationID = identifier ?? "\(category)_\(UUID().uuidString)"
         if let att = RichAttachmentFactory.attachment(forMoodHex: moodHex,
@@ -778,7 +793,6 @@ extension CloudKitManager {
             content.attachments = [att]
         }
 
-        // Kind tespiti — category → NotificationKind map'i.
         let kind: NotificationKind = {
             switch category {
             case "FRIEND_REQUEST":   return .friendRequest
@@ -790,15 +804,18 @@ extension CloudKitManager {
             }
         }()
 
-        // Social event'ler reactive — quiet hours bypass için .critical/.high
-        // priority zaten kind tarafında set edilmiş. Orchestrator'dan geçerek
-        // dedup + analytics kazanırız.
-        _ = NotificationOrchestrator.shared.schedule(
+        let decision = NotificationOrchestrator.shared.schedule(
             kind: kind,
             identifier: notificationID,
             trigger: nil,
             content: content
         )
+
+        // Generic CloudKit APNs bildirimi yalnızca orchestrator izin verirse temizle.
+        // Drop durumunda generic bildirim görünür kalır — kullanıcı hiçbir şey görmez sorunu önlenir.
+        if case .drop = decision {} else {
+            removeDeliveredCloudKitNotifications(forCategory: category)
+        }
     }
 
     private static func todayDateKey() -> String {

@@ -209,6 +209,7 @@ class CloudKitManager: ObservableObject {
     /// Waits until currentUser is non-nil, with a timeout.
     /// If currentUser is already loaded, returns immediately.
     /// If not yet loaded, triggers loadCurrentUser() and waits up to 10 seconds.
+    @MainActor
     func ensureCurrentUser() async -> Bool {
         // Already loaded
         if currentUser != nil { return true }
@@ -232,7 +233,12 @@ class CloudKitManager: ObservableObject {
         while currentUser == nil && elapsed < maxWait {
             // Bail early if throttle or error becomes known while waiting
             if isThrottled || userLoadFailed { break }
-            try? await Task.sleep(nanoseconds: interval)
+            do {
+                try await Task.sleep(nanoseconds: interval)
+            } catch {
+                // Task was cancelled — propagate
+                return false
+            }
             elapsed += Double(interval) / 1_000_000_000
             interval = min(interval * 2, 2_000_000_000) // Cap at 2s
         }
@@ -625,7 +631,7 @@ class CloudKitManager: ObservableObject {
     }
     
     func findUserByCodeOrUsername(_ searchText: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
-        let trimmed = searchText.trimmingCharacters(in: .whitespaces)
+        let trimmed = String(searchText.trimmingCharacters(in: .whitespaces).prefix(40))
         
         // If starts with @, search by username
         if trimmed.hasPrefix("@") {
@@ -749,12 +755,15 @@ class CloudKitManager: ObservableObject {
     /// DailyShare, Friendship, UserBlock, Comment, AppUser — tüm record type'lar temizlenir.
     func deleteAllUserData(userID: String) async {
         let recordTypes: [(type: String, field: String)] = [
-            ("DailyShare",  "userID"),
-            ("Friendship",  "user1ID"),
-            ("Friendship",  "user2ID"),
-            ("UserBlock",   "blockerUserID"),
-            ("UserBlock",   "blockedUserID"),
-            ("Comment",     "authorUserID"),
+            ("DailyShare",     "userID"),
+            ("Friendship",     "user1ID"),
+            ("Friendship",     "user2ID"),
+            ("UserBlock",      "blockerUserID"),
+            ("UserBlock",      "blockedUserID"),
+            ("Comment",        "authorUserID"),
+            ("Resonance",      "senderID"),
+            ("Resonance",      "receiverID"),
+            ("ContentReport",  "reporterUserID"),
         ]
 
         for (recordType, field) in recordTypes {
@@ -772,6 +781,7 @@ class CloudKitManager: ObservableObject {
                 ONELogger.success("Deleted \(ids.count) \(recordType)(\(field)) records", category: .cloudkit)
             } catch {
                 ONELogger.error("Failed to delete \(recordType)(\(field))", error: error, category: .cloudkit)
+                CrashReporter.shared.capture(error: error, context: ["operation": "deleteUserData", "recordType": recordType])
             }
         }
 
@@ -796,6 +806,7 @@ class CloudKitManager: ObservableObject {
             ONELogger.success("CloudKit premium status synced: \(isPremium)", category: .cloudkit)
         } catch {
             ONELogger.error("Failed to sync premium status to CloudKit", error: error, category: .cloudkit)
+            CrashReporter.shared.capture(error: error, context: ["operation": "syncPremiumStatus"])
         }
     }
 

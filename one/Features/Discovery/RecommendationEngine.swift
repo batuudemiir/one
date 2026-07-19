@@ -97,26 +97,23 @@ class RecommendationEngine: ObservableObject {
         isLoading = true
         error = nil
         
-        // Step 1.5: Check services in parallel to avoid sequential waiting
-        let useSpotify = SpotifyManager.shared.isAuthenticated
+        // Step 1.5: Apple Music birincil servis — Spotify yalnızca AM yoksa devreye girer
         async let appleMusicAuthCheck = checkAppleMusicAuthorization()
         let useAppleMusic = await appleMusicAuthCheck
-        
-        ONELogger.debug("Music Service Status:", category: .discovery)
-        ONELogger.debug("Spotify authenticated: \(useSpotify)", category: .discovery)
-        ONELogger.debug("Spotify has token: \(SpotifyManager.shared.accessToken != nil)", category: .discovery)
-        ONELogger.debug("Apple Music authorized: \(useAppleMusic)", category: .discovery)
-        
-        // If no service is connected, serve curated fallback
-        if !useSpotify && !useAppleMusic {
-            ONELogger.warning("No music service connected — serving curated fallback", category: .discovery)
+        let useSpotify = !useAppleMusic && SpotifyManager.shared.isAuthenticated
+
+        ONELogger.debug("Servis durumu — Apple Music: \(useAppleMusic), Spotify fallback: \(useSpotify)", category: .discovery)
+
+        if !useAppleMusic && !useSpotify {
+            ONELogger.warning("Müzik servisi bağlı değil — curated fallback", category: .discovery)
             recommendations = Self.curatedFallback
             isLoading = false
             return
         }
         
         // Step 2: Check cache (single JSON decode — getCachedRecommendations handles expiry)
-        if let cached = cache.getCachedRecommendations() {
+        let currentTotalEntries = (try? context.count(for: DailySong.fetchRequest())) ?? 0
+        if let cached = cache.getCachedRecommendations(currentTotalEntries: currentTotalEntries) {
             recommendations = cached
             isLoading = false
             ONELogger.success("Loaded \(cached.count) recommendations from cache", category: .discovery)
@@ -154,54 +151,31 @@ class RecommendationEngine: ObservableObject {
             ONELogger.info("No taste profile available", category: .discovery)
         }
         
-        // Step 4: Fetch recommendations with 5s timeout
-        // Capture as immutable constant to satisfy Swift 6 concurrency rules
+        // Step 4: Fetch — Apple Music birincil, Spotify yalnızca AM yoksa
         let capturedProfile = profile
         do {
-            let fetchedRecommendations: [SongRecommendation] = try await withTimeout(seconds: 8) {
-                if useSpotify {
-                    do {
-                        if let profile = capturedProfile, profile.totalEntries >= 3 {
-                            await MainActor.run { ONELogger.success("Fetching personalized Spotify recommendations (history: \(profile.totalEntries) songs)", category: .discovery) }
-                            return try await self.spotifyService.getRecommendations(
-                                profile: profile,
-                                limit: 8
-                            )
-                        } else {
-                            await MainActor.run { ONELogger.info("Fetching generic Spotify recommendations", category: .discovery) }
-                            return try await self.spotifyService.getGenericRecommendations(
-                                limit: 8
-                            )
-                        }
-                    } catch {
-                        if useAppleMusic {
-                            await MainActor.run { ONELogger.warning("Spotify failed, falling back to Apple Music", category: .discovery) }
-                            if let profile = capturedProfile, profile.totalEntries >= 3 {
-                                return try await self.appleMusicService.getRecommendations(
-                                    profile: profile,
-                                    limit: 8
-                                )
-                            } else {
-                                return try await self.appleMusicService.getGenericRecommendations(
-                                    limit: 8
-                                )
-                            }
-                        } else {
-                            throw error
-                        }
-                    }
-                } else if useAppleMusic {
+            let fetchedRecommendations: [SongRecommendation] = try await withTimeout(seconds: 10) {
+                if useAppleMusic {
                     if let profile = capturedProfile, profile.totalEntries >= 3 {
-                        await MainActor.run { ONELogger.success("Fetching personalized Apple Music recommendations (history: \(profile.totalEntries) songs)", category: .discovery) }
-                        return try await self.appleMusicService.getRecommendations(
-                            profile: profile,
-                            limit: 8
-                        )
+                        await MainActor.run {
+                            ONELogger.success("Apple Music kişisel öneri: \(profile.totalEntries) kayıt", category: .discovery)
+                        }
+                        return try await self.appleMusicService.getRecommendations(profile: profile, limit: 20)
                     } else {
-                        await MainActor.run { ONELogger.info("Fetching generic Apple Music recommendations", category: .discovery) }
-                        return try await self.appleMusicService.getGenericRecommendations(
-                            limit: 8
-                        )
+                        await MainActor.run {
+                            ONELogger.info("Apple Music genel öneri (geçmiş yok)", category: .discovery)
+                        }
+                        return try await self.appleMusicService.getGenericRecommendations(limit: 20)
+                    }
+                } else if useSpotify {
+                    // Spotify: yalnızca Apple Music yetkisi yoksa
+                    if let profile = capturedProfile, profile.totalEntries >= 3 {
+                        await MainActor.run {
+                            ONELogger.info("Spotify fallback (AM yok): \(profile.totalEntries) kayıt", category: .discovery)
+                        }
+                        return try await self.spotifyService.getRecommendations(profile: profile, limit: 20)
+                    } else {
+                        return try await self.spotifyService.getGenericRecommendations(limit: 20)
                     }
                 } else {
                     throw RecommendationError.notAuthenticated
@@ -424,11 +398,25 @@ class RecommendationEngine: ObservableObject {
     }
 
     static let curatedFallback: [SongRecommendation] = [
-        SongRecommendation(id: "cur-1", name: "Redbone", artist: "Childish Gambino", coverURL: nil, spotifyURL: nil, genre: "Soul", recommendationReason: "Keşfet için seçtik", source: .appleMusic),
-        SongRecommendation(id: "cur-2", name: "Midnight City", artist: "M83", coverURL: nil, spotifyURL: nil, genre: "Synth-pop", recommendationReason: "Keşfet için seçtik", source: .appleMusic),
-        SongRecommendation(id: "cur-3", name: "Blinding Lights", artist: "The Weeknd", coverURL: nil, spotifyURL: nil, genre: "Synth-pop", recommendationReason: "Keşfet için seçtik", source: .appleMusic),
-        SongRecommendation(id: "cur-4", name: "Teardrop", artist: "Massive Attack", coverURL: nil, spotifyURL: nil, genre: "Trip-Hop", recommendationReason: "Keşfet için seçtik", source: .appleMusic),
-        SongRecommendation(id: "cur-5", name: "Last Last", artist: "Burna Boy", coverURL: nil, spotifyURL: nil, genre: "Afrobeats", recommendationReason: "Keşfet için seçtik", source: .appleMusic),
-        SongRecommendation(id: "cur-6", name: "Strobe", artist: "deadmau5", coverURL: nil, spotifyURL: nil, genre: "Electronic", recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-1",  name: "Redbone",             artist: "Childish Gambino",  coverURL: nil, spotifyURL: nil, genre: "Soul",        recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-2",  name: "Midnight City",       artist: "M83",               coverURL: nil, spotifyURL: nil, genre: "Synth-pop",   recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-3",  name: "Blinding Lights",     artist: "The Weeknd",        coverURL: nil, spotifyURL: nil, genre: "Synth-pop",   recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-4",  name: "Teardrop",            artist: "Massive Attack",    coverURL: nil, spotifyURL: nil, genre: "Trip-Hop",    recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-5",  name: "Last Last",           artist: "Burna Boy",         coverURL: nil, spotifyURL: nil, genre: "Afrobeats",   recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-6",  name: "Strobe",              artist: "deadmau5",          coverURL: nil, spotifyURL: nil, genre: "Electronic",  recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-7",  name: "Breathe",             artist: "Télépopmusik",      coverURL: nil, spotifyURL: nil, genre: "Trip-Hop",    recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-8",  name: "Motion Picture OST",  artist: "Chad VanGaalen",    coverURL: nil, spotifyURL: nil, genre: "Indie",       recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-9",  name: "Electric Feel",       artist: "MGMT",              coverURL: nil, spotifyURL: nil, genre: "Indie Pop",   recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-10", name: "Tame Impala",         artist: "The Less I Know",   coverURL: nil, spotifyURL: nil, genre: "Psychedelic", recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-11", name: "Do I Wanna Know?",    artist: "Arctic Monkeys",    coverURL: nil, spotifyURL: nil, genre: "Indie Rock",  recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-12", name: "Sweater Weather",     artist: "The Neighbourhood", coverURL: nil, spotifyURL: nil, genre: "Indie Pop",   recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-13", name: "505",                 artist: "Arctic Monkeys",    coverURL: nil, spotifyURL: nil, genre: "Indie Rock",  recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-14", name: "Retrograde",          artist: "James Blake",       coverURL: nil, spotifyURL: nil, genre: "Electronic",  recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-15", name: "Slow Burn",           artist: "Kacey Musgraves",   coverURL: nil, spotifyURL: nil, genre: "Country Pop", recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-16", name: "Dissolved Girl",      artist: "Massive Attack",    coverURL: nil, spotifyURL: nil, genre: "Trip-Hop",    recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-17", name: "Passionfruit",        artist: "Drake",             coverURL: nil, spotifyURL: nil, genre: "R&B",         recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-18", name: "Love Lockdown",       artist: "Kanye West",        coverURL: nil, spotifyURL: nil, genre: "Art Pop",     recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-19", name: "i",                   artist: "Kendrick Lamar",    coverURL: nil, spotifyURL: nil, genre: "Hip-Hop",     recommendationReason: "Keşfet için seçtik", source: .appleMusic),
+        SongRecommendation(id: "cur-20", name: "Clair de Lune",       artist: "Claude Debussy",    coverURL: nil, spotifyURL: nil, genre: "Classical",   recommendationReason: "Keşfet için seçtik", source: .appleMusic),
     ]
 }

@@ -435,15 +435,6 @@ struct WeeklyPlaylistView: View {
                         .lineLimit(1)
 
                     HStack(spacing: 6) {
-                        if let reason = song.recommendationReason {
-                            Text(reason)
-                                .monoMicro().fontWeight(.medium)
-                                .foregroundColor(.white.opacity(0.45))
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 3)
-                                .background(Capsule().fill(Color.white.opacity(0.08)))
-                                .lineLimit(1)
-                        }
                         Image(systemName: song.source == .spotify ? "music.note" : "applelogo")
                             .monoMicro()
                             .foregroundColor(.white.opacity(0.3))

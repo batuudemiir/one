@@ -85,9 +85,11 @@ enum StreakEngine {
             )
         }
 
-        // Walk back day-by-day.
+        // Walk back day-by-day. Cap at 400 to guard against pathological inputs or DST loops.
         var cursor = calendar.date(byAdding: .day, value: -1, to: today) ?? today
-        while true {
+        var iterations = 0
+        while iterations < 400 {
+            iterations += 1
             if filledDates.contains(cursor) {
                 streak += 1
             } else if usedFreezes.contains(cursor) {
@@ -170,8 +172,10 @@ enum StreakEngine {
         UserDefaults.standard.set(raw, forKey: freezeUsedDatesKey)
     }
 
-    /// Test/debug yardımcısı — persisted freeze state'i sıfırlar.
+    #if DEBUG
+    /// Test/debug helper — resets persisted freeze state. Never call from production code.
     static func resetFreezesForTesting() {
         UserDefaults.standard.removeObject(forKey: freezeUsedDatesKey)
     }
+    #endif
 }

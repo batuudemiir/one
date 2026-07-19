@@ -60,6 +60,20 @@ enum AnalyticsEvent {
     // ── Badges ─────────────────────────────────────────────────────
     case badgeUnlocked(id: String)
 
+    // ── Neuromarketing / A-B ────────────────────────────────────────
+    case moodPickedBeforeLabel                              // #02 — renk seçildi, label henüz gizliydi
+    case moodLabelRevealedAfterPick(mood: String)          // #02 — label ilk kez göründü
+    case passButtonTapped                                   // #10 — "Bugün geçti" kullanıldı
+    case retroEntryAdded(daysBack: Int)                    // #05 — geriye dönük giriş
+    case mutualDisclosureBlurShown                         // #04 — Çevre blur gösterildi
+    case mutualDisclosureBlurConverted                     // #04 — blur → giriş yaptı
+    case weeklyColorStoryViewed                            // #06 — haftalık kart açıldı
+    case weeklyColorStoryShared(surface: String)           // #06 — haftalık kart paylaşıldı
+    case entryMilestoneReached(count: Int)                 // #09 — 100/200/365 eşiği
+    case milestoneCardShared                               // #09 — milestone mozaik paylaşıldı
+    case smartNotificationScheduled(hour: Int)             // #01 — kişisel bildirim saati kilitlendi
+    case onboardingFirstColorPicked(mood: String)          // #08 — onboarding ilk renk seçimi
+
     // ── Name + properties for dispatch ─────────────────────────────
 
     /// Stable event name emitted to analytics backends.
@@ -99,7 +113,19 @@ enum AnalyticsEvent {
         case .playlistOpened:            return "playlist_opened"
         case .storyCardShared:           return "story_card_shared"
         case .monthlyPosterShared:       return "monthly_poster_shared"
-        case .badgeUnlocked:             return "badge_unlocked"
+        case .badgeUnlocked:                    return "badge_unlocked"
+        case .moodPickedBeforeLabel:            return "mood_picked_before_label"
+        case .moodLabelRevealedAfterPick:       return "mood_label_revealed"
+        case .passButtonTapped:                 return "pass_button_tapped"
+        case .retroEntryAdded:                  return "retro_entry_added"
+        case .mutualDisclosureBlurShown:        return "mutual_disclosure_blur_shown"
+        case .mutualDisclosureBlurConverted:    return "mutual_disclosure_blur_converted"
+        case .weeklyColorStoryViewed:           return "weekly_color_story_viewed"
+        case .weeklyColorStoryShared:           return "weekly_color_story_shared"
+        case .entryMilestoneReached:            return "entry_milestone_reached"
+        case .milestoneCardShared:              return "milestone_card_shared"
+        case .smartNotificationScheduled:       return "smart_notification_scheduled"
+        case .onboardingFirstColorPicked:       return "onboarding_first_color_picked"
         }
     }
 
@@ -149,6 +175,22 @@ enum AnalyticsEvent {
             return ["surface": surface]
         case .badgeUnlocked(let id):
             return ["badge_id": id]
+        case .moodPickedBeforeLabel, .mutualDisclosureBlurShown,
+             .mutualDisclosureBlurConverted, .weeklyColorStoryViewed,
+             .passButtonTapped, .milestoneCardShared:
+            return [:]
+        case .moodLabelRevealedAfterPick(let mood):
+            return ["mood": mood]
+        case .retroEntryAdded(let daysBack):
+            return ["days_back": daysBack]
+        case .weeklyColorStoryShared(let surface):
+            return ["surface": surface]
+        case .entryMilestoneReached(let count):
+            return ["count": count]
+        case .smartNotificationScheduled(let hour):
+            return ["hour": hour]
+        case .onboardingFirstColorPicked(let mood):
+            return ["mood": mood]
         }
     }
 }

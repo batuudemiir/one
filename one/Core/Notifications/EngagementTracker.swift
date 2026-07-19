@@ -16,16 +16,19 @@ enum EngagementTracker {
     }
 
     private enum Key {
-        static let lastOpenedDate   = "engagement.lastOpenedDate"
-        static let sessionCount     = "engagement.sessionCount"
-        static let lastMoodDate     = "engagement.lastMoodDate"
-        static let lastMoodLabel    = "engagement.lastMoodLabel"
-        static let lastMoodColorHex = "engagement.lastMoodColorHex"
-        static let recentMoodLabels = "engagement.recentMoodLabels"   // B6 — son 7 mood label rolling
-        static let lastKnownStreak  = "engagement.lastKnownStreak"    // B3 — push kişiselleştirme için
-        static let lastKnownFriendCount = "engagement.lastKnownFriendCount"  // B4 — Day-4 circle gating
-        static let nurtureStartedAt = "engagement.nurtureStartedAt"
-        static let abBucket         = "engagement.abBucket"
+        static let lastOpenedDate       = "engagement.lastOpenedDate"
+        static let sessionCount         = "engagement.sessionCount"
+        static let lastMoodDate         = "engagement.lastMoodDate"
+        static let lastMoodLabel        = "engagement.lastMoodLabel"
+        static let lastMoodColorHex     = "engagement.lastMoodColorHex"
+        static let recentMoodLabels     = "engagement.recentMoodLabels"
+        static let lastKnownStreak      = "engagement.lastKnownStreak"
+        static let lastKnownFriendCount = "engagement.lastKnownFriendCount"
+        static let nurtureStartedAt     = "engagement.nurtureStartedAt"
+        static let abBucket             = "engagement.abBucket"
+        // Akıllı bildirim saati — açılış geçmişi
+        static let openTimestampLog     = "engagement.openTimestampLog"   // [Double] — son 40 açılış
+        static let firstLaunchDate      = "engagement.firstLaunchDate"    // Date — ilk kurulum
     }
 
     // MARK: - Sessions
@@ -33,6 +36,7 @@ enum EngagementTracker {
     static func markOpened(_ date: Date = Date()) {
         defaults.set(date, forKey: Key.lastOpenedDate)
         defaults.set(sessionCount + 1, forKey: Key.sessionCount)
+        recordOpenTimestamp(date)
     }
 
     static var lastOpenedDate: Date? {
@@ -46,6 +50,53 @@ enum EngagementTracker {
     static func daysSinceLastOpen(now: Date = Date()) -> Int? {
         guard let last = lastOpenedDate else { return nil }
         return Calendar.current.dateComponents([.day], from: last, to: now).day
+    }
+
+    // MARK: - Akıllı Bildirim Saati
+
+    static var firstLaunchDate: Date? {
+        defaults.object(forKey: Key.firstLaunchDate) as? Date
+    }
+
+    /// Yeni açılışı timestamp log'a ekler; ilk açılışta firstLaunchDate'i set eder.
+    private static func recordOpenTimestamp(_ date: Date) {
+        if defaults.object(forKey: Key.firstLaunchDate) == nil {
+            defaults.set(date, forKey: Key.firstLaunchDate)
+        }
+        var log = defaults.array(forKey: Key.openTimestampLog) as? [Double] ?? []
+        log.append(date.timeIntervalSinceReferenceDate)
+        if log.count > 40 { log = Array(log.suffix(40)) }
+        defaults.set(log, forKey: Key.openTimestampLog)
+    }
+
+    /// İlk 7 gün geçtikten sonra, son 21 gün içindeki açılış saatlerinin medyanını
+    /// döndürür. 9-22 aralığı dışı ve gece açılışları hariç tutulur.
+    /// Yeterli veri yoksa nil döner → mevcut saat ayarı korunur.
+    static func computeSmartReminderHour(now: Date = Date()) -> Int? {
+        guard let firstLaunch = firstLaunchDate else { return nil }
+        let daysSinceInstall = Calendar.current.dateComponents([.day], from: firstLaunch, to: now).day ?? 0
+        guard daysSinceInstall >= 7 else { return nil }
+
+        let cutoff = now.addingTimeInterval(-21 * 86_400)
+        let log = defaults.array(forKey: Key.openTimestampLog) as? [Double] ?? []
+
+        let hours = log
+            .map { Date(timeIntervalSinceReferenceDate: $0) }
+            .filter { $0 >= cutoff }
+            .map { Calendar.current.component(.hour, from: $0) }
+            .filter { $0 >= 9 && $0 <= 22 }
+
+        guard hours.count >= 5 else { return nil }
+
+        let sorted = hours.sorted()
+        return sorted[sorted.count / 2]
+    }
+
+    /// Kurulum tarihinden türetilen kararlı jitter (0 veya 15 dakika).
+    /// Her kurulumda sabit kalır, her açılışta değişmez.
+    static var stableJitterMinute: Int {
+        guard let d = firstLaunchDate else { return 0 }
+        return Int(d.timeIntervalSinceReferenceDate) % 2 == 0 ? 0 : 15
     }
 
     // MARK: - Mood

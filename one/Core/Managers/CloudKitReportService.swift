@@ -124,27 +124,46 @@ extension CloudKitManager {
         record[ReportField.createdAt] = Date() as CKRecordValue
         record[ReportField.status]    = "pending" as CKRecordValue
 
-        let op = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
-        op.savePolicy = .allKeys
-        op.modifyRecordsResultBlock = { [weak self] result in
-            switch result {
-            case .success:
-                ONELogger.success("Report submitted: \(targetType.rawValue)/\(targetID) [\(reason.rawValue)]", category: .cloudkit)
+        // Check whether this reporter has already filed a report for this target.
+        // Deterministic recordID means a duplicate report resolves to the same CloudKit record.
+        // We fetch first to detect duplicates so we don't double-increment reportCount.
+        publicDatabase.fetch(withRecordID: recordID) { [weak self] existingRecord, fetchError in
+            guard let self else { return }
 
-                // Yorum raporu → Comment.reportCount++
-                if targetType == .comment {
-                    self?.incrementCommentReportCount(commentID: targetID) { _ in
-                        // Hata olsa bile report kaydı oluştu — kullanıcıya success dön
+            let isNewReport: Bool
+            if let ckErr = fetchError as? CKError, ckErr.code == .unknownItem {
+                // Record does not exist — this is a first-time report.
+                isNewReport = true
+            } else if fetchError != nil {
+                // Network/other error — fail closed.
+                DispatchQueue.main.async { completion(.failure(.underlying(fetchError!))) }
+                return
+            } else {
+                // Record already exists — duplicate report by this user.
+                isNewReport = false
+            }
+
+            let op = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
+            op.savePolicy = .allKeys
+            op.modifyRecordsResultBlock = { [weak self] result in
+                switch result {
+                case .success:
+                    ONELogger.success("Report submitted: \(targetType.rawValue)/\(targetID) [\(reason.rawValue)] new=\(isNewReport)", category: .cloudkit)
+
+                    // Only increment reportCount for the FIRST report from this user.
+                    if targetType == .comment && isNewReport {
+                        self?.incrementCommentReportCount(commentID: targetID) { _ in
+                            DispatchQueue.main.async { completion(.success(())) }
+                        }
+                    } else {
                         DispatchQueue.main.async { completion(.success(())) }
                     }
-                } else {
-                    DispatchQueue.main.async { completion(.success(())) }
+                case .failure(let err):
+                    ONELogger.error("submitReport failed", error: err, category: .cloudkit)
+                    DispatchQueue.main.async { completion(.failure(.underlying(err))) }
                 }
-            case .failure(let err):
-                ONELogger.error("submitReport failed", error: err, category: .cloudkit)
-                DispatchQueue.main.async { completion(.failure(.underlying(err))) }
             }
+            self.publicDatabase.add(op)
         }
-        publicDatabase.add(op)
     }
 }

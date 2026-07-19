@@ -39,9 +39,7 @@ enum WidgetDataWriter {
         defaults.set(Date(),       forKey: "widget_savedAt")
         defaults.set(note ?? "",   forKey: "widget_note")
         defaults.set(entryCount,   forKey: "widget_entryCount")
-        defaults.set(true, forKey: "widget_isPremium")
 
-        // Tell WidgetKit to reload all timelines immediately
         WidgetCenter.shared.reloadAllTimelines()
         ONELogger.debug("WidgetDataWriter: widget data updated for '\(songName)'", category: .general)
     }
@@ -92,11 +90,11 @@ enum WidgetDataWriter {
             }
         }
 
-        // Clear today's keys
+        // Clear today's keys (streak persists — it survives midnight resets)
         ["widget_songName", "widget_artistName", "widget_moodLabel",
          "widget_moodColorHex", "widget_savedAt", "widget_note",
          "widget_entryCount", "widget_friendShares",
-         "widget_friendSharesUpdatedAt", "widget_streak"
+         "widget_friendSharesUpdatedAt"
         ].forEach { defaults.removeObject(forKey: $0) }
 
         WidgetCenter.shared.reloadAllTimelines()

@@ -16,6 +16,8 @@ struct ConfirmScreen: View {
     // CTA bar fixed height for scroll padding
     private let ctaBarHeight: CGFloat = 120
 
+    @State private var showSongConfirm = false
+
     var body: some View {
         ZStack(alignment: .bottom) {
             // ── Scrollable content ──────────────────────────────────────────
@@ -137,39 +139,6 @@ struct ConfirmScreen: View {
                         .padding(.horizontal, 32)
                         .padding(.top, 16)
 
-                        // ── Feeling seçimi (mood seçilince) ─────────────────
-                        if vm.selectedMood != nil {
-                            HStack {
-                                Text(NSLocalizedString("confirm.question", comment: ""))
-                                    .monoBase(tracking: 1.5)
-                                    .foregroundColor(ONETokens.oneAsh)
-                                Spacer()
-                            }
-                            .padding(.horizontal, 26)
-                            .padding(.top, 28)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-
-                            LazyVGrid(
-                                columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 4),
-                                spacing: 20
-                            ) {
-                                ForEach(FeelingOption.all) { feeling in
-                                    FeelingButton(
-                                        feeling: feeling,
-                                        isSelected: vm.selectedFeeling?.type == feeling.type,
-                                        action: {
-                                            withAnimation(ONEAnimation.micro) {
-                                                vm.selectedFeeling = feeling
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                            .padding(.horizontal, 32)
-                            .padding(.top, 16)
-                            .transition(.opacity.combined(with: .move(edge: .bottom)))
-                        }
-
                         // ── Not satırı (inline, kompakt) ────────────────────
                         if vm.selectedMood != nil {
                             InlineNoteField(noteText: $vm.dailyNote)
@@ -207,16 +176,14 @@ struct ConfirmScreen: View {
 
                 VStack(spacing: 12) {
                         Button(action: {
-                            ONEHaptics.saveRitual(mood: vm.selectedMood)
-                            vm.saveTodaysSong(context: viewContext)
-                            vm.currentScreen = .done
+                            showSongConfirm = true
                         }) {
                             Text(NSLocalizedString("confirm.todaySong", comment: ""))
                                 .displayXS()
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 18)
                                 .background(
-                                    (vm.selectedFeeling != nil ? vm.selectedMood?.color : nil)
+                                    vm.selectedMood?.color
                                         ?? ONETokens.oneStone
                                 )
                                 .foregroundColor(
@@ -224,8 +191,8 @@ struct ConfirmScreen: View {
                                 )
                                 .cornerRadius(20)
                         }
-                        .disabled(vm.selectedMood == nil || vm.selectedFeeling == nil)
-                        .animation(ONEAnimation.micro, value: vm.selectedMood != nil && vm.selectedFeeling != nil)
+                        .disabled(vm.selectedMood == nil)
+                        .animation(ONEAnimation.micro, value: vm.selectedMood != nil)
                         .accessibilityLabel(NSLocalizedString("today.saveButton", comment: ""))
 
                         Button(action: { vm.currentScreen = .search }) {
@@ -241,6 +208,83 @@ struct ConfirmScreen: View {
                 .padding(.bottom, 28)
                 .background(ONETokens.oneCream)
             }
+        }
+        .overlay {
+            if showSongConfirm, let song = vm.selectedSong, let mood = vm.selectedMood {
+                SongConfirmMicro(
+                    songName: song.name,
+                    moodLabel: mood.label,
+                    moodColor: mood.color,
+                    moodIsDark: mood.isDark,
+                    onConfirm: {
+                        showSongConfirm = false
+                        ONEHaptics.saveRitual(mood: vm.selectedMood)
+                        vm.saveTodaysSong(context: viewContext)
+                        vm.currentScreen = .done
+                    },
+                    onCancel: { showSongConfirm = false }
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.96)))
+            }
+        }
+        .animation(ONEAnimation.panelSpring, value: showSongConfirm)
+    }
+}
+
+// MARK: - Song Confirm Micro
+
+private struct SongConfirmMicro: View {
+    let songName: String
+    let moodLabel: String
+    let moodColor: Color
+    let moodIsDark: Bool
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.28).ignoresSafeArea()
+
+            VStack(spacing: 28) {
+                VStack(spacing: 8) {
+                    Text("\(moodLabel.lowercased()) + bu şarkı.")
+                        .displaySM()
+                        .foregroundColor(ONETokens.oneInk)
+                        .multilineTextAlignment(.center)
+                    Text(songName)
+                        .monoBase(tracking: 0.5)
+                        .foregroundColor(ONETokens.oneAsh)
+                        .lineLimit(1)
+                }
+
+                HStack(spacing: 14) {
+                    Button(action: onCancel) {
+                        Text(NSLocalizedString("confirm.songMicro.cancel", comment: ""))
+                            .monoBase(tracking: 1)
+                            .foregroundColor(ONETokens.oneAsh)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(ONETokens.oneCreamMid)
+                            .cornerRadius(16)
+                    }
+                    Button(action: onConfirm) {
+                        Text(NSLocalizedString("confirm.songMicro.confirm", comment: ""))
+                            .displayXS()
+                            .foregroundColor(moodIsDark ? ONETokens.oneCream : ONETokens.oneInk)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(moodColor)
+                            .cornerRadius(16)
+                    }
+                }
+            }
+            .padding(28)
+            .background(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(ONETokens.oneCream)
+                    .shadow(color: Color.black.opacity(0.12), radius: 24, x: 0, y: 8)
+            )
+            .padding(.horizontal, 22)
         }
     }
 }

@@ -33,6 +33,9 @@ struct DoneScreen: View {
     // Live waveform — soldan sağa çizilen Watch kalp ritmi çizgisi
     @State private var waveformProgress: CGFloat = 0
 
+    // Variable micro-reward — her girişte rastgele 5 animasyondan biri
+    @State private var rewardVariant = Int.random(in: 0..<5)
+
     private var moodColor: Color { vm.selectedMood?.color ?? ONETokens.oneInk }
     private var moodPastelColor: Color { vm.selectedMood?.pastelColor ?? ONETokens.oneCreamMid }
 
@@ -197,6 +200,14 @@ struct DoneScreen: View {
 
                 Spacer()
             }
+
+            // Variable micro-reward overlay — içeriğin ÜSTÜNDE, tüm animasyonlar
+            // opacity 0'a inerek solar; içerik alttan yükselir.
+            if !reduceMotion {
+                RewardOverlayView(variant: rewardVariant, color: moodColor)
+                    .allowsHitTesting(false)
+                    .ignoresSafeArea()
+            }
         }
         .onAppear {
             if reduceMotion {
@@ -290,6 +301,121 @@ private struct LiveWaveformView: View {
         }
         .frame(height: 30)
         .allowsHitTesting(false)
+    }
+}
+
+// MARK: - Variable Reward Overlay
+
+private struct RewardOverlayView: View {
+    let variant: Int
+    let color: Color
+    var body: some View {
+        ZStack {
+            switch variant {
+            case 0: RingPulseReward(color: color)
+            case 1: ConfettiDotsReward(color: color)
+            case 2: SparkleReward(color: color)
+            case 3: ColorFlashReward(color: color)
+            default: BubblePopReward(color: color)
+            }
+        }
+    }
+}
+
+private struct RingPulseReward: View {
+    let color: Color
+    @State private var active = false
+    var body: some View {
+        ZStack {
+            ForEach(0..<3, id: \.self) { i in
+                Circle()
+                    .strokeBorder(color.opacity(0.55 - Double(i) * 0.12), lineWidth: 1.5)
+                    .frame(width: 90, height: 90)
+                    .scaleEffect(active ? 7 : 0.3)
+                    .opacity(active ? 0 : 1)
+                    .animation(.easeOut(duration: 0.75).delay(Double(i) * 0.13), value: active)
+            }
+        }
+        .onAppear { active = true }
+    }
+}
+
+private struct ConfettiDotsReward: View {
+    let color: Color
+    @State private var spread = false
+    private let angles: [Double] = [0, 45, 90, 135, 180, 225, 270, 315]
+    var body: some View {
+        ZStack {
+            ForEach(Array(angles.enumerated()), id: \.offset) { i, deg in
+                let rad = deg * .pi / 180
+                Circle()
+                    .fill(color)
+                    .frame(width: 7, height: 7)
+                    .offset(
+                        x: spread ? CGFloat(cos(rad)) * 130 : 0,
+                        y: spread ? CGFloat(sin(rad)) * 130 : 0
+                    )
+                    .opacity(spread ? 0 : 0.85)
+                    .animation(.easeOut(duration: 0.65).delay(Double(i) * 0.02), value: spread)
+            }
+        }
+        .onAppear { spread = true }
+    }
+}
+
+private struct SparkleReward: View {
+    let color: Color
+    @State private var scale: CGFloat = 0.01
+    @State private var opacity: Double = 1
+    private let positions: [(CGFloat, CGFloat)] = [
+        (-65, -90), (65, -90), (-100, 0), (100, 0), (-65, 90), (65, 90)
+    ]
+    var body: some View {
+        ZStack {
+            ForEach(0..<6, id: \.self) { i in
+                Image(systemName: "sparkle")
+                    .font(.system(size: 15, weight: .light))
+                    .foregroundColor(color.opacity(0.85))
+                    .offset(x: positions[i].0, y: positions[i].1)
+                    .scaleEffect(scale)
+                    .opacity(opacity)
+            }
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.55)) { scale = 1.0 }
+            withAnimation(.easeIn(duration: 0.3).delay(0.42)) { opacity = 0 }
+        }
+    }
+}
+
+private struct ColorFlashReward: View {
+    let color: Color
+    @State private var opacity: Double = 0.30
+    var body: some View {
+        Rectangle()
+            .fill(color)
+            .opacity(opacity)
+            .ignoresSafeArea()
+            .onAppear {
+                withAnimation(.easeIn(duration: 0.55).delay(0.08)) { opacity = 0 }
+            }
+    }
+}
+
+private struct BubblePopReward: View {
+    let color: Color
+    @State private var scale: CGFloat = 0.1
+    @State private var opacity: Double = 0.50
+    var body: some View {
+        Circle()
+            .fill(color)
+            .frame(width: 180, height: 180)
+            .scaleEffect(scale)
+            .opacity(opacity)
+            .onAppear {
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.48)) { scale = 1.9 }
+                withAnimation(.easeIn(duration: 0.32).delay(0.32)) { opacity = 0 }
+            }
     }
 }
 

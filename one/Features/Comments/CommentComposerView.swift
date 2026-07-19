@@ -87,7 +87,7 @@ struct CommentComposerView: View {
                 TextField(placeholder, text: $text, axis: .vertical)
                     .lineLimit(1...6)
                     .focused($focused)
-                    .font(.body)
+                    .font(ONETypography.bodyMD)
                     .submitLabel(.send)
                     .accessibilityLabel("Yorum alanı")
 
@@ -150,13 +150,13 @@ struct CommentComposerView: View {
                 HStack(spacing: 6) {
                     if let msg = rateLimitMessage {
                         Label(msg, systemImage: "clock")
-                            .font(.caption2)
+                            .font(ONETypography.monoSM)
                             .foregroundStyle(.orange)
                     }
                     Spacer()
                     if showCounter {
                         Text("\(remaining)")
-                            .font(.caption2.monospacedDigit())
+                            .font(ONETypography.monoSM.monospacedDigit())
                             .foregroundStyle(isOverLimit ? .red : .secondary)
                             .transition(.opacity.combined(with: .scale(scale: 0.8)))
                     }
@@ -214,11 +214,11 @@ struct CommentComposerView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(song.name)
-                    .font(.subheadline.weight(.medium))
+                    .font(ONETypography.bodySMMedium)
                     .foregroundColor(ONETokens.oneInk)
                     .lineLimit(1)
                 Text(song.artist)
-                    .font(.caption)
+                    .font(ONETypography.bodyXS)
                     .foregroundColor(ONETokens.oneAsh)
                     .lineLimit(1)
             }
@@ -310,10 +310,10 @@ struct CommentComposerView: View {
 
             VStack(alignment: .leading, spacing: 1) {
                 Text("Düzenleniyor")
-                    .font(.caption.weight(.semibold))
+                    .font(ONETypography.monoBase)
                     .foregroundStyle(Color.accentColor)
                 Text("Kalan süre: \(editWindowRemaining(for: c))")
-                    .font(.caption2)
+                    .font(ONETypography.monoSM)
                     .foregroundStyle(.secondary)
             }
 

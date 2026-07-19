@@ -11,6 +11,8 @@ import SwiftUI
 struct DiscoverEventCard: View {
     let event: MoodEvent
     let moodColor: Color
+    
+    @ObservedObject private var savedManager = SavedItemManager.shared
 
     private var isFree: Bool {
         event.price.lowercased().contains("ucret") || event.price == "Ücretsiz"
@@ -95,30 +97,69 @@ struct DiscoverEventCard: View {
 
                 Spacer(minLength: 8)
 
-                // ── CTA indicator ────────────────────────────────────────
-                if actionURL != nil {
-                    VStack(spacing: 3) {
+                // ── Right Actions ────────────────────────────────────────
+                VStack(alignment: .trailing, spacing: 0) {
+                    Image(systemName: savedManager.isEventSaved(event.id) ? "bookmark.fill" : "bookmark")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(savedManager.isEventSaved(event.id) ? moodColor : ONETokens.oneStone)
+                        .padding(8)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            ONEHaptics.feelingSelected()
+                            if savedManager.isEventSaved(event.id) {
+                                savedManager.removeEvent(event.id)
+                            } else {
+                                savedManager.saveEvent(event)
+                            }
+                        }
+                    
+                    Spacer(minLength: 0)
+                    
+                    if actionURL != nil {
                         Image(systemName: isOutdoor ? "map.fill" : "ticket.fill")
-                            .font(.system(size: 11, weight: .semibold))
-                        Text(isOutdoor ? NSLocalizedString("discover.ctaMap", comment: "") : NSLocalizedString("discover.ctaBiletix", comment: ""))
-                            .monoLabel(tracking: 0.4)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(isOutdoor ? ONETokens.oneBlue.opacity(0.85) : ONETokens.oneBrand.opacity(0.85))
+                            .padding(.bottom, 14)
+                            .padding(.trailing, 8)
                     }
-                    .foregroundColor(
-                        isOutdoor
-                            ? ONETokens.oneBlue.opacity(0.85)
-                            : ONETokens.oneBrand.opacity(0.85)
-                    )
-                    .padding(.trailing, 14)
                 }
+                .padding(.trailing, 6)
+                .padding(.top, 6)
             }
             .frame(minHeight: 76)
             .background(
                 RoundedRectangle(cornerRadius: ONETokens.radiusCard)
                     .fill(ONETokens.onePaper)
-                    .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 2)
+                    .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: ONETokens.radiusCard)
+                            .stroke(ONETokens.oneInk.opacity(0.05), lineWidth: 1)
+                    )
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .contextMenu {
+            Button {
+                ONEHaptics.feelingSelected()
+                if SavedItemManager.shared.isEventSaved(event.id) {
+                    SavedItemManager.shared.removeEvent(event.id)
+                } else {
+                    SavedItemManager.shared.saveEvent(event)
+                }
+            } label: {
+                Label(
+                    SavedItemManager.shared.isEventSaved(event.id) ? "Kaydedilenlerden Çıkar" : "Ajandama Kaydet",
+                    systemImage: SavedItemManager.shared.isEventSaved(event.id) ? "bookmark.fill" : "bookmark"
+                )
+            }
+            
+            Button {
+                ONEHaptics.feelingSelected()
+                NotificationManager.shared.scheduleEventReminder(for: event)
+            } label: {
+                Label("Hatırlat", systemImage: "bell")
+            }
+        }
     }
 
     // MARK: - Helpers

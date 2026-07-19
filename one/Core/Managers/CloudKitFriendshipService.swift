@@ -215,30 +215,21 @@ extension CloudKitManager {
                 }
                 return
             }
-            guard let currentUserID = self.currentUser?["userID"] as? String else {
+            guard self.currentUser?["userID"] is String else {
                 DispatchQueue.main.async {
                     completion(.failure(NSError(domain: "CloudKit", code: -1)))
                 }
                 return
             }
 
-            let senderID = record["user1ID"] as? String ?? ""
+            // Update the existing pending record in-place — avoids duplicate Friendship records.
+            record["status"] = "accepted" as CKRecordValue
 
-            // Write the accepted record — minimal fields only
-            let accepted = CKRecord(recordType: "Friendship")
-            accepted["user1ID"] = currentUserID as CKRecordValue
-            accepted["user2ID"] = senderID      as CKRecordValue
-            accepted["status"]  = "accepted"    as CKRecordValue
-
-            self.publicDatabase.save(accepted) { saved, saveError in
+            self.publicDatabase.save(record) { saved, saveError in
                 if let saved {
                     ONELogger.success("Friend request accepted", category: .circle)
                     AppAnalytics.shared.track(.friendRequestAccepted)
                     DispatchQueue.main.async { completion(.success(saved)) }
-
-                    // Also update the original pending record's status
-                    record["status"] = "accepted" as CKRecordValue
-                    self.publicDatabase.save(record) { _, _ in }
                 } else {
                     DispatchQueue.main.async {
                         completion(.failure(saveError ?? NSError(domain: "CloudKit", code: -1)))
@@ -253,21 +244,25 @@ extension CloudKitManager {
     func declineFriendRequest(recordID: String,
                               completion: @escaping (Result<Bool, Error>) -> Void) {
         let ckID = CKRecord.ID(recordName: recordID)
-        publicDatabase.fetch(withRecordID: ckID) { [weak self] record, _ in
+        publicDatabase.fetch(withRecordID: ckID) { [weak self] record, error in
             guard let self else { DispatchQueue.main.async { completion(.success(true)) }; return }
 
-            let senderID      = record?["user1ID"] as? String ?? ""
-            let currentUserID = self.currentUser?["userID"] as? String ?? ""
+            if let error, record == nil {
+                ONELogger.error("declineFriendRequest fetch failed", error: error, category: .circle)
+                DispatchQueue.main.async { completion(.failure(error)) }
+                return
+            }
 
-            let declined = CKRecord(recordType: "Friendship")
-            declined["user1ID"] = currentUserID as CKRecordValue
-            declined["user2ID"] = senderID      as CKRecordValue
-            declined["status"]  = "declined"    as CKRecordValue
+            guard let record else {
+                DispatchQueue.main.async { completion(.success(true)) }
+                return
+            }
 
-            self.publicDatabase.save(declined) { _, _ in
+            // Update the existing pending record in-place to "declined".
+            record["status"] = "declined" as CKRecordValue
+            self.publicDatabase.save(record) { _, _ in
                 ONELogger.success("Friend request declined", category: .circle)
                 DispatchQueue.main.async { completion(.success(true)) }
-                if let record { self.publicDatabase.delete(withRecordID: record.recordID) { _, _ in } }
             }
         }
     }

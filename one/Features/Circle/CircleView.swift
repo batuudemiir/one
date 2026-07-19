@@ -14,11 +14,13 @@ struct IdentifiableCKRecord: Identifiable {
     let id: String
     let record: CKRecord
     let friendDisplayName: String
+    let friendProfilePhoto: UIImage?
 
-    init(_ record: CKRecord, displayName: String = "") {
+    init(_ record: CKRecord, displayName: String = "", profilePhoto: UIImage? = nil) {
         self.id = record.recordID.recordName
         self.record = record
         self.friendDisplayName = displayName
+        self.friendProfilePhoto = profilePhoto
     }
 }
 
@@ -47,15 +49,23 @@ struct CircleView: View {
     @State var unseenShareCount: Int = 0
     @State var selectedPublicProfileUserID: String? = nil
     @State var showSelfDetail = false
+    @State var showQuickAdd = false
 
     // Deep Link support
     @State var deepLinkInviteCode: String? = nil
 
     var onNavigateToToday: (() -> Void)? = nil
+    var onNavigateToDiscover: (() -> Void)? = nil
     
     // Check if current user has shared today
     var userHasSharedToday: Bool {
         (userShare?["songName"] as? String)?.isEmpty == false
+    }
+
+    /// Hiç arkadaşı olmayan kullanıcı. `hasLoadedOnce` şart: yükleme bitmeden
+    /// boş durum göstermek, verisi olan kullanıcıya bir an "çevren boş" demek olurdu.
+    var hasNoCircleYet: Bool {
+        hasLoadedOnce && friendsShares.isEmpty && pendingRequestCount == 0
     }
 
     private var totalNotificationCount: Int { CircleNotificationStore.shared.unreadCount }
@@ -139,6 +149,13 @@ struct CircleView: View {
                     headerSection
                     if isLoading && !hasLoadedOnce {
                         skeletonCards
+                    } else if hasNoCircleYet {
+                        // Arkadaşı olmayan kullanıcıya 3 sahte iskelet kartı göstermek
+                        // yerine değer önizlemesi + tek net davet. (Solo D30 %0)
+                        CircleEmptyState(
+                            showAddFriend: $showAddFriend,
+                            onStartAlone: onNavigateToToday
+                        )
                     } else {
                         cloudSection
                     }
@@ -147,9 +164,13 @@ struct CircleView: View {
         }
         .navigationBarHidden(true)
         .sheet(item: $selectedShareItem) { item in
-            FriendShareDetailView(share: item.record, friendDisplayName: item.friendDisplayName)
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
+            FriendShareDetailView(
+                share: item.record,
+                friendDisplayName: item.friendDisplayName,
+                friendProfilePhoto: item.friendProfilePhoto
+            )
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showSelfDetail) {
             if let share = userShare {
@@ -172,6 +193,10 @@ struct CircleView: View {
                 .presentationDragIndicator(.visible)
         }
         .onAppear {
+            isViewVisible = true
+            // Sekme rozetini ekran açılır açılmaz temizle
+            cloudKitManager.unseenFriendShareCount = 0
+
             AppAnalytics.shared.track(.circleOpened)
             computeLocalStreak()
             if !cloudKitManager.isFetchingUser {
@@ -220,17 +245,15 @@ struct CircleView: View {
         .onReceive(NotificationCenter.default.publisher(for: .init("unseenSharesChanged"))) { _ in
             computeUnseenCount()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .init("OpenFriendRequests"))) { _ in
+            showFriendRequests = true
+        }
         // Reload when currentUser becomes available after throttle/error recovery
         .onChange(of: cloudKitManager.currentUser) { _, newUser in
             if newUser != nil && friendsShares.isEmpty && isViewVisible {
                 loadFriendsShares()
                 loadPendingCount()
             }
-        }
-        .onAppear {
-            isViewVisible = true
-            // Clear tab badge as soon as the user opens the Circle screen
-            cloudKitManager.unseenFriendShareCount = 0
         }
         .onDisappear { isViewVisible = false }
         .sheet(isPresented: $showAddFriend, onDismiss: {
@@ -245,33 +268,59 @@ struct CircleView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $showQuickAdd, onDismiss: {
+            cloudKitManager.invalidateSuggestionsCache()
+            loadFriendsShares()
+            loadPendingCount()
+        }) {
+            QuickAddFriendSheet()
+                .presentationDetents([.height(520), .large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
+        }
     }
 
     // MARK: - Header Action Buttons
 
     private var addFriendHeaderButton: some View {
         Button(action: { showAddFriend = true }) {
-            HStack(spacing: 5) {
-                Image(systemName: friendsShares.isEmpty ? "person.badge.plus.fill" : "person.badge.plus")
-                    .font(.system(size: 13, weight: .medium))
-                if friendsShares.isEmpty {
-                    Text(NSLocalizedString("circle.addFriend", comment: ""))
-                        .monoSM(tracking: 0.5)
-                }
-            }
-            .foregroundColor(friendsShares.isEmpty ? ONETokens.oneCream : ONETokens.oneAsh)
-            .padding(.horizontal, friendsShares.isEmpty ? 14 : 10)
-            .padding(.vertical, 8)
-            .background(
-                Capsule()
-                    .fill(friendsShares.isEmpty
-                          ? ONETokens.oneInk
-                          : ONETokens.oneSilver.opacity(0.9))
-            )
+            Image(systemName: "person.badge.plus")
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(ONETokens.oneAsh)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .background(Capsule().fill(ONETokens.oneSilver.opacity(0.9)))
         }
         .buttonStyle(ScaleButtonStyle())
-        .animation(ONEAnimation.micro, value: friendsShares.isEmpty)
         .accessibilityLabel(NSLocalizedString("accessibility.circle.addFriend", comment: ""))
+    }
+
+    private var quickAddHeaderButton: some View {
+        Button(action: { showQuickAdd = true }) {
+            Image(systemName: "bolt.fill")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(ONETokens.oneBrand)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .background(Capsule().fill(ONETokens.oneSilver.opacity(0.9)))
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .accessibilityLabel("Hızlı ekle")
+    }
+
+    /// Keşfet sekme çubuğundan çıktı — girişi burada.
+    /// Odak Frekans'ta kalırken keşif yüzeyi (ve gelir modeli) korunuyor.
+    private var discoverHeaderButton: some View {
+        Button(action: { onNavigateToDiscover?() }) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(ONETokens.oneAsh)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .background(Capsule().fill(ONETokens.oneSilver.opacity(0.9)))
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .accessibilityLabel(NSLocalizedString("nav.discover", comment: ""))
     }
 
     private var notificationsHeaderButton: some View {
@@ -327,7 +376,9 @@ struct CircleView: View {
 
                 Spacer()
 
+                discoverHeaderButton
                 addFriendHeaderButton
+                quickAddHeaderButton
                 notificationsHeaderButton
             }
 

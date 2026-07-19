@@ -344,6 +344,45 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         }
     }
     
+    // MARK: - Event Reminder
+    
+    func scheduleEventReminder(for event: MoodEvent) {
+        let center = UNUserNotificationCenter.current()
+        let content = UNMutableNotificationContent()
+        content.title = "Yaklaşan Etkinlik: \(event.title)"
+        content.body  = "\(event.venue) mekanındaki etkinliği kaçırma!"
+        content.sound = .default
+        content.userInfo = ["type": "event_reminder", "eventId": event.id]
+        
+        let trigger: UNNotificationTrigger
+        
+        if let eventDate = event.eventDate, eventDate > Date() {
+            let timeInterval = eventDate.timeIntervalSince(Date())
+            let notifyDate: Date
+            if timeInterval > 24 * 3600 {
+                notifyDate = eventDate.addingTimeInterval(-24 * 3600) // 1 day before
+            } else if timeInterval > 2 * 3600 {
+                notifyDate = eventDate.addingTimeInterval(-2 * 3600) // 2 hours before
+            } else {
+                notifyDate = Date().addingTimeInterval(10) // Demo
+            }
+            let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: notifyDate)
+            trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
+            ONELogger.success("Event reminder scheduled for \(notifyDate)", category: .notification)
+        } else {
+            // Demo fallback if no precise date
+            trigger = UNTimeIntervalNotificationTrigger(timeInterval: 60, repeats: false)
+            ONELogger.success("Demo event reminder scheduled (+60s)", category: .notification)
+        }
+        
+        let request = UNNotificationRequest(identifier: "event_reminder_\(event.id)", content: content, trigger: trigger)
+        center.add(request) { error in
+            if let error = error {
+                ONELogger.error("Failed to schedule event reminder", error: error, category: .notification)
+            }
+        }
+    }
+    
     // Show notifications as banner even if app is open
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,

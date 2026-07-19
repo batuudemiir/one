@@ -8,6 +8,7 @@
 //
 
 import Foundation
+import CoreLocation
 
 // MARK: - Ticketmaster API Manager & Models
 
@@ -17,6 +18,7 @@ class TicketmasterManager {
     private let apiKey: String
     private let baseURL = "https://app.ticketmaster.com/discovery/v2/events.json"
 
+    var userLocation: CLLocationCoordinate2D? = nil
     private var cachedEventsByKey: [String: (events: [MoodEvent], createdAt: Date)] = [:]
     private let cacheTTL: TimeInterval = 24 * 60 * 60  // 24 saat — günde bir yenileme
     private var didLogMissingKey = false
@@ -68,15 +70,13 @@ class TicketmasterManager {
             return cacheAndReturn([], key: cacheKey)
         }
 
-        async let tmMusic = fetchMusicMatches(entry: entry, city: city)
-        async let tmArts  = fetchForSegment(entry: entry, city: city, category: .tiyatro, size: 6)
-        async let tmExpo  = fetchForSegment(entry: entry, city: city, category: .sergi,   size: 6)
-        async let tmSport = fetchForSegment(entry: entry, city: city, category: .spor,    size: 5)
-
-        let e1 = (try? await tmMusic) ?? []
-        let e2 = (try? await tmArts) ?? []
-        let e3 = (try? await tmExpo) ?? []
-        let e4 = (try? await tmSport) ?? []
+        let e1 = (try? await fetchMusicMatches(entry: entry, city: city)) ?? []
+        try? await Task.sleep(nanoseconds: 250_000_000)
+        let e2 = (try? await fetchForSegment(entry: entry, city: city, category: .tiyatro, size: 6)) ?? []
+        try? await Task.sleep(nanoseconds: 250_000_000)
+        let e3 = (try? await fetchForSegment(entry: entry, city: city, category: .sergi, size: 6)) ?? []
+        try? await Task.sleep(nanoseconds: 250_000_000)
+        let e4 = (try? await fetchForSegment(entry: entry, city: city, category: .spor, size: 5)) ?? []
         var apiEvents = e1 + e2 + e3 + e4
 
         // If primary city returned nothing, try nearby cities before falling to mock.
@@ -84,12 +84,12 @@ class TicketmasterManager {
         // label them clearly (e.g. "Yakın şehir: İstanbul").
         if apiEvents.isEmpty {
             for altCity in nearbyCities(for: city) {
-                async let alt1 = fetchMusicMatches(entry: entry, city: altCity)
-                async let alt2 = fetchForSegment(entry: entry, city: altCity, category: .tiyatro, size: 5)
-                async let alt3 = fetchForSegment(entry: entry, city: altCity, category: .sergi, size: 4)
-                let altMusic = (try? await alt1) ?? []
-                let altArts  = (try? await alt2) ?? []
-                let altExpo  = (try? await alt3) ?? []
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                let altMusic = (try? await fetchMusicMatches(entry: entry, city: altCity)) ?? []
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                let altArts  = (try? await fetchForSegment(entry: entry, city: altCity, category: .tiyatro, size: 5)) ?? []
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                let altExpo  = (try? await fetchForSegment(entry: entry, city: altCity, category: .sergi, size: 4)) ?? []
                 let altEvents = altMusic + altArts + altExpo
                 if !altEvents.isEmpty {
                     // Tag every event so the card layer can show "Yakın şehir: X"
@@ -98,6 +98,12 @@ class TicketmasterManager {
                     break
                 }
             }
+        }
+
+        // If STILL empty, recommend generic events special to that province
+        if apiEvents.isEmpty {
+            apiEvents = CitySpecialActivities.getSpecialEvents(for: city)
+            ONELogger.info("No TM events in nearby cities either — showing CitySpecialActivities for \(city).", category: .general)
         }
 
         // Merge API results — sinema excluded (not on Biletix); spor/aktivite welcome
@@ -274,13 +280,16 @@ class TicketmasterManager {
             city: event.city,
             timing: event.timing,
             price: event.price,
-            matchPercent: max(event.matchPercent - 8, 50), // slight penalty for nearby
+            matchPercent: max(event.matchPercent - 8, 50),
             sourceURL: event.sourceURL,
             kind: event.kind,
             reason: event.reason,
             sourceLabel: event.sourceLabel,
             isNearbyCity: true,
-            isFallbackURL: event.isFallbackURL
+            isFallbackURL: event.isFallbackURL,
+            eventDate: event.eventDate,
+            attendeeCount: event.attendeeCount,
+            distanceKm: event.distanceKm
         )
     }
 
@@ -296,9 +305,23 @@ class TicketmasterManager {
         let category  = mapCategory(from: event)
         let venue     = event._embedded?.venues?.first?.name ?? "Bilinmeyen Mekan"
         let eventCity = event._embedded?.venues?.first?.city?.name ?? city
-        let date      = event.dates?.start?.localDate ?? ""
+        let dateStr   = event.dates?.start?.localDate ?? ""
         let time      = event.dates?.start?.localTime
-        let timing    = timingLabel(date: date, time: time)
+        let timing    = timingLabel(date: dateStr, time: time)
+
+        let dateFmt = DateFormatter()
+        dateFmt.dateFormat = "yyyy-MM-dd"
+        let parsedDate = dateStr.isEmpty ? nil : dateFmt.date(from: dateStr)
+
+        var distanceKm: Double? = nil
+        if let userLoc = userLocation,
+           let latStr = event._embedded?.venues?.first?.location?.latitude,
+           let lonStr = event._embedded?.venues?.first?.location?.longitude,
+           let lat = Double(latStr), let lon = Double(lonStr) {
+            let venueLoc = CLLocation(latitude: lat, longitude: lon)
+            let userCL = CLLocation(latitude: userLoc.latitude, longitude: userLoc.longitude)
+            distanceKm = userCL.distance(from: venueLoc) / 1000.0
+        }
 
         var priceString = "Bilet bilgisi yakında"
         if let min = event.priceRanges?.first?.min {
@@ -327,7 +350,10 @@ class TicketmasterManager {
             reason: reason ?? liveReason(for: category, entry: entry, city: eventCity),
             sourceLabel: sourceLabel ?? defaultSourceLabel(for: kind, category: category),
             isNearbyCity: false,
-            isFallbackURL: isFallback
+            isFallbackURL: isFallback,
+            eventDate: parsedDate,
+            attendeeCount: nil,
+            distanceKm: distanceKm
         )
     }
 

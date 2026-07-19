@@ -237,17 +237,6 @@ struct SelfShareDetailView: View {
                         .padding(.vertical, 6)
                         .background(Capsule().fill(moodColor.opacity(0.12)))
                     }
-                    if !feelingLabel.isEmpty {
-                        HStack(spacing: 6) {
-                            FeelingIconView(type: feeling).frame(width: 20, height: 16)
-                            Text(feelingLabel.uppercased())
-                                .monoLabel(tracking: 1.2)
-                                .foregroundColor(ONETokens.oneCharcoal)
-                        }
-                        .padding(.horizontal, ONETokens.spacingMD)
-                        .padding(.vertical, 6)
-                        .background(Capsule().fill(ONETokens.oneCreamMid))
-                    }
                 }
 
                 HStack(spacing: ONETokens.spacingMD) {

@@ -95,6 +95,12 @@ struct MoodEvent: Identifiable, Codable {
     /// true → sourceURL is a Biletix category search page (never 404s)
     ///         false / nil → direct event page (can 404 for minor cities)
     let isFallbackURL: Bool
+    /// Parsed event date from Ticketmaster localDate — used for timeline date box UI.
+    let eventDate: Date?
+    /// Number of attendees going to this event (nil when unavailable).
+    let attendeeCount: Int?
+    /// Distance from user's location to the venue in kilometres (nil when unavailable).
+    let distanceKm: Double?
 
     init(
         id: String = UUID().uuidString,
@@ -110,7 +116,10 @@ struct MoodEvent: Identifiable, Codable {
         reason: String? = nil,
         sourceLabel: String? = nil,
         isNearbyCity: Bool = false,
-        isFallbackURL: Bool = false
+        isFallbackURL: Bool = false,
+        eventDate: Date? = nil,
+        attendeeCount: Int? = nil,
+        distanceKm: Double? = nil
     ) {
         self.id = id
         self.category = category
@@ -126,6 +135,9 @@ struct MoodEvent: Identifiable, Codable {
         self.sourceLabel = sourceLabel
         self.isNearbyCity = isNearbyCity
         self.isFallbackURL = isFallbackURL
+        self.eventDate = eventDate
+        self.attendeeCount = attendeeCount
+        self.distanceKm = distanceKm
     }
 }
 
@@ -172,6 +184,12 @@ struct TMEventEmbedded: Decodable {
 struct TMVenue: Decodable {
     let name: String?
     let city: TMCity?
+    let location: TMLocation?
+}
+
+struct TMLocation: Decodable {
+    let longitude: String?
+    let latitude: String?
 }
 struct TMCity: Decodable {
     let name: String?

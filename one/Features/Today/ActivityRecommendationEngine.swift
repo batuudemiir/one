@@ -530,4 +530,55 @@ final class ActivityRecommendationEngine {
             locationStyle: .neighborhood
         )
     ]}
+    
+    // MARK: - General Keşif (No Mood)
+    
+    private func neutralEntry() -> DailyEntry {
+        DailyEntry(
+            id: UUID(),
+            date: Date(),
+            songName: "",
+            artistName: "",
+            genre: "",
+            moodColor: .gray,
+            moodColorHex: "#999999",
+            moodLabel: "Nötr",
+            feeling: .calm,
+            feelingLabel: "Sakin",
+            time: "12:00",
+            photoURL: nil,
+            shareWithCircle: false,
+            weatherIcon: "☁️",
+            weatherDesc: "Bulutlu",
+            spotifyURL: nil,
+            platform: "Spotify",
+            note: nil,
+            passed: false
+        )
+    }
+
+    func fetchGeneralSections(city: String) async -> [RecommendationSection] {
+        let entry = neutralEntry()
+        let liveEvents = (try? await TicketmasterManager.shared.fetchLiveEvents(for: entry, city: city)) ?? []
+
+        let cityEvents = Array(
+            liveEvents
+                .filter { ![.artistConcert, .similarConcert].contains($0.kind) }
+                .sorted { $0.matchPercent > $1.matchPercent }
+                .prefix(8)
+        )
+
+        var sections: [RecommendationSection] = []
+        if !cityEvents.isEmpty {
+            sections.append(
+                RecommendationSection(
+                    id: "city-general",
+                    title: "Şehrindeki Etkinlikler",
+                    subtitle: "Keşfedebileceğin popüler etkinlikler.",
+                    items: cityEvents
+                )
+            )
+        }
+        return sections
+    }
 }

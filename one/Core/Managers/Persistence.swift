@@ -149,6 +149,7 @@ struct PersistenceController {
                             if let image = UIImage(data: data),
                                let compressedData = image.jpegData(compressionQuality: 0.7) {
                                 await MainActor.run {
+                                    guard !dailySong.isDeleted, dailySong.managedObjectContext != nil else { return }
                                     dailySong.photoData = compressedData
                                     do {
                                         try context.save()
@@ -189,6 +190,30 @@ struct PersistenceController {
         }
     }
     
+    // #10 — Pas günü: renk/şarkı yok, streak korunur
+    func savePassedDay(date: Date, context: NSManagedObjectContext) {
+        let normalizedDate = Calendar.current.startOfDay(for: date)
+        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "date == %@", normalizedDate as NSDate)
+        fetchRequest.fetchLimit = 1
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            guard results.isEmpty else { return } // Gerçek giriş varsa pas'ı geçersiz kıl
+            let entry = DailySong(context: context)
+            entry.id = UUID()
+            entry.date = normalizedDate
+            entry.createdAt = Date()
+            entry.passed = true
+            entry.moodColorHex = "#9E9E9E"  // nötr gri — archive gösterimi için
+            entry.songName = ""
+            entry.artistName = ""
+            try context.save()
+        } catch {
+            ONELogger.debug("Error saving passed day: \(error)", category: .persistence)
+        }
+    }
+
     func fetchDailySong(for date: Date, context: NSManagedObjectContext) -> DailySong? {
         let normalizedDate = Calendar.current.startOfDay(for: date)
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()

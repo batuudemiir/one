@@ -19,9 +19,9 @@ struct CommentsIntroBanner: View {
                     .foregroundStyle(Color.accentColor)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Yorumlar")
-                        .font(.subheadline).fontWeight(.semibold)
+                        .font(ONETypography.bodySMMedium)
                     Text("Emoji yerine 280 karakterlik yorumlar. Saygılı ol — rapor & engelle her yerde.")
-                        .font(.caption)
+                        .font(ONETypography.bodyXS)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -30,7 +30,7 @@ struct CommentsIntroBanner: View {
                     CommentsFeatureFlag.markIntroSeen()
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.caption)
+                        .font(ONETypography.monoSM)
                         .padding(6)
                 }
                 .buttonStyle(.plain)

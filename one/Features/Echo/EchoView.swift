@@ -138,15 +138,18 @@ struct EchoView: View {
 
     // MARK: — Loading
     private var loadingView: some View {
-        VStack(spacing: 12) {
-            ProgressView()
-                .scaleEffect(1.1)
-                .tint(ONETokens.oneAsh)
-            Text(NSLocalizedString("echo.loading", comment: ""))
-                .font(ONETypography.bodyXS)
-                .italic()
-                .foregroundColor(ONETokens.oneAsh)
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(0..<4, id: \.self) { _ in
+                RoundedRectangle(cornerRadius: ONETokens.radiusCard)
+                    .fill(ONETokens.oneSilver)
+                    .frame(height: 88)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .shimmeringCircle()
+            }
         }
+        .padding(.top, 80)
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: — Kart sarmalayıcı
@@ -353,20 +356,6 @@ struct EchoView: View {
                 }
             }
 
-            // Baskın his
-            if let feeling = vm.data.dominantFeeling {
-                HStack(spacing: 8) {
-                    FeelingIconView(type: feeling)
-                        .frame(width: 26, height: 20)
-                        .opacity(0.55)
-                    Text(NSLocalizedString("echo.dominantFeeling", comment: ""))
-                        .bodyXS()
-                        .foregroundColor(ONETokens.oneAsh)
-                }
-                .padding(.top, 2)
-                .opacity(appeared ? 1 : 0)
-                .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.5), value: appeared)
-            }
         }
     }
 

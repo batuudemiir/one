@@ -42,6 +42,12 @@ struct MoodEventsSheet: View {
         filteredSections.reduce(0) { $0 + $1.items.count }
     }
 
+    private var fallbackCity: String? {
+        let allItems = sections.flatMap(\.items)
+        guard allItems.allSatisfy({ $0.isNearbyCity }), let first = allItems.first else { return nil }
+        return first.city
+    }
+
     private var visibleCategories: [EventCategory] {
         EventCategory.allCases.filter { ![.spor, .sinema].contains($0) }
     }
@@ -117,6 +123,29 @@ struct MoodEventsSheet: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 32)
                     .padding(.bottom, 22)
+
+                    // Fallback city notice
+                    if let fb = fallbackCity {
+                        HStack(spacing: 10) {
+                            Image(systemName: "location.slash.fill")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(ONETokens.oneStone)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("\(preferredCity) için etkinlik bulunamadı")
+                                    .font(ONETypography.monoSM)
+                                    .foregroundColor(ONETokens.oneCharcoal)
+                                Text("\(fb) etkinlikleri gösteriliyor")
+                                    .font(ONETypography.monoMicro)
+                                    .foregroundColor(ONETokens.oneStone)
+                            }
+                            Spacer()
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(ONETokens.oneCreamMid))
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 12)
+                    }
 
                     // Category filter pills
                     ScrollView(.horizontal, showsIndicators: false) {

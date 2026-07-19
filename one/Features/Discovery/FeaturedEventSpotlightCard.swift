@@ -1,0 +1,1 @@
+// FeaturedEventSpotlightCard — replaced by KesfetFeaturedCard

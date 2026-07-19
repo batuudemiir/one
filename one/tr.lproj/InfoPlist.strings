@@ -9,4 +9,3 @@
 "NSPhotoLibraryUsageDescription" = "Profil fotoğrafı seçmen ve günlük kartına fotoğraf eklemen için galeri erişimi gerekli.";
 "NSPhotoLibraryAddUsageDescription" = "Hazırladığın aylık posteri ya da paylaşım kartını galerine kaydetmek için izin gerekli.";
 "NSLocationWhenInUseUsageDescription" = "Şehrindeki etkinlikleri ve hava durumuna uygun ipuçlarını göstermek için konum gerekli.";
-"NSUserTrackingUsageDescription" = "Sana daha alakalı öneriler ve davet kartları gösterebilmek için isteğe bağlı izin.";

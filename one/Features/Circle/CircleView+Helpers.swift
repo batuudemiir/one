@@ -103,7 +103,10 @@ extension CircleView {
             case .failure(let error):
                 ONELogger.debug("Error initializing user: \(error)", category: .circle)
                 DispatchQueue.main.async {
+                    // hasLoadedOnce da set edilmeli: aksi halde `isLoading && !hasLoadedOnce`
+                    // yarım bir durumda kalır ve skeleton ile boş durum arasında karar verilemez.
                     self.isLoading = false
+                    self.hasLoadedOnce = true
                 }
             }
         }
@@ -118,6 +121,12 @@ extension CircleView {
                 let loaded = await cloudKitManager.ensureCurrentUser()
                 guard loaded else {
                     ONELogger.error("loadFriendsShares: currentUser still nil after wait", category: .circle)
+                    // Sessizce dönmek skeleton'ı sonsuza kadar ekranda bırakıyordu — Çevre
+                    // açılış ekranı olduğu için bu doğrudan "uygulama açılmıyor" demek.
+                    await MainActor.run {
+                        self.isLoading = false
+                        self.hasLoadedOnce = true
+                    }
                     return
                 }
                 await MainActor.run {

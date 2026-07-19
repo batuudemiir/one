@@ -24,7 +24,6 @@ struct TodayEmptyView: View {
     // Seçimler
     @State var selectedSong: SongResult?    = nil
     @State var selectedMood: MoodOption?    = nil
-    @State var selectedFeeling: FeelingType? = nil
     @State var photoImage: UIImage?          = nil
     @State var dailyNote: String             = ""
     @State var sharePhoto                    = false
@@ -38,7 +37,6 @@ struct TodayEmptyView: View {
     // Hangi bölümler açık
     @State var showPhotoRow     = false
     @State var showMoodSection  = false
-    @State var showFeelingSection = false
     @State var showNoteSection  = false
     @State var showSaveButton   = false
 
@@ -86,8 +84,8 @@ struct TodayEmptyView: View {
                     VStack(alignment: .leading, spacing: 0) {
 
                         ZStack(alignment: .trailing) {
-                            Text("ONE+")
-                                .font(.system(size: 38, weight: .bold, design: .default))
+                            Text("ONE")
+                                .font(ONETypography.displayXL)
                                 .foregroundColor(ONETokens.oneInk)
                                 .frame(maxWidth: .infinity)
 
@@ -164,15 +162,6 @@ struct TodayEmptyView: View {
 
                             }
 
-                            // ── Feeling ──────────────────────────────
-                            if showFeelingSection {
-                                sectionDivider
-                                feelingSection
-                                    .padding(.top, 20)
-                                    .id("feelingSection")
-                                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                            }
-
                             // ── Not ───────────────────────────────────
                             if showNoteSection {
                                 sectionDivider
@@ -225,6 +214,13 @@ struct TodayEmptyView: View {
                             )
                         }
 
+                        // #10 — Pas butonu: şarkı seçilmediğinde, sayfanın en altında
+                        if selectedSong == nil {
+                            passButton
+                                .padding(.top, 8)
+                                .padding(.bottom, 8)
+                        }
+
                         Color.clear.frame(height: 24)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -232,13 +228,15 @@ struct TodayEmptyView: View {
                     .padding(.top, 52)
                     .padding(.bottom, 16)
                     .onAppear { scrollProxy = proxy }
+                    .onTapGesture {
+                        isNoteFieldFocused = false
+                    }
                 }
-                .scrollDismissesKeyboard(.interactively)
+                .scrollDismissesKeyboard(.immediately)
             }
         }
         .animation(ONEAnimation.panelSpring, value: showPhotoRow)
         .animation(ONEAnimation.panelSpring, value: showMoodSection)
-        .animation(ONEAnimation.panelSpring, value: showFeelingSection)
         .animation(ONEAnimation.panelSpring, value: showNoteSection)
         .animation(ONEAnimation.panelSpring, value: showSaveButton)
         .animation(ONEAnimation.panelSpring, value: selectedSong != nil)

@@ -16,9 +16,11 @@ class TodayViewModel: ObservableObject {
     @Published var todayEntries: [DailyEntry] = []
     @Published var searchResults: [SongResult] = []
     @Published var recentArtists: [String] = []
+    @Published var recommendedSongs: [SongResult] = []
     @Published var isSearching: Bool = false
     @Published var searchError: String? = nil
     @Published var showLiveActivityAlert: Bool = false
+    @Published var circleShareFailed: Bool = false
     @Published var streakMilestone: Int? = nil
     @Published var lastYearEntry: DailyEntry? = nil
     /// C3 — "1 hafta önce bugün" mini Echo (D14+ daha anlamlı, ama her zaman göster).
@@ -46,6 +48,7 @@ class TodayViewModel: ObservableObject {
 
     private let context: NSManagedObjectContext
     private var searchTask: Task<Void, Never>? = nil
+    private var syncTask: Task<Void, Never>? = nil
 
     /// B1 — Tek kaynak: StreakEngine.milestones ile hizalı.
     private static let streakMilestones: Set<Int> = Set(StreakEngine.milestones)
@@ -72,6 +75,7 @@ class TodayViewModel: ObservableObject {
         loadThisWeekEntries()
         loadTotalEntryCount()
         loadYesterdayMood()
+        loadRecommendedSongs()
     }
 
     // MARK: - Load today's entries from CoreData
@@ -162,6 +166,89 @@ class TodayViewModel: ObservableObject {
         } catch {}
     }
 
+    // MARK: - Load recommended songs (MusicKit charts, daily cached)
+
+    private static let recSongsCacheKey     = "recommendedSongsCache_v2"
+    private static let recSongsCacheDateKey = "recommendedSongsCacheDate_v2"
+    @Published var isLoadingRecommendations = false
+
+    func loadRecommendedSongs() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        // Return today's cached picks if they exist.
+        if let cachedDate = UserDefaults.standard.object(forKey: Self.recSongsCacheDateKey) as? Date,
+           calendar.isDate(cachedDate, inSameDayAs: today),
+           let data = UserDefaults.standard.data(forKey: Self.recSongsCacheKey),
+           let cached = try? JSONDecoder().decode([SongResult].self, from: data),
+           !cached.isEmpty {
+            recommendedSongs = cached
+            return
+        }
+
+        // Stale cache — clear immediately so UI shows loading state.
+        recommendedSongs = []
+        isLoadingRecommendations = true
+
+        // Already-logged song keys — exclude from recommendations.
+        let allReq: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        let loggedKeys = Set((try? context.fetch(allReq))?.compactMap { item -> String? in
+            guard let t = item.songName, let a = item.artistName else { return nil }
+            return "\(t)|\(a)"
+        } ?? [])
+
+        // Daily seed: same day → same 16 songs; next day → different 16.
+        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: Date()) ?? 1
+        let year      = calendar.component(.year, from: Date())
+        let dailySeed = UInt64(year) &* 366 &+ UInt64(dayOfYear)
+
+        Task {
+            defer { isLoadingRecommendations = false }
+            guard MusicAuthorization.currentStatus == .authorized else { return }
+            do {
+                var chartRequest = MusicCatalogChartsRequest(genre: nil, types: [MusicKit.Song.self])
+                chartRequest.limit = 40
+                let response = try await chartRequest.response()
+                let chartItems = response.songCharts.first?.items.map { $0 } ?? []
+
+                // Shuffle with daily seed so each day presents a different 16-song window.
+                let shuffled = chartItems.deterministicShuffled(seed: dailySeed)
+
+                var songs: [SongResult] = []
+                for s in shuffled {
+                    let key = "\(s.title)|\(s.artistName)"
+                    guard !loggedKeys.contains(key) else { continue }
+                    songs.append(SongResult(
+                        id: UUID(),
+                        name: s.title,
+                        artist: s.artistName,
+                        genre: s.genreNames.first ?? "Müzik",
+                        coverURL: s.artwork?.url(width: 200, height: 200),
+                        spotifyURL: nil,
+                        artworkURLString: s.artwork?.url(width: 600, height: 600)?.absoluteString,
+                        previewURL: s.previewAssets?.first?.url
+                    ))
+                    if songs.count == 16 { break }
+                }
+                guard !songs.isEmpty else { return }
+                recommendedSongs = songs
+                if let data = try? JSONEncoder().encode(songs) {
+                    UserDefaults.standard.set(data, forKey: Self.recSongsCacheKey)
+                    UserDefaults.standard.set(today, forKey: Self.recSongsCacheDateKey)
+                }
+            } catch {
+                ONELogger.error("Recommended songs fetch failed", error: error, category: .general)
+            }
+        }
+    }
+
+    /// Clears the daily cache and re-fetches. Kullanıcı "Yenile" butonuna basınca çağrılır.
+    func refreshRecommendedSongs() {
+        UserDefaults.standard.removeObject(forKey: Self.recSongsCacheKey)
+        UserDefaults.standard.removeObject(forKey: Self.recSongsCacheDateKey)
+        loadRecommendedSongs()
+    }
+
     // MARK: - Search via MusicKit
     func search(_ query: String) {
         // Önceki aramayı iptal et
@@ -176,6 +263,7 @@ class TodayViewModel: ObservableObject {
 
         isSearching = true
         searchError = nil
+        AppAnalytics.shared.track(.songSearched(query: query, source: "apple"))
 
         searchTask = Task {
             // Debounce: kullanıcı yazmayı bırakana kadar bekle
@@ -211,7 +299,8 @@ class TodayViewModel: ObservableObject {
                         genre: s.genreNames.first ?? NSLocalizedString("genre.music", comment: ""),
                         coverURL: s.artwork?.url(width: 200, height: 200),
                         spotifyURL: nil,
-                        artworkURLString: s.artwork?.url(width: 600, height: 600)?.absoluteString
+                        artworkURLString: s.artwork?.url(width: 600, height: 600)?.absoluteString,
+                        previewURL: s.previewAssets?.first?.url
                     )
                 }
                 searchError = nil
@@ -227,11 +316,18 @@ class TodayViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Pas günü (#10)
+    func markTodayAsPassed() {
+        PersistenceController.shared.savePassedDay(date: Date(), context: context)
+        AppAnalytics.shared.track(.passButtonTapped)
+        loadTodayEntry()
+    }
+
     // MARK: - Save entry
     func saveEntry(
         song: SongResult,
         mood: MoodOption,
-        feeling: FeelingType,
+        feeling: FeelingType? = nil,
         photo: UIImage?,
         note: String = "",
         sharePhoto: Bool
@@ -264,8 +360,8 @@ class TodayViewModel: ObservableObject {
         item.moodWord    = mood.label
         item.moodColorHex = mood.color.toHex()
         item.moodLabel   = mood.label
-        item.feeling     = feeling.rawValue
-        item.feelingLabel = FeelingOption.all.first { $0.type == feeling }?.label ?? feeling.rawValue
+        item.feeling     = feeling?.rawValue
+        item.feelingLabel = feeling.flatMap { f in FeelingOption.all.first { $0.type == f }?.label }
         item.platform    = "Apple Music"
         item.dailyNote   = note.isEmpty ? nil : note
 
@@ -280,6 +376,7 @@ class TodayViewModel: ObservableObject {
             try context.save()
         } catch {
             ErrorHandler.shared.handle(error, context: "saveEntry")
+            CrashReporter.shared.capture(error: error, context: ["operation": "saveEntry"])
             return
         }
 
@@ -294,6 +391,7 @@ class TodayViewModel: ObservableObject {
             artistName:   song.artist,
             moodLabel:    mood.label,
             moodColorHex: mood.color.toHex(),
+            note:         note.isEmpty ? nil : note,
             entryCount:   1
         )
 
@@ -315,10 +413,14 @@ class TodayViewModel: ObservableObject {
 
         // Çevreyle paylaşılmıyorsa CloudKit'e yükleme — sadece arşivde kalır
         guard sharePhoto else {
+            CloudKitManager.shared.invalidateCircleCache()
             NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
             NotificationOrchestrator.shared.onSongSaved(moodLabel: mood.label, moodColorHex: mood.color.toHex())
             NotificationManager.shared.scheduleDiscoveryReminder(moodLabel: mood.label)
-            AppReviewManager.shared.logSongSaved()
+            AppReviewManager.shared.evaluateAfterSave(
+            totalEntryCount: totalEntryCount,
+            uniqueDayCount: uniqueEntryDayCount()
+        )
             loadTodayEntry()
             loadThisWeekEntries()
             loadTotalEntryCount()
@@ -327,6 +429,7 @@ class TodayViewModel: ObservableObject {
             return
         }
 
+        circleShareFailed = false
         CloudKitManager.shared.shareDailySong(
             songName: song.name,
             artistName: song.artist,
@@ -340,22 +443,25 @@ class TodayViewModel: ObservableObject {
             platform: "Apple Music",
             date: today,
             photoData: photoData,
-            feeling: feeling.rawValue,
-            feelingLabel: FeelingOption.all.first { $0.type == feeling }?.label ?? feeling.rawValue,
+            feeling: feeling?.rawValue ?? "",
+            feelingLabel: feeling.flatMap { f in FeelingOption.all.first { $0.type == f }?.label } ?? "",
             weatherIcon: item.weatherIcon ?? "☀️",
             weatherDesc: item.weatherDesc ?? "",
             currentStreak: streak,
             entryIndex: 0
-        ) { result in
+        ) { [weak self] result in
             switch result {
             case .success(let record):
                 ONELogger.debug("Successfully shared daily song to CloudKit: \(record.recordID)", category: .general)
-                // Çevre Yankısı — arkadaşlarla benzer mood rengi kontrolü
                 CloudKitManager.shared.checkMoodResonance(myMoodColorHex: savedMoodColorHex)
             case .failure(let error):
                 ONELogger.debug("Failed to share daily song to CloudKit: \(error)", category: .general)
-                // CloudKit hatası olsa bile yerel rengi saklayarak push handler'ın çalışmasını sağla
                 CloudKitManager.shared.checkMoodResonance(myMoodColorHex: savedMoodColorHex)
+                DispatchQueue.main.async { self?.circleShareFailed = true }
+            }
+            DispatchQueue.main.async {
+                CloudKitManager.shared.invalidateCircleCache()
+                NotificationCenter.default.post(name: .init("circleDataNeedsRefresh"), object: nil)
             }
         }
         
@@ -370,7 +476,10 @@ class TodayViewModel: ObservableObject {
         // Keşfet hatırlatıcısı (mood bilgisiyle)
         NotificationManager.shared.scheduleDiscoveryReminder(moodLabel: mood.label)
         // App review — anlamlı event sonrası
-        AppReviewManager.shared.logSongSaved()
+        AppReviewManager.shared.evaluateAfterSave(
+            totalEntryCount: totalEntryCount,
+            uniqueDayCount: uniqueEntryDayCount()
+        )
         loadTodayEntry()
         loadThisWeekEntries()
         loadTotalEntryCount()
@@ -397,6 +506,65 @@ class TodayViewModel: ObservableObject {
             } else {
                 showLiveActivityAlert = true
             }
+        }
+    }
+
+    // MARK: - Save Ritual Entry
+    func saveRitualEntry(draft: DraftEntry) {
+        guard let song = draft.song, let mood = draft.mood else {
+            // Eskiden sessizce return ediyordu: kayıt yok, hata yok, kullanıcıya
+            // hiçbir geri bildirim yok. İki adımlı ritüelde ihtimal düşük ama
+            // sessizce veri kaybetmek her durumda yanlış.
+            ONELogger.error("saveRitualEntry: eksik draft (song: \(draft.song != nil), mood: \(draft.mood != nil))",
+                            category: .general)
+            ErrorHandler.shared.handle(AppError.unknown(message: "Kayıt tamamlanamadı."))
+            return
+        }
+        let moodOption = MoodOption.all.first { $0.key == mood.rawValue } ?? MoodOption.all[4]
+        saveEntry(
+            song: song,
+            mood: moodOption,
+            photo: draft.photoData.flatMap { UIImage(data: $0) },
+            note: draft.feeling,
+            sharePhoto: draft.shareToCircle
+        )
+    }
+
+    // MARK: - Attach photo / note after saving
+    /// Kaydedilmiş bugünkü entry'ye sonradan fotoğraf ve/veya not ekler.
+    ///
+    /// `saveEntry` de bir upsert ama onu tekrar çağırmak `createdAt`'i sıfırlar ve
+    /// analytics / rozet / streak / CloudKit / Live Activity yan etkilerini yeniden
+    /// tetikler. Bu metod bilerek dar: sadece iki alanı yazar.
+    /// `TodayCompletedView`'daki yıkıcı "Değiştir" (`clearToday`) ile karıştırılmamalı.
+    func attachPhotoAndNote(photo: UIImage? = nil, note: String? = nil) {
+        guard photo != nil || note != nil else { return }
+
+        let today = Calendar.current.startOfDay(for: Date())
+        let request: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        request.predicate = NSPredicate(format: "date == %@", today as NSDate)
+        request.fetchLimit = 1
+
+        guard let item = (try? context.fetch(request))?.first else {
+            ONELogger.error("attachPhotoAndNote: bugüne ait entry bulunamadı", category: .general)
+            ErrorHandler.shared.handle(AppError.unknown(message: "Bugünkü kaydın bulunamadı."))
+            return
+        }
+
+        if let photo {
+            item.photoData = photo.jpegData(compressionQuality: 0.8)
+        }
+        if let note {
+            let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+            item.dailyNote = trimmed.isEmpty ? nil : trimmed
+        }
+
+        do {
+            try context.save()
+            loadTodayEntry()
+        } catch {
+            ONELogger.error("attachPhotoAndNote kaydedilemedi: \(error.localizedDescription)", category: .general)
+            ErrorHandler.shared.handle(error, context: "attachPhotoAndNote")
         }
     }
 
@@ -428,6 +596,7 @@ class TodayViewModel: ObservableObject {
         todayEntries = []
         searchResults = []
         searchError = nil
+        circleShareFailed = false
     }
 
     /// Clear a specific entry by ID (premium multi-entry)
@@ -585,6 +754,15 @@ class TodayViewModel: ObservableObject {
         totalEntryCount = (try? context.count(for: req)) ?? 0
     }
 
+    /// Kaç farklı takvim gününde giriş yapıldığını döndürür.
+    private func uniqueEntryDayCount() -> Int {
+        let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        let songs = (try? context.fetch(req)) ?? []
+        let cal = Calendar.current
+        let days = Set(songs.compactMap { $0.date.map { cal.startOfDay(for: $0) } })
+        return days.count
+    }
+
     private func loadYesterdayMood() {
         let cal = Calendar.current
         guard let yesterday = cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: Date())) else { return }
@@ -611,17 +789,26 @@ class TodayViewModel: ObservableObject {
     }
 
     // MARK: - Helpers
+
+    // Photo URL cache — avoids writing a new temp file on every loadTodayEntry() call.
+    private var photoURLCache: [NSManagedObjectID: URL] = [:]
+
     private func dailyEntryFrom(_ item: DailySong) -> DailyEntry {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         let timeStr = item.createdAt.map { formatter.string(from: $0) } ?? "--:--"
 
         var photoURL: URL? = nil
-        if let data = item.photoData {
-            let url = FileManager.default.temporaryDirectory
-                .appendingPathComponent("\(item.id?.uuidString ?? UUID().uuidString).jpg")
-            try? data.write(to: url)
-            photoURL = url
+        if item.photoData != nil {
+            if let cached = photoURLCache[item.objectID], FileManager.default.fileExists(atPath: cached.path) {
+                photoURL = cached
+            } else if let data = item.photoData {
+                let url = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("\(item.id?.uuidString ?? UUID().uuidString).jpg")
+                try? data.write(to: url)
+                photoURL = url
+                photoURLCache[item.objectID] = url
+            }
         }
 
         return DailyEntry(
@@ -642,10 +829,11 @@ class TodayViewModel: ObservableObject {
             weatherDesc: item.weatherDesc ?? "",
             spotifyURL: nil,
             platform: "Spotify",
-            note: item.dailyNote
+            note: item.dailyNote,
+            passed: item.passed
         )
     }
-    
+
     // MARK: - Auto-Sync
     private func syncLocalEntryToCloudKitIfNeeded(item: DailySong) {
         let today = Calendar.current.startOfDay(for: Date())
@@ -663,7 +851,8 @@ class TodayViewModel: ObservableObject {
         }
 
         CloudKitManager.shared.fetchUserDailyShare(for: today) { [weak self] result in
-            Task { @MainActor [weak self] in
+            self?.syncTask?.cancel()
+            self?.syncTask = Task { @MainActor [weak self] in
                 guard let self else { return }
                 switch result {
                 case .success:

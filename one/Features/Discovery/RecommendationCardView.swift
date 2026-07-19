@@ -12,6 +12,8 @@ struct RecommendationCardView: View {
     let onTap: () -> Void
     var onDismiss: (() -> Void)? = nil
     
+    @ObservedObject private var savedManager = SavedItemManager.shared
+    
     var body: some View {
         Button(action: {
             ONEHaptics.feelingSelected()
@@ -40,6 +42,10 @@ struct RecommendationCardView: View {
                 .aspectRatio(1, contentMode: .fit)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(ONETokens.oneInk.opacity(0.05), lineWidth: 1)
+                )
                 
                 // Song info
                 VStack(alignment: .leading, spacing: 6) {
@@ -62,6 +68,20 @@ struct RecommendationCardView: View {
         }
         .buttonStyle(RecommendationCardButtonStyle())
         .contextMenu {
+            Button {
+                ONEHaptics.feelingSelected()
+                if savedManager.isSongSaved(recommendation.id) {
+                    savedManager.removeSong(recommendation.id)
+                } else {
+                    savedManager.saveSong(recommendation)
+                }
+            } label: {
+                Label(
+                    savedManager.isSongSaved(recommendation.id) ? "Kaydedilenlerden Çıkar" : "Sonra Dinle'ye Kaydet",
+                    systemImage: savedManager.isSongSaved(recommendation.id) ? "bookmark.fill" : "bookmark"
+                )
+            }
+            
             Button(role: .destructive, action: { onDismiss?() }) {
                 Label("İlginç değil", systemImage: "hand.thumbsdown")
             }

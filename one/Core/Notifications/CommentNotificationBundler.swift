@@ -163,13 +163,16 @@ final class CommentNotificationBundler {
         let identifier = "comment_\(shareRecordName)_\(Int(Date().timeIntervalSince1970))"
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
 
-        NotificationOrchestrator.shared.schedule(
+        let decision = NotificationOrchestrator.shared.schedule(
             kind: kind,
             identifier: identifier,
             trigger: trigger,
             content: content,
             variant: msg.variant
         )
+        if case .drop = decision {} else {
+            removeCloudKitCommentNotifications()
+        }
     }
 
     private func fireImmediate(
@@ -219,12 +222,26 @@ final class CommentNotificationBundler {
         let identifier = "commentreply_\(commentID)"
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
 
-        NotificationOrchestrator.shared.schedule(
+        let decision = NotificationOrchestrator.shared.schedule(
             kind: kind,
             identifier: identifier,
             trigger: trigger,
             content: content,
             variant: msg.variant
         )
+        if case .drop = decision {} else {
+            removeCloudKitCommentNotifications()
+        }
+    }
+
+    private func removeCloudKitCommentNotifications() {
+        UNUserNotificationCenter.current().getDeliveredNotifications { delivered in
+            let ids = delivered
+                .filter { $0.request.content.categoryIdentifier == "COMMENT_NOTIFICATION" }
+                .filter { $0.request.content.userInfo["type"] == nil }
+                .map { $0.request.identifier }
+            guard !ids.isEmpty else { return }
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ids)
+        }
     }
 }

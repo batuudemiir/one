@@ -5,6 +5,7 @@
 
 import SwiftUI
 import CoreData
+import PhotosUI
 
 struct TodayView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -20,6 +21,9 @@ struct TodayView: View {
     // A4 — İlk entry sonrası Çevre davet kancası
     @State private var showContactsInvite: Bool  = false
 
+    // Completion celebration animasyonu
+    @State private var celebration: CelebrationType? = nil
+
     // Save Ritual — Still Water (3 katman: halka + zemin tint + haptic)
     @State private var showRitual:   Bool    = false
     @State private var ritualMood:   ONEMood? = nil
@@ -30,6 +34,12 @@ struct TodayView: View {
     @State private var ring2Opacity: Double  = 0
     @State private var showParticles: Bool   = false
     @State private var particleMood: ONEMood? = nil
+
+    // Kayıt sonrası opsiyonel ekler (ritüel 2 adıma indiği için)
+    @State private var showExtraPhotoPicker: Bool = false
+    @State private var showExtraNoteSheet:   Bool = false
+    @State private var extraPhotoItem: PhotosPickerItem? = nil
+    @State private var extraNoteText: String = ""
 
     init(context: NSManagedObjectContext, entryStep: Binding<Step>) {
         _vm = StateObject(wrappedValue: TodayViewModel(context: context))
@@ -42,7 +52,7 @@ struct TodayView: View {
             Group {
                 switch vm.todayState {
                 case .empty:
-                    TodayEmptyView(vm: vm, currentStep: $entryStep)
+                    TodayRitualView(vm: vm)
                         .transition(.asymmetric(
                             insertion: .opacity,
                             removal: .scale(scale: 0.96).combined(with: .opacity)
@@ -57,7 +67,9 @@ struct TodayView: View {
                                 }
                             },
                             streakDays: vm.streakDays,
-                            isFreezeActive: vm.streakFreezeUsedRecently
+                            isFreezeActive: vm.streakFreezeUsedRecently,
+                            onAddPhoto: { showExtraPhotoPicker = true },
+                            onAddNote: { showExtraNoteSheet = true }
                         )
                         .transition(.asymmetric(
                             insertion: .scale(scale: 0.96).combined(with: .opacity),
@@ -120,11 +132,55 @@ struct TodayView: View {
                     .padding(.bottom, 120)
                     .ignoresSafeArea()
             }
+
+            // Completion celebration — entry kaydedilince oynar
+            if let type = celebration, let entry = vm.todayEntry {
+                CompletionCelebrationView(
+                    type: type,
+                    moodColor: entry.moodColor,
+                    onFinished: { celebration = nil }
+                )
+                .ignoresSafeArea()
+                .transition(.opacity)
+                .zIndex(10)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if vm.circleShareFailed {
+                HStack(spacing: 8) {
+                    Image(systemName: "wifi.slash")
+                        .font(.system(size: 13, weight: .medium))
+                    Text("Çevre paylaşımı başarısız — internet bağlantını kontrol et.")
+                        .font(ONETypography.bodyXS)
+                        .multilineTextAlignment(.leading)
+                    Spacer(minLength: 0)
+                    Button {
+                        vm.circleShareFailed = false
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                }
+                .foregroundStyle(ONETokens.oneCream)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color(hex: "#CC3333"))
+                )
+                .padding(.horizontal, 24)
+                .padding(.bottom, 130)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.spring(response: 0.38, dampingFraction: 0.78), value: vm.circleShareFailed)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Çevre paylaşımı başarısız. İnternet bağlantını kontrol et.")
+            }
         }
         .onChange(of: vm.todayEntry) { _, newEntry in
             guard let entry = newEntry else { return }
             let mood = ONEMood(hex: entry.moodColorHex)
             triggerRitual(mood: mood)
+            if !reduceMotion { celebration = CelebrationType.pick() }
             // VoiceOver kullanıcısı save ritual'ı görmez — sözel duyuru gerekli.
             UIAccessibility.post(
                 notification: .announcement,
@@ -172,6 +228,27 @@ struct TodayView: View {
         }
         .sheet(isPresented: $showContactsInvite) {
             ContactsInviteView()
+        }
+        // ── Kayıt sonrası opsiyonel ekler ──────────────────────────────
+        .photosPicker(isPresented: $showExtraPhotoPicker,
+                      selection: $extraPhotoItem,
+                      matching: .images)
+        .onChange(of: extraPhotoItem) { _, item in
+            guard let item else { return }
+            Task { @MainActor in
+                if let data = try? await item.loadTransferable(type: Data.self),
+                   let image = UIImage(data: data) {
+                    vm.attachPhotoAndNote(photo: image)
+                }
+                extraPhotoItem = nil
+            }
+        }
+        .sheet(isPresented: $showExtraNoteSheet) {
+            ExtraNoteSheet(text: $extraNoteText) { note in
+                vm.attachPhotoAndNote(note: note)
+                showExtraNoteSheet = false
+            }
+            .presentationDetents([.height(300)])
         }
         .alert("Dynamic Island Kapalı", isPresented: $vm.showLiveActivityAlert) {
             Button("Ayarları Aç") {
@@ -306,4 +383,52 @@ struct StreakMilestoneCard: View {
 
 #Preview {
     TodayView(context: PersistenceController.preview.container.viewContext, entryStep: .constant(.search))
+}
+
+// MARK: - Kayıt sonrası not ekleme
+
+/// Ritüel 2 adıma indiği için not artık akış içinde değil.
+/// İsteyen kaydettikten sonra buradan ekliyor.
+private struct ExtraNoteSheet: View {
+    @Binding var text: String
+    let onSave: (String) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: ONETokens.spacingLG) {
+            Text("Bugün nasıl hissettirdi?")
+                .font(ONETypography.displaySM)
+                .fontWeight(.semibold)
+                .foregroundStyle(ONETokens.oneVoid)
+
+            TextEditor(text: $text)
+                .font(ONETypography.bodySM)
+                .foregroundStyle(ONETokens.oneInk)
+                .scrollContentBackground(.hidden)
+                .padding(ONETokens.spacingMD)
+                .background(
+                    RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
+                        .fill(ONETokens.oneCreamMid)
+                )
+                .frame(height: 110)
+                .focused($focused)
+
+            Button(action: { onSave(text) }) {
+                Text("kaydet")
+                    .font(ONETypography.bodyMD)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(ONETokens.oneCream)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 15)
+                    .background(Capsule().fill(ONETokens.oneInk))
+            }
+            .buttonStyle(.plain)
+            .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            .opacity(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.4 : 1)
+        }
+        .padding(ONETokens.spacingXL2)
+        .background(ONETokens.oneCream)
+        .onAppear { focused = true }
+    }
 }

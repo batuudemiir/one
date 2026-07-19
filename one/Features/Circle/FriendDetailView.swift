@@ -19,6 +19,8 @@ struct FriendDetailView: View {
     // Live state — başta friendData'dan geliyor, sonra canlı güncellenebilir
     @State private var share: CKRecord?
     @State private var isPolling       = false
+    @ObservedObject private var previewer = SongPreviewPlayer.shared
+    @State private var stableSong: SongResult? = nil   // UUID'si sabit, playingID karşılaştırması için
     @State private var appeared        = false
     @State private var sentEmoji: String? = nil
     @State private var showPhotoViewer = false
@@ -45,6 +47,20 @@ struct FriendDetailView: View {
     private var hasSong: Bool {
         guard let s = share else { return false }
         return !((s["songName"] as? String) ?? "").isEmpty
+    }
+
+    private func buildSongResult(from s: CKRecord) -> SongResult? {
+        guard let name = s["songName"] as? String, !name.isEmpty,
+              let artist = s["artistName"] as? String else { return nil }
+        return SongResult(
+            id: UUID(),
+            name: name,
+            artist: artist,
+            genre: s["genre"] as? String ?? "",
+            coverURL: nil,
+            spotifyURL: nil,
+            artworkURLString: s["albumArtURL"] as? String
+        )
     }
 
     private var friendMusicTasteVisible: Bool {
@@ -200,6 +216,15 @@ struct FriendDetailView: View {
                       let img = UIImage(data: data) else { return }
                 DispatchQueue.main.async { cardPhotoCache = img }
             }
+
+            // Auto-play arkadaşın şarkısını (UUID'yi bir kez üretip sakla)
+            let record = share ?? friendData.share
+            if stableSong == nil, let rec = record, let song = buildSongResult(from: rec) {
+                stableSong = song
+            }
+            if let song = stableSong {
+                previewer.toggle(song)
+            }
         }
         .onChange(of: share?.recordID.recordName) { _, newName in
             guard let recordName = newName else { return }
@@ -216,7 +241,10 @@ struct FriendDetailView: View {
                 }
             }
         }
-        .onDisappear { isPolling = false }
+        .onDisappear {
+            isPolling = false
+            previewer.stop()
+        }
         // CircleView'den gelen canlı güncelleme sinyali
         .onReceive(NotificationCenter.default.publisher(for: .init("circleDataNeedsRefresh"))) { _ in
             fetchLatestShare()
@@ -474,6 +502,36 @@ struct FriendDetailView: View {
                     .frame(height: 180)
                 }
                 timeBadge(s)
+
+                // Preview indicator — top trailing
+                if let song = stableSong {
+                    HStack(spacing: 0) {
+                        Spacer()
+                        Button(action: { previewer.toggle(song) }) {
+                            Group {
+                                if previewer.playingID == song.id {
+                                    AudioWaveform()
+                                        .padding(10)
+                                        .background(Circle().fill(Color.black.opacity(0.35)))
+                                } else if previewer.loadingID == song.id {
+                                    ProgressView().scaleEffect(0.7).tint(.white)
+                                        .frame(width: 36, height: 36)
+                                        .background(Circle().fill(Color.black.opacity(0.35)))
+                                } else {
+                                    Image(systemName: "play.fill")
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundStyle(.white)
+                                        .frame(width: 36, height: 36)
+                                        .background(Circle().fill(Color.black.opacity(0.35)))
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .padding(14)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .frame(height: 180, alignment: .top)
+                }
             }
             .frame(height: 180).frame(maxWidth: .infinity)
 
