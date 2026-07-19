@@ -33,10 +33,29 @@ enum RitualStep: Int, CaseIterable {
 final class TodayCoordinator: ObservableObject {
     @Published var step: RitualStep = .mood
     @Published var draft = DraftEntry()
+    /// Faz 3 — ritüel geçmiş bir günü telafi etmek için açıldıysa o gün.
+    /// nil = normal "bugün" akışı.
+    @Published var backfillDate: Date? = nil
     weak var vm: TodayViewModel?
+
+    var isBackfill: Bool { backfillDate != nil }
 
     init(vm: TodayViewModel? = nil) {
         self.vm = vm
+    }
+
+    /// Ritüeli geçmiş bir gün için baştan başlatır.
+    func startBackfill(for date: Date) {
+        draft = DraftEntry()
+        backfillDate = date
+        step = .mood
+    }
+
+    /// Telafi modundan çıkar, normal bugün akışına döner.
+    func cancelBackfill() {
+        draft = DraftEntry()
+        backfillDate = nil
+        step = .mood
     }
 
     func next() {
@@ -63,6 +82,15 @@ final class TodayCoordinator: ObservableObject {
         guard let vm else { return }
         ONEHaptics.songSaved()
         SongPreviewPlayer.shared.stop()
+
+        if let date = backfillDate {
+            guard let song = draft.song, let mood = draft.mood else { return }
+            let moodOption = MoodOption.all.first { $0.key == mood.rawValue } ?? MoodOption.all[4]
+            vm.backfillEntry(song: song, mood: moodOption, on: date, note: draft.feeling)
+            cancelBackfill()
+            return
+        }
+
         vm.saveRitualEntry(draft: draft)
     }
 }

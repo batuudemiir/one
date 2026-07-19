@@ -10,9 +10,13 @@ struct TodayRitualView: View {
     @StateObject private var coordinator: TodayCoordinator
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    init(vm: TodayViewModel) {
+    /// - Parameter backfillDate: verilirse ritüel doğrudan o geçmiş gün için
+    ///   telafi modunda açılır (bugün zaten doluyken kullanılır).
+    init(vm: TodayViewModel, backfillDate: Date? = nil) {
         self.vm = vm
-        _coordinator = StateObject(wrappedValue: TodayCoordinator(vm: vm))
+        let coordinator = TodayCoordinator(vm: vm)
+        coordinator.backfillDate = backfillDate
+        _coordinator = StateObject(wrappedValue: coordinator)
     }
 
     var body: some View {
@@ -37,6 +41,19 @@ struct TodayRitualView: View {
                 RitualProgressDots(current: coordinator.step.rawValue, total: RitualStep.allCases.count)
                     .frame(maxWidth: .infinity)
 
+                // Faz 3 — telafi modunda hangi günü doldurduğun net olsun.
+                if let date = coordinator.backfillDate {
+                    backfillBanner(date)
+                        .transition(.opacity)
+                } else if coordinator.step == .mood {
+                    // Haftalık ritim yalnız ilk adımda — şarkı adımı sade kalsın.
+                    WeekRhythmView(days: vm.weekRhythm) { date in
+                        coordinator.startBackfill(for: date)
+                    }
+                    .padding(.top, 2)
+                    .transition(.opacity)
+                }
+
                 if let items = topBarContextItems {
                     ContextPill(items: items) { coordinator.jumpTo($0) }
                         .transition(.opacity.combined(with: .move(edge: .top)))
@@ -60,6 +77,45 @@ struct TodayRitualView: View {
                 : nil
         )
         .onAppear { coordinator.vm = vm } // Ensures vm reference stays fresh on re-appear
+    }
+
+    /// Telafi modu göstergesi — suçlayıcı değil, bilgilendirici.
+    /// "Kaçırdın" demez; hangi günü doldurduğunu söyler ve çıkış yolu bırakır.
+    private func backfillBanner(_ date: Date) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "arrow.uturn.backward")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(ONETokens.oneAsh)
+
+            Text("\(weekdayName(date)) gününü dolduruyorsun")
+                .bodyXS()
+                .foregroundColor(ONETokens.oneInk)
+
+            Spacer(minLength: 0)
+
+            Button {
+                coordinator.cancelBackfill()
+            } label: {
+                Text("bugüne dön")
+                    .monoLabel(tracking: 0.4)
+                    .foregroundColor(ONETokens.oneAsh)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(ONETokens.oneCreamMid.opacity(0.55))
+        )
+        .accessibilityElement(children: .combine)
+    }
+
+    private func weekdayName(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale.current
+        formatter.setLocalizedDateFormatFromTemplate("EEEE")
+        return formatter.string(from: date)
     }
 
     private var topBarContextItems: [PillItem]? {

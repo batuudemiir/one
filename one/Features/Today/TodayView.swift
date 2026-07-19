@@ -21,6 +21,9 @@ struct TodayView: View {
     // A4 — İlk entry sonrası Çevre davet kancası
     @State private var showContactsInvite: Bool  = false
 
+    // Faz 3 — telafi: bugün zaten doluyken geçmiş bir günü doldurma sheet'i
+    @State private var backfillTarget: BackfillTarget? = nil
+
     // Completion celebration animasyonu
     @State private var celebration: CelebrationType? = nil
 
@@ -69,7 +72,9 @@ struct TodayView: View {
                             streakDays: vm.streakDays,
                             isFreezeActive: vm.streakFreezeUsedRecently,
                             onAddPhoto: { showExtraPhotoPicker = true },
-                            onAddNote: { showExtraNoteSheet = true }
+                            onAddNote: { showExtraNoteSheet = true },
+                            weekRhythm: vm.weekRhythm,
+                            onBackfill: { backfillTarget = BackfillTarget(date: $0) }
                         )
                         .transition(.asymmetric(
                             insertion: .scale(scale: 0.96).combined(with: .opacity),
@@ -228,6 +233,19 @@ struct TodayView: View {
         }
         .sheet(isPresented: $showContactsInvite) {
             ContactsInviteView()
+        }
+        // Faz 3 — telafi ritüeli. Bugün dolu olduğu için ana akış
+        // TodayCompletedView'da; geçmiş gün burada modal olarak doldurulur.
+        .sheet(item: $backfillTarget) { target in
+            TodayRitualView(vm: vm, backfillDate: target.date)
+                .presentationDetents([.large])
+        }
+        .onChange(of: vm.weekRhythm) { _, days in
+            // Hedef gün dolunca sheet kendini kapatır.
+            guard let target = backfillTarget else { return }
+            if days.contains(where: { $0.date == target.date && $0.isFilled }) {
+                backfillTarget = nil
+            }
         }
         // ── Kayıt sonrası opsiyonel ekler ──────────────────────────────
         .photosPicker(isPresented: $showExtraPhotoPicker,

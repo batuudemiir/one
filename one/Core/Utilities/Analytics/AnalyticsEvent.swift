@@ -29,6 +29,8 @@ enum AnalyticsEvent {
     case noteAdded(length: Int)
     case entrySaved(hasPhoto: Bool, hasNote: Bool)
     case streakFreezeConsumed                        // B1 — soft streak freeze devreye girdi
+    case entryBackfilled(daysAgo: Int)               // Faz 3 — geri tarihli (telafi) giriş
+    case weekRhythmCompleted(filledDays: Int)        // Faz 3 — haftada 4+ gün doldu
 
     // ── Circle (social) ────────────────────────────────────────────
     case circleOpened
@@ -93,6 +95,8 @@ enum AnalyticsEvent {
         case .noteAdded:                 return "note_added"
         case .entrySaved:                return "entry_saved"
         case .streakFreezeConsumed:      return "streak_freeze_consumed"
+        case .entryBackfilled:           return "entry_backfilled"
+        case .weekRhythmCompleted:       return "week_rhythm_completed"
         case .circleOpened:              return "circle_opened"
         case .friendInviteSent:          return "friend_invite_sent"
         case .friendRequestSent:         return "friend_request_sent"
@@ -143,6 +147,10 @@ enum AnalyticsEvent {
             return [:]
         case .firstEntryInviteHookAction(let action):
             return ["action": action]
+        case .entryBackfilled(let daysAgo):
+            return ["days_ago": daysAgo]
+        case .weekRhythmCompleted(let filledDays):
+            return ["filled_days": filledDays]
         case .onboardingCompleted(let musicPlatform):
             return ["music_platform": musicPlatform]
         case .platformSelected(let platform):

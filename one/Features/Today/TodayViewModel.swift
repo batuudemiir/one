@@ -39,6 +39,11 @@ class TodayViewModel: ObservableObject {
     @Published var lastBrokenStreakDays: Int = 0
     /// This week's logged entries for WeeklyProgressDots.
     @Published var thisWeekEntries: [(date: Date, moodColorHex: String)] = []
+    /// Faz 3 — haftalık ritim: 7 günün dolu/boş/telafi durumu.
+    @Published var weekRhythm: [WeekRhythm.Day] = []
+    /// Faz 3 — ritüel hangi gün için açıldı? nil = bugün.
+    /// Telafi (geri tarihli) girişte `WeekRhythmView`'dan set edilir.
+    @Published var backfillDate: Date? = nil
     /// Total entry count ever (for milestone insights).
     @Published var totalEntryCount: Int = 0
     /// Days since last entry before today (nil = no prior entry).
@@ -426,6 +431,7 @@ class TodayViewModel: ObservableObject {
             loadTotalEntryCount()
             loadYesterdayMood()
             BadgeManager.shared.evaluateEntryCount(totalEntryCount)
+            trackWeekRhythmCompletionIfNeeded()
             return
         }
 
@@ -485,6 +491,7 @@ class TodayViewModel: ObservableObject {
         loadTotalEntryCount()
         loadYesterdayMood()
         BadgeManager.shared.evaluateEntryCount(totalEntryCount)
+        trackWeekRhythmCompletionIfNeeded()
 
         // Dynamic Island — kaydetme anı Live Activity (~30 sn)
         if #available(iOS 16.1, *) {
@@ -527,6 +534,103 @@ class TodayViewModel: ObservableObject {
             photo: draft.photoData.flatMap { UIImage(data: $0) },
             note: draft.feeling,
             sharePhoto: draft.shareToCircle
+        )
+    }
+
+    // MARK: - Faz 3 — Geri tarihli (telafi) giriş
+
+    /// Son 72 saat içindeki boş bir günü doldurur.
+    ///
+    /// `saveEntry`'den bilinçli olarak ayrı tutuldu: o metodun yan etkileri
+    /// ("bugün" widget'ı, Live Activity, push yeniden planlama, Çevre'ye
+    /// *bugünün* paylaşımı olarak yükleme) geçmiş bir gün için yanlış olur —
+    /// arkadaşların akışına 2 gün önceki bir renk "bugünkü" gibi düşerdi.
+    /// Telafi girişi bu yüzden sessizdir: yalnız arşive ve haftalık ritme yazar.
+    @discardableResult
+    func backfillEntry(
+        song: SongResult,
+        mood: MoodOption,
+        on date: Date,
+        note: String = ""
+    ) -> Bool {
+        let cal = Calendar.current
+        let day = cal.startOfDay(for: date)
+
+        guard WeekRhythm.isBackfillable(day, calendar: cal) else {
+            ONELogger.error("backfillEntry: \(day) telafi penceresi dışında", category: .general)
+            ErrorHandler.shared.handle(AppError.unknown(message: "Bu gün artık doldurulamıyor."))
+            return false
+        }
+
+        let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        req.predicate = NSPredicate(format: "date == %@", day as NSDate)
+        req.fetchLimit = 1
+        guard (try? context.fetch(req))?.first == nil else {
+            ONELogger.error("backfillEntry: \(day) zaten dolu", category: .general)
+            return false
+        }
+
+        let item = DailySong(context: context)
+        item.id            = UUID()
+        item.date          = day
+        // createdAt gerçek yazım anı kalır — "ne zaman dolduruldu" bilgisi
+        // kaybolmasın (arşiv sıralaması `date`'e göre, bu sadece iz).
+        item.createdAt     = Date()
+        item.entryIndex    = 0
+        item.songName      = song.name
+        item.artistName    = song.artist
+        item.genre         = song.genre
+        item.emoji         = "🎵"
+        item.artworkURL    = song.artworkURLString
+        item.moodWord      = mood.label
+        item.moodColorHex  = mood.color.toHex()
+        item.moodLabel     = mood.label
+        item.platform      = "Apple Music"
+        item.dailyNote     = note.isEmpty ? nil : note
+        // Telafi girişi Çevre'ye gitmez — geçmiş bir günü "bugün" diye paylaşmayız.
+        item.shareWithCircle    = false
+        item.isSharedWithCircle = false
+
+        do {
+            try context.save()
+        } catch {
+            ErrorHandler.shared.handle(error, context: "backfillEntry")
+            CrashReporter.shared.capture(error: error, context: ["operation": "backfillEntry"])
+            return false
+        }
+
+        let daysAgo = cal.dateComponents(
+            [.day], from: day, to: cal.startOfDay(for: Date())
+        ).day ?? 0
+        AppAnalytics.shared.track(.entryBackfilled(daysAgo: daysAgo))
+
+        // loadTodayEntry streak'i de yeniden hesaplar — dünü doldurmak
+        // bugünkü streak'i uzatabilir, bu yüzden şart.
+        loadTodayEntry()
+        loadThisWeekEntries()
+        loadTotalEntryCount()
+        loadYesterdayMood()
+        WidgetDataWriter.writeStreak(streakDays)
+        BadgeManager.shared.evaluateEntryCount(totalEntryCount)
+        trackWeekRhythmCompletionIfNeeded()
+
+        return true
+    }
+
+    /// Haftalık hedef (4 gün) bu hafta ilk kez dolduğunda bir kez ölçer.
+    /// Hafta anahtarı UserDefaults'ta tutulur — aynı hafta tekrar tetiklenmez.
+    private func trackWeekRhythmCompletionIfNeeded() {
+        guard WeekRhythm.isComplete(weekRhythm) else { return }
+
+        let cal = Calendar.current
+        let comps = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        guard let year = comps.yearForWeekOfYear, let week = comps.weekOfYear else { return }
+        let key = "weekRhythmCompleted-\(year)-\(week)"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+
+        UserDefaults.standard.set(true, forKey: key)
+        AppAnalytics.shared.track(
+            .weekRhythmCompleted(filledDays: WeekRhythm.filledCount(weekRhythm))
         )
     }
 
@@ -747,6 +851,15 @@ class TodayViewModel: ObservableObject {
             guard let d = s.date, let hex = s.moodColorHex else { return nil }
             return (date: cal.startOfDay(for: d), moodColorHex: hex)
         }
+
+        // Faz 3 — aynı veriden haftalık ritim. Aynı güne birden fazla kayıt
+        // teoride yok (upsert) ama savunmacı davranıp ilkini korumuyoruz:
+        // son yazılan renk o günün rengidir.
+        let filled = Dictionary(
+            thisWeekEntries.map { ($0.date, $0.moodColorHex) },
+            uniquingKeysWith: { _, latest in latest }
+        )
+        weekRhythm = WeekRhythm.days(filled: filled, today: today, calendar: cal)
     }
 
     private func loadTotalEntryCount() {

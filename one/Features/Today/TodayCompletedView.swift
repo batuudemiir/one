@@ -23,19 +23,27 @@ struct TodayCompletedView: View {
     /// bunlar mevcut entry'yi bozmadan alan ekler.
     let onAddPhoto: (() -> Void)?
     let onAddNote: (() -> Void)?
+    /// Faz 3 — haftalık ritim. Boşsa satır hiç çizilmez.
+    let weekRhythm: [WeekRhythm.Day]
+    /// Telafi edilebilir bir güne dokunulduğunda ritüeli o gün için açar.
+    let onBackfill: ((Date) -> Void)?
 
     init(entry: DailyEntry,
          onEdit: @escaping () -> Void,
          streakDays: Int = 0,
          isFreezeActive: Bool = false,
          onAddPhoto: (() -> Void)? = nil,
-         onAddNote: (() -> Void)? = nil) {
+         onAddNote: (() -> Void)? = nil,
+         weekRhythm: [WeekRhythm.Day] = [],
+         onBackfill: ((Date) -> Void)? = nil) {
         self.entry = entry
         self.onEdit = onEdit
         self.streakDays = streakDays
         self.isFreezeActive = isFreezeActive
         self.onAddPhoto = onAddPhoto
         self.onAddNote = onAddNote
+        self.weekRhythm = weekRhythm
+        self.onBackfill = onBackfill
     }
 
     // MARK: - "İstersen ekle" şeridi
@@ -219,6 +227,16 @@ struct TodayCompletedView: View {
                         .padding(.horizontal, ONETokens.spacingXL2)
                         .padding(.bottom, 6)
                         .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+
+                    // Faz 3 — haftalık ritim. Bugün dolu olsa da geçmiş boş
+                    // günler buradan telafi edilebilir.
+                    if !weekRhythm.isEmpty {
+                        WeekRhythmView(days: weekRhythm) { date in
+                            onBackfill?(date)
+                        }
+                        .padding(.horizontal, ONETokens.spacingXL2)
+                        .padding(.bottom, 18)
                     }
 
                     // Main Card
