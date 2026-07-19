@@ -1016,3 +1016,14 @@
 "archive.subtitle" = "чем больше растёт, тем красивее.";
 "archive.empty" = "Здесь станет полно, когда оставишь первый цвет.";
 "archive.lastYearLabel" = "сегодня · год назад";
+
+"profile.colorReport" = "твой цветовой отчёт";
+"profile.mostFrequent" = "чаще всего";
+"profile.stat.entries" = "записей";
+"profile.stat.fullWeeks" = "полных недель";
+"profile.stat.colors" = "цветов";
+"profile.row.reminder" = "напоминание";
+"profile.row.musicSource" = "источник музыки";
+"profile.row.friends" = "друзья";
+"profile.row.settings" = "настройки";
+"profile.friendCountFormat" = "%d друзей";

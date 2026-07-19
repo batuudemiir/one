@@ -1141,3 +1141,14 @@
 "archive.subtitle" = "it gets better as it grows.";
 "archive.empty" = "This fills up once you leave your first colour.";
 "archive.lastYearLabel" = "today · last year";
+
+"profile.colorReport" = "your colour report";
+"profile.mostFrequent" = "most often";
+"profile.stat.entries" = "entries";
+"profile.stat.fullWeeks" = "full weeks";
+"profile.stat.colors" = "distinct colours";
+"profile.row.reminder" = "reminder";
+"profile.row.musicSource" = "music source";
+"profile.row.friends" = "friends";
+"profile.row.settings" = "settings";
+"profile.friendCountFormat" = "%d friends";

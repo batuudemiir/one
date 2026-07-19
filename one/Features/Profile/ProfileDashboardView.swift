@@ -53,56 +53,25 @@ struct ProfileDashboardView: View {
     var body: some View {
         ZStack(alignment: .top) {
             ScrollView(.vertical, showsIndicators: false) {
+                // Prototipteki profil: hero foto ve özellik kartları yok.
+                // Kimlik → üç sayı → renk karnesi → ayar satırları.
+                // Yankı/Aylık özet artık kendi sekmesinden ve ayarlardan
+                // ulaşılıyor; burada ikinci bir giriş noktası tutmuyoruz.
                 VStack(alignment: .leading, spacing: 14) {
-                    Spacer().frame(height: 0).frame(maxWidth: .infinity)
-                    // ── BeReal-tarzı hero (full-width foto / mood gradient)
-                    ProfileHeroSection(vm: vm, recentMoodColors: recentMoodColors)
-                        .listItemEntrance(isVisible: appeared, index: 0)
-
-                    let pad: CGFloat = 20
-
-                    // ── Friend strip + Profili Paylaş + edit
-                    ProfileFriendStrip(
-                        vm: vm,
-                        showFriendsList: $showFriendsList,
-                        showShareSheet: $showShareSheet
-                    )
-                    .padding(.horizontal, pad)
-                    .listItemEntrance(isVisible: appeared, index: 1)
-
-                    // ── ÖZELLİKLER (Yankı + Aylık Özet) — ön planda
-                    ProfileFeaturesSection(
+                    ProfileOverviewSection(
                         vm: vm,
                         context: context,
-                        showEcho: $showEcho,
-                        showMonthlySummary: $showMonthlySummary,
-                        showYearlySummary: $showYearlySummary
+                        showFriendsList: $showFriendsList,
+                        showSettings: $showSettings
                     )
-                    .padding(.horizontal, pad)
-                    .padding(.top, 4)
-                    .listItemEntrance(isVisible: appeared, index: 2)
+                    .padding(.top, 96)
+                    .listItemEntrance(isVisible: appeared, index: 0)
 
-                    // ── Son 7 gün mood şeridi
-                    ProfileRecentMoodStripSection(vm: vm, recentMoodColors: recentMoodColors)
-                        .padding(.horizontal, pad)
-                        .listItemEntrance(isVisible: appeared, index: 3)
-
-                    // ── ANILAR — biriken değer kartı
-                    if totalDaysCount > 0 {
-                        ProfileLoyaltyCard(vm: vm, context: context)
-                            .padding(.horizontal, pad)
-                            .listItemEntrance(isVisible: appeared, index: 4)
-                    }
-
-                    // Davet kodu artık friendStrip header chip + dynamicShareButton
-                    // hint'inde gösteriliyor; ayrı bir kart yok.
-
-                    // ── Footer (sadece minimal alt satır)
                     ProfileFooterSection(vm: vm)
                         .padding(.top, 14)
-                        .listItemEntrance(isVisible: appeared, index: 5)
+                        .listItemEntrance(isVisible: appeared, index: 1)
 
-                    Spacer().frame(height: 100)
+                    Spacer().frame(height: 116)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }

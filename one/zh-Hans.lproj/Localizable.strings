@@ -1013,3 +1013,14 @@
 "archive.subtitle" = "越积累越好看。";
 "archive.empty" = "留下第一个颜色后，这里就会开始填满。";
 "archive.lastYearLabel" = "今天 · 去年";
+
+"profile.colorReport" = "你的色彩报告";
+"profile.mostFrequent" = "最常见";
+"profile.stat.entries" = "记录";
+"profile.stat.fullWeeks" = "完整周";
+"profile.stat.colors" = "颜色数";
+"profile.row.reminder" = "提醒";
+"profile.row.musicSource" = "音乐来源";
+"profile.row.friends" = "好友";
+"profile.row.settings" = "设置";
+"profile.friendCountFormat" = "%d 位好友";

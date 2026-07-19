@@ -1015,3 +1015,14 @@
 "archive.subtitle" = "wird schöner, je mehr es wächst.";
 "archive.empty" = "Hier füllt es sich, sobald du deine erste Farbe hinterlässt.";
 "archive.lastYearLabel" = "heute · letztes Jahr";
+
+"profile.colorReport" = "dein Farbzeugnis";
+"profile.mostFrequent" = "am häufigsten";
+"profile.stat.entries" = "Einträge";
+"profile.stat.fullWeeks" = "volle Wochen";
+"profile.stat.colors" = "Farben";
+"profile.row.reminder" = "Erinnerung";
+"profile.row.musicSource" = "Musikquelle";
+"profile.row.friends" = "Freunde";
+"profile.row.settings" = "Einstellungen";
+"profile.friendCountFormat" = "%d Freunde";

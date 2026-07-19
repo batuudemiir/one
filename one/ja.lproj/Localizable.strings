@@ -1015,3 +1015,14 @@
 "archive.subtitle" = "育つほど美しくなる。";
 "archive.empty" = "最初の色を残すと、ここが埋まりはじめる。";
 "archive.lastYearLabel" = "今日 · 去年";
+
+"profile.colorReport" = "カラー成績表";
+"profile.mostFrequent" = "いちばん多い";
+"profile.stat.entries" = "記録";
+"profile.stat.fullWeeks" = "完全な週";
+"profile.stat.colors" = "色の数";
+"profile.row.reminder" = "リマインダー";
+"profile.row.musicSource" = "音楽ソース";
+"profile.row.friends" = "友だち";
+"profile.row.settings" = "設定";
+"profile.friendCountFormat" = "友だち%d人";

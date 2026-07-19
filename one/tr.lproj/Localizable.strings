@@ -1158,3 +1158,14 @@
 "archive.subtitle" = "büyüdükçe güzelleşiyor.";
 "archive.empty" = "İlk rengini bıraktığında burası dolmaya başlar.";
 "archive.lastYearLabel" = "bugün · geçen yıl";
+
+"profile.colorReport" = "renk karnen";
+"profile.mostFrequent" = "en sık";
+"profile.stat.entries" = "kayıt";
+"profile.stat.fullWeeks" = "tam hafta";
+"profile.stat.colors" = "farklı renk";
+"profile.row.reminder" = "hatırlatma";
+"profile.row.musicSource" = "müzik kaynağı";
+"profile.row.friends" = "arkadaşlar";
+"profile.row.settings" = "ayarlar";
+"profile.friendCountFormat" = "%d arkadaş";

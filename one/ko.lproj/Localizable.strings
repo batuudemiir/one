@@ -1016,3 +1016,14 @@
 "archive.subtitle" = "쌓일수록 아름다워져.";
 "archive.empty" = "첫 색을 남기면 여기가 채워지기 시작해.";
 "archive.lastYearLabel" = "오늘 · 작년";
+
+"profile.colorReport" = "컬러 성적표";
+"profile.mostFrequent" = "가장 자주";
+"profile.stat.entries" = "기록";
+"profile.stat.fullWeeks" = "완전한 주";
+"profile.stat.colors" = "색 개수";
+"profile.row.reminder" = "리마인더";
+"profile.row.musicSource" = "음악 소스";
+"profile.row.friends" = "친구";
+"profile.row.settings" = "설정";
+"profile.friendCountFormat" = "친구 %d명";
