@@ -16,6 +16,8 @@
 import SwiftUI
 import MusicKit
 import Combine
+import CoreData   // PersistenceController.container.viewContext
+import CloudKit   // CloudKitManager.currentUser["inviteCode"] aboneliği
 
 // MARK: - Step Index
 private enum OnboardingStep: Int, CaseIterable {

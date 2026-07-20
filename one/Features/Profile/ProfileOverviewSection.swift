@@ -299,7 +299,6 @@ struct ProfileStats {
             // Bugün henüz boşsa dünden başlamak seriyi gün ortasında
             // sıfırlamamak için — gün bitmeden kaybedilmiş sayılmaz.
             let filledDays = Set(byDay.keys)
-            let today = calendar.startOfDay(for: Date())
             let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
             var streak = 0
             if filledDays.contains(today) || filledDays.contains(yesterday) {
