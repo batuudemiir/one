@@ -191,16 +191,28 @@ class ArchiveStore: ObservableObject {
         // Gerçek seçim zamanı için createdAt kullan, yoksa date'i fallback olarak kullan
         let actualTime = item.createdAt ?? timestamp
         
-        // Fotoğraf URL'sini oluştur (photoData'dan)
+        // Fotoğraf URL'si.
+        //
+        // Sıra kritik: `item.photoData`'ya dokunmak Core Data'nın binary
+        // blob'unu TAMAMEN belleğe fault ediyor (tek fotoğraf 8 MB'a
+        // çıkabiliyor). Arşiv 13 ay yüklüyor ve her `todaySongSaved`
+        // bildiriminde yeniden koşuyor — eskiden bu, her yenilemede
+        // onlarca megabaytın boşuna okunması demekti.
+        //
+        // Bu yüzden önce diskteki temp dosyaya bakıyoruz; varsa blob'a
+        // hiç dokunmuyoruz.
         var photoURL: URL? = nil
-        if let photoData = item.photoData, !photoData.isEmpty {
-            let tempURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent("\(item.id?.uuidString ?? UUID().uuidString).jpg")
-            if !FileManager.default.fileExists(atPath: tempURL.path) {
-                try? photoData.write(to: tempURL)
-            }
-            photoURL = tempURL
-            ONELogger.debug("Fotoğraf yüklendi: \(item.songName ?? "?") - \(photoData.count) bytes", category: .persistence)
+        let cachedURL = item.id.map {
+            FileManager.default.temporaryDirectory.appendingPathComponent("\($0.uuidString).jpg")
+        }
+
+        if let cachedURL, FileManager.default.fileExists(atPath: cachedURL.path) {
+            photoURL = cachedURL
+        } else if let photoData = item.photoData, !photoData.isEmpty {
+            let target = cachedURL ?? FileManager.default.temporaryDirectory
+                .appendingPathComponent("\(UUID().uuidString).jpg")
+            try? photoData.write(to: target)
+            photoURL = target
         } else if let photoURLString = item.photoURL {
             // Fallback: photoURL string varsa kullan
             photoURL = URL(string: photoURLString)

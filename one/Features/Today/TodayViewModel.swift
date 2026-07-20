@@ -845,10 +845,17 @@ class TodayViewModel: ObservableObject {
         streakFreezeUsedRecently = result.frozenDates.contains(yesterday)
         streakFreezeAvailable = result.freezeAvailable
         if !result.newlyConsumedFreezes.isEmpty {
-            ErrorHandler.shared.showInfo(
-                NSLocalizedString("streak.freezeUsed.toast", comment: "")
-            )
-            AppAnalytics.shared.track(.streakFreezeConsumed)
+            // Bir tick ertele. Bu fonksiyon `init` → `loadTodayEntry` →
+            // `refreshStreakDays` zinciriyle view güncellemesinin İÇİNDE
+            // çalışıyor; toast'ı oradan yayınlamak
+            // "Publishing changes from within view updates" uyarısını
+            // veriyordu — SwiftUI'da tanımsız davranış.
+            DispatchQueue.main.async {
+                ErrorHandler.shared.showInfo(
+                    NSLocalizedString("streak.freezeUsed.toast", comment: "")
+                )
+                AppAnalytics.shared.track(.streakFreezeConsumed)
+            }
         }
         return result.count
     }
