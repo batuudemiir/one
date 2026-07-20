@@ -1054,3 +1054,8 @@ no te perdiste nada.";
 "comeback.yesterday" = "ayer";
 "comeback.dayBefore" = "anteayer";
 "comeback.markToday" = "marcar hoy";
+
+"today.doneLabel" = "hoy";
+"today.yourColourIs" = "tu color: ";
+"today.seeYouTomorrow" = "hasta mañana.";
+"today.backToFrequency" = "volver a frecuencia";

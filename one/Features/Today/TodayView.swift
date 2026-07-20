@@ -84,7 +84,8 @@ struct TodayView: View {
                             onAddPhoto: { showExtraPhotoPicker = true },
                             onAddNote: { showExtraNoteSheet = true },
                             weekRhythm: vm.weekRhythm,
-                            onBackfill: { backfillTarget = BackfillTarget(date: $0) }
+                            onBackfill: { backfillTarget = BackfillTarget(date: $0) },
+                            onReturnToCircle: onClose
                         )
                         .transition(.asymmetric(
                             insertion: .scale(scale: 0.96).combined(with: .opacity),

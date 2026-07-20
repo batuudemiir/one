@@ -1054,3 +1054,8 @@ du hast nichts verpasst.";
 "comeback.yesterday" = "gestern";
 "comeback.dayBefore" = "vorgestern";
 "comeback.markToday" = "heute markieren";
+
+"today.doneLabel" = "heute";
+"today.yourColourIs" = "deine Farbe: ";
+"today.seeYouTomorrow" = "bis morgen.";
+"today.backToFrequency" = "zurück zur Frequenz";

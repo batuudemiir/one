@@ -27,6 +27,8 @@ struct TodayCompletedView: View {
     let weekRhythm: [WeekRhythm.Day]
     /// Telafi edilebilir bir güne dokunulduğunda ritüeli o gün için açar.
     let onBackfill: ((Date) -> Void)?
+    /// Prototipteki "frekansa dön". nil ise buton hiç çizilmez.
+    let onReturnToCircle: (() -> Void)?
 
     init(entry: DailyEntry,
          onEdit: @escaping () -> Void,
@@ -35,7 +37,8 @@ struct TodayCompletedView: View {
          onAddPhoto: (() -> Void)? = nil,
          onAddNote: (() -> Void)? = nil,
          weekRhythm: [WeekRhythm.Day] = [],
-         onBackfill: ((Date) -> Void)? = nil) {
+         onBackfill: ((Date) -> Void)? = nil,
+         onReturnToCircle: (() -> Void)? = nil) {
         self.entry = entry
         self.onEdit = onEdit
         self.streakDays = streakDays
@@ -44,6 +47,7 @@ struct TodayCompletedView: View {
         self.onAddNote = onAddNote
         self.weekRhythm = weekRhythm
         self.onBackfill = onBackfill
+        self.onReturnToCircle = onReturnToCircle
     }
 
     // MARK: - "İstersen ekle" şeridi
@@ -165,14 +169,13 @@ struct TodayCompletedView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 4) {
-                        ZStack(alignment: .trailing) {
-                            Text("ONE+")
-                                .font(.system(size: 38, weight: .bold, design: .default))
-                                .foregroundColor(ONETokens.oneInk)
-                            .frame(maxWidth: .infinity)
-
+                    // Prototipteki `.done-hero`: ortalanmış, mood rengiyle
+                    // yukarıdan aşağı sönen bir tint. Marka adı ("ONE+")
+                    // burada değil — bu ekranın konusu marka değil, o günün
+                    // rengi. Streak chip'i kaldı ama artık hero'nun üstünde.
+                    VStack(spacing: 0) {
+                        HStack {
+                            Spacer()
                             if streakDays >= 1 {
                                 let isMilestone = [3, 7, 14, 30, 50, 100, 200, 365].contains(streakDays)
                                 Text("🔥 \(displayedStreak)")
@@ -197,16 +200,41 @@ struct TodayCompletedView: View {
                                     }
                             }
                         }
-                        Text(NSLocalizedString("today.completedSubtitle", comment: ""))
-                            .padding(.top, 24)
-                            .displayLG()
-                            .foregroundColor(ONETokens.oneInk)
-                            .lineSpacing(2)
+
+                        Text(NSLocalizedString("today.doneLabel", comment: ""))
+                            .monoLabel(tracking: 1.3)
+                            .foregroundColor(ONETokens.oneStone)
+                            .padding(.top, ONETokens.spacingLG)
+
+                        // "senin rengin: huzurlu" — mood adı kendi renginde.
+                        (
+                            Text(NSLocalizedString("today.yourColourIs", comment: ""))
+                                .foregroundColor(ONETokens.oneInk)
+                            + Text(entry.moodLabel.lowercased())
+                                .foregroundColor(entry.moodColor)
+                        )
+                        .displayLG()
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 9)
+
+                        Text(NSLocalizedString("today.seeYouTomorrow", comment: ""))
+                            .bodySM()
+                            .foregroundColor(ONETokens.oneAsh)
+                            .padding(.top, 11)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity)
                     .padding(.horizontal, ONETokens.spacingXL2)
                     .padding(.top, headerTopPad(available: available))
                     .padding(.bottom, headerBottomPad(available: available))
+                    .background(
+                        // Prototip: hero'nun arkasında mood renginden şeffafa
+                        // inen bir gradyan. Ekranın geri kalanı krem kalır.
+                        LinearGradient(
+                            colors: [entry.moodColor.opacity(0.14), .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
 
                     if isFreezeActive {
                         HStack(spacing: 8) {
@@ -608,6 +636,31 @@ struct TodayCompletedView: View {
                                     : ONEAnimation.panelSpring.delay(0.5),
                                 value: appeared
                             )
+                    }
+
+                    // Prototipteki kapanış: ayraç + "frekansa dön".
+                    // Bu ekranda hiç çıkış kontrolü yoktu — kullanıcı ancak
+                    // sekme çubuğundan kaçabiliyordu.
+                    if let onReturnToCircle {
+                        Rectangle()
+                            .fill(ONETokens.oneInk.opacity(0.09))
+                            .frame(height: 1)
+                            .padding(.horizontal, ONETokens.spacingXL2)
+                            .padding(.top, ONETokens.spacingXL)
+
+                        Button(action: onReturnToCircle) {
+                            Text(NSLocalizedString("today.backToFrequency", comment: ""))
+                                .bodySMMedium()
+                                .foregroundColor(ONETokens.oneInk)
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .background(
+                                    Capsule(style: .continuous)
+                                        .stroke(ONETokens.oneInk.opacity(0.14), lineWidth: 1.5)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, ONETokens.spacingXL2)
+                        .padding(.top, ONETokens.spacingXL)
                     }
 
                     Spacer().frame(height: 24)

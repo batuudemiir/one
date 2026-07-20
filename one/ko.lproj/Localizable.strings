@@ -1055,3 +1055,8 @@
 "comeback.yesterday" = "어제";
 "comeback.dayBefore" = "그저께";
 "comeback.markToday" = "오늘 표시하기";
+
+"today.doneLabel" = "오늘";
+"today.yourColourIs" = "너의 색: ";
+"today.seeYouTomorrow" = "내일 또 보자.";
+"today.backToFrequency" = "프리퀀시로 돌아가기";

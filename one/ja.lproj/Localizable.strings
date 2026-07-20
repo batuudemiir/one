@@ -1054,3 +1054,8 @@
 "comeback.yesterday" = "昨日";
 "comeback.dayBefore" = "おととい";
 "comeback.markToday" = "今日を記録する";
+
+"today.doneLabel" = "今日";
+"today.yourColourIs" = "きみの色：";
+"today.seeYouTomorrow" = "また明日。";
+"today.backToFrequency" = "フリークエンシーに戻る";

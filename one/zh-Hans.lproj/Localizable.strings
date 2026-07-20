@@ -1052,3 +1052,8 @@
 "comeback.yesterday" = "昨天";
 "comeback.dayBefore" = "前天";
 "comeback.markToday" = "标记今天";
+
+"today.doneLabel" = "今天";
+"today.yourColourIs" = "你的颜色：";
+"today.seeYouTomorrow" = "明天见。";
+"today.backToFrequency" = "返回频率";

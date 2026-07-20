@@ -1055,3 +1055,8 @@
 "comeback.yesterday" = "вчера";
 "comeback.dayBefore" = "позавчера";
 "comeback.markToday" = "отметить сегодня";
+
+"today.doneLabel" = "сегодня";
+"today.yourColourIs" = "твой цвет: ";
+"today.seeYouTomorrow" = "до завтра.";
+"today.backToFrequency" = "назад к частоте";

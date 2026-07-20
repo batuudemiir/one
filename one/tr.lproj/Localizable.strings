@@ -1197,3 +1197,8 @@ bir şey kaçırmadın.";
 "comeback.yesterday" = "dün";
 "comeback.dayBefore" = "önceki gün";
 "comeback.markToday" = "bugünü işaretle";
+
+"today.doneLabel" = "bugün";
+"today.yourColourIs" = "senin rengin: ";
+"today.seeYouTomorrow" = "yarın da görelim.";
+"today.backToFrequency" = "frekansa dön";

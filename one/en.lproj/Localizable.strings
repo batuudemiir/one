@@ -1180,3 +1180,8 @@ you missed nothing.";
 "comeback.yesterday" = "yesterday";
 "comeback.dayBefore" = "the day before";
 "comeback.markToday" = "mark today";
+
+"today.doneLabel" = "today";
+"today.yourColourIs" = "your colour: ";
+"today.seeYouTomorrow" = "see you tomorrow.";
+"today.backToFrequency" = "back to frequency";
