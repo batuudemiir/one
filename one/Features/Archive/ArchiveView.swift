@@ -7,8 +7,8 @@ import SwiftUI
 import CoreData
 
 /// Arşiv kabuğu. Prototipte ay/yıl geçişi yok — tek sürekli akış.
-/// `MonthArchiveView` / `YearArchiveView` şimdilik dosyada duruyor ama
-/// buradan çağrılmıyor; ilk yeşil build'den sonra temizlenecek.
+/// Ay/yıl geçişli eski görünümler (MonthArchiveView, YearArchiveView)
+/// silindi — prototipte karşılıkları yok.
 struct ArchiveContainerView: View {
     @StateObject private var archiveStore: ArchiveStore
 
