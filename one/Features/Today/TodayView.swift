@@ -24,19 +24,9 @@ struct TodayView: View {
     // Faz 3 — telafi: bugün zaten doluyken geçmiş bir günü doldurma sheet'i
     @State private var backfillTarget: BackfillTarget? = nil
 
-    // Completion celebration animasyonu
-    @State private var celebration: CelebrationType? = nil
-
-    // Save Ritual — Still Water (3 katman: halka + zemin tint + haptic)
+    // Kayıt anı — SaveRitualMoment tetikleyicisi
     @State private var showRitual:   Bool    = false
     @State private var ritualMood:   ONEMood? = nil
-    @State private var ringScale:    CGFloat = 0
-    @State private var ringOpacity:  Double  = 0
-    @State private var bgTinted:     Bool    = false
-    @State private var ring2Scale:   CGFloat = 0
-    @State private var ring2Opacity: Double  = 0
-    @State private var showParticles: Bool   = false
-    @State private var particleMood: ONEMood? = nil
 
     // Kayıt sonrası opsiyonel ekler (ritüel 2 adıma indiği için)
     @State private var showExtraPhotoPicker: Bool = false
@@ -109,56 +99,16 @@ struct TodayView: View {
                 }
             }
 
-            // Save Ritual — Still Water (3 katman: zemin tint + sonar halka + haptic)
+            // Kayıt anı — tek imza. Eskiden burada üç katman (zemin tint +
+            // iki sonar halka + parçacıklar) `CompletionCelebrationView`'ın
+            // beş dönüşümlü varyantıyla AYNI ANDA oynuyordu; ikisi birbirini
+            // örtüyor, hiçbiri akılda kalmıyordu.
             if showRitual, let mood = ritualMood {
-                ZStack {
-                    // Katman 1: pastel zemin tint
-                    mood.pastelColor.opacity(bgTinted ? 0.06 : 0)
-                        .ignoresSafeArea()
-                        .animation(.easeInOut(duration: 1.1), value: bgTinted)
-
-                    // Katman 2: sonar halka — merkezden dışa genişler, söner
-                    GeometryReader { geo in
-                        let maxDim = max(geo.size.width, geo.size.height)
-                        Circle()
-                            .stroke(mood.pastelColor, lineWidth: 1.2)
-                            .frame(width: maxDim * 2.6, height: maxDim * 2.6)
-                            .scaleEffect(ringScale)
-                            .opacity(ringOpacity)
-                            .position(x: geo.size.width / 2, y: geo.size.height / 2)
-                            .allowsHitTesting(false)
-
-                        // Katman 3: İkinci sonar halka (pastel, gecikmeli)
-                        Circle()
-                            .stroke(mood.pastelColor, lineWidth: 0.8)
-                            .frame(width: maxDim * 2.6, height: maxDim * 2.6)
-                            .scaleEffect(ring2Scale)
-                            .opacity(ring2Opacity)
-                            .position(x: geo.size.width / 2, y: geo.size.height / 2)
-                    }
-                    .ignoresSafeArea()
+                SaveRitualMoment(mood: mood) {
+                    showRitual = false
+                    ritualMood = nil
                 }
-                .allowsHitTesting(false)
                 .accessibilityHidden(true)
-            }
-
-            if showRitual && showParticles, let pm = particleMood {
-                MoodParticleView(mood: pm, triggered: $showParticles)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .padding(.bottom, 120)
-                    .ignoresSafeArea()
-            }
-
-            // Completion celebration — entry kaydedilince oynar
-            if let type = celebration, let entry = vm.todayEntry {
-                CompletionCelebrationView(
-                    type: type,
-                    moodColor: entry.moodColor,
-                    onFinished: { celebration = nil }
-                )
-                .ignoresSafeArea()
-                .transition(.opacity)
-                .zIndex(10)
             }
         }
         .overlay(alignment: .bottom) {
@@ -196,7 +146,6 @@ struct TodayView: View {
             guard let entry = newEntry else { return }
             let mood = ONEMood(hex: entry.moodColorHex)
             triggerRitual(mood: mood)
-            if !reduceMotion { celebration = CelebrationType.pick() }
             // VoiceOver kullanıcısı save ritual'ı görmez — sözel duyuru gerekli.
             UIAccessibility.post(
                 notification: .announcement,
@@ -287,62 +236,12 @@ struct TodayView: View {
         }
     }
 
-    // swiftlint:disable function_body_length
-    // Still Water ritual — tüm mood'lar için tek rafine akış.
-    // Reduce Motion: halka atlanır, yalnız zemin tint + haptic.
+    /// Kayıt anını tetikler. Koreografinin tamamı `SaveRitualMoment`
+    /// içinde — burada yalnız hangi mood'la başlayacağı söyleniyor.
+    /// Temizliği de o view kendi bitişinde yapıyor (`onFinished`).
     private func triggerRitual(mood: ONEMood?) {
-        ringScale = 0; ringOpacity = 0; bgTinted = false
-        ring2Scale = 0; ring2Opacity = 0; showParticles = false; particleMood = mood
         ritualMood = mood
         showRitual = true
-        ONEHaptics.saveRitual(mood: mood)
-
-        guard !reduceMotion else {
-            withAnimation(.easeInOut(duration: 1.1)) { bgTinted = true }
-            scheduleCleanup(after: 1.35)
-            return
-        }
-
-        withAnimation(.easeOut(duration: 0.65)) { ringScale = 1.0; ringOpacity = 0.22 }
-        withAnimation(.easeIn(duration: 0.25).delay(0.40)) { ringOpacity = 0 }
-        withAnimation(.easeInOut(duration: 1.1)) { bgTinted = true }
-
-        // İkinci sonar halka
-        withAnimation(.easeOut(duration: 0.7).delay(0.15)) {
-            ring2Scale = 1.0; ring2Opacity = 0.18
-        }
-        withAnimation(.easeIn(duration: 0.30).delay(0.55)) {
-            ring2Opacity = 0
-        }
-
-        // Particles
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            showParticles = true
-        }
-
-        // Peak haptic
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-            ONEHaptics.saveRitualPeak()
-        }
-
-        scheduleCleanup(after: 2.6)
-    }
-
-    private func scheduleCleanup(after delay: Double) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            withAnimation(.easeOut(duration: 0.35)) {
-                bgTinted   = false
-                showRitual = false
-            }
-            // Particle view'ı fade-out animasyonu bittikten sonra temizle
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                ritualMood = nil
-                ring2Scale = 0
-                ring2Opacity = 0
-                showParticles = false
-                particleMood = nil
-            }
-        }
     }
 }
 
