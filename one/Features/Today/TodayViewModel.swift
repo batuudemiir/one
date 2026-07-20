@@ -741,7 +741,10 @@ class TodayViewModel: ObservableObject {
 
     // MARK: - A4 — First-entry Circle invite hook
 
-    private static let firstEntryInviteHookKey = "firstEntryInviteHookConsumed"
+    /// Onboarding kendi davet adımını gösterdiğinde bu anahtarı `saveEntry`'den
+    /// ÖNCE yazıyor — yoksa `total == 1` koşulu sağlanıp davet sheet'i ana
+    /// ekranda ikinci kez açılır. O yüzden `internal`.
+    static let firstEntryInviteHookKey = "firstEntryInviteHookConsumed"
 
     /// İlk kayıt sonrası Çevre davet kancasını tetikler. Yalnızca toplam
     /// entry sayısı 1 ise VE daha önce gösterilmediyse açılır. Mevcut

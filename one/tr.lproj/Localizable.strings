@@ -1204,3 +1204,28 @@ bir şey kaçırmadın.";
 "today.backToFrequency" = "frekansa dön";
 
 "circle.counterFormat" = "%d/%d arkadaşın bugün paylaştı";
+
+"onboarding.entry.start" = "başla";
+"onboarding.entry.next" = "devam";
+"onboarding.entry.save" = "bırak";
+"onboarding.entry.finish" = "bitir";
+"onboarding.entry.skip" = "şimdilik geç";
+"onboarding.entry.step1" = "1 / 3 · ilk kaydın";
+"onboarding.entry.step2" = "2 / 3 · ilk kaydın";
+"onboarding.entry.lastStep" = "son adım";
+"onboarding.entry.moodTitle" = "bugün ne renktin?";
+"onboarding.entry.songTitle" = "bugünün şarkısı?";
+"onboarding.entry.realNotDemo" = "bu senin gerçek ilk kaydın — deneme değil.";
+"onboarding.entry.searchPlaceholder" = "şarkı veya sanatçı ara";
+"onboarding.entry.musicDenied" = "Müzik izni olmadan şarkı arayamıyoruz. Ayarlardan açabilirsin.";
+"onboarding.entry.yourColourToday" = "bugün senin rengin: ";
+"onboarding.entry.inviteTitle" = "bir arkadaş ekle.";
+"onboarding.entry.inviteBody" = "ONE tek başına da çalışır — ama asıl güzel kısmı burada başlıyor.";
+"onboarding.entry.shareLink" = "bağlantıyı paylaş";
+"onboarding.entry.inviteLater" = "Profilin hazır olunca davet edebilirsin.";
+"onboarding.entry.brandTitle" = "bir şarkı.
+bir renk.
+bir gün.";
+"onboarding.entry.brandBody" = "her akşam arkadaşlarının ne renk olduğunu gör. sen de kendininkini bırak.";
+"onboarding.entry.notifTitle" = "yarın da hatırlatayım mı?";
+"onboarding.entry.notifBody" = "akşam 21:00'de tek bir sessiz hatırlatma. istediğin an kapatabilirsin.";

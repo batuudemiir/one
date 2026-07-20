@@ -1187,3 +1187,28 @@ you missed nothing.";
 "today.backToFrequency" = "back to frequency";
 
 "circle.counterFormat" = "%d/%d friends shared today";
+
+"onboarding.entry.start" = "start";
+"onboarding.entry.next" = "next";
+"onboarding.entry.save" = "leave it";
+"onboarding.entry.finish" = "finish";
+"onboarding.entry.skip" = "skip for now";
+"onboarding.entry.step1" = "1 / 3 · your first entry";
+"onboarding.entry.step2" = "2 / 3 · your first entry";
+"onboarding.entry.lastStep" = "last step";
+"onboarding.entry.moodTitle" = "what colour were you today?";
+"onboarding.entry.songTitle" = "today's song?";
+"onboarding.entry.realNotDemo" = "this is your real first entry — not a demo.";
+"onboarding.entry.searchPlaceholder" = "search a song or artist";
+"onboarding.entry.musicDenied" = "We can't search songs without music access. You can enable it in Settings.";
+"onboarding.entry.yourColourToday" = "your colour today: ";
+"onboarding.entry.inviteTitle" = "add a friend.";
+"onboarding.entry.inviteBody" = "ONE works alone too — but the good part starts here.";
+"onboarding.entry.shareLink" = "share link";
+"onboarding.entry.inviteLater" = "You can invite once your profile is ready.";
+"onboarding.entry.brandTitle" = "one song.
+one colour.
+one day.";
+"onboarding.entry.brandBody" = "every evening, see what colour your friends are. leave yours too.";
+"onboarding.entry.notifTitle" = "remind you tomorrow?";
+"onboarding.entry.notifBody" = "one quiet reminder at 9pm. turn it off whenever you like.";

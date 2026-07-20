@@ -2,14 +2,15 @@
 //  OnboardingView.swift
 //  one
 //
-//  Professional onboarding:
-//  1. Welcome — brand reveal with mascot + slogan animation
-//  2. Promise — animated mood cycle + value proposition
-//  3. Tutorial intro — "let's show you how it works"
-//  4. Tutorial / Mood pick — interactive
-//  5. Tutorial / Reveal card — magic moment
-//  6. Music permission — Apple Music
-//  7. Soft notification ask
+//  Onboarding — prototipteki 6 sayfa. Simülasyon değil: kullanıcı
+//  buradan GERÇEK ilk kaydıyla çıkıyor.
+//
+//  1. Marka      — bir şarkı. bir renk. bir gün.
+//  2. Renk       — 1/3, gerçek kaydın rengi
+//  3. Şarkı      — 2/3, gerçek kaydın şarkısı (müzik izni burada)
+//  4. Onay       — mühür
+//  5. Davet      — son adım, arkadaş
+//  6. Hatırlatma — soft-ask (sistem prompt'u en sonda)
 //
 
 import SwiftUI
@@ -18,23 +19,33 @@ import Combine
 
 // MARK: - Step Index
 private enum OnboardingStep: Int, CaseIterable {
-    case welcome = 0
-    case promise
-    case tutorialIntro
-    case tutorialMoodPick
-    case tutorialReveal
-    case music
-    case notifSoftAsk
+    case brand = 0      // marka + vaat
+    case moodPick       // 1/3 — gerçek ilk kaydın rengi
+    case songPick       // 2/3 — gerçek ilk kaydın şarkısı
+    case confirm        // 3/3 — mühür
+    case invite         // son adım — arkadaş
+    case notifSoftAsk   // hatırlatma
 
     var analyticsName: String {
         switch self {
-        case .welcome:           return "welcome"
-        case .promise:           return "promise"
-        case .tutorialIntro:     return "tutorial_intro"
-        case .tutorialMoodPick:  return "tutorial_mood_pick"
-        case .tutorialReveal:    return "tutorial_reveal"
-        case .music:             return "permissions"
-        case .notifSoftAsk:      return "notif_soft_ask"
+        case .brand:        return "brand"
+        case .moodPick:     return "mood_pick"
+        case .songPick:     return "song_pick"
+        case .confirm:      return "confirm"
+        case .invite:       return "invite"
+        case .notifSoftAsk: return "notif_soft_ask"
+        }
+    }
+
+    /// Alt bardaki birincil butonun metni.
+    var primaryTitleKey: String {
+        switch self {
+        case .brand:        return "onboarding.entry.start"
+        case .moodPick:     return "onboarding.entry.next"
+        case .songPick:     return "onboarding.entry.save"
+        case .confirm:      return "onboarding.entry.next"
+        case .invite:       return "onboarding.entry.next"
+        case .notifSoftAsk: return "onboarding.entry.finish"
         }
     }
 }
@@ -42,39 +53,59 @@ private enum OnboardingStep: Int, CaseIterable {
 // MARK: - Onboarding Root
 struct OnboardingView: View {
     @Binding var isCompleted: Bool
-    @State private var step: OnboardingStep = .welcome
+    @Environment(\.managedObjectContext) private var context
+
+    @State private var step: OnboardingStep = .brand
     @State private var rootOpacity: Double = 0
     @State private var selectedMood: ONEMood? = nil
+    @State private var selectedSong: SongResult? = nil
     @State private var notificationsOptIn: Bool = false
+    @State private var isSaving = false
+    @State private var showShareSheet = false
+
+    /// Arama ve kayıt için. Onboarding kendi VM'ini kurar — ana ekranınkiyle
+    /// paylaşmıyor, çünkü onboarding bitmeden ana ekran hiç kurulmuyor.
+    @StateObject private var vm = TodayViewModel(
+        context: PersistenceController.shared.container.viewContext
+    )
+
+    private var inviteCode: String? {
+        let code = CloudKitManager.shared.currentUser?["inviteCode"] as? String
+        return (code?.isEmpty == false) ? code : nil
+    }
 
     var body: some View {
         ZStack {
-            ONETokens.oneCream
-                .ignoresSafeArea()
+            ONETokens.oneCream.ignoresSafeArea()
+            BackgroundAmbience(tint: selectedMood?.color).ignoresSafeArea()
 
-            // Soft background ambience — slow drifting gradient tinted by mood
-            BackgroundAmbience(tint: selectedMood?.color)
-                .ignoresSafeArea()
-
-            content
-                .transition(
-                    .asymmetric(
-                        insertion: .opacity.combined(with: .move(edge: .trailing)),
-                        removal: .opacity.combined(with: .move(edge: .leading))
-                    )
-                )
-                .id(step)
-
-            // Progress dots — hidden on welcome & last permission/notif screens
-            if step != .welcome {
-                VStack {
-                    ProgressDots(current: step.rawValue, total: OnboardingStep.allCases.count)
-                        .padding(.top, 14)
-                    Spacer()
+            VStack(spacing: 0) {
+                ScrollView(showsIndicators: false) {
+                    content
+                        .padding(.horizontal, ONETokens.spacingXL)
+                        .padding(.top, ONETokens.spacingXL4)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .transition(
+                            .asymmetric(
+                                insertion: .opacity.combined(with: .move(edge: .trailing)),
+                                removal: .opacity.combined(with: .move(edge: .leading))
+                            )
+                        )
+                        .id(step)
                 }
+
+                bottomBar
             }
         }
         .opacity(rootOpacity)
+        .sheet(isPresented: $showShareSheet) {
+            if let code = inviteCode {
+                InviteShareSheet(
+                    inviteCode: code,
+                    userName: CloudKitManager.shared.currentUser?["displayName"] as? String ?? ""
+                )
+            }
+        }
         .onAppear {
             AppAnalytics.shared.track(.onboardingStarted)
             AppAnalytics.shared.track(.onboardingStepViewed(step: step.analyticsName))
@@ -90,65 +121,150 @@ struct OnboardingView: View {
         }
     }
 
+    // MARK: Content
+
     @ViewBuilder
     private var content: some View {
         switch step {
-        case .welcome:
-            WelcomePage(goToNext: { advance(to: .promise) })
-        case .promise:
-            PromisePage(
-                goBack: { advance(to: .welcome) },
-                goToNext: { advance(to: .tutorialIntro) }
-            )
-        case .tutorialIntro:
-            TutorialIntroPage(
-                goBack: { advance(to: .promise) },
-                goToNext: { advance(to: .tutorialMoodPick) }
-            )
-        case .tutorialMoodPick:
-            TutorialMoodPickPage(
-                selectedMood: $selectedMood,
-                goBack: { advance(to: .tutorialIntro) },
-                goToNext: { advance(to: .tutorialReveal) }
-            )
-        case .tutorialReveal:
-            TutorialRevealPage(
-                mood: selectedMood ?? .sakin,
-                goToNext: { advance(to: .music) }
-            )
-        case .music:
-            MusicPermissionPage(
-                goBack: { advance(to: .tutorialReveal) },
-                goToNext: { advance(to: .notifSoftAsk) }
-            )
+        case .brand:
+            OnboardingBrandPage()
+        case .moodPick:
+            OnboardingMoodPage(selection: $selectedMood)
+        case .songPick:
+            OnboardingSongPage(vm: vm, selection: $selectedSong)
+        case .confirm:
+            OnboardingConfirmPage(mood: selectedMood ?? .sakin, song: selectedSong)
+        case .invite:
+            OnboardingInvitePage(inviteCode: inviteCode) { showShareSheet = true }
         case .notifSoftAsk:
-            NotificationSoftAskPage(
-                optIn: $notificationsOptIn,
-                complete: completeOnboarding
-            )
+            OnboardingNotifPage(optIn: $notificationsOptIn)
+        }
+    }
+
+    // MARK: Bottom bar
+
+    /// Prototipteki ortak alt bar. Eskiden her sayfa kendi butonunu çiziyor,
+    /// noktalar ise üstte duruyordu — ilerleme ve eylem ekranın iki ucundaydı.
+    private var bottomBar: some View {
+        VStack(spacing: 9) {
+            ProgressDots(current: step.rawValue, total: OnboardingStep.allCases.count)
+                .padding(.bottom, 5)
+
+            Button(action: primaryAction) {
+                Group {
+                    if isSaving {
+                        ProgressView().tint(ONETokens.oneCream)
+                    } else {
+                        Text(NSLocalizedString(step.primaryTitleKey, comment: ""))
+                            .bodySMMedium()
+                    }
+                }
+                .foregroundColor(ONETokens.oneCream)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .background(Capsule(style: .continuous).fill(ONETokens.oneInk))
+            }
+            .buttonStyle(.plain)
+            .disabled(!canAdvance || isSaving)
+            .opacity(canAdvance && !isSaving ? 1 : 0.28)
+
+            // "şimdilik geç" yalnız atlanabilir adımlarda görünür — zorunlu
+            // adımlarda gri bir buton göstermek yanlış vaat olurdu.
+            Button(action: skipAction) {
+                Text(NSLocalizedString("onboarding.entry.skip", comment: ""))
+                    .bodySMMedium()
+                    .foregroundColor(ONETokens.oneAsh)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.plain)
+            .opacity(canSkip ? 1 : 0)
+            .disabled(!canSkip)
+        }
+        .padding(.horizontal, ONETokens.spacingXL)
+        .padding(.bottom, ONETokens.spacingXL3)
+    }
+
+    private var canAdvance: Bool {
+        switch step {
+        case .moodPick: return selectedMood != nil
+        case .songPick: return selectedSong != nil
+        default:        return true
+        }
+    }
+
+    private var canSkip: Bool {
+        step == .invite || step == .notifSoftAsk
+    }
+
+    // MARK: Actions
+
+    private func primaryAction() {
+        switch step {
+        case .brand:        advance(to: .moodPick)
+        case .moodPick:     advance(to: .songPick)
+        case .songPick:     saveFirstEntry()
+        case .confirm:      advance(to: .invite)
+        case .invite:       advance(to: .notifSoftAsk)
+        case .notifSoftAsk: completeOnboarding()
+        }
+    }
+
+    private func skipAction() {
+        switch step {
+        case .invite:       advance(to: .notifSoftAsk)
+        case .notifSoftAsk:
+            notificationsOptIn = false
+            completeOnboarding()
+        default:            break
         }
     }
 
     private func advance(to next: OnboardingStep) {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) {
-            step = next
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) { step = next }
+    }
+
+    // MARK: Gerçek ilk kayıt
+
+    /// Prototipin sözü: "bu senin gerçek ilk kaydın — deneme değil."
+    ///
+    /// İki idempotency anahtarı `saveEntry`'den ÖNCE yazılıyor:
+    /// - `firstEntryInviteHookConsumed`: `saveEntry` içindeki hook `total == 1`
+    ///   koşulunu tam olarak sağlar ve 1.6 s sonra davet sheet'ini açardı;
+    ///   onboarding kendi davet adımını gösterdiği için ikinci kez çıkmamalı.
+    /// - `onboardingMoodConsumed`: eski pre-fill yolu artık gereksiz; yazılmazsa
+    ///   `ColorPickerViewModel.init` aynı mood'u bir daha doldurur.
+    private func saveFirstEntry() {
+        guard let mood = selectedMood, let song = selectedSong else { return }
+
+        isSaving = true
+
+        let defaults = UserDefaults.standard
+        defaults.set(true, forKey: TodayViewModel.firstEntryInviteHookKey)
+        defaults.set(true, forKey: "onboardingMoodConsumed")
+        defaults.set(mood.rawValue, forKey: "onboardingFirstMood")
+        AppAnalytics.shared.track(.onboardingFirstColorPicked(mood: mood.rawValue))
+
+        let option = MoodOption.all.first { $0.key == mood.rawValue } ?? MoodOption.all[4]
+        vm.saveEntry(song: song, mood: option, photo: nil, sharePhoto: true)
+
+        // Kayıt senkron; kısa bir nefes payı mührün ani düşmesini engelliyor.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            isSaving = false
+            advance(to: .confirm)
         }
     }
 
-    private func completeOnboarding() {
-        if let mood = selectedMood {
-            UserDefaults.standard.set(mood.rawValue, forKey: "onboardingFirstMood")
-            // Funnel'ın orta noktası: event tanımlıydı ama hiçbir yerden
-            // atılmıyordu — onboarding'in neresinde düşüldüğü görünmüyordu.
-            AppAnalytics.shared.track(.onboardingFirstColorPicked(mood: mood.rawValue))
-        }
+    // MARK: Bitiş
 
+    private func completeOnboarding() {
         let finish: () -> Void = {
             withAnimation(.easeInOut(duration: ONEAnimation.durationMedium)) {
                 isCompleted = true
             }
             KeychainHelper.set(true, forKey: "hasCompletedOnboarding")
-            let platform = UserDefaults.standard.string(forKey: "selectedMusicPlatform") ?? "unknown"
+            // Anahtar uyuşmazlığı düzeltildi: yazan taraf `preferredMusicService`
+            // kullanıyordu, burası `selectedMusicPlatform` okuyordu — event
+            // platformu hep "unknown" gidiyordu.
+            let platform = UserDefaults.standard.string(forKey: "preferredMusicService") ?? "unknown"
             AppAnalytics.shared.track(.onboardingCompleted(musicPlatform: platform))
         }
 
@@ -181,15 +297,15 @@ struct OnboardingView: View {
                         defaults.set(components.minute, forKey: "dailyReminderMinute")
                         NotificationManager.shared.scheduleDailyReminder(at: defaultTime)
                         NotificationManager.shared.scheduleWeeklySummary()
+                        NewUserNurtureScheduler.start()
                     }
-
-                    NewUserNurtureScheduler.start()
                 }
                 finish()
             }
         }
     }
 }
+
 
 // MARK: - Background Ambience (subtle drifting blob)
 private struct BackgroundAmbience: View {
@@ -253,907 +369,6 @@ private struct ProgressDots: View {
     }
 }
 
-// MARK: - 1. Welcome Page
-private struct WelcomePage: View {
-    let goToNext: () -> Void
-
-    @State private var mascotScale: CGFloat = 0.7
-    @State private var mascotOpacity: Double = 0
-    @State private var brandRevealOffset: CGFloat = 30
-    @State private var brandOpacity: Double = 0
-    @State private var sloganOpacity: Double = 0
-    @State private var ctaOpacity: Double = 0
-    @State private var pulse: CGFloat = 1.0
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            // Hero brand reveal
-            VStack(spacing: 28) {
-                ZStack {
-                    Circle()
-                        .stroke(ONETokens.oneInk.opacity(0.06), lineWidth: 1)
-                        .frame(width: 220, height: 220)
-                        .scaleEffect(pulse)
-                    Circle()
-                        .stroke(ONETokens.oneInk.opacity(0.04), lineWidth: 1)
-                        .frame(width: 170, height: 170)
-                        .scaleEffect(pulse * 0.95)
-
-                    OneMascotView(pose: .hi, size: 130)
-                        .scaleEffect(mascotScale)
-                        .opacity(mascotOpacity)
-                }
-
-                VStack(spacing: 12) {
-                    Text("ONE")
-                        .editorialXL()
-                        .fontWeight(.bold)
-                        .tracking(-2.0)
-                        .foregroundColor(ONETokens.oneInk)
-                        .offset(y: brandRevealOffset)
-                        .opacity(brandOpacity)
-
-                    Text(NSLocalizedString("onboarding.slogan", comment: ""))
-                        .monoBase(tracking: 1.4)
-                        .foregroundColor(ONETokens.oneAsh)
-                        .opacity(sloganOpacity)
-                }
-            }
-
-            Spacer()
-
-            VStack(spacing: 8) {
-                Button(action: goToNext) {
-                    Text(NSLocalizedString("onboarding.welcome.cta", comment: ""))
-                        .bodySMMedium()
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 17)
-                        .background(
-                            LinearGradient(
-                                colors: [ONETokens.oneBrand, ONETokens.oneBrandLight],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(16)
-                }
-
-                Text(NSLocalizedString("onboarding.welcome.subnote", comment: ""))
-                    .monoLabel()
-                    .foregroundColor(ONETokens.oneStone)
-                    .padding(.top, 6)
-            }
-            .opacity(ctaOpacity)
-            .padding(.horizontal, 28)
-            .padding(.bottom, 56)
-        }
-        .onAppear {
-            withAnimation(.spring(response: 0.7, dampingFraction: 0.7).delay(0.1)) {
-                mascotScale = 1.0
-                mascotOpacity = 1
-            }
-            withAnimation(.easeOut(duration: 0.6).delay(0.45)) {
-                brandRevealOffset = 0
-                brandOpacity = 1
-            }
-            withAnimation(.easeOut(duration: 0.5).delay(0.75)) {
-                sloganOpacity = 1
-            }
-            withAnimation(.easeOut(duration: 0.5).delay(1.05)) {
-                ctaOpacity = 1
-            }
-            withAnimation(.easeInOut(duration: 3.5).repeatForever(autoreverses: true)) {
-                pulse = 1.06
-            }
-        }
-    }
-}
-
-// MARK: - 2. Promise Page (Animated mood cycle)
-private struct PromisePage: View {
-    let goBack: () -> Void
-    let goToNext: () -> Void
-
-    @State private var moodIndex: Int = 0
-    @State private var contentOpacity: Double = 0
-    @State private var timerCancellable: AnyCancellable?
-    private let cycleMoods: [ONEMood] = [.sakin, .isikli, .derin, .nostaljik, .uzgun, .taze, .yorgun, .ozgur, .enerjik, .stresli, .sinirli, .atesli]
-
-    private var currentMood: ONEMood { cycleMoods[moodIndex % cycleMoods.count] }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            BackButton(action: goBack)
-                .padding(.top, 56)
-
-            Spacer()
-
-            VStack(alignment: .center, spacing: 36) {
-                // Big animated mood orb
-                ZStack {
-                    Circle()
-                        .fill(currentMood.color.opacity(0.18))
-                        .frame(width: 240, height: 240)
-                        .blur(radius: 12)
-
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [currentMood.color, currentMood.color.opacity(0.65)],
-                                center: .topLeading,
-                                startRadius: 20,
-                                endRadius: 220
-                            )
-                        )
-                        .frame(width: 180, height: 180)
-                        .shadow(color: currentMood.color.opacity(0.45), radius: 30, y: 14)
-
-                    Text(currentMood.label)
-                        .editorialMD()
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .contentTransition(.opacity)
-                        .id("label-\(moodIndex)")
-                }
-                .frame(maxWidth: .infinity)
-                .animation(.easeInOut(duration: 0.6), value: moodIndex)
-
-                VStack(spacing: 14) {
-                    Text(NSLocalizedString("onboarding.promise.title", comment: ""))
-                        .displayLG()
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(ONETokens.oneInk)
-                        .lineSpacing(4)
-                        .tracking(-0.6)
-
-                    Text(NSLocalizedString("onboarding.promise.sub", comment: ""))
-                        .monoBase()
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(ONETokens.oneAsh)
-                        .lineSpacing(6)
-                        .padding(.horizontal, 12)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .opacity(contentOpacity)
-
-            Spacer()
-
-            PrimaryButton(title: NSLocalizedString("onboarding.continueShort", comment: ""), action: goToNext)
-                .padding(.bottom, 56)
-                .opacity(contentOpacity)
-        }
-        .padding(.horizontal, 28)
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.6).delay(0.1)) {
-                contentOpacity = 1
-            }
-            timerCancellable = Timer.publish(every: 1.2, on: .main, in: .common)
-                .autoconnect()
-                .sink { _ in
-                    withAnimation(.easeInOut(duration: 0.6)) {
-                        moodIndex = (moodIndex + 1) % cycleMoods.count
-                    }
-                }
-        }
-        .onDisappear {
-            timerCancellable?.cancel()
-            timerCancellable = nil
-        }
-    }
-}
-
-// MARK: - 3. Tutorial Intro
-private struct TutorialIntroPage: View {
-    let goBack: () -> Void
-    let goToNext: () -> Void
-
-    @State private var mascotOpacity: Double = 0
-    @State private var titleOpacity: Double = 0
-    @State private var stepsOpacity: Double = 0
-    @State private var ctaOpacity: Double = 0
-
-    private struct TutorialStep {
-        let number: String
-        let title: String
-        let body: String
-    }
-    private var steps: [TutorialStep] {
-        [
-            .init(number: "1", title: NSLocalizedString("onboarding.tutorial.step1.title", comment: ""),
-                  body: NSLocalizedString("onboarding.tutorial.step1.body", comment: "")),
-            .init(number: "2", title: NSLocalizedString("onboarding.tutorial.step2.title", comment: ""),
-                  body: NSLocalizedString("onboarding.tutorial.step2.body", comment: "")),
-            .init(number: "3", title: NSLocalizedString("onboarding.tutorial.step3.title", comment: ""),
-                  body: NSLocalizedString("onboarding.tutorial.step3.body", comment: "")),
-        ]
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            BackButton(action: goBack)
-                .padding(.top, 56)
-
-            Spacer()
-
-            VStack(alignment: .leading, spacing: 28) {
-                OneMascotView(pose: .oneMusic, size: 96)
-                    .opacity(mascotOpacity)
-
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(NSLocalizedString("onboarding.tutorial.intro.title", comment: ""))
-                        .displayLG()
-                        .foregroundColor(ONETokens.oneInk)
-                        .lineSpacing(4)
-                        .tracking(-0.7)
-
-                    Text(NSLocalizedString("onboarding.tutorial.intro.sub", comment: ""))
-                        .monoBase()
-                        .foregroundColor(ONETokens.oneAsh)
-                        .lineSpacing(6)
-                }
-                .opacity(titleOpacity)
-
-                VStack(alignment: .leading, spacing: 18) {
-                    ForEach(Array(steps.enumerated()), id: \.offset) { idx, s in
-                        HStack(alignment: .top, spacing: 14) {
-                            ZStack {
-                                Circle()
-                                    .fill(ONETokens.oneInk)
-                                    .frame(width: 28, height: 28)
-                                Text(s.number)
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(ONETokens.oneCream)
-                            }
-
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(s.title)
-                                    .bodySMMedium()
-                                    .foregroundColor(ONETokens.oneInk)
-                                Text(s.body)
-                                    .monoSM()
-                                    .foregroundColor(ONETokens.oneAsh)
-                            }
-                            Spacer()
-                        }
-                        .opacity(stepsOpacity)
-                        .offset(y: stepsOpacity == 1 ? 0 : 12)
-                        .animation(
-                            .easeOut(duration: 0.45).delay(0.05 * Double(idx)),
-                            value: stepsOpacity
-                        )
-                    }
-                }
-                .padding(.top, 4)
-            }
-
-            Spacer()
-
-            PrimaryButton(title: NSLocalizedString("onboarding.tutorial.intro.cta", comment: ""), action: goToNext)
-                .padding(.bottom, 56)
-                .opacity(ctaOpacity)
-        }
-        .padding(.horizontal, 28)
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.5).delay(0.1)) { mascotOpacity = 1 }
-            withAnimation(.easeOut(duration: 0.5).delay(0.25)) { titleOpacity = 1 }
-            withAnimation(.easeOut(duration: 0.5).delay(0.4)) { stepsOpacity = 1 }
-            withAnimation(.easeOut(duration: 0.5).delay(0.85)) { ctaOpacity = 1 }
-        }
-    }
-}
-
-// MARK: - 4. Tutorial: Mood Pick (interactive)
-private struct TutorialMoodPickPage: View {
-    @Binding var selectedMood: ONEMood?
-    let goBack: () -> Void
-    let goToNext: () -> Void
-
-    @State private var contentOpacity: Double = 0
-    private let columns = [GridItem(.adaptive(minimum: 64, maximum: 80), spacing: 14)]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            BackButton(action: goBack)
-                .padding(.top, 56)
-
-            Spacer().frame(height: 8)
-
-            VStack(alignment: .leading, spacing: 14) {
-                StepBadge(text: NSLocalizedString("onboarding.tutorial.stepBadge.1", comment: ""))
-
-                Text(NSLocalizedString("onboarding.moodPick.title", comment: ""))
-                    .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
-                    .lineSpacing(4)
-                    .tracking(-0.7)
-
-                Text(NSLocalizedString("onboarding.moodPick.sub", comment: ""))
-                    .monoBase()
-                    .foregroundColor(ONETokens.oneAsh)
-                    .lineSpacing(6)
-            }
-
-            LazyVGrid(columns: columns, spacing: 14) {
-                ForEach(Array(ONEMood.allCases.enumerated()), id: \.element) { idx, mood in
-                    MoodSwatch(mood: mood, isSelected: selectedMood == mood) {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                            selectedMood = mood
-                        }
-                    }
-                    .opacity(contentOpacity)
-                    .scaleEffect(contentOpacity == 1 ? 1 : 0.85)
-                    .animation(
-                        .spring(response: 0.5, dampingFraction: 0.75)
-                            .delay(0.04 * Double(idx)),
-                        value: contentOpacity
-                    )
-                }
-            }
-            .padding(.top, 28)
-
-            if let mood = selectedMood {
-                HStack(spacing: 8) {
-                    Circle().fill(mood.color).frame(width: 10, height: 10)
-                    Text(mood.label.capitalized)
-                        .bodySMMedium()
-                        .foregroundColor(ONETokens.oneInk)
-                    Text("·")
-                        .foregroundColor(ONETokens.oneAsh)
-                    Text(mood.meaning)
-                        .monoSM()
-                        .foregroundColor(ONETokens.oneAsh)
-                }
-                .padding(.top, 18)
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
-
-            Spacer()
-
-            PrimaryButton(
-                title: NSLocalizedString("onboarding.moodPick.continue", comment: ""),
-                action: goToNext,
-                disabled: selectedMood == nil
-            )
-            .padding(.bottom, 56)
-            .opacity(contentOpacity)
-        }
-        .padding(.horizontal, 28)
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.4)) {
-                contentOpacity = 1
-            }
-        }
-    }
-}
-
-private struct MoodSwatch: View {
-    let mood: ONEMood
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 6) {
-                Circle()
-                    .fill(mood.color)
-                    .frame(width: 52, height: 52)
-                    .overlay(
-                        Circle()
-                            .stroke(ONETokens.oneInk, lineWidth: isSelected ? 2.5 : 0)
-                            .padding(-3)
-                    )
-                    .scaleEffect(isSelected ? 1.08 : 1.0)
-                    .shadow(color: mood.color.opacity(isSelected ? 0.45 : 0.0), radius: 12, y: 5)
-
-                Text(mood.label)
-                    .font(.system(size: 10, weight: isSelected ? .semibold : .regular))
-                    .foregroundColor(isSelected ? ONETokens.oneInk : ONETokens.oneAsh)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
-        }
-        .accessibilityLabel(mood.label)
-        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
-    }
-}
-
-// MARK: - 5. Tutorial: Reveal Card
-private struct TutorialRevealPage: View {
-    let mood: ONEMood
-    let goToNext: () -> Void
-
-    @State private var cardOpacity: Double = 0
-    @State private var cardScale: CGFloat = 0.88
-    @State private var cardRotation: Double = -3
-    @State private var titleOpacity: Double = 0
-    @State private var subOpacity: Double = 0
-    @State private var ctaOpacity: Double = 0
-    @State private var sparkle: Bool = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Spacer().frame(height: 56)
-
-            HStack {
-                StepBadge(text: NSLocalizedString("onboarding.tutorial.stepBadge.2", comment: ""))
-                Spacer()
-            }
-
-            Spacer()
-
-            // The "magic" share card
-            ZStack {
-                // Sparkle decoration
-                ForEach(0..<6, id: \.self) { i in
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 4, height: 4)
-                        .offset(
-                            x: [-90, 100, -120, 110, -70, 130][i],
-                            y: [-180, -160, -50, -40, 60, 90][i]
-                        )
-                        .opacity(sparkle ? 0.85 : 0)
-                        .scaleEffect(sparkle ? 1 : 0.4)
-                        .animation(
-                            .easeOut(duration: 0.7).delay(0.4 + Double(i) * 0.06),
-                            value: sparkle
-                        )
-                }
-
-                MoodPreviewCard(mood: mood)
-                    .frame(maxWidth: 280)
-                    .scaleEffect(cardScale)
-                    .rotationEffect(.degrees(cardRotation))
-                    .opacity(cardOpacity)
-                    .shadow(color: mood.color.opacity(0.35), radius: 36, y: 18)
-            }
-            .frame(maxWidth: .infinity)
-
-            Spacer()
-
-            VStack(alignment: .leading, spacing: 12) {
-                Text(NSLocalizedString("onboarding.reveal.title", comment: ""))
-                    .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
-                    .lineSpacing(4)
-                    .tracking(-0.7)
-                    .opacity(titleOpacity)
-
-                Text(NSLocalizedString("onboarding.reveal.sub", comment: ""))
-                    .monoBase()
-                    .foregroundColor(ONETokens.oneAsh)
-                    .lineSpacing(6)
-                    .opacity(subOpacity)
-            }
-
-            PrimaryButton(title: NSLocalizedString("onboarding.reveal.continue", comment: ""), action: goToNext)
-                .padding(.top, 24)
-                .padding(.bottom, 56)
-                .opacity(ctaOpacity)
-        }
-        .padding(.horizontal, 28)
-        .onAppear {
-            withAnimation(.spring(response: 0.7, dampingFraction: 0.72).delay(0.1)) {
-                cardOpacity = 1
-                cardScale = 1
-                cardRotation = 0
-            }
-            withAnimation(.easeOut(duration: 0.5).delay(0.55)) { titleOpacity = 1 }
-            withAnimation(.easeOut(duration: 0.5).delay(0.7))  { subOpacity = 1 }
-            withAnimation(.easeOut(duration: 0.5).delay(0.9))  { ctaOpacity = 1 }
-            sparkle = true
-        }
-    }
-}
-
-private struct MoodPreviewCard: View {
-    let mood: ONEMood
-
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 28)
-                .fill(
-                    LinearGradient(
-                        colors: [mood.color.opacity(0.95), mood.color.opacity(0.55)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .aspectRatio(0.72, contentMode: .fit)
-
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("ONE")
-                        .monoSM(tracking: 1.6)
-                        .foregroundColor(.white.opacity(0.85))
-                    Spacer()
-                    Text(currentDateString())
-                        .monoLabel()
-                        .foregroundColor(.white.opacity(0.7))
-                }
-                Spacer()
-                Text(mood.label)
-                    .editorialLG()
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
-                Text(mood.meaning)
-                    .monoBase(tracking: 0.1)
-                    .foregroundColor(.white.opacity(0.85))
-            }
-            .padding(24)
-        }
-    }
-
-    private func currentDateString() -> String {
-        let f = DateFormatter()
-        f.dateFormat = "d MMM"
-        f.locale = Locale.current
-        return f.string(from: Date()).uppercased()
-    }
-}
-
-// MARK: - 6. Music Permission
-private struct MusicPermissionPage: View {
-    let goBack: () -> Void
-    let goToNext: () -> Void
-
-    @State private var contentOpacity: Double = 0
-    @State private var isConnecting = false
-    @State private var musicConnected = false
-    @State private var showDeniedAlert = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            BackButton(action: goBack)
-                .padding(.top, 56)
-
-            Spacer().frame(height: 8)
-
-            VStack(alignment: .leading, spacing: 14) {
-                Text(NSLocalizedString("onboarding.music.title", comment: ""))
-                    .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
-                    .lineSpacing(4)
-                    .tracking(-0.7)
-
-                Text(NSLocalizedString("onboarding.music.sub", comment: ""))
-                    .monoBase()
-                    .foregroundColor(ONETokens.oneAsh)
-                    .lineSpacing(6)
-            }
-
-            ServiceButton(
-                icon: "♪",
-                iconBg: "#FC3C44",
-                name: "Apple Music",
-                desc: musicConnected ? NSLocalizedString("onboarding.connected", comment: "") : NSLocalizedString("onboarding.noSubscriptionHint", comment: ""),
-                action: connectAppleMusic,
-                isConnected: musicConnected
-            )
-            .padding(.top, 28)
-
-            VStack(alignment: .leading, spacing: 10) {
-                InfoPill(icon: "checkmark.circle.fill", color: ONETokens.oneSystemRed,
-                         text: NSLocalizedString("onboarding.noSubscriptionRequired", comment: ""))
-                InfoPill(icon: "lock.fill", color: ONETokens.oneAsh,
-                         text: NSLocalizedString("onboarding.noDataSelling", comment: ""))
-                InfoPill(icon: "music.note", color: ONETokens.oneStone,
-                         text: NSLocalizedString("onboarding.spotifyAlsoWorks", comment: ""))
-            }
-            .padding(.top, 20)
-
-            Spacer()
-
-            VStack(spacing: 10) {
-                // P1.1 — Müzik bağlama opsiyonel. Connected state'te primary "Başla";
-                // değilse primary "Bağla ve Başla" + secondary "Şimdilik geç" — kullanıcı
-                // bilinçli karar versin, friction permission ekranındakine düşmesin.
-                PrimaryButton(
-                    title: musicConnected
-                        ? NSLocalizedString("onboarding.startConnected", comment: "")
-                        : NSLocalizedString("onboarding.music.connectAndStart", comment: ""),
-                    action: musicConnected ? goToNext : connectAppleMusic,
-                    fillColor: musicConnected ? ONETokens.oneSystemRed : ONETokens.oneInk
-                )
-
-                if !musicConnected {
-                    Button(action: {
-                        AppAnalytics.shared.track(.onboardingMusicConnected(granted: false))
-                        goToNext()
-                    }) {
-                        Text(NSLocalizedString("onboarding.music.skipForNow", comment: ""))
-                            .monoSM(tracking: 0.6)
-                            .foregroundColor(ONETokens.oneAsh)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                    }
-                    .accessibilityLabel(NSLocalizedString("onboarding.music.skipForNow", comment: ""))
-                }
-            }
-            .padding(.bottom, 56)
-        }
-        .padding(.horizontal, 28)
-        .opacity(contentOpacity)
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.45)) { contentOpacity = 1 }
-            if UserDefaults.standard.string(forKey: "preferredMusicService") == "AppleMusic" {
-                musicConnected = true
-            }
-        }
-        .alert("Apple Music", isPresented: $showDeniedAlert) {
-            Button(NSLocalizedString("general.ok", comment: ""), role: .cancel) { }
-        } message: {
-            Text(NSLocalizedString("onboarding.appleMusicDenied", comment: ""))
-        }
-    }
-
-    private func connectAppleMusic() {
-        isConnecting = true
-        Task {
-            let status = await MusicAuthorization.request()
-            await MainActor.run {
-                isConnecting = false
-                if status == .authorized {
-                    UserDefaults.standard.set("AppleMusic", forKey: "preferredMusicService")
-                    AppAnalytics.shared.track(.onboardingMusicConnected(granted: true))
-                    withAnimation(.easeOut(duration: ONEAnimation.durationShort)) {
-                        musicConnected = true
-                    }
-                } else {
-                    AppAnalytics.shared.track(.onboardingMusicConnected(granted: false))
-                    showDeniedAlert = true
-                }
-            }
-        }
-    }
-}
-
-// MARK: - 7. Notification Soft Ask
-private struct NotificationSoftAskPage: View {
-    @Binding var optIn: Bool
-    let complete: () -> Void
-
-    @State private var contentOpacity: Double = 0
-    @State private var reminderTime: Date = {
-        let storedHour = UserDefaults.standard.integer(forKey: "dailyReminderHour")
-        var comps = DateComponents()
-        comps.hour = storedHour == 0 ? 21 : storedHour
-        comps.minute = UserDefaults.standard.integer(forKey: "dailyReminderMinute")
-        return Calendar.current.date(from: comps) ?? Date()
-    }()
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Spacer().frame(height: 56)
-
-            Spacer()
-
-            VStack(alignment: .leading, spacing: 16) {
-                OneMascotView(pose: .sitHi, size: 96)
-
-                Text(NSLocalizedString("onboarding.notif.title", comment: ""))
-                    .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
-                    .lineSpacing(4)
-                    .tracking(-0.7)
-
-                Text(NSLocalizedString("onboarding.notif.sub", comment: ""))
-                    .monoBase()
-                    .foregroundColor(ONETokens.oneAsh)
-                    .lineSpacing(6)
-
-                // P1.6 — Streak freeze açıklaması. Kullanıcı bir gün
-                // kaçırdığında serisi sıfırlanmaz; haftada bir freeze hediye.
-                // Kayıp korkusu yumuşar → dönüş cesareti artar.
-                HStack(spacing: 8) {
-                    Image(systemName: "snowflake")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(ONETokens.oneBrand)
-                    Text(NSLocalizedString("onboarding.notif.freezeHint", comment: ""))
-                        .monoSM(tracking: 0.4)
-                        .foregroundColor(ONETokens.oneStone)
-                        .lineSpacing(3)
-                }
-                .padding(.top, 4)
-
-                HStack {
-                    Text(NSLocalizedString("onboarding.notif.reminderTime", comment: ""))
-                        .monoSM(tracking: 0.4)
-                        .foregroundColor(ONETokens.oneStone)
-                    Spacer()
-                    DatePicker("", selection: $reminderTime, displayedComponents: .hourAndMinute)
-                        .labelsHidden()
-                        .colorScheme(.light)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(ONETokens.onePaper)
-                )
-                .padding(.top, 4)
-            }
-
-            Spacer()
-
-            VStack(spacing: 10) {
-                Button(action: {
-                    let cal = Calendar.current
-                    let hour = cal.component(.hour, from: reminderTime)
-                    let minute = cal.component(.minute, from: reminderTime)
-                    UserDefaults.standard.set(hour, forKey: "dailyReminderHour")
-                    UserDefaults.standard.set(minute, forKey: "dailyReminderMinute")
-                    optIn = true
-                    AppAnalytics.shared.track(.onboardingNotifSoftAsk(optIn: true))
-                    complete()
-                }) {
-                    Text(NSLocalizedString("onboarding.notif.yes", comment: ""))
-                        .bodySMMedium()
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 17)
-                        .background(
-                            LinearGradient(
-                                colors: [ONETokens.oneBrand, ONETokens.oneBrandLight],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(16)
-                }
-
-                Button(action: {
-                    optIn = false
-                    AppAnalytics.shared.track(.onboardingNotifSoftAsk(optIn: false))
-                    complete()
-                }) {
-                    Text(NSLocalizedString("onboarding.notif.no", comment: ""))
-                        .monoSM(tracking: 1.4)
-                        .foregroundColor(ONETokens.oneAsh)
-                        .padding(.vertical, 12)
-                }
-            }
-            .padding(.bottom, 56)
-        }
-        .padding(.horizontal, 28)
-        .opacity(contentOpacity)
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.45)) { contentOpacity = 1 }
-        }
-    }
-}
-
-// MARK: - Shared Buttons / Components
-
-private struct PrimaryButton: View {
-    let title: String
-    let action: () -> Void
-    var disabled: Bool = false
-    var fillColor: Color = ONETokens.oneInk
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .monoSM(tracking: 1.4)
-                .foregroundColor(ONETokens.oneCream)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 17)
-                .background(disabled ? ONETokens.oneAsh.opacity(0.4) : fillColor)
-                .cornerRadius(16)
-        }
-        .disabled(disabled)
-    }
-}
-
-private struct BackButton: View {
-    let action: () -> Void
-
-    var body: some View {
-        HStack {
-            Button(action: action) {
-                Text(NSLocalizedString("onboarding.back", comment: ""))
-                    .monoSM(tracking: 1.4)
-                    .foregroundColor(ONETokens.oneAsh)
-                    .padding(.vertical, 4)
-            }
-            Spacer()
-        }
-    }
-}
-
-private struct StepBadge: View {
-    let text: String
-    var body: some View {
-        Text(text)
-            .monoLabel()
-            .tracking(1.4)
-            .foregroundColor(ONETokens.oneAsh)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(
-                Capsule().fill(ONETokens.oneCreamMid)
-            )
-    }
-}
-
-private struct InfoPill: View {
-    let icon: String
-    let color: Color
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(color)
-                .frame(width: 20)
-            Text(text)
-                .monoSM()
-                .foregroundColor(ONETokens.oneAsh)
-        }
-    }
-}
-
-struct ServiceButton: View {
-    let icon: String
-    let iconBg: String
-    let name: String
-    let desc: String
-    let action: () -> Void
-    let isConnected: Bool
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 14) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color(hex: iconBg))
-                        .frame(width: 36, height: 36)
-
-                    Text(icon)
-                        .font(.system(size: 18))
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(name)
-                        .monoBase(tracking: -0.1)
-                        .foregroundColor(ONETokens.oneInk)
-                    Text(desc)
-                        .monoSM()
-                        .foregroundColor(isConnected ? ONETokens.spotifyGreen : ONETokens.oneAsh)
-                }
-
-                Spacer()
-
-                if isConnected {
-                    Text("✓")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(ONETokens.spotifyGreen)
-                } else {
-                    Text("›")
-                        .font(.system(size: 20))
-                        .foregroundColor(ONETokens.oneAsh)
-                }
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 16)
-            .background(isConnected ? ONETokens.oneCreamMid.opacity(0.5) : ONETokens.oneCreamMid)
-            .cornerRadius(14)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(isConnected ? ONETokens.spotifyGreen.opacity(0.3) : Color.clear, lineWidth: 2)
-            )
-        }
-        .disabled(isConnected)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(name). \(desc)")
-        .accessibilityAddTraits(isConnected ? [.isSelected] : [])
-    }
-}
 
 #Preview {
     OnboardingView(isCompleted: .constant(false))
