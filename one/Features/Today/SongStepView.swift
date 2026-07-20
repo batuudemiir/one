@@ -22,23 +22,12 @@ struct SongStepView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                Text(dateEyebrow.uppercased())
-                    .font(ONETypography.monoMicro)
-                    .tracking(1.4)
-                    .foregroundStyle(ONETokens.oneMist)
-                    .padding(.bottom, 8)
-
-                Text("Bugünün şarkısı ne?")
-                    .font(ONETypography.displayMD)
-                    .fontWeight(.semibold)
-                    .tracking(-0.36)
-                    .foregroundStyle(ONETokens.oneVoid)
-                    .padding(.bottom, 6)
-
-                Text("Şu an çalan, gün boyu dönüp duran, ya da bugünü en iyi anlatan.")
-                    .font(ONETypography.bodyXS)
-                    .foregroundStyle(ONETokens.oneAsh)
-                    .padding(.bottom, 16)
+                // Prototipte tek satır soru var — tarih eyebrow'u ve
+                // açıklama cümlesi ritüelin ikinci adımını yavaşlatıyordu.
+                Text("bugünün şarkısı?")
+                    .displayMD()
+                    .foregroundStyle(ONETokens.oneInk)
+                    .padding(.bottom, ONETokens.spacingMD)
 
                 if let track = nowPlaying.currentTrack {
                     nowPlayingBanner(track: track)
@@ -48,19 +37,10 @@ struct SongStepView: View {
                 searchField
                     .padding(.top, 8)
 
-                if searchText.isEmpty {
-                    if !vm.recentArtists.isEmpty {
-                        recentArtistsSection
-                            .padding(.top, 16)
-                    }
-                    if vm.isLoadingRecommendations {
-                        recommendedSongsLoadingView
-                            .padding(.top, 16)
-                    } else if !vm.recommendedSongs.isEmpty {
-                        recommendedSongsSection
-                            .padding(.top, 16)
-                    }
-                }
+                // "Son sanatçılar" ve "SANA YAKIN" blokları kaldırıldı:
+                // prototipte adım arama + liste, o kadar. Öneriler seçimi
+                // hızlandırmıyor, erteliyordu — kullanıcı zaten aklındaki
+                // şarkıyı aramaya geliyor. (Bölümlerin kodu duruyor.)
 
                 if !vm.searchResults.isEmpty {
                     searchResultsList
