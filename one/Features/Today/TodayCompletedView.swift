@@ -397,14 +397,9 @@ struct TodayCompletedView: View {
                             
                             // Weather & Share info
                             HStack(spacing: ONETokens.spacingMD) {
-                                HStack(spacing: 5) {
-                                    Text(displayedEntry.weatherIcon)
-                                        .font(.system(size: 11))
-                                    Text(displayedEntry.weatherDesc)
-                                        .monoLabel()
-                                        .foregroundColor(ONETokens.oneCharcoal)
-                                }
-                                
+                                // Hava durumu kaldırıldı — prototipte yok ve
+                                // kaydın anlamına bir şey katmıyordu.
+
                                 if displayedEntry.shareWithCircle {
                                     HStack(spacing: 5) {
                                         Text("🌍")
@@ -467,26 +462,8 @@ struct TodayCompletedView: View {
 
                             // Action buttons
                             VStack(spacing: 10) {
-                                // Primary row — Keşfet (full width, prominent)
-                                Button(action: {
-                                    ONEHaptics.feelingSelected()
-                                    NotificationManager.shared.shouldNavigateToDiscovery = true
-                                }) {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "sparkles")
-                                            .monoBase().fontWeight(.semibold)
-                                        Text(NSLocalizedString("notification.openDiscovery", comment: ""))
-                                            .bodySMMedium()
-                                    }
-                                    .foregroundColor(ONETokens.oneCream)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                                    .background(Capsule().fill(displayedEntry.moodColor))
-                                }
-                                .accessibilityLabel(NSLocalizedString("notification.openDiscovery", comment: ""))
-                                .accessibilityHint(NSLocalizedString("accessibility.discovery.eventHint", comment: "Mood'unuza göre etkinlik ve müzik önerileri"))
-                                .accessibilityAddTraits(.isButton)
-
+                                // Keşfet butonu kaldırıldı — prototipte kaydedildi
+                                // ekranının tek birincil eylemi "frekansa dön".
                                 // Secondary row — Kaydet, Paylaş, Ekle
                                 HStack(spacing: 8) {
                                     if displayedEntry.photoURL != nil {
@@ -566,6 +543,35 @@ struct TodayCompletedView: View {
                         value: appeared
                     )
 
+                    // Prototipteki kapanış: ayraç + "frekansa dön".
+                    // Bu ekranda hiç çıkış kontrolü yoktu — kullanıcı ancak
+                    // sekme çubuğundan kaçabiliyordu.
+                    if let onReturnToCircle {
+                        Rectangle()
+                            .fill(ONETokens.oneInk.opacity(0.09))
+                            .frame(height: 1)
+                            .padding(.horizontal, ONETokens.spacingXL2)
+                            .padding(.top, ONETokens.spacingXL)
+
+                        Button(action: onReturnToCircle) {
+                            Text(NSLocalizedString("today.backToFrequency", comment: ""))
+                                .bodySMMedium()
+                                .foregroundColor(ONETokens.oneInk)
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .background(
+                                    Capsule(style: .continuous)
+                                        .stroke(ONETokens.oneInk.opacity(0.14), lineWidth: 1.5)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, ONETokens.spacingXL2)
+                        .padding(.top, ONETokens.spacingXL)
+                    }
+
+                    // Buradan aşağısı prototipte yok: gerçek özellikler,
+                    // ama prototipin kapanışından SONRA. Ekran yukarıdan
+                    // aşağı prototip gibi okunsun, hiçbir şey kaybolmasın.
+
                     // Kendi paylaşımıma gelen yorumlar — v3
                     if CommentsFeatureFlag.isEnabled,
                        let myUserID = CloudKitManager.shared.currentUser?["userID"] as? String,
@@ -636,31 +642,6 @@ struct TodayCompletedView: View {
                                     : ONEAnimation.panelSpring.delay(0.5),
                                 value: appeared
                             )
-                    }
-
-                    // Prototipteki kapanış: ayraç + "frekansa dön".
-                    // Bu ekranda hiç çıkış kontrolü yoktu — kullanıcı ancak
-                    // sekme çubuğundan kaçabiliyordu.
-                    if let onReturnToCircle {
-                        Rectangle()
-                            .fill(ONETokens.oneInk.opacity(0.09))
-                            .frame(height: 1)
-                            .padding(.horizontal, ONETokens.spacingXL2)
-                            .padding(.top, ONETokens.spacingXL)
-
-                        Button(action: onReturnToCircle) {
-                            Text(NSLocalizedString("today.backToFrequency", comment: ""))
-                                .bodySMMedium()
-                                .foregroundColor(ONETokens.oneInk)
-                                .frame(maxWidth: .infinity, minHeight: 44)
-                                .background(
-                                    Capsule(style: .continuous)
-                                        .stroke(ONETokens.oneInk.opacity(0.14), lineWidth: 1.5)
-                                )
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal, ONETokens.spacingXL2)
-                        .padding(.top, ONETokens.spacingXL)
                     }
 
                     Spacer().frame(height: 24)
