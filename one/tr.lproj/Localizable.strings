@@ -1229,3 +1229,15 @@ bir gün.";
 "onboarding.entry.brandBody" = "her akşam arkadaşlarının ne renk olduğunu gör. sen de kendininkini bırak.";
 "onboarding.entry.notifTitle" = "yarın da hatırlatayım mı?";
 "onboarding.entry.notifBody" = "akşam 21:00'de tek bir sessiz hatırlatma. istediğin an kapatabilirsin.";
+
+"archive.yearView" = "yıl görünümü";
+"year.title" = "bir yıl";
+"year.subtitle" = "%d gün işaretlendi. %d gün boş — sorun değil.";
+"year.colours" = "renk";
+"year.poster" = "poster";
+"year.shapeLabel" = "yılın şekli";
+"year.shapeFormat" = "En dolu ayın %@. Baskın rengin %@.";
+"day.edit" = "düzenle";
+"day.note" = "notun";
+"day.photo" = "fotoğraf";
+"day.circleThatDay" = "o gün çevren";

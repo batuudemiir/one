@@ -1086,3 +1086,15 @@ one day.";
 "onboarding.entry.brandBody" = "every evening, see what colour your friends are. leave yours too.";
 "onboarding.entry.notifTitle" = "remind you tomorrow?";
 "onboarding.entry.notifBody" = "one quiet reminder at 9pm. turn it off whenever you like.";
+
+"archive.yearView" = "Jahresansicht";
+"year.title" = "ein Jahr";
+"year.subtitle" = "%d Tage markiert. %d Tage leer — das ist okay.";
+"year.colours" = "Farben";
+"year.poster" = "Poster";
+"year.shapeLabel" = "die Form des Jahres";
+"year.shapeFormat" = "Dein vollster Monat ist %@. Deine dominante Farbe ist %@.";
+"day.edit" = "bearbeiten";
+"day.note" = "deine Notiz";
+"day.photo" = "Foto";
+"day.circleThatDay" = "dein Kreis an dem Tag";

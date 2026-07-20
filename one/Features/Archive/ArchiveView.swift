@@ -12,6 +12,11 @@ import CoreData
 struct ArchiveContainerView: View {
     @StateObject private var archiveStore: ArchiveStore
 
+    /// Alt ekranlar. Prototipte arşiv → yıl → gün üç kademeli bir iniş;
+    /// sekme çubuğu bu ekranlarda kalıyor (sheet değil, aynı yığın).
+    @State private var showYear = false
+    @State private var selectedDay: DailyEntry? = nil
+
     init(context: NSManagedObjectContext) {
         _archiveStore = StateObject(wrappedValue: ArchiveStore(context: context))
     }
@@ -25,10 +30,33 @@ struct ArchiveContainerView: View {
             } else {
                 ArchiveMosaicView(
                     months: archiveStore.yearData,
-                    lastYearToday: archiveStore.lastYearToday
+                    lastYearToday: archiveStore.lastYearToday,
+                    onDayTap: { selectedDay = $0 },
+                    onYearTap: { showYear = true }
                 )
             }
+
+            if showYear {
+                YearOverviewView(
+                    months: archiveStore.yearData,
+                    onBack: { showYear = false }
+                )
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+                .zIndex(1)
+            }
+
+            if let day = selectedDay {
+                DayDetailView(
+                    entry: day,
+                    onBack: { selectedDay = nil },
+                    circleColors: []
+                )
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+                .zIndex(2)
+            }
         }
+        .animation(.spring(response: 0.4, dampingFraction: 0.86), value: showYear)
+        .animation(.spring(response: 0.4, dampingFraction: 0.86), value: selectedDay)
         .task { await archiveStore.loadDataAsync() }
         .onReceive(NotificationCenter.default.publisher(for: .init("todaySongSaved"))) { _ in
             Task { await archiveStore.loadDataAsync() }

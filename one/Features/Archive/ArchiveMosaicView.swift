@@ -13,6 +13,10 @@ import SwiftUI
 struct ArchiveMosaicView: View {
     let months: [MonthSummary]
     let lastYearToday: DailyEntry?
+    /// Bir güne dokunulduğunda o günün detayı açılır.
+    var onDayTap: ((DailyEntry) -> Void)? = nil
+    /// Sağ üstteki yıl görünümü.
+    var onYearTap: (() -> Void)? = nil
 
     /// Prototip `.mosaic`: 7 sütun, 4pt aralık, kare hücreler, 5pt köşe.
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
@@ -28,9 +32,22 @@ struct ArchiveMosaicView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                Text(NSLocalizedString("archive.title", comment: ""))
-                    .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
+                HStack(alignment: .firstTextBaseline) {
+                    Text(NSLocalizedString("archive.title", comment: ""))
+                        .displayLG()
+                        .foregroundColor(ONETokens.oneInk)
+
+                    Spacer()
+
+                    if let onYearTap {
+                        Button(action: onYearTap) {
+                            Text(NSLocalizedString("archive.yearView", comment: ""))
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(ONETokens.oneBrand)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
 
                 Text(NSLocalizedString("archive.subtitle", comment: ""))
                     .bodySM()
@@ -80,19 +97,26 @@ struct ArchiveMosaicView: View {
 
     @ViewBuilder
     private func cell(for day: Int, in month: MonthSummary) -> some View {
-        let color = entryColor(day: day, month: month)
+        let entry = entryFor(day: day, month: month)
 
-        RoundedRectangle(cornerRadius: 5, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: 5, style: .continuous)
             // Boş gün silinmez, soluk kalır: ritmin nerede koptuğu da veri.
-            .fill(color ?? ONETokens.oneInk.opacity(0.05))
-            .accessibilityLabel(accessibilityLabel(day: day, month: month))
+            .fill(entry?.moodColor ?? ONETokens.oneInk.opacity(0.05))
+
+        if let entry, let onDayTap {
+            Button { onDayTap(entry) } label: { shape }
+                .buttonStyle(.plain)
+                .accessibilityLabel(accessibilityLabel(day: day, month: month))
+        } else {
+            shape.accessibilityLabel(accessibilityLabel(day: day, month: month))
+        }
     }
 
-    private func entryColor(day: Int, month: MonthSummary) -> Color? {
+    private func entryFor(day: Int, month: MonthSummary) -> DailyEntry? {
         guard let date = Calendar.current.date(
             from: DateComponents(year: month.year, month: month.month, day: day)
         ) else { return nil }
-        return month.primaryEntry(for: date)?.moodColor
+        return month.primaryEntry(for: date)
     }
 
     private func accessibilityLabel(day: Int, month: MonthSummary) -> String {
