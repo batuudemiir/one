@@ -38,14 +38,31 @@ enum PrimaryTab: CaseIterable {
         }
     }
 
-    /// SF Symbol — prototipteki glif karşılıkları.
-    /// ◎ frekans dalgası · ▦ mozaik ızgara · ◠ yankı dalgası · ◍ avatar
-    var icon: String {
+    /// Prototipteki glif: ◎ frekans · ▦ arşiv · ◠ yankı · ◍ profil.
+    ///
+    /// SF Symbols kullanılmıyor — denenen karşılıklar
+    /// (`dot.radiowaves.left.and.right`, `waveform`, `person.crop.circle`)
+    /// prototipin soyut geometrisi yerine wifi dalgası, ses çubuğu ve
+    /// insan silüeti çiziyordu. Glifler `TabGlyphView` ile çiziliyor.
+    var glyph: TabGlyph {
         switch self {
-        case .circle:  return "dot.radiowaves.left.and.right"
-        case .archive: return "square.grid.3x3.fill"
+        case .circle:  return .frequency
+        case .archive: return .archive
+        case .echo:    return .echo
+        case .profile: return .profile
+        }
+    }
+
+    /// Native `TabView`'ın `Tab(systemImage:)` API'si bir sembol adı zorunlu
+    /// kılıyor. O çubuk gizli (yerine `BottomNavigation` çiziliyor), yani bu
+    /// semboller **hiç görünmüyor** — sadece derleyiciyi memnun ediyorlar.
+    /// Görünen simgeler için `glyph`'e bak.
+    var nativeTabSymbol: String {
+        switch self {
+        case .circle:  return "circle.circle"
+        case .archive: return "square.grid.3x3"
         case .echo:    return "waveform"
-        case .profile: return "person.crop.circle"
+        case .profile: return "person.circle"
         }
     }
 

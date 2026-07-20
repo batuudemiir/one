@@ -53,7 +53,7 @@ struct BottomNavigation: View {
             ForEach(tabs, id: \.self) { tab in
                 NavItem(
                     title: tab.title,
-                    icon: tab.icon,
+                    glyph: tab.glyph,
                     isSelected: isSelected(tab.screen),
                     badge: tab == .circle ? cloudKitManager.unseenFriendShareCount : 0
                 ) {
@@ -104,7 +104,7 @@ struct BottomNavigation: View {
 /// ayrı bir çubuk/nokta yok — renk ve ağırlık farkı yeterli.
 struct NavItem: View {
     let title: String
-    let icon: String
+    let glyph: TabGlyph
     let isSelected: Bool
     var badge: Int = 0
     let action: () -> Void
@@ -113,8 +113,7 @@ struct NavItem: View {
         Button(action: action) {
             VStack(spacing: 4) {
                 ZStack(alignment: .topTrailing) {
-                    Image(systemName: icon)
-                        .font(.system(size: 16, weight: isSelected ? .semibold : .regular))
+                    TabGlyphView(glyph: glyph, isSelected: isSelected)
 
                     if badge > 0 {
                         Circle()

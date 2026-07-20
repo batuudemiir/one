@@ -200,17 +200,17 @@ struct ONEColorPickerView: View {
                 )
                     .badge(cloudKit.unseenFriendShareCount)
             } label: {
-                Label(PrimaryTab.circle.title, systemImage: PrimaryTab.circle.icon)
+                Label(PrimaryTab.circle.title, systemImage: PrimaryTab.circle.nativeTabSymbol)
             }
-            Tab(PrimaryTab.archive.title, systemImage: PrimaryTab.archive.icon,
+            Tab(PrimaryTab.archive.title, systemImage: PrimaryTab.archive.nativeTabSymbol,
                 value: PrimaryTab.archive.screen) {
                 ArchiveContainerView(context: viewContext)
             }
-            Tab(PrimaryTab.echo.title, systemImage: PrimaryTab.echo.icon,
+            Tab(PrimaryTab.echo.title, systemImage: PrimaryTab.echo.nativeTabSymbol,
                 value: PrimaryTab.echo.screen) {
                 EchoView(context: viewContext)
             }
-            Tab(PrimaryTab.profile.title, systemImage: PrimaryTab.profile.icon,
+            Tab(PrimaryTab.profile.title, systemImage: PrimaryTab.profile.nativeTabSymbol,
                 value: PrimaryTab.profile.screen) {
                 ProfileView(isFromTab: true)
             }
