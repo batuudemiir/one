@@ -99,39 +99,42 @@ extension CircleView {
                             .monoSM(tracking: 1.2)
                             .foregroundColor(Color(hex: moodColorHex))
                     }
-                    Spacer()
-                    streakBadge(days: localCurrentStreak, colorHex: moodColorHex)
+                    Spacer(minLength: 4)
                     if !time.isEmpty {
                         Text(time)
                             .monoLabel(tracking: 0.5)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(ONETokens.oneStone)
                     }
                 }
                 if hasSong {
-                    Text(songName)
-                        .bodySM()
-                        .foregroundColor(ONETokens.oneInk)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                    Text(artistName)
-                        .monoBase()
+                    Text("\(songName) — \(artistName)")
+                        .font(.system(size: 12.5))
                         .foregroundColor(ONETokens.oneAsh)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                    if let recordName = userShare?.recordID.recordName {
-                        CommentCountPill(shareRecordName: recordName, moodColorHex: moodColorHex)
-                            .padding(.top, 2)
-                    }
+                        .truncationMode(.tail)
                 } else {
                     Text(NSLocalizedString("circle.shareToday", comment: ""))
-                        .bodySM()
+                        .font(.system(size: 12.5))
                         .foregroundColor(ONETokens.oneAsh)
                         .padding(.top, 2)
                 }
             }
         }
-        .padding(ONETokens.spacingLG)
-        .liquidGlass(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding(.horizontal, 15)
+        .padding(.vertical, 13)
+        // Kendi kartı: prototipte marka renginde kesikli çerçeve — listede
+        // "sen" satırı arkadaşlardan ayrışsın ama öne çıkmasın.
+        .background(
+            RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
+                .fill(ONETokens.oneBrand.opacity(0.045))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
+                .strokeBorder(
+                    ONETokens.oneBrand.opacity(0.30),
+                    style: StrokeStyle(lineWidth: 1, dash: [5, 4])
+                )
+        )
         .contentShape(Rectangle())
         .onTapGesture {
             ONEHaptics.feelingSelected()
@@ -163,56 +166,48 @@ extension CircleView {
         let name = data.user["displayName"] as? String ?? "?"
         let initial = String(name.prefix(1)).uppercased()
 
-        // Çevre Yankısı — kullanıcının bugünkü rengiyle karşılaştır
-        let myMoodColorHex = userShare?["moodColor"] as? String ?? ""
-        let isResonant = hasSong && !myMoodColorHex.isEmpty
-            && Color.hsbHueDifference(hex1: myMoodColorHex, hex2: moodColorHex) <= 20.0
         let time = getTimeString(from: data.share?["createdAt"] as? Date)
-        let friendStreak = data.share?["currentStreak"] as? Int ?? 0
         let photoAsset = data.share?["photoAsset"] as? CKAsset
         let photoFileURL = photoAsset?.fileURL
         let profilePhotoAsset = data.user["profilePhoto"] as? CKAsset
         let profilePhotoURL = profilePhotoAsset?.fileURL
 
-        let isUnseen = isUnseenShare(data)
-        let friendIsPremium = data.user["isPremium"] as? Int64 == 1
-
-        return HStack(spacing: ONETokens.spacingLG) {
-            // Avatar: daily photo > profile photo > mood color circle
+        return HStack(spacing: 13) {
+            // Prototipteki `.ring`: 46pt halka ve 4pt dışında aynı renkte
+            // %22 opak ikinci bir çember. İkinci çember rengi taşırıyor —
+            // kart sakin kalırken kişi ayrışıyor.
             Group {
                 if let photoURL = photoFileURL,
                    let uiImg = UIImage(contentsOfFile: photoURL.path) {
                     Image(uiImage: uiImg)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 44, height: 44)
+                        .frame(width: 46, height: 46)
                         .clipShape(Circle())
-                        .overlay(
-                            Circle()
-                                .stroke(Color(hex: moodColorHex).opacity(0.5), lineWidth: 1.5)
-                        )
                 } else if let profileURL = profilePhotoURL,
                           let uiImg = UIImage(contentsOfFile: profileURL.path) {
                     Image(uiImage: uiImg)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 44, height: 44)
+                        .frame(width: 46, height: 46)
                         .clipShape(Circle())
-                        .overlay(
-                            Circle()
-                                .stroke(Color(hex: moodColorHex).opacity(0.3), lineWidth: 1)
-                        )
                 } else {
                     Circle()
                         .fill(hasSong ? Color(hex: moodColorHex) : ONETokens.oneStone)
-                        .frame(width: 44, height: 44)
+                        .frame(width: 46, height: 46)
                         .overlay(
                             Text(initial)
-                                .displayXS()
-                                .foregroundColor(.white.opacity(hasSong ? 0.9 : 0.5))
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(.white)
                         )
                 }
             }
+            .overlay(
+                Circle()
+                    .stroke(hasSong ? Color(hex: moodColorHex) : ONETokens.oneStone, lineWidth: 1.5)
+                    .opacity(0.22)
+                    .padding(-4)
+            )
             .onTapGesture {
                 ONEHaptics.feelingSelected()
                 AppAnalytics.shared.track(.friendShareViewed)
@@ -222,87 +217,65 @@ extension CircleView {
                     selectedFriendData = data
                 }
             }
-            .overlay(alignment: .topTrailing) {
-                if isUnseen {
-                    Circle()
-                        .fill(Color(hex: moodColorHex))
-                        .frame(width: 11, height: 11)
-                        .overlay(Circle().stroke(ONETokens.oneCream, lineWidth: 2))
-                        .offset(x: 2, y: -2)
-                        .accessibilityHidden(true) // Okunmamış nokta — metin label'da belirtiliyor
-                } else if friendIsPremium {
-                    // ONE+ premium crown badge
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundStyle(.white)
-                        .padding(3)
-                        .background(
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [ONETokens.oneBrand, ONETokens.oneBrandLight],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                        )
-                        .overlay(Circle().stroke(ONETokens.oneCream, lineWidth: 1.5))
-                        .offset(x: 3, y: -3)
-                        .accessibilityHidden(true) // Premium rozeti — metin label'da belirtiliyor
-                }
-            }
 
+            // Prototipte kart üç şey söylüyor: kim, ne hissetti, ne dinledi.
+            // Streak rozeti, rezonans pill'i, premium tacı ve yorum sayacı
+            // dördüncü-beşinci-altıncı bilgilerdi; kaldırıldılar. (Kodları
+            // duruyor — yorumlara giriş `FriendShareDetailView`'da.)
             VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
-                    Text(name.uppercased())
-                        .monoSM(tracking: 1.4)
-                        .foregroundColor(ONETokens.oneCharcoal)
+                HStack(spacing: 7) {
+                    Text(name)
+                        .font(.system(size: 14.5, weight: .semibold))
+                        .foregroundColor(ONETokens.oneInk)
+                        .lineLimit(1)
+
                     if hasSong && !moodWord.isEmpty {
-                        Circle()
-                            .fill(Color(hex: moodColorHex))
-                            .frame(width: 5, height: 5)
-                        Text(moodWord)
-                            .monoSM(tracking: 1.0)
-                            .foregroundColor(Color(hex: moodColorHex).opacity(0.85))
+                        Text(moodWord.lowercased())
+                            .font(.system(size: 10.5, weight: .semibold))
+                            .foregroundColor(Color(hex: moodColorHex))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                    .fill(Color(hex: moodColorHex).opacity(0.14))
+                            )
                     }
-                    // Çevre Yankısı rozeti
-                    if isResonant {
-                        resonancePill(myHex: myMoodColorHex, friendHex: moodColorHex)
-                    }
-                    Spacer()
-                    if hasSong { streakBadge(days: friendStreak, colorHex: moodColorHex) }
+
+                    Spacer(minLength: 4)
+
                     if !time.isEmpty {
                         Text(time)
                             .monoLabel(tracking: 0.5)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(ONETokens.oneStone)
                     }
                 }
+
                 if hasSong {
-                    Text(songName)
-                        .bodyMD()
-                        .foregroundColor(ONETokens.oneInk)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                    Text(artistName)
-                        .monoSM()
+                    // Tek satır: "şarkı — sanatçı". İki ayrı satır kartı
+                    // uzatıyor ve listede ritmi bozuyordu.
+                    Text("\(songName) — \(artistName)")
+                        .font(.system(size: 12.5))
                         .foregroundColor(ONETokens.oneAsh)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                    if let shareRecordName = data.share?.recordID.recordName {
-                        CommentCountPill(shareRecordName: shareRecordName, moodColorHex: moodColorHex)
-                            .padding(.top, 2)
-                    }
+                        .truncationMode(.tail)
                 } else {
                     Text(NSLocalizedString("circle.notSharedYet", comment: ""))
-                        .bodySM()
+                        .font(.system(size: 12.5))
                         .foregroundColor(ONETokens.oneAsh)
-                        .padding(.top, 1)
                 }
             }
         }
-        .padding(14)
+        .padding(.horizontal, 15)
+        .padding(.vertical, 13)
         .opacity(hasSong ? 1.0 : 0.75)
-        .liquidGlass(.regular, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(
+            RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
+                .fill(Color.white.opacity(0.78))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
+                .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+        )
         .contentShape(Rectangle())
         .onTapGesture {
             ONEHaptics.feelingSelected()
@@ -324,9 +297,9 @@ extension CircleView {
                 parts.append(songName)
                 parts.append(artistName)
                 if !time.isEmpty { parts.append(time) }
-                if isUnseen { parts.append(NSLocalizedString("accessibility.circle.unseen", comment: "")) }
-                if isResonant { parts.append(NSLocalizedString("accessibility.circle.resonant", comment: "")) }
-                if friendIsPremium { parts.append(NSLocalizedString("accessibility.circle.premium", comment: "")) }
+                // Görülmedi / rezonans / premium anonsları kaldırıldı —
+                // karşılıkları artık kartta çizilmiyor, VoiceOver görsele
+                // uymayan bilgi vermemeli.
             } else {
                 parts.append(NSLocalizedString("circle.notSharedYet", comment: ""))
             }

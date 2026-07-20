@@ -1202,3 +1202,5 @@ bir şey kaçırmadın.";
 "today.yourColourIs" = "senin rengin: ";
 "today.seeYouTomorrow" = "yarın da görelim.";
 "today.backToFrequency" = "frekansa dön";
+
+"circle.counterFormat" = "%d/%d arkadaşın bugün paylaştı";

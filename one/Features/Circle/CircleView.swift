@@ -77,6 +77,22 @@ struct CircleView: View {
 
     private var totalNotificationCount: Int { CircleNotificationStore.shared.unreadCount }
 
+    /// Başlığın altındaki tek satır. Eskiden iki ayrı yerde aynı bilgi
+    /// vardı: üstte "5/7 paylaştı", başlığın altında "5/7 kişi bugün
+    /// seçimini paylaştı." Tek satıra indirildi.
+    private var counterText: String {
+        let sharedCount = friendsShares.filter {
+            !($0.share?["songName"] as? String ?? "").isEmpty
+        }.count
+        let total = friendsShares.count
+
+        guard total > 0 else { return dynamicSubtitle }
+        return String(
+            format: NSLocalizedString("circle.counterFormat", comment: ""),
+            sharedCount, total
+        )
+    }
+
     private var dynamicSubtitle: String {
         let sharedCount = friendsShares.filter {
             !($0.share?["songName"] as? String ?? "").isEmpty
@@ -316,9 +332,9 @@ struct CircleView: View {
             Image(systemName: "person.badge.plus")
                 .font(.system(size: 15, weight: .medium))
                 .foregroundColor(ONETokens.oneAsh)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .background(Capsule().fill(ONETokens.oneSilver.opacity(0.9)))
+                .frame(width: 34, height: 34)
+                .background(Circle().fill(Color.white.opacity(0.6)))
+                .overlay(Circle().stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1))
         }
         .buttonStyle(ScaleButtonStyle())
         .accessibilityLabel(NSLocalizedString("accessibility.circle.addFriend", comment: ""))
@@ -359,14 +375,13 @@ struct CircleView: View {
                     .font(.system(size: 15, weight: .medium))
                     .symbolRenderingMode(totalNotificationCount > 0 ? .hierarchical : .monochrome)
                     .foregroundColor(totalNotificationCount > 0 ? ONETokens.oneInk : ONETokens.oneAsh)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
+                    .frame(width: 34, height: 34)
                     .background(
-                        Capsule()
-                            .fill(totalNotificationCount > 0
-                                  ? ONETokens.oneCreamLow
-                                  : ONETokens.oneSilver.opacity(0.9))
+                        Circle().fill(totalNotificationCount > 0
+                                      ? ONETokens.oneCreamLow
+                                      : Color.white.opacity(0.6))
                     )
+                    .overlay(Circle().stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1))
 
                 if totalNotificationCount > 0 {
                     ZStack {
@@ -393,45 +408,31 @@ struct CircleView: View {
     // MARK: - Header Section
 
     private var headerSection: some View {
+        // Prototip sırası: önce büyük başlık, HEMEN ALTINDA mono sayaç.
+        // Kodda tersiydi — sayaç başlıktan önce geliyordu ve ekranın ilk
+        // okunan şeyi bir kesir oluyordu.
         VStack(alignment: .leading, spacing: ONETokens.spacingSM) {
-            HStack {
-                // Paylaşım sayacı — sadece arkadaş varsa göster
-                if !friendsShares.isEmpty {
-                    let sharedCount = friendsShares.filter { ($0.share?["songName"] as? String)?.isEmpty == false }.count
-                    Text("\(sharedCount)/\(friendsShares.count) paylaştı")
-                        .monoSM(tracking: 1.5)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(NSLocalizedString("circle.title", comment: ""))
+                        .displayLG()
+                        .foregroundColor(ONETokens.oneInk)
+
+                    Text(counterText)
+                        .monoLabel(tracking: 0.5)
                         .foregroundColor(ONETokens.oneAsh)
+                        .animation(ONEAnimation.micro, value: counterText)
                 }
 
                 Spacer()
 
-                // Prototipte arkadaşsız ekranda tek bir "+" var. Dört ikon,
-                // hiçbirinin henüz karşılığı olmayan bir hesapta gürültü —
-                // tek iş arkadaş eklemek.
-                if hasNoCircleYet {
+                // Prototipte iki yuvarlak buton: ekle ve bildirim.
+                // Keşfet ve hızlı-ekle başlıktan kalktı — Keşfet'in kendi
+                // sekmesi, hızlı-eklenin ortadaki FAB'ı var.
+                HStack(spacing: 7) {
                     addFriendHeaderButton
-                } else {
-                    discoverHeaderButton
-                    addFriendHeaderButton
-                    quickAddHeaderButton
-                    notificationsHeaderButton
+                    if !hasNoCircleYet { notificationsHeaderButton }
                 }
-            }
-
-            Text(NSLocalizedString("circle.title", comment: ""))
-                .displayLG()
-                .foregroundColor(ONETokens.oneInk)
-
-            Text(dynamicSubtitle)
-                .bodySM()
-                .foregroundColor(ONETokens.oneAsh)
-                .animation(ONEAnimation.micro, value: dynamicSubtitle)
-
-            if unseenShareCount > 0 {
-                Text("↑ \(unseenShareCount) yeni paylaşım")
-                    .monoSM(tracking: 1.0)
-                    .foregroundColor(ONETokens.oneBrand)
-                    .transition(.move(edge: .top).combined(with: .opacity))
             }
 
             // Faz 3 — kendi haftalık ritmin. Arkadaşların renkleri aşağıda,
@@ -446,7 +447,7 @@ struct CircleView: View {
             }
         }
         .padding(.top, ONETokens.spacingXL4)
-        .padding(.horizontal, ONETokens.spacingXL2)
+        .padding(.horizontal, ONETokens.spacingXL)
         .padding(.bottom, 0)
     }
     
@@ -454,14 +455,10 @@ struct CircleView: View {
     
     private var cloudSection: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 10) {
-                // ── ÇEVRE RİTMİ ──────────────────────────────────
-                if !rhythmEntries.isEmpty {
-                    CircleRhythmStrip(entries: rhythmEntries)
-                        .scaleEffect(bubblesVisible ? 1.0 : 0.92)
-                        .opacity(bubblesVisible ? 1.0 : 0)
-                        .animation(ONEAnimation.cardSpring, value: bubblesVisible)
-                }
+            VStack(spacing: 9) {
+                // Çevre ritmi şeridi kaldırıldı: aynı streak sayısı ekranda
+                // üç kez görünüyordu (header'daki WeekRhythmView, bu şerit,
+                // her karttaki rozet). Ritim tek yerde — header'da.
 
                 // ── SEN ──────────────────────────────────────────
                 senCard
@@ -507,7 +504,7 @@ struct CircleView: View {
                         value: bubblesVisible
                     )
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, ONETokens.spacingXL)
             .padding(.top, ONETokens.spacingLG)
             .padding(.bottom, 100)
         }

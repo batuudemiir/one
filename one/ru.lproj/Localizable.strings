@@ -1060,3 +1060,5 @@
 "today.yourColourIs" = "твой цвет: ";
 "today.seeYouTomorrow" = "до завтра.";
 "today.backToFrequency" = "назад к частоте";
+
+"circle.counterFormat" = "%d/%d друзей поделились сегодня";

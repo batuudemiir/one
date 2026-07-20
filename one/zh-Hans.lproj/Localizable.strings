@@ -1057,3 +1057,5 @@
 "today.yourColourIs" = "你的颜色：";
 "today.seeYouTomorrow" = "明天见。";
 "today.backToFrequency" = "返回频率";
+
+"circle.counterFormat" = "%d/%d 位好友今天分享了";

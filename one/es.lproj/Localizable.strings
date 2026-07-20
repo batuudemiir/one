@@ -1059,3 +1059,5 @@ no te perdiste nada.";
 "today.yourColourIs" = "tu color: ";
 "today.seeYouTomorrow" = "hasta mañana.";
 "today.backToFrequency" = "volver a frecuencia";
+
+"circle.counterFormat" = "%d/%d amigos compartieron hoy";

@@ -1185,3 +1185,5 @@ you missed nothing.";
 "today.yourColourIs" = "your colour: ";
 "today.seeYouTomorrow" = "see you tomorrow.";
 "today.backToFrequency" = "back to frequency";
+
+"circle.counterFormat" = "%d/%d friends shared today";

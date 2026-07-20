@@ -1060,3 +1060,5 @@
 "today.yourColourIs" = "너의 색: ";
 "today.seeYouTomorrow" = "내일 또 보자.";
 "today.backToFrequency" = "프리퀀시로 돌아가기";
+
+"circle.counterFormat" = "친구 %d/%d명이 오늘 공유했어";

@@ -1059,3 +1059,5 @@ du hast nichts verpasst.";
 "today.yourColourIs" = "deine Farbe: ";
 "today.seeYouTomorrow" = "bis morgen.";
 "today.backToFrequency" = "zurück zur Frequenz";
+
+"circle.counterFormat" = "%d/%d Freunde haben heute geteilt";

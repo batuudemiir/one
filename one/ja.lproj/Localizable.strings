@@ -1059,3 +1059,5 @@
 "today.yourColourIs" = "きみの色：";
 "today.seeYouTomorrow" = "また明日。";
 "today.backToFrequency" = "フリークエンシーに戻る";
+
+"circle.counterFormat" = "友だち%d/%d人が今日シェアした";
