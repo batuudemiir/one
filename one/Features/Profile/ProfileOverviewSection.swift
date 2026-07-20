@@ -21,6 +21,10 @@ struct ProfileOverviewSection: View {
     @Binding var showSettings: Bool
 
     @State private var showMilestones = false
+    /// Prototip 28-29. Eski ayarlar sağdan kayan bir overlay'di
+    /// (`ProfileSettingsSection`); prototipte kendi ekranı.
+    @State private var showSettingsScreen = false
+    @State private var showReminder = false
 
     @State private var stats: ProfileStats = .empty
 
@@ -44,6 +48,21 @@ struct ProfileOverviewSection: View {
         }
         .padding(.horizontal, ONETokens.spacingXL)
         .task { stats = await ProfileStats.load(context: context) }
+        .fullScreenCover(isPresented: $showSettingsScreen) {
+            SettingsRootView(
+                vm: vm,
+                onBack: { showSettingsScreen = false },
+                onReminder: {
+                    showSettingsScreen = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showReminder = true }
+                },
+                onMusic: { showSettingsScreen = false; showSettings = true },
+                onPrivacy: { showSettingsScreen = false; showSettings = true }
+            )
+        }
+        .fullScreenCover(isPresented: $showReminder) {
+            ReminderSettingsView(vm: vm, onBack: { showReminder = false })
+        }
         .sheet(isPresented: $showMilestones) {
             MilestonesView(
                 totalEntries: stats.totalEntries,
@@ -166,7 +185,7 @@ struct ProfileOverviewSection: View {
     private var settingsRows: some View {
         VStack(spacing: 7) {
             row("bell", NSLocalizedString("profile.row.reminder", comment: ""), reminderText) {
-                showSettings = true
+                showReminder = true
             }
             row("music.note", NSLocalizedString("profile.row.musicSource", comment: ""), musicPlatform) {
                 showSettings = true
@@ -180,7 +199,7 @@ struct ProfileOverviewSection: View {
                 showFriendsList = true
             }
             row("gearshape", NSLocalizedString("profile.row.settings", comment: ""), nil) {
-                showSettings = true
+                showSettingsScreen = true
             }
         }
     }
