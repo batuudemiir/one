@@ -12,42 +12,49 @@ struct WhatsNewView: View {
     @State private var contentVisible = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// Bu sürümde gerçekten değişenler.
+    ///
+    /// Eski liste bayat kalmakla kalmıyor, artık **var olmayan** şeyleri
+    /// anlatıyordu: "16 Şarkı Önerisi" (öneri bloğu ritüelden kaldırıldı),
+    /// "Gelişmiş Kamera" (foto artık ritüelin adımı değil), "Kayıt
+    /// Kutlaması" (beş varyant tek imzayla değiştirildi). Yeniliklerde
+    /// olmayan bir özelliği vaat etmek en pahalı hata türü.
     private let features: [WhatsNewFeature] = [
         .init(
-            icon: "bubble.left.and.bubble.right.fill",
+            icon: "dot.radiowaves.left.and.right",
+            color: Color(hex: "#26A69A"),
+            title: "Frekans artık açılışta",
+            body: "Uygulamayı açtığında önce arkadaşlarının\nbugünkü rengini görüyorsun."
+        ),
+        .init(
+            icon: "circle.hexagongrid.fill",
+            color: Color(hex: "#E63946"),
+            title: "İki adımda bitiyor",
+            body: "Renk seç, şarkı seç, bırak.\nFotoğraf ve not artık isteğe bağlı."
+        ),
+        .init(
+            icon: "chart.dots.scatter",
             color: Color(hex: "#5B8DEF"),
-            title: "Yorum Sistemi",
-            body: "Arkadaşlarının paylaşımlarına yorum yap.\nAnı birlikte hisset."
+            title: "Haftalık ritim",
+            body: "Hedef her gün değil, haftada dört gün.\nKaçırdığın günü sonradan doldurabilirsin."
         ),
         .init(
-            icon: "bell.badge.fill",
-            color: Color(hex: "#E63946"),
-            title: "Akıllı Bildirimler",
-            body: "Yorum, beğeni ve çevre etkileşimlerini\nanında gör."
-        ),
-        .init(
-            icon: "camera.fill",
-            color: Color(hex: "#4CAF82"),
-            title: "Gelişmiş Kamera",
-            body: "Daha hızlı, daha temiz fotoğraf deneyimi.\nYeni filtreler."
-        ),
-        .init(
-            icon: "music.note.list",
+            icon: "waveform.circle.fill",
             color: Color(hex: "#7C5CBF"),
-            title: "16 Şarkı Önerisi",
-            body: "Bugün için 16 kişisel öneri.\nHer gün sıfırdan yenilenir."
+            title: "Yeni kayıt anı",
+            body: "Rengini bıraktığında ekran\nbir dalgayla karşılık veriyor."
         ),
         .init(
-            icon: "sparkles",
+            icon: "square.grid.3x3.fill",
             color: Color(hex: "#F4A228"),
-            title: "Kayıt Kutlaması",
-            body: "Mood'unu kaydettiğinde seni\nözel bir an karşılıyor."
+            title: "Arşiv mozaiği",
+            body: "Aylar tek akışta, renk renk.\nGeçen yıl bugün ne hissettiğini de görüyorsun."
         ),
         .init(
-            icon: "play.circle.fill",
-            color: Color(hex: "#E63946"),
-            title: "Şarkı Önizleme",
-            body: "Şarkı seçiminde ve arkadaş paylaşımlarında\ndokunarak dinle."
+            icon: "flag.fill",
+            color: Color(hex: "#4CAF82"),
+            title: "Kilometre taşları",
+            body: "Neyi açtığını ve sırada ne olduğunu\nprofilinden görebilirsin."
         ),
     ]
 

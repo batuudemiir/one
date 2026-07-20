@@ -70,7 +70,10 @@ struct ContentView: View {
             if active {
                 ONELogger.debug("App became active, checking profile status", category: .general)
                 checkProfileStatus()
-                if WhatsNewManager.shared.shouldShow {
+                // Onboarding tamamlanmadan asla — savunma katmanı.
+                // `isActive` yalnız onboarding'den sonra true olabiliyor
+                // ama bu koşul o varsayımı koda bağlıyor.
+                if hasCompletedOnboarding && WhatsNewManager.shared.shouldShow {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                         showWhatsNew = true
                     }

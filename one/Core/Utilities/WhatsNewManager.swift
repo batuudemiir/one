@@ -13,10 +13,17 @@ final class WhatsNewManager {
 
     private let lastSeenVersionKey = "whatsNew_lastSeenVersion"
 
+    /// "Yenilikler" yalnız **güncelleyen** kullanıcıya gösterilir.
+    ///
+    /// Yeni kullanıcı için `markSeen()` onboarding'in sonunda çağrılıyor
+    /// (`OnboardingView.completeOnboarding`). Onboarding'den yeni çıkmış
+    /// birine "neler değişti" demek anlamsız — onun için her şey yeni.
+    ///
+    /// `lastSeen` nil kalırsa kullanıcı WhatsNew'dan önceki bir sürümden
+    /// güncelliyor demektir; ona gösterilir.
     var shouldShow: Bool {
-        let current = currentVersion
         let lastSeen = UserDefaults.standard.string(forKey: lastSeenVersionKey) ?? ""
-        return current.isNewerThan(lastSeen)
+        return currentVersion.isNewerThan(lastSeen)
     }
 
     func markSeen() {

@@ -263,6 +263,10 @@ struct OnboardingView: View {
                 isCompleted = true
             }
             KeychainHelper.set(true, forKey: "hasCompletedOnboarding")
+            // Onboarding'den yeni çıkan kullanıcıya "neler değişti" demek
+            // anlamsız — mevcut sürümü görülmüş say, ilk "Yenilikler"
+            // bir sonraki güncellemede çıksın.
+            WhatsNewManager.shared.markSeen()
             // Anahtar uyuşmazlığı düzeltildi: yazan taraf `preferredMusicService`
             // kullanıyordu, burası `selectedMusicPlatform` okuyordu — event
             // platformu hep "unknown" gidiyordu.
