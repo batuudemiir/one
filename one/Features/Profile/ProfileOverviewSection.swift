@@ -57,7 +57,11 @@ struct ProfileOverviewSection: View {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showReminder = true }
                 },
                 onMusic: { showSettingsScreen = false; showSettings = true },
-                onPrivacy: { showSettingsScreen = false; showSettings = true }
+                onPrivacy: { showSettingsScreen = false; showSettings = true },
+                onMilestones: {
+                    showSettingsScreen = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showMilestones = true }
+                }
             )
         }
         .fullScreenCover(isPresented: $showReminder) {
@@ -72,8 +76,6 @@ struct ProfileOverviewSection: View {
             .presentationDragIndicator(.visible)
         }
     }
-
-    private var unlockedCount: Int { BadgeManager.shared.unlocked.count }
 
     // MARK: Identity
 
@@ -190,11 +192,9 @@ struct ProfileOverviewSection: View {
             row("music.note", NSLocalizedString("profile.row.musicSource", comment: ""), musicPlatform) {
                 showSettings = true
             }
-            // Kilometre taşları: `BadgeGalleryView` yıllardır ölü koddu,
-            // rozetlerin hiçbir görünür yeri yoktu.
-            row("flag", NSLocalizedString("milestones.title", comment: ""), "\(unlockedCount)") {
-                showMilestones = true
-            }
+            // Kilometre taşları satırı kaldırıldı — prototip 26'da profil
+            // dört satır: hatırlatma, müzik kaynağı, arkadaşlar, ayarlar.
+            // MilestonesView'a giriş ayarların içine taşındı.
             row("person.2", NSLocalizedString("profile.row.friends", comment: ""), "\(vm.friendCount)") {
                 showFriendsList = true
             }

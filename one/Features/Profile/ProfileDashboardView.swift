@@ -57,6 +57,10 @@ struct ProfileDashboardView: View {
                 // Kimlik → üç sayı → renk karnesi → ayar satırları.
                 // Yankı/Aylık özet artık kendi sekmesinden ve ayarlardan
                 // ulaşılıyor; burada ikinci bir giriş noktası tutmuyoruz.
+                // Prototip 26: sayfada yüzen buton yok. Kişi-ekle avatara
+                // binen rozetti, dişli sağ üstteydi, altta marka footer'ı
+                // vardı — üçü de kalktı. Arkadaş ekleme "arkadaşlar"
+                // satırının açtığı ekranda, ayarlar kendi satırında.
                 VStack(alignment: .leading, spacing: 14) {
                     ProfileOverviewSection(
                         vm: vm,
@@ -64,12 +68,9 @@ struct ProfileDashboardView: View {
                         showFriendsList: $showFriendsList,
                         showSettings: $showSettings
                     )
-                    .padding(.top, 96)
+                    // Prototip `.scroll` üst boşluğu: 58pt.
+                    .padding(.top, 58)
                     .listItemEntrance(isVisible: appeared, index: 0)
-
-                    ProfileFooterSection(vm: vm)
-                        .padding(.top, 14)
-                        .listItemEntrance(isVisible: appeared, index: 1)
 
                     Spacer().frame(height: 116)
                 }
@@ -78,16 +79,6 @@ struct ProfileDashboardView: View {
             .background(palette.screenBG)
             .ignoresSafeArea(edges: .top)
             .frame(maxWidth: .infinity)
-
-            // ── Top bar overlay (sticky — zIndex ensures it stays above scroll content)
-            ProfileTopBarOverlay(
-                vm: vm,
-                showAddFriend: $showAddFriend,
-                showSettings: $showSettings
-            )
-            .opacity(appeared ? 1 : 0)
-            .animation(ONEAnimation.panelSpring.delay(0.20), value: appeared)
-            .zIndex(15)
 
             // ── Ayarlar full-screen sağdan kayar
             // Reduce Motion: slideTransition sadece opacity'ye düşer (offset/scale yok).

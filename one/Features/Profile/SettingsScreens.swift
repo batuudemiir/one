@@ -22,6 +22,9 @@ struct SettingsRootView: View {
     var onMusic: (() -> Void)? = nil
     var onPrivacy: (() -> Void)? = nil
     var onPaywall: (() -> Void)? = nil
+    /// Kilometre taşları profil listesinden çıktı (prototip 26'da profil
+    /// dört satır) — girişi artık burada.
+    var onMilestones: (() -> Void)? = nil
 
     var body: some View {
         SubScreen(title: NSLocalizedString("settings.title", comment: ""), onBack: onBack) {
@@ -49,6 +52,19 @@ struct SettingsRootView: View {
                         showsChevron: false,
                         isLast: true
                     )
+                }
+
+                if let onMilestones {
+                    sectionLabel(NSLocalizedString("milestones.title", comment: ""))
+                    SettingsGroup {
+                        SettingsRow(
+                            icon: "flag",
+                            title: NSLocalizedString("milestones.title", comment: ""),
+                            value: "\(BadgeManager.shared.unlocked.count)",
+                            isLast: true,
+                            action: onMilestones
+                        )
+                    }
                 }
 
                 sectionLabel(NSLocalizedString("settings.privacy", comment: ""))
