@@ -1098,3 +1098,13 @@ one day.";
 "day.note" = "deine Notiz";
 "day.photo" = "Foto";
 "day.circleThatDay" = "dein Kreis an dem Tag";
+
+"notif.title" = "Mitteilungen";
+"notif.markAllRead" = "alle gelesen";
+"notif.today" = "heute";
+"notif.thisWeek" = "diese Woche";
+"notif.earlier" = "früher";
+"notif.promise" = "ONE erinnert dich höchstens einmal am Tag. Keine Like- oder Kommentar-Mitteilungen.";
+"notif.emptyTitle" = "Noch keine Mitteilungen.";
+"notif.unread" = "ungelesen";
+"notif.now" = "jetzt";

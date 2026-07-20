@@ -1096,3 +1096,13 @@ one day.";
 "day.note" = "your note";
 "day.photo" = "photo";
 "day.circleThatDay" = "your circle that day";
+
+"notif.title" = "notifications";
+"notif.markAllRead" = "mark all read";
+"notif.today" = "today";
+"notif.thisWeek" = "this week";
+"notif.earlier" = "earlier";
+"notif.promise" = "ONE reminds you at most once a day. No like or comment notifications.";
+"notif.emptyTitle" = "No notifications yet.";
+"notif.unread" = "unread";
+"notif.now" = "now";

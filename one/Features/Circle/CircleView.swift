@@ -33,6 +33,9 @@ struct CircleView: View {
     @State var isLoading = false
     @State var showAddFriend = false
     @State var showFriendRequests = false
+    /// Prototip 22 — bildirim akışı. Zil artık istekleri değil tüm akışı
+    /// açıyor; istekler o akışın içinde bir tür.
+    @State var showNotifications = false
     @State var selectedShareItem: IdentifiableCKRecord? = nil
     @State var selectedFriendData: CloudKitManager.FriendCircleData? = nil
     @State var bubblesVisible = false
@@ -189,6 +192,15 @@ struct CircleView: View {
             }
         }
         .navigationBarHidden(true)
+        .fullScreenCover(isPresented: $showNotifications) {
+            NotificationFeedView(
+                onBack: { showNotifications = false },
+                onOpenUser: { uid in
+                    showNotifications = false
+                    selectedPublicProfileUserID = uid
+                }
+            )
+        }
         .sheet(isPresented: $showComeback, onDismiss: { EngagementTracker.consumeComeback() }) {
             ComebackView(
                 daysAway: comebackDays,
@@ -369,7 +381,7 @@ struct CircleView: View {
     }
 
     private var notificationsHeaderButton: some View {
-        Button(action: { showFriendRequests = true }) {
+        Button(action: { showNotifications = true }) {
             ZStack(alignment: .topTrailing) {
                 Image(systemName: totalNotificationCount > 0 ? "bell.badge.fill" : "bell")
                     .font(.system(size: 15, weight: .medium))

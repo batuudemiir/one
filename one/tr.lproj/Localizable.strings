@@ -1241,3 +1241,13 @@ bir gün.";
 "day.note" = "notun";
 "day.photo" = "fotoğraf";
 "day.circleThatDay" = "o gün çevren";
+
+"notif.title" = "bildirimler";
+"notif.markAllRead" = "okundu say";
+"notif.today" = "bugün";
+"notif.thisWeek" = "bu hafta";
+"notif.earlier" = "daha önce";
+"notif.promise" = "ONE günde en fazla bir kez hatırlatır. Beğeni ya da yorum bildirimi yok.";
+"notif.emptyTitle" = "Henüz bildirim yok.";
+"notif.unread" = "okunmadı";
+"notif.now" = "şimdi";
