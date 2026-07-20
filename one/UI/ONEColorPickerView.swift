@@ -67,7 +67,14 @@ struct ONEColorPickerView: View {
                             removal:   .opacity
                         ))
                 case .today:
-                    // Ritüel artık sekme değil — "+" ile açılan tam ekran eylem.
+                    // Ritüel bir sekme değil — "+" ile açılan tam ekran eylem.
+                    // Kendi üst çubuğu (✕ / nokta / "1/2") ve tamamlandı
+                    // ekranında "frekansa dön" var; `ONEColorPickerView`
+                    // fazladan bir ✕ eklemiyor (çift ✕ oluyordu).
+                    //
+                    // Geçiş de prototipin `vin` fade'i: alttan kayan
+                    // `.move(edge: .bottom)` bir modal/yeni-sekme hissi
+                    // veriyordu; prototipte ritüel yerinde beliren bir görünüm.
                     TodayView(
                         context: viewContext,
                         entryStep: $todayEntryStep,
@@ -75,11 +82,7 @@ struct ONEColorPickerView: View {
                             withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .circle }
                         }
                     )
-                        .overlay(alignment: .topLeading) { ritualDismissButton }
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal:   .move(edge: .bottom).combined(with: .opacity)
-                        ))
+                        .transition(.opacity)
                 default:
                     mainTabsView
                         .transition(.opacity)
@@ -192,21 +195,6 @@ struct ONEColorPickerView: View {
         customDockTabView
     }
 
-    /// Ritüel tam ekran açıldığı için kendi kapatma yolu gerekiyor.
-    private var ritualDismissButton: some View {
-        Button {
-            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = lastTab }
-        } label: {
-            Image(systemName: "xmark")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(ONETokens.oneAsh)
-                .frame(width: 44, height: 44)
-        }
-        .buttonStyle(PlainButtonStyle())
-        .padding(.leading, 8)
-        .padding(.top, 4)
-        .accessibilityLabel(NSLocalizedString("general.close", comment: ""))
-    }
 
     /// Prototipin dock'u: içerik + `BottomNavigation` (glifler + FAB).
     private var customDockTabView: some View {
