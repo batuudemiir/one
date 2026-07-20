@@ -180,66 +180,16 @@ struct ONEColorPickerView: View {
     // MARK: - Primary tabs view (Liquid Glass on iOS 26, legacy fallback below)
 
     @ViewBuilder
+    /// Sekme yüzeyi — tüm iOS sürümlerinde prototipin dock'u.
+    ///
+    /// Eskiden burada `if #available(iOS 26.0, *)` ile ikiye ayrılan bir
+    /// yol vardı: iOS 26+ Apple'ın native `TabView`'ını (SF Symbols'lı
+    /// Liquid Glass çubuk), altı `BottomNavigation`'ı kullanıyordu. Sonuç:
+    /// iOS 26/27 cihazlarda prototipin dock'u (◎ ▦ ◠ ◍ glifleri, ortadaki
+    /// FAB, krem gradyan) HİÇ görünmüyordu — native çubuk onu eziyordu.
+    /// Prototip artık varsayılan: tek yol, `BottomNavigation`.
     private var mainTabsView: some View {
-        if #available(iOS 26.0, *) {
-            liquidGlassTabView
-        } else {
-            legacyTabView
-        }
-    }
-
-    /// Native iOS 26 TabView — Apple's built-in Liquid Glass effect and
-    /// drag-to-select come for free. Each tab is declared with `Tab(...)`.
-    @available(iOS 26.0, *)
-    private var liquidGlassTabView: some View {
-        TabView(selection: tabBinding) {
-            Tab(value: PrimaryTab.circle.screen) {
-                CircleView(
-                    onNavigateToToday: { vm.currentScreen = .today },
-                    onNavigateToDiscover: { vm.currentScreen = .discover }
-                )
-                    .badge(cloudKit.unseenFriendShareCount)
-            } label: {
-                Label(PrimaryTab.circle.title, systemImage: PrimaryTab.circle.nativeTabSymbol)
-            }
-            Tab(PrimaryTab.archive.title, systemImage: PrimaryTab.archive.nativeTabSymbol,
-                value: PrimaryTab.archive.screen) {
-                ArchiveContainerView(context: viewContext)
-            }
-            Tab(PrimaryTab.echo.title, systemImage: PrimaryTab.echo.nativeTabSymbol,
-                value: PrimaryTab.echo.screen) {
-                EchoView(context: viewContext)
-            }
-            Tab(PrimaryTab.profile.title, systemImage: PrimaryTab.profile.nativeTabSymbol,
-                value: PrimaryTab.profile.screen) {
-                ProfileView(isFromTab: true)
-            }
-        }
-        .tint(ONETokens.oneRed)
-        // Native TabView'ın çubuğuna ortadan buton eklenemiyor. `safeAreaInset`
-        // kullanıyoruz: sabit padding'in aksine çubuğun gerçek yüksekliğine göre
-        // yer ayırır, böylece FAB ne çubuğu örter ne de içeriğin üstüne biner.
-        .safeAreaInset(edge: .bottom) {
-            ritualFAB.padding(.bottom, ONETokens.spacingSM)
-        }
-    }
-
-    /// Kalıcı birincil eylem: bugünkü rengini bırak.
-    /// Her sekmeden erişilebilir — brief'in 4. kırmızı çizgisi.
-    private var ritualFAB: some View {
-        Button {
-            ONEHaptics.tabSwitch()
-            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .today }
-        } label: {
-            Image(systemName: "plus")
-                .font(.system(size: 22, weight: .medium))
-                .foregroundColor(ONETokens.oneCream)
-                .frame(width: 58, height: 58)
-                .background(Circle().fill(ONETokens.oneInk))
-                .shadow(color: ONETokens.oneInk.opacity(0.32), radius: 12, x: 0, y: 6)
-        }
-        .buttonStyle(PlainButtonStyle())
-        .accessibilityLabel(NSLocalizedString("nav.todayHint", comment: ""))
+        customDockTabView
     }
 
     /// Ritüel tam ekran açıldığı için kendi kapatma yolu gerekiyor.
@@ -258,8 +208,8 @@ struct ONEColorPickerView: View {
         .accessibilityLabel(NSLocalizedString("general.close", comment: ""))
     }
 
-    /// iOS < 26: fall back to the custom floating bar we've had.
-    private var legacyTabView: some View {
+    /// Prototipin dock'u: içerik + `BottomNavigation` (glifler + FAB).
+    private var customDockTabView: some View {
         ZStack {
             Group {
                 switch vm.currentScreen {
@@ -294,27 +244,6 @@ struct ONEColorPickerView: View {
         }
     }
 
-    /// Bridges the native TabView selection to `vm.currentScreen` without
-    /// introducing a second source of truth.
-    ///
-    /// • get: if the VM's screen is one of the 5 tabs, use it. Otherwise
-    ///   (confirm/done/echo/search) coerce to the last known tab so TabView
-    ///   doesn't silently snap to its first tab.
-    /// • set: write straight into the VM (no mirror @State, no onChange hop).
-    ///
-    /// This avoids the AttributeGraph cycle caused by onChange writing back
-    /// into a separate @State that feeds the binding.
-    private var tabBinding: Binding<ScreenType> {
-        Binding<ScreenType>(
-            get: {
-                primaryTabs.contains(vm.currentScreen) ? vm.currentScreen : lastTab
-            },
-            set: { newValue in
-                guard vm.currentScreen != newValue else { return }
-                vm.currentScreen = newValue
-            }
-        )
-    }
 }
 
 // MARK: - Song Row Component
