@@ -1328,3 +1328,14 @@ bir gün.";
 "addFriend.scanWithCamera" = "kamerayla okut";
 "addFriend.contactsPrivacy" = "kişilerin telefonundan çıkmaz — sadece şifrelenmiş özetleri karşılaştırılır.";
 "addFriend.allowContacts" = "kişilere izin ver";
+
+"friendProfile.theirRhythm" = "ritmi";
+"friendProfile.commonFrequency" = "ortak frekans";
+"friendProfile.mostlyPrefix" = "en çok ";
+"friendProfile.mostlySuffix" = ", öyle geçiyor günleri.";
+"friendProfile.commonSongs" = "ortak şarkılar";
+"friendProfile.today" = "bugün";
+"friendProfile.streak" = "seri";
+"friendProfile.peakHour" = "yoğun saat";
+"friendProfile.mutualCount" = "%d ortak arkadaş";
+"friendProfile.remove" = "arkadaşlıktan çıkar";

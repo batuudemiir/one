@@ -93,7 +93,7 @@ struct MyFriendsListView: View {
             get: { profileUserID.map { ProfileSheetID(id: $0) } },
             set: { profileUserID = $0?.id }
         )) { wrap in
-            PublicProfileView(userID: wrap.id)
+            FriendProfileScreen(userID: wrap.id, onBack: { profileUserID = nil })
         }
     }
 

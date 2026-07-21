@@ -1185,3 +1185,14 @@ one day.";
 "addFriend.scanWithCamera" = "scan with camera";
 "addFriend.contactsPrivacy" = "contacts never leave your phone — only encrypted digests are compared.";
 "addFriend.allowContacts" = "allow contacts";
+
+"friendProfile.theirRhythm" = "their rhythm";
+"friendProfile.commonFrequency" = "common frequency";
+"friendProfile.mostlyPrefix" = "mostly ";
+"friendProfile.mostlySuffix" = " — that's how their days go.";
+"friendProfile.commonSongs" = "shared songs";
+"friendProfile.today" = "today";
+"friendProfile.streak" = "streak";
+"friendProfile.peakHour" = "peak hour";
+"friendProfile.mutualCount" = "%d mutual friends";
+"friendProfile.remove" = "remove friend";

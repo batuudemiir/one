@@ -27,6 +27,7 @@ struct ProfileOverviewSection: View {
     @State private var showReminder = false
     @State private var showMusicSource = false
     @State private var showPrivacy = false
+    @State private var showPaywall = false
 
     @State private var stats: ProfileStats = .empty
 
@@ -66,6 +67,10 @@ struct ProfileOverviewSection: View {
                     showSettingsScreen = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showPrivacy = true }
                 },
+                onPaywall: {
+                    showSettingsScreen = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showPaywall = true }
+                },
                 onMilestones: {
                     showSettingsScreen = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showMilestones = true }
@@ -80,6 +85,9 @@ struct ProfileOverviewSection: View {
         }
         .fullScreenCover(isPresented: $showPrivacy) {
             PrivacySettingsView(onBack: { showPrivacy = false })
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            OnePlusPaywallView(onClose: { showPaywall = false })
         }
         .sheet(isPresented: $showMilestones) {
             MilestonesView(

@@ -321,7 +321,13 @@ struct CircleView: View {
             AddFriendScreen(prefilledCode: deepLinkInviteCode)
         }
         .sheet(item: publicProfileBinding) { wrap in
-            PublicProfileView(userID: wrap.value)
+            FriendProfileScreen(
+                userID: wrap.value,
+                todayShare: friendsShares.first {
+                    ($0.user["userID"] as? String) == wrap.value
+                }?.share,
+                onBack: { selectedPublicProfileUserID = nil }
+            )
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
