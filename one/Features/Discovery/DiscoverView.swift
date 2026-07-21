@@ -44,6 +44,15 @@ struct DiscoverView: View {
     }
 
     var body: some View {
+        // Prototip 23 — eski akış motoru gövdesi (`legacyBody`) dosyada
+        // duruyor ama çizilmiyor; keşfet artık editoryal kart listesi.
+        DiscoverScreen(vm: discoverVM, onBack: {
+            NotificationCenter.default.post(name: .init("switchToCircleTab"), object: nil)
+        })
+        .task { await discoverVM.refresh() }
+    }
+
+    private var legacyBody: some View {
         ZStack {
             LinearGradient(
                 colors: [kesfetVM.mood?.color.opacity(0.12) ?? ONETokens.oneCream, ONETokens.oneCream],

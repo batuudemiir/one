@@ -139,6 +139,9 @@ struct ONEColorPickerView: View {
         .onReceive(NotificationCenter.default.publisher(for: .init("switchToTodayTab"))) { _ in
             withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .today }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .init("switchToCircleTab"))) { _ in
+            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .circle }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .init("switchToEchoTab"))) { _ in
             withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .echo }
         }

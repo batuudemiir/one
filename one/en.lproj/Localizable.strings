@@ -1338,3 +1338,12 @@ one day.";
 "poster.mostPlayed" = "most played: %@";
 "poster.notesHint" = "notes included";
 "poster.saveImage" = "save to photos";
+
+"discover.subtitle" = "a few things picked for your colour. not an algorithm, an editor.";
+"discover.empty" = "Nothing for today.";
+"discover.footer" = "suggestions follow your mood; what you listen to is never sold.";
+"discover.open" = "open";
+"discover.venue" = "venue";
+"discover.timing" = "when";
+"discover.price" = "price";
+"discover.notSponsored" = "this collection is not sponsored.";

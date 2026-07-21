@@ -1355,3 +1355,12 @@ bir gün.";
 "poster.mostPlayed" = "en çok dinlenen: %@";
 "poster.notesHint" = "notlar eklendi";
 "poster.saveImage" = "görsele kaydet";
+
+"discover.subtitle" = "rengine göre seçilmiş birkaç şey. algoritma değil, editör.";
+"discover.empty" = "Bugün için öneri yok.";
+"discover.footer" = "öneriler mood'una göre değişir; ne dinlediğin kimseye satılmaz.";
+"discover.open" = "aç";
+"discover.venue" = "mekân";
+"discover.timing" = "zaman";
+"discover.price" = "fiyat";
+"discover.notSponsored" = "bu koleksiyon sponsorlu değil.";
