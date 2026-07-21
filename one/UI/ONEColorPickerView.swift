@@ -66,23 +66,6 @@ struct ONEColorPickerView: View {
                             insertion: .scale.combined(with: .opacity),
                             removal:   .opacity
                         ))
-                case .today:
-                    // Ritüel bir sekme değil — "+" ile açılan tam ekran eylem.
-                    // Kendi üst çubuğu (✕ / nokta / "1/2") ve tamamlandı
-                    // ekranında "frekansa dön" var; `ONEColorPickerView`
-                    // fazladan bir ✕ eklemiyor (çift ✕ oluyordu).
-                    //
-                    // Geçiş de prototipin `vin` fade'i: alttan kayan
-                    // `.move(edge: .bottom)` bir modal/yeni-sekme hissi
-                    // veriyordu; prototipte ritüel yerinde beliren bir görünüm.
-                    TodayView(
-                        context: viewContext,
-                        entryStep: $todayEntryStep,
-                        onClose: {
-                            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .circle }
-                        }
-                    )
-                        .transition(.opacity)
                 default:
                     mainTabsView
                         .transition(.opacity)
@@ -217,9 +200,20 @@ struct ONEColorPickerView: View {
                     ProfileView(isFromTab: true)
                 case .echo:
                     EchoView(context: viewContext)
+                case .today:
+                    // Bugün tam ekran DEĞİL: dock'un içinde, diğer sekmelerle
+                    // aynı kabukta. Kökte ayrı bir dal olarak dururken tüm
+                    // kabuğu değiştiriyordu — sekme çubuğu kayboluyor, ritüel
+                    // "yeni bir yere gittin" hissi veriyordu. Prototipte
+                    // ritüel yerinde beliren bir görünüm, ayrı bir yer değil.
+                    TodayView(
+                        context: viewContext,
+                        entryStep: $todayEntryStep,
+                        onClose: {
+                            withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .circle }
+                        }
+                    )
                 default:
-                    // Bugün artık kökte tam ekran yönlendiriliyor; buraya
-                    // beklenmedik bir durum düşerse açılış ekranına dön.
                     CircleView(
                     onNavigateToToday: { vm.currentScreen = .today },
                     onNavigateToDiscover: { vm.currentScreen = .discover }

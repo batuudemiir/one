@@ -54,7 +54,10 @@ struct SongStepView: View {
                 Color.clear.frame(height: 100)
             }
             .padding(.horizontal, 24)
-            .padding(.top, 100)
+            // 100pt, üst çubuk overlay'ken onun altından çıkmak içindi.
+            // Çubuk artık düzenin içinde; bu boşluk aramayı ekranın
+            // ortasına itiyordu.
+            .padding(.top, ONETokens.spacingMD)
         }
         .onAppear {
             nowPlaying.startPolling()

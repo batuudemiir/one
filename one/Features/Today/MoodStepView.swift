@@ -63,9 +63,11 @@ struct MoodStepView: View {
                 .opacity(selectedMood == nil ? 0.28 : 1)
                 .animation(.easeOut(duration: 0.18), value: selectedMood != nil)
                 .padding(.horizontal, ONETokens.spacingXL)
-                .padding(.bottom, ONETokens.spacingXL3)
+                .padding(.bottom, ONETokens.spacingLG)
             }
-            .padding(.top, ONETokens.spacingXL3)
+            // Üst çubuk artık düzenin içinde; buradaki büyük üst boşluk
+            // onun altına ikinci bir boşluk ekliyordu.
+            .padding(.top, ONETokens.spacingMD)
         }
     }
 }

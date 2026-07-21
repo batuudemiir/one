@@ -24,89 +24,29 @@ struct TodayRitualView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .top) {
+        ZStack {
             ONETokens.oneCream.ignoresSafeArea()
 
-            Group {
-                switch coordinator.step {
-                case .mood:
-                    MoodStepView(coordinator: coordinator)
-                        .transition(stepTransition(insertion: .trailing, removal: .leading))
-                case .song:
-                    SongStepView(coordinator: coordinator, vm: vm)
-                        .transition(stepTransition(insertion: .trailing, removal: .leading))
-                }
-            }
-            .animation(reduceMotion ? .none : .easeOut(duration: 0.22), value: coordinator.step)
-        }
-        // Top bar pinned as overlay — independent of scroll content
-        .overlay(alignment: .top) {
-            VStack(alignment: .leading, spacing: 10) {
-                // Prototipteki `.rit-top`: solda çıkış/geri, ortada adım
-                // noktaları, sağda "1 / 2". Sayaç noktaların yanında dursun
-                // ki kaç adım kaldığı tahmin edilmesin.
-                HStack {
-                    // İlk adımda ✕ yalnız kapatacak bir yer varsa görünür
-                    // (telafi sheet'i ya da Frekans'a dönüş). Yoksa ölü bir
-                    // buton göstermektense hiç gösterme.
-                    let canClose = coordinator.step.rawValue > 0 || coordinator.onFinish != nil
+            // Üst çubuk artık `.overlay` DEĞİL, düzenin içinde. Overlay
+            // olduğu için adımın üstünü örtüyordu: "bugün ne renktin?"
+            // çubuğun altında kalıyor, kadran da kalan yeri bilmeden
+            // ölçekleniyordu. Akışta durunca içerik kendiliğinden sığıyor.
+            VStack(spacing: 0) {
+                topBar
 
-                    Button {
-                        if coordinator.step.rawValue > 0 {
-                            coordinator.back()
-                        } else {
-                            coordinator.onFinish?()
-                        }
-                    } label: {
-                        Image(systemName: coordinator.step.rawValue > 0 ? "chevron.left" : "xmark")
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(ONETokens.oneAsh)
-                            .frame(width: 44, height: 44, alignment: .leading)
+                Group {
+                    switch coordinator.step {
+                    case .mood:
+                        MoodStepView(coordinator: coordinator)
+                            .transition(stepTransition(insertion: .trailing, removal: .leading))
+                    case .song:
+                        SongStepView(coordinator: coordinator, vm: vm)
+                            .transition(stepTransition(insertion: .trailing, removal: .leading))
                     }
-                    .buttonStyle(.plain)
-                    .opacity(canClose ? 1 : 0)
-                    .disabled(!canClose)
-                    .accessibilityLabel(coordinator.step.rawValue > 0 ? "Geri" : "Kapat")
-
-                    Spacer()
-
-                    RitualProgressDots(
-                        current: coordinator.step.rawValue,
-                        total: RitualStep.allCases.count
-                    )
-
-                    Spacer()
-
-                    Text("\(coordinator.step.rawValue + 1) / \(RitualStep.allCases.count)")
-                        .monoLabel(tracking: 1.3)
-                        .foregroundColor(ONETokens.oneStone)
-                        .frame(width: 44, alignment: .trailing)
                 }
-
-                // Faz 3 — telafi modunda hangi günü doldurduğun net olsun.
-                if let date = coordinator.backfillDate {
-                    backfillBanner(date)
-                        .transition(.opacity)
-                } else if coordinator.step == .mood {
-                    // Haftalık ritim yalnız ilk adımda — şarkı adımı sade kalsın.
-                    WeekRhythmView(days: vm.weekRhythm) { date in
-                        coordinator.startBackfill(for: date)
-                    }
-                    .padding(.top, 2)
-                    .transition(.opacity)
-                }
-
-                if let items = topBarContextItems {
-                    ContextPill(items: items) { coordinator.jumpTo($0) }
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                        .animation(.easeOut(duration: 0.18), value: items.count)
-                }
+                .animation(reduceMotion ? .none : .easeOut(duration: 0.22), value: coordinator.step)
+                .frame(maxHeight: .infinity)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 56)
-            .padding(.bottom, 12)
-            .frame(maxWidth: .infinity)
-            .background(ONETokens.oneCream)
         }
         .gesture(
             coordinator.step.rawValue > 0
@@ -119,6 +59,61 @@ struct TodayRitualView: View {
                 : nil
         )
         .onAppear { coordinator.vm = vm } // Ensures vm reference stays fresh on re-appear
+    }
+
+    /// Prototipin `.rit-top`'u: solda geri, ortada adım noktaları, sağda
+    /// sayaç. Buradan çıkanlar (hepsi prototipte yok, hepsi dikey yer
+    /// yiyordu ve ritüelin tek işi olmasını bozuyordu):
+    ///  • ✕ — sekme çubuğu artık görünür, çıkış yolu zaten orada. Yalnız
+    ///    telafi sheet'inde (dock yokken) gösteriliyor.
+    ///  • Haftalık ritim — bugünü doldururken geçmiş günleri sunmak
+    ///    dikkati dağıtıyor. Telafi hâlâ "kaydedildi" ekranından ve
+    ///    geri dönüş ekranından açılabiliyor.
+    ///  • Bağlam hapı — iki adımlık bir akışta az önce seçtiğini
+    ///    tekrar göstermek; geri oku aynı işi yapıyor.
+    private var topBar: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                let showsBack  = coordinator.step.rawValue > 0
+                let showsClose = !showsBack && coordinator.onFinish != nil
+
+                Button {
+                    if showsBack { coordinator.back() } else { coordinator.onFinish?() }
+                } label: {
+                    Image(systemName: showsBack ? "chevron.left" : "xmark")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(ONETokens.oneAsh)
+                        .frame(width: 44, height: 44, alignment: .leading)
+                }
+                .buttonStyle(.plain)
+                .opacity(showsBack || showsClose ? 1 : 0)
+                .disabled(!(showsBack || showsClose))
+                .accessibilityLabel(showsBack ? "Geri" : "Kapat")
+
+                Spacer()
+
+                RitualProgressDots(
+                    current: coordinator.step.rawValue,
+                    total: RitualStep.allCases.count
+                )
+
+                Spacer()
+
+                Text("\(coordinator.step.rawValue + 1) / \(RitualStep.allCases.count)")
+                    .monoLabel(tracking: 1.3)
+                    .foregroundColor(ONETokens.oneStone)
+                    .frame(width: 44, alignment: .trailing)
+            }
+
+            // Telafi modunda hangi günü doldurduğun net olsun.
+            if let date = coordinator.backfillDate {
+                backfillBanner(date)
+                    .transition(.opacity)
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 4)
+        .frame(maxWidth: .infinity)
     }
 
     /// Telafi modu göstergesi — suçlayıcı değil, bilgilendirici.
@@ -158,13 +153,6 @@ struct TodayRitualView: View {
         formatter.locale = Locale.current
         formatter.setLocalizedDateFormatFromTemplate("EEEE")
         return formatter.string(from: date)
-    }
-
-    private var topBarContextItems: [PillItem]? {
-        var items: [PillItem] = []
-        if let mood = coordinator.draft.mood { items.append(.mood(mood)) }
-        if let song = coordinator.draft.song { items.append(.song(song)) }
-        return items.isEmpty ? nil : items
     }
 
     private func stepTransition(insertion: Edge, removal: Edge) -> AnyTransition {
