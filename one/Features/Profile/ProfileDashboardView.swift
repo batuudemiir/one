@@ -69,7 +69,7 @@ struct ProfileDashboardView: View {
                         showSettings: $showSettings
                     )
                     // Prototip `.scroll` üst boşluğu: 58pt.
-                    .padding(.top, 58)
+                    .padding(.top, ONETokens.spacingXL)
                     .listItemEntrance(isVisible: appeared, index: 0)
 
                     Spacer().frame(height: 116)
@@ -77,7 +77,8 @@ struct ProfileDashboardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .background(palette.screenBG)
-            .ignoresSafeArea(edges: .top)
+            // `ignoresSafeArea(.top)` içeriği çentiğin ALTINA sokuyordu —
+            // profil bilgileri bu yüzden çok yukarıda duruyordu.
             .frame(maxWidth: .infinity)
 
             // ── Ayarlar full-screen sağdan kayar

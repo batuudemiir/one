@@ -32,8 +32,10 @@ struct BottomNavigation: View {
             tabGroup(trailingTabs)
         }
         .padding(.horizontal, ONETokens.spacingXL)
-        .padding(.top, 14)
-        .padding(.bottom, 26)
+        .padding(.top, 12)
+        // Prototipte dock ekranın DİBİNE oturuyor; 26pt onu havada
+        // bırakıyordu. Güvenli alan zaten altta boşluk veriyor.
+        .padding(.bottom, 6)
         .background(
             LinearGradient(
                 gradient: Gradient(stops: [

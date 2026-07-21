@@ -17,6 +17,9 @@ struct YearOverviewView: View {
     let months: [MonthSummary]
     let onBack: () -> Void
     var onMonthTap: ((MonthSummary) -> Void)? = nil
+    /// Bir güne dokunulunca o günün detayı. Hücreler eskiden salt
+    /// gösterimdi — yıl görünümünden güne inilemiyordu.
+    var onDayTap: ((DailyEntry) -> Void)? = nil
     var onPoster: (() -> Void)? = nil
 
     private var year: Int {
@@ -107,10 +110,7 @@ struct YearOverviewView: View {
             spacing: 11
         ) {
             ForEach(months.sorted { $0.month < $1.month }, id: \.month) { month in
-                Button {
-                    onMonthTap?(month)
-                } label: {
-                    VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 6) {
                         Text(monthName(month.month))
                             .font(.system(size: 10))
                             .foregroundColor(ONETokens.oneAsh)
@@ -120,21 +120,41 @@ struct YearOverviewView: View {
                             spacing: 2
                         ) {
                             ForEach(1...month.totalDays, id: \.self) { day in
-                                RoundedRectangle(cornerRadius: 2, style: .continuous)
-                                    .fill(color(day: day, in: month) ?? ONETokens.oneInk.opacity(0.06))
-                                    .aspectRatio(1, contentMode: .fit)
+                                dayCell(day: day, in: month)
                             }
                         }
                     }
-                    .padding(9)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .oneCardBackground(radius: 12, opacity: 0.6)
-                }
-                .buttonStyle(.plain)
-                .disabled(onMonthTap == nil)
-                .accessibilityLabel("\(monthName(month.month)), \(month.filledDays) gün")
+                .padding(9)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .oneCardBackground(radius: 12, opacity: 0.6)
+                .accessibilityElement(children: .contain)
             }
         }
+    }
+
+    /// Dolu gün dokunulabilir, boş gün değil — boş bir güne dokunmak
+    /// açılacak bir şey olmadığı için sessiz kalırdı.
+    @ViewBuilder
+    private func dayCell(day: Int, in month: MonthSummary) -> some View {
+        let entry = entryFor(day: day, in: month)
+        let shape = RoundedRectangle(cornerRadius: 2, style: .continuous)
+            .fill(entry?.moodColor ?? ONETokens.oneInk.opacity(0.06))
+            .aspectRatio(1, contentMode: .fit)
+
+        if let entry, let onDayTap {
+            Button { onDayTap(entry) } label: { shape }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(day) \(monthName(month.month)), \(entry.moodLabel)")
+        } else {
+            shape.accessibilityHidden(true)
+        }
+    }
+
+    private func entryFor(day: Int, in month: MonthSummary) -> DailyEntry? {
+        guard let date = Calendar.current.date(
+            from: DateComponents(year: month.year, month: month.month, day: day)
+        ) else { return nil }
+        return month.primaryEntry(for: date)
     }
 
     private func color(day: Int, in month: MonthSummary) -> Color? {

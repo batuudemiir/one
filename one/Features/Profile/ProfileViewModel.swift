@@ -455,10 +455,13 @@ final class ProfileViewModel: ObservableObject {
         "privacy.musicTasteVisible", "privacy.moodHistoryVisible"
     ]
 
-    private var iCloudStoreAvailable: Bool {
-        // synchronize() returns false when the ubiquity-kvstore entitlement is missing
-        NSUbiquitousKeyValueStore.default.synchronize()
-    }
+    /// synchronize() returns false when the ubiquity-kvstore entitlement is missing.
+    /// Bir kez ölçülüp saklanıyor: her ayar yazımında synchronize() çağırmak
+    /// hem gereksiz I/O hem de entitlement yoksa her seferinde konsola
+    /// "BUG IN CLIENT OF KVS" satırı basıyordu.
+    private static let iCloudStoreAvailableCached: Bool = NSUbiquitousKeyValueStore.default.synchronize()
+
+    private var iCloudStoreAvailable: Bool { Self.iCloudStoreAvailableCached }
 
     func syncSettingsFromICloud() {
         guard iCloudStoreAvailable else { return }

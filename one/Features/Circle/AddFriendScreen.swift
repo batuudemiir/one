@@ -37,6 +37,11 @@ struct AddFriendScreen: View {
     @State private var showScanner = false
     @State private var showContacts = false
     @State private var codeCopied = false
+    /// Prototip 19'daki "hızlı ekle" önerileri. `fetchSuggestedUsers`
+    /// zaten vardı ama hiçbir ekrandan çağrılmıyordu — ortak arkadaş
+    /// sayısına göre sıralı geliyor, rastgele insan önermiyor.
+    @State private var suggestions: [SuggestedUser] = []
+    @State private var sentUserIDs: Set<String> = []
 
     private var myInviteCode: String {
         cloudKitManager.currentUser?["inviteCode"] as? String ?? "------"
@@ -81,6 +86,11 @@ struct AddFriendScreen: View {
         }
         .sheet(isPresented: $showContacts) {
             ContactsInviteView()
+        }
+        .task {
+            CloudKitManager.shared.fetchSuggestedUsers(limit: 5) { list in
+                DispatchQueue.main.async { suggestions = list }
+            }
         }
         .onAppear {
             if let code = prefilledCode, !code.isEmpty {
@@ -138,6 +148,30 @@ struct AddFriendScreen: View {
                     .foregroundColor(ONETokens.oneAsh)
                     .frame(maxWidth: .infinity)
                     .padding(.top, ONETokens.spacingXL)
+            }
+
+            if !suggestions.isEmpty {
+                Text(NSLocalizedString("addFriend.suggested", comment: ""))
+                    .monoLabel(tracking: 1.3)
+                    .foregroundColor(ONETokens.oneStone)
+                    .padding(.top, ONETokens.spacingXL)
+                    .padding(.bottom, ONETokens.spacingSM)
+
+                VStack(spacing: 7) {
+                    ForEach(suggestions) { user in
+                        SuggestedUserRow(user: user) {
+                            sendToSuggested(user)
+                        }
+                        .opacity(sentUserIDs.contains(user.id) ? 0.45 : 1)
+                        .disabled(sentUserIDs.contains(user.id))
+                    }
+                }
+
+                Text(NSLocalizedString("addFriend.suggestedHint", comment: ""))
+                    .bodyXS()
+                    .foregroundColor(ONETokens.oneAsh)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, ONETokens.spacingMD)
             }
 
             // Prototipin sözü: rastgele insan önerilmez.
@@ -329,6 +363,16 @@ struct AddFriendScreen: View {
                 case .failure:
                     withAnimation(.easeOut(duration: 0.15)) { notFound = true }
                 }
+            }
+        }
+    }
+
+    private func sendToSuggested(_ user: SuggestedUser) {
+        sentUserIDs.insert(user.id)
+        ONEHaptics.songSaved()
+        CloudKitManager.shared.sendFriendRequest(toUserID: user.id) { result in
+            DispatchQueue.main.async {
+                if case .failure = result { sentUserIDs.remove(user.id) }
             }
         }
     }

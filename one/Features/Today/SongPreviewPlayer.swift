@@ -103,8 +103,14 @@ final class SongPreviewPlayer: ObservableObject {
         player?.pause()
         if let obs = endObserver { NotificationCenter.default.removeObserver(obs); endObserver = nil }
 
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-        try? AVAudioSession.sharedInstance().setActive(true)
+        // setActive(_:) main thread'de UI donmasına yol açabiliyor (AVAudioSession_iOS.mm:978).
+        // Oturum kurulumunu arka plana alıyoruz; AVPlayer.play() zaten oturum
+        // aktifleşene kadar sessizce bekliyor.
+        Task.detached(priority: .userInitiated) {
+            let session = AVAudioSession.sharedInstance()
+            try? session.setCategory(.playback, mode: .default)
+            try? session.setActive(true)
+        }
 
         let item = AVPlayerItem(url: url)
         let newPlayer = AVPlayer(playerItem: item)

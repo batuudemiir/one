@@ -1347,3 +1347,8 @@ one day.";
 "discover.timing" = "when";
 "discover.price" = "price";
 "discover.notSponsored" = "this collection is not sponsored.";
+
+"addFriend.suggested" = "people you may know";
+"addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
+
+"circle.gateProgress" = "%d more, then your frequency opens.";

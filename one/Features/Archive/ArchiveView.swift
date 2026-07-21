@@ -39,7 +39,8 @@ struct ArchiveContainerView: View {
             if showYear {
                 YearOverviewView(
                     months: archiveStore.yearData,
-                    onBack: { showYear = false }
+                    onBack: { showYear = false },
+                    onDayTap: { selectedDay = $0 }
                 )
                 .transition(.move(edge: .trailing).combined(with: .opacity))
                 .zIndex(1)

@@ -450,8 +450,11 @@ final class CameraVC: UIViewController {
     private func startVolumeObserver() {
         guard volObs == nil else { return }
         let sess = AVAudioSession.sharedInstance()
-        try? sess.setCategory(.playAndRecord, options: [.mixWithOthers, .defaultToSpeaker])
-        try? sess.setActive(true)
+        // setActive(_:) main thread'de bloklayabiliyor — kamera açılışını geciktiriyordu.
+        DispatchQueue.global(qos: .userInitiated).async {
+            try? sess.setCategory(.playAndRecord, options: [.mixWithOthers, .defaultToSpeaker])
+            try? sess.setActive(true)
+        }
         lastVol = sess.outputVolume
 
         volShutterCooldown = true

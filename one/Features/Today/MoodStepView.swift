@@ -36,9 +36,17 @@ struct MoodStepView: View {
                     .foregroundColor(ONETokens.oneInk)
                     .padding(.bottom, 2)
 
-                // Kadran dikey boşluğun ortasına oturur.
-                MoodDial(selection: $selectedMood)
-                    .frame(maxHeight: .infinity)
+                // Kadran kalan dikey boşluğa göre ölçekleniyor — sabit
+                // 290pt küçük ekranlarda taşıyor, buton ekran dışında
+                // kalıyordu.
+                GeometryReader { geo in
+                    MoodDial(
+                        selection: $selectedMood,
+                        maxDiameter: min(geo.size.width - 32, geo.size.height)
+                    )
+                    .frame(width: geo.size.width, height: geo.size.height)
+                }
+                .frame(maxHeight: .infinity)
 
                 Button {
                     guard let mood = selectedMood else { return }

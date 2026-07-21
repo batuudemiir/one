@@ -31,6 +31,10 @@ struct CircleView: View {
     @State var friendsShares: [CloudKitManager.FriendCircleData] = []
     @State var userShare: CKRecord? = nil  // User's own share
     @State var isLoading = false
+    /// Uçuşta bir `performLoadFriendsShares` var mı. `onAppear` ve
+    /// `onChange(of: isFetchingUser)` ikisi birden `initializeUser()`
+    /// çağırdığı için aynı CloudKit turu iki kez atılıyordu.
+    @State var isFetchingShares = false
     @State var showAddFriend = false
     @State var showFriendRequests = false
     /// Prototip 22 — bildirim akışı. Zil artık istekleri değil tüm akışı
@@ -74,8 +78,13 @@ struct CircleView: View {
 
     /// Hiç arkadaşı olmayan kullanıcı. `hasLoadedOnce` şart: yükleme bitmeden
     /// boş durum göstermek, verisi olan kullanıcıya bir an "çevren boş" demek olurdu.
+    /// Frekans'ın açılma eşiği. Tek arkadaşla "çevre" olmuyor; ürünün
+    /// tuttuğu şey karşılıklılık (Solo D30 %0 / Sosyal %20.7). Eşiğe
+    /// kadar ekran tek iş yapıyor: davet.
+    static let requiredFriends = 3
+
     var hasNoCircleYet: Bool {
-        hasLoadedOnce && friendsShares.isEmpty && pendingRequestCount == 0
+        hasLoadedOnce && friendsShares.count < Self.requiredFriends
     }
 
     private var totalNotificationCount: Int { CircleNotificationStore.shared.unreadCount }
@@ -193,6 +202,8 @@ struct CircleView: View {
                         // yerine değer önizlemesi + tek net davet. (Solo D30 %0)
                         CircleEmptyState(
                             showAddFriend: $showAddFriend,
+                            friendCount: friendsShares.count,
+                            requiredFriends: Self.requiredFriends,
                             onStartAlone: onNavigateToToday
                         )
                     } else {

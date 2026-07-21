@@ -17,11 +17,25 @@ struct MoodDial: View {
     @Binding var selection: ONEMood?
 
     /// Prototip geometrisi: 290pt kadran, 113pt yarıçap, 56pt swatch,
-    /// 120pt merkez. Oranlar bozulmasın diye tek yerde.
-    private let dialSize: CGFloat = 290
-    private let radius: CGFloat = 113
-    private let swatchSize: CGFloat = 56
-    private let coreSize: CGFloat = 120
+    /// 120pt merkez. Küçük ekranlarda kadran taşıyordu — oranlar sabit
+    /// kalacak şekilde tek bir ölçekle küçülüyor.
+    private let baseDial: CGFloat = 290
+    private let baseRadius: CGFloat = 113
+    private let baseSwatch: CGFloat = 56
+    private let baseCore: CGFloat = 120
+
+    /// Dışarıdan verilen sınır. nil ise prototip boyutu.
+    var maxDiameter: CGFloat? = nil
+
+    private var scale: CGFloat {
+        guard let maxDiameter else { return 1 }
+        return min(1, max(0.62, maxDiameter / baseDial))
+    }
+
+    private var dialSize: CGFloat { baseDial * scale }
+    private var radius: CGFloat { baseRadius * scale }
+    private var swatchSize: CGFloat { baseSwatch * scale }
+    private var coreSize: CGFloat { baseCore * scale }
 
     private var moods: [ONEMood] { ONEMood.allCases }
 
@@ -93,17 +107,17 @@ struct MoodDial: View {
                     if let mood = selection {
                         VStack(spacing: 3) {
                             Text(mood.label)
-                                .font(.system(size: 17, weight: .bold))
+                                .font(.system(size: 17 * scale, weight: .bold))
                                 .foregroundColor(ONETokens.oneInk)
                             Text(mood.meaning)
-                                .font(.system(size: 11))
+                                .font(.system(size: 11 * scale))
                                 .foregroundColor(ONETokens.oneAsh)
                                 .multilineTextAlignment(.center)
                         }
                         .transition(.opacity.combined(with: .scale(scale: 0.92)))
                     } else {
                         Text("bir renge\ndokun")
-                            .font(.system(size: 12))
+                            .font(.system(size: 12 * scale))
                             .foregroundColor(ONETokens.oneStone)
                             .multilineTextAlignment(.center)
                     }

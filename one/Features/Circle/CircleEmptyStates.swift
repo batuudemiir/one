@@ -18,6 +18,11 @@ import SwiftUI
 /// üründe bir tercih değil, kalmanın ön koşulu.
 struct CircleEmptyState: View {
     @Binding var showAddFriend: Bool
+    /// Frekans'ın açılması için gereken arkadaş sayısı ve mevcut sayı.
+    /// Çevre tek kişiyle çalışmıyor — bir "frekans" ancak birkaç kişiyle
+    /// oluşuyor. İlerleme göstermek, kapıyı ceza olmaktan çıkarıyor.
+    var friendCount: Int = 0
+    var requiredFriends: Int = 3
     /// "Şimdilik tek başıma başla" — ritüele götürür. nil ise buton gizlenir.
     var onStartAlone: (() -> Void)? = nil
 
@@ -58,6 +63,12 @@ struct CircleEmptyState: View {
                     .padding(.horizontal, ONETokens.spacingXL)
                 }
                 .fixedSize(horizontal: false, vertical: true)
+
+                if requiredFriends > 0 {
+                    progressRow
+                        .padding(.horizontal, ONETokens.spacingXL2)
+                        .padding(.bottom, ONETokens.spacingSM)
+                }
 
                 VStack(spacing: ONETokens.spacingSM) {
                     // Prototip: düz marka rengi, 26pt yarıçap, 44pt min yükseklik.
@@ -104,6 +115,31 @@ struct CircleEmptyState: View {
             .padding(.bottom, 116)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// Kaç kişi kaldı. Sayı değil, üç nokta — "2 kişi daha" demek yerine
+    /// ne kadar yaklaştığını göstermek daha az ödev gibi duruyor.
+    private var progressRow: some View {
+        VStack(spacing: 7) {
+            HStack(spacing: 7) {
+                ForEach(0..<requiredFriends, id: \.self) { index in
+                    Circle()
+                        .fill(index < friendCount
+                              ? ONETokens.oneBrand
+                              : ONETokens.oneInk.opacity(0.12))
+                        .frame(width: 9, height: 9)
+                }
+            }
+
+            Text(String(
+                format: NSLocalizedString("circle.gateProgress", comment: ""),
+                max(requiredFriends - friendCount, 0)
+            ))
+            .bodyXS()
+            .foregroundColor(ONETokens.oneAsh)
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
     }
 
     /// Gerçek arkadaş kartlarının silüeti — içerik uydurmadan biçimi gösterir.

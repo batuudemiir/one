@@ -34,6 +34,9 @@ class CloudKitManager: ObservableObject {
         }
     }
     @Published var isFetchingUser = false
+    /// `loadCurrentUser()` uçuşta mı. `isFetchingUser`'dan ayrı: o main'e
+    /// async yazıldığı için reentrancy guard olarak kullanılamıyor.
+    private var isLoadingCurrentUser = false
     @Published var userLoadFailed = false
     @Published var throttleRetryAfter: Date? = nil
     @Published var syncStatus: SyncStatus = .idle
@@ -126,6 +129,15 @@ class CloudKitManager: ObservableObject {
     // MARK: - Load Current User
     
     func loadCurrentUser() {
+        // Reentrancy guard: init(), ContentView.checkProfileStatus(), retry
+        // zamanlayıcısı ve CloudKitRetryOverlay hepsi bu metodu çağırıyor.
+        // `isFetchingUser` main'e async yazıldığı için tek başına yeterli
+        // değildi — aynı anda iki fetch turu atılıyordu.
+        if isLoadingCurrentUser {
+            ONELogger.debug("loadCurrentUser skipped — already in flight", category: .cloudkit)
+            return
+        }
+
         // Don't retry while server-side throttle is still active
         if isThrottled {
             let until = throttleRetryAfter.map { "\($0)" } ?? "unknown"
@@ -139,9 +151,21 @@ class CloudKitManager: ObservableObject {
             UserDefaults.standard.removeObject(forKey: "cloudKitThrottleRetryAfter")
         }
 
+        isLoadingCurrentUser = true
+
         DispatchQueue.main.async {
             self.isFetchingUser = true
             self.userLoadFailed = false
+        }
+
+        // Tek çıkış noktası — guard bayrağı ve isFetchingUser birlikte düşer.
+        func finish(failed: Bool, user: CKRecord? = nil) {
+            DispatchQueue.main.async {
+                if let user { self.currentUser = user }
+                self.isFetchingUser = false
+                self.userLoadFailed = failed
+                self.isLoadingCurrentUser = false
+            }
         }
 
         container.fetchUserRecordID { [weak self] recordID, error in
@@ -149,10 +173,7 @@ class CloudKitManager: ObservableObject {
 
             guard let recordID = recordID else {
                 ONELogger.error("Could not fetch user record ID: \(error?.localizedDescription ?? "unknown")", category: .cloudkit)
-                DispatchQueue.main.async {
-                    self.isFetchingUser = false
-                    self.userLoadFailed = true
-                }
+                finish(failed: true)
                 return
             }
 
@@ -171,33 +192,22 @@ class CloudKitManager: ObservableObject {
                     // Pick the oldest record — the user's real profile
                     if let existingUser = records.first {
                         ONELogger.success("Loaded existing user profile", category: .cloudkit)
-                        DispatchQueue.main.async {
-                            self.currentUser = existingUser
-                            self.isFetchingUser = false
-                            self.userLoadFailed = false
-                        }
+                        finish(failed: false, user: existingUser)
                     } else {
                         ONELogger.info("No user profile found, will create one", category: .cloudkit)
-                        DispatchQueue.main.async {
-                            self.isFetchingUser = false
-                        }
+                        finish(failed: false)
                     }
                 case .failure(let error):
                     let nsError = error as NSError
                     if nsError.domain == CKErrorDomain && nsError.code == 12 {
                         // Schema not yet indexed — treat as "no user found" (new install)
                         ONELogger.info("User profile not found (this is normal for new users)", category: .cloudkit)
-                        DispatchQueue.main.async {
-                            self.isFetchingUser = false
-                        }
+                        finish(failed: false)
                     } else {
                         // Real error (throttle, network, etc.) — do NOT proceed to profile creation
                         ONELogger.error("Failed to load user", error: error, category: .cloudkit)
                         self.handleThrottleError(error)
-                        DispatchQueue.main.async {
-                            self.isFetchingUser = false
-                            self.userLoadFailed = true
-                        }
+                        finish(failed: true)
                     }
                 }
             }

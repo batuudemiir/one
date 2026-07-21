@@ -173,6 +173,12 @@ extension CircleView {
     }
 
     func performLoadFriendsShares() {
+        guard !isFetchingShares else {
+            ONELogger.debug("performLoadFriendsShares: zaten uçuşta, atlanıyor", category: .circle)
+            return
+        }
+        isFetchingShares = true
+
         // ── Serve today's cache instantly if valid ───────────────────────
         if cloudKitManager.isCircleCacheValid, let cached = cloudKitManager.cachedCircleData {
             self.friendsShares = cached
@@ -204,6 +210,7 @@ extension CircleView {
         // Load today's friends' shares only — deduped, one entry per friend
         cloudKitManager.fetchFriendsDailyShares(for: Date()) { result in
             DispatchQueue.main.async {
+                self.isFetchingShares = false
                 self.isLoading = false
                 self.hasLoadedOnce = true
                 switch result {
