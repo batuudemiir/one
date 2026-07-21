@@ -29,10 +29,9 @@ struct SongStepView: View {
                     .foregroundStyle(ONETokens.oneInk)
                     .padding(.bottom, ONETokens.spacingMD)
 
-                if let track = nowPlaying.currentTrack {
-                    nowPlayingBanner(track: track)
-                        .padding(.bottom, 4)
-                }
+                // "Şu an çalıyor" banner'ı kaldırıldı — prototipte adım
+                // arama + liste + paylaş + bırak, o kadar. (Fonksiyon
+                // dosyada duruyor, çağrılmıyor.)
 
                 searchField
                     .padding(.top, 8)

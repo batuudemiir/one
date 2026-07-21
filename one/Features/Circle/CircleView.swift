@@ -178,6 +178,16 @@ struct CircleView: View {
                     headerSection
                     if isLoading && !hasLoadedOnce {
                         skeletonCards
+                    } else if cloudKitManager.userLoadFailed && friendsShares.isEmpty {
+                        // Prototip 34 — bağlantı yok. Hata ekranı çıkmaz sokak
+                        // değil: kayıt yerel, sadece paylaşım uzak.
+                        CircleOfflineState(
+                            onStartRitual: { onNavigateToToday?() },
+                            onRetry: {
+                                cloudKitManager.loadCurrentUser()
+                                loadFriendsShares()
+                            }
+                        )
                     } else if hasNoCircleYet {
                         // Arkadaşı olmayan kullanıcıya 3 sahte iskelet kartı göstermek
                         // yerine değer önizlemesi + tek net davet. (Solo D30 %0)
