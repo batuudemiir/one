@@ -25,6 +25,8 @@ struct ProfileOverviewSection: View {
     /// (`ProfileSettingsSection`); prototipte kendi ekranı.
     @State private var showSettingsScreen = false
     @State private var showReminder = false
+    @State private var showMusicSource = false
+    @State private var showPrivacy = false
 
     @State private var stats: ProfileStats = .empty
 
@@ -56,8 +58,14 @@ struct ProfileOverviewSection: View {
                     showSettingsScreen = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showReminder = true }
                 },
-                onMusic: { showSettingsScreen = false; showSettings = true },
-                onPrivacy: { showSettingsScreen = false; showSettings = true },
+                onMusic: {
+                    showSettingsScreen = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showMusicSource = true }
+                },
+                onPrivacy: {
+                    showSettingsScreen = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showPrivacy = true }
+                },
                 onMilestones: {
                     showSettingsScreen = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showMilestones = true }
@@ -66,6 +74,12 @@ struct ProfileOverviewSection: View {
         }
         .fullScreenCover(isPresented: $showReminder) {
             ReminderSettingsView(vm: vm, onBack: { showReminder = false })
+        }
+        .fullScreenCover(isPresented: $showMusicSource) {
+            MusicSourceSettingsView(vm: vm, onBack: { showMusicSource = false })
+        }
+        .fullScreenCover(isPresented: $showPrivacy) {
+            PrivacySettingsView(onBack: { showPrivacy = false })
         }
         .sheet(isPresented: $showMilestones) {
             MilestonesView(
@@ -190,7 +204,7 @@ struct ProfileOverviewSection: View {
                 showReminder = true
             }
             row("music.note", NSLocalizedString("profile.row.musicSource", comment: ""), musicPlatform) {
-                showSettings = true
+                showMusicSource = true
             }
             // Kilometre taşları satırı kaldırıldı — prototip 26'da profil
             // dört satır: hatırlatma, müzik kaynağı, arkadaşlar, ayarlar.

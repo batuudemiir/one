@@ -344,3 +344,45 @@ extension View {
             )
     }
 }
+
+// MARK: - Anahtarlı satır
+
+/// Açma/kapama satırı. `SettingsRow` bir hedefe götürür, bu satır yerinde
+/// bir durumu değiştirir — o yüzden ayrı: chevron yok, dokunulacak şey
+/// satırın tamamı değil anahtarın kendisi.
+struct SettingsToggleRow: View {
+    let title: String
+    let subtitle: String
+    @Binding var isOn: Bool
+    var isLast: Bool = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(ONETokens.oneInk)
+                    Text(subtitle)
+                        .bodyXS()
+                        .foregroundColor(ONETokens.oneAsh)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+                Toggle("", isOn: $isOn)
+                    .labelsHidden()
+                    .tint(ONETokens.oneInk)
+            }
+            .padding(.horizontal, 15)
+            .padding(.vertical, 14)
+
+            if !isLast {
+                Rectangle()
+                    .fill(ONETokens.oneInk.opacity(0.09))
+                    .frame(height: 1)
+                    .padding(.leading, 15)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}

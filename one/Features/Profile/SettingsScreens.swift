@@ -210,12 +210,12 @@ struct ReminderSettingsView: View {
                 .oneCardBackground(radius: ONETokens.radiusCardLg)
 
                 SettingsGroup {
-                    toggleRow(
+                    SettingsToggleRow(
                         title: NSLocalizedString("reminder.evening", comment: ""),
                         subtitle: NSLocalizedString("reminder.eveningSub", comment: ""),
                         isOn: $vm.notificationsEnabled
                     )
-                    toggleRow(
+                    SettingsToggleRow(
                         title: NSLocalizedString("reminder.streak", comment: ""),
                         subtitle: NSLocalizedString("reminder.streakSub", comment: ""),
                         isOn: $vm.streakNotificationsEnabled,
@@ -227,37 +227,4 @@ struct ReminderSettingsView: View {
         }
     }
 
-    private func toggleRow(
-        title: String,
-        subtitle: String,
-        isOn: Binding<Bool>,
-        isLast: Bool = false
-    ) -> some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
-                    Text(subtitle)
-                        .bodyXS()
-                        .foregroundColor(ONETokens.oneAsh)
-                }
-                Spacer()
-                Toggle("", isOn: isOn)
-                    .labelsHidden()
-                    .tint(ONETokens.oneInk)
-            }
-            .padding(.horizontal, 15)
-            .padding(.vertical, 14)
-
-            if !isLast {
-                Rectangle()
-                    .fill(ONETokens.oneInk.opacity(0.09))
-                    .frame(height: 1)
-                    .padding(.leading, 15)
-            }
-        }
-        .accessibilityElement(children: .combine)
-    }
 }
