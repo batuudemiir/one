@@ -259,8 +259,14 @@ struct CircleView: View {
         }
         .onAppear {
             isViewVisible = true
-            // Sekme rozetini ekran açılır açılmaz temizle
-            cloudKitManager.unseenFriendShareCount = 0
+            // Sekme rozetini ekran açılır açılmaz temizle.
+            // `onAppear` sekme geçişinin update transaction'ı içinde koşuyor;
+            // BottomNavigation aynı pass'te bu @Published'ı okuduğu için
+            // doğrudan yazmak "Publishing changes from within view updates"
+            // uyarısı üretiyordu. Bir sonraki runloop'a erteliyoruz.
+            Task { @MainActor in
+                cloudKitManager.unseenFriendShareCount = 0
+            }
 
             AppAnalytics.shared.track(.circleOpened)
             computeLocalStreak()

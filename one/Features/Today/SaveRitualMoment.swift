@@ -20,55 +20,54 @@ import SwiftUI
 /// Reduce Motion'da tamamen atlanır — bu efekt vestibüler rahatsızlık
 /// yaratabilecek türden ve alternatifi sade bir soluşma.
 struct SaveRippleModifier: ViewModifier {
-    /// Dalganın başladığı an. nil ise efekt yok.
+    /// Dalganın başladığı an. nil ise shader hiç devreye girmez.
     let start: Date?
     /// Merkez — kayıt butonunun konumu. Birim kare (0…1) içinde.
     var originUnit: CGPoint = CGPoint(x: 0.5, y: 0.62)
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// Dalganın ekranı terk etmesi ~1.4 s sürüyor; sonrasında shader'ı
-    /// tamamen devreden çıkarıyoruz ki boşuna her kareyi yeniden çizmesin.
-    private let duration: TimeInterval = 1.4
-
     func body(content: Content) -> some View {
         if reduceMotion || start == nil {
             content
         } else {
-            TimelineView(.animation(paused: false)) { timeline in
-                GeometryReader { geo in
-                    let elapsed = start.map { timeline.date.timeIntervalSince($0) } ?? 0
-                    let origin = CGPoint(
-                        x: geo.size.width * originUnit.x,
-                        y: geo.size.height * originUnit.y
-                    )
+            // `GeometryReader` KULLANILMIYOR: bir modifier'ın içeriğini
+            // GeometryReader'a sarmak düzeni bozar (tüm alanı kaplar,
+            // çocuğu sol-üste hizalar). `visualEffect` geometriyi düzene
+            // dokunmadan verir — shader'ı ekranın tamamına uygulamanın
+            // tek güvenli yolu bu.
+            TimelineView(.animation) { timeline in
+                let elapsed = Float(start.map { timeline.date.timeIntervalSince($0) } ?? 0)
 
-                    if elapsed >= 0 && elapsed <= duration {
-                        content
-                            .distortionEffect(
-                                ShaderLibrary.oneSaveRipple(
-                                    .float2(origin),
-                                    .float(Float(elapsed)),
-                                    .float(14),     // amplitude
-                                    .float(11),     // frequency
-                                    .float(5.2),    // decay
-                                    .float(760)     // speed
+                content.visualEffect { view, proxy in
+                    view
+                        .distortionEffect(
+                            ShaderLibrary.oneSaveRipple(
+                                .float2(
+                                    proxy.size.width * originUnit.x,
+                                    proxy.size.height * originUnit.y
                                 ),
-                                maxSampleOffset: CGSize(width: 24, height: 24)
-                            )
-                            .layerEffect(
-                                ShaderLibrary.oneSaveChroma(
-                                    .float2(origin),
-                                    .float(Float(elapsed)),
-                                    .float(760),    // speed — ripple ile aynı
-                                    .float(34),     // band genişliği
-                                    .float(0.9)     // kayma şiddeti (px)
+                                .float(elapsed),
+                                .float(14),     // amplitude
+                                .float(11),     // frequency
+                                .float(5.2),    // decay
+                                .float(760)     // speed
+                            ),
+                            maxSampleOffset: CGSize(width: 24, height: 24)
+                        )
+                        .layerEffect(
+                            ShaderLibrary.oneSaveChroma(
+                                .float2(
+                                    proxy.size.width * originUnit.x,
+                                    proxy.size.height * originUnit.y
                                 ),
-                                maxSampleOffset: CGSize(width: 2, height: 2)
-                            )
-                    } else {
-                        content
-                    }
+                                .float(elapsed),
+                                .float(760),    // speed — ripple ile aynı
+                                .float(34),     // band genişliği
+                                .float(0.9)     // kayma şiddeti (px)
+                            ),
+                            maxSampleOffset: CGSize(width: 2, height: 2)
+                        )
                 }
             }
         }
@@ -76,7 +75,8 @@ struct SaveRippleModifier: ViewModifier {
 }
 
 extension View {
-    /// Kayıt dalgası. `start` set edildiği anda tetiklenir.
+    /// Kayıt dalgası. `start` set edildiği anda tetiklenir, nil'e
+    /// dönünce shader devreden çıkar (TimelineView de durur).
     func saveRipple(start: Date?, origin: CGPoint = CGPoint(x: 0.5, y: 0.62)) -> some View {
         modifier(SaveRippleModifier(start: start, originUnit: origin))
     }
@@ -140,11 +140,16 @@ struct SaveRitualMoment: View {
     /// Mesh kontrol noktaları. Bloom aşamasında dışa doğru esniyorlar —
     /// rengin "yayıldığı" hissi buradan geliyor, opacity'den değil.
     private var meshPoints: [SIMD2<Float>] {
-        let spread: Float = (phase == .idle) ? 0.0 : 0.18
+        // MeshGradient noktaları [0,1] ARALIĞINDA olmak zorunda; dışına
+        // taşan nokta gradyanı bozuyor. Esneme bu yüzden dışa değil,
+        // ORTA satır/sütunu içe çekerek yapılıyor — aynı "yayılma"
+        // hissi, geçerli aralıkta.
+        let s: Float = (phase == .idle) ? 0.5 : 0.5 - 0.12
+        let e: Float = (phase == .idle) ? 0.5 : 0.5 + 0.12
         return [
-            SIMD2(0, 0),                    SIMD2(0.5, 0 - spread * 0.5), SIMD2(1, 0),
-            SIMD2(0 - spread * 0.5, 0.5),   SIMD2(0.5, 0.5),              SIMD2(1 + spread * 0.5, 0.5),
-            SIMD2(0, 1),                    SIMD2(0.5, 1 + spread * 0.5), SIMD2(1, 1)
+            SIMD2(0, 0),    SIMD2(0.5, 0),  SIMD2(1, 0),
+            SIMD2(0, s),    SIMD2(0.5, 0.5), SIMD2(1, e),
+            SIMD2(0, 1),    SIMD2(0.5, 1),  SIMD2(1, 1)
         ]
     }
 
@@ -198,11 +203,22 @@ struct SaveRitualMoment: View {
         }
 
         ONEHaptics.saveRitual(mood: mood)
-        phase = .bloom
+
+        // Faz değişimi bir tick ERTELENİYOR: `onAppear` içinde senkron
+        // değiştirilirse SwiftUI ilk kareyi zaten hedef değerle çiziyor
+        // ve implicit animasyon interpolasyon yapmıyor — mühür "beliriyor"
+        // ama içeri yaylanmıyordu. Ayrıca artık explicit withAnimation.
+        DispatchQueue.main.async {
+            withAnimation(.spring(response: 0.42, dampingFraction: 0.58)) {
+                phase = .bloom
+            }
+        }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
             ONEHaptics.saveRitualPeak()
-            phase = .sealed
+            withAnimation(.spring(response: 0.42, dampingFraction: 0.58)) {
+                phase = .sealed
+            }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) {
             withAnimation(.easeOut(duration: 0.4)) { phase = .fading }
