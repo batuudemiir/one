@@ -117,7 +117,7 @@ struct ProfileDashboardView: View {
         }) {
             AddFriendView()
         }
-        .sheet(isPresented: $showFriendsList, onDismiss: {
+        .fullScreenCover(isPresented: $showFriendsList, onDismiss: {
             vm.loadFriendCount()
         }) {
             MyFriendsListView(vm: vm)
