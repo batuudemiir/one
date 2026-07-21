@@ -76,7 +76,7 @@ struct MyFriendsListView: View {
         }
         .onAppear { loadAll() }
         .sheet(isPresented: $showAddFriend, onDismiss: { loadAll() }) {
-            AddFriendView()
+            AddFriendScreen()
         }
         .sheet(isPresented: $showShare) {
             if vm.inviteCode != "------" {

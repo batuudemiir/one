@@ -1314,3 +1314,17 @@ bir gün.";
 "friends.ignore" = "yoksay";
 "friends.noIncoming" = "Bekleyen istek yok.";
 "friends.noOutgoing" = "Gönderilmiş istek yok.";
+
+"addFriend.screenTitle" = "arkadaş ekle";
+"addFriend.segUsername" = "kullanıcı adı";
+"addFriend.segCode" = "kod";
+"addFriend.segContacts" = "kişiler";
+"addFriend.exactHint" = "tam kullanıcı adını yaz. ONE'da rastgele insan önerilmez.";
+"addFriend.notFound" = "Bulunamadı. Yazımı kontrol et.";
+"addFriend.addAction" = "ekle";
+"addFriend.codeHint" = "kodunu göster ya da okut. bağlantın seni tanıyanlara özel.";
+"addFriend.copyCode" = "kodu kopyala";
+"addFriend.codeCopied" = "kopyalandı ✓";
+"addFriend.scanWithCamera" = "kamerayla okut";
+"addFriend.contactsPrivacy" = "kişilerin telefonundan çıkmaz — sadece şifrelenmiş özetleri karşılaştırılır.";
+"addFriend.allowContacts" = "kişilere izin ver";

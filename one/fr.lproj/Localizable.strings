@@ -1171,3 +1171,17 @@ one day.";
 "friends.ignore" = "ignore";
 "friends.noIncoming" = "No pending requests.";
 "friends.noOutgoing" = "No sent requests.";
+
+"addFriend.screenTitle" = "add friend";
+"addFriend.segUsername" = "username";
+"addFriend.segCode" = "code";
+"addFriend.segContacts" = "contacts";
+"addFriend.exactHint" = "type the exact username. ONE never suggests strangers.";
+"addFriend.notFound" = "Not found. Check the spelling.";
+"addFriend.addAction" = "add";
+"addFriend.codeHint" = "show or scan your code. your link is only for people who know you.";
+"addFriend.copyCode" = "copy code";
+"addFriend.codeCopied" = "copied ✓";
+"addFriend.scanWithCamera" = "scan with camera";
+"addFriend.contactsPrivacy" = "contacts never leave your phone — only encrypted digests are compared.";
+"addFriend.allowContacts" = "allow contacts";

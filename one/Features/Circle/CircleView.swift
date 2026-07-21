@@ -318,7 +318,7 @@ struct CircleView: View {
             loadPendingCount()
             deepLinkInviteCode = nil
         }) {
-            AddFriendView(prefilledCode: deepLinkInviteCode)
+            AddFriendScreen(prefilledCode: deepLinkInviteCode)
         }
         .sheet(item: publicProfileBinding) { wrap in
             PublicProfileView(userID: wrap.value)

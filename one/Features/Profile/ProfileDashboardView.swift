@@ -115,7 +115,7 @@ struct ProfileDashboardView: View {
             // Arkadaş eklendiyse sayı güncellensin
             vm.loadFriendCount()
         }) {
-            AddFriendView()
+            AddFriendScreen()
         }
         .fullScreenCover(isPresented: $showFriendsList, onDismiss: {
             vm.loadFriendCount()
