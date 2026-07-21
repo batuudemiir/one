@@ -27,9 +27,6 @@ struct TodayView: View {
     // Kayıt anı — SaveRitualMoment tetikleyicisi
     @State private var showRitual:   Bool    = false
     @State private var ritualMood:   ONEMood? = nil
-    /// Metal dalgasının başladığı an. Shader ekran İÇERİĞİNE uygulanıyor
-    /// (üstteki katmana değil) — bükülen şey ekranın kendisi olmalı.
-    @State private var ritualStart:  Date?   = nil
 
     // Kayıt sonrası opsiyonel ekler (ritüel 2 adıma indiği için)
     @State private var showExtraPhotoPicker: Bool = false
@@ -88,9 +85,6 @@ struct TodayView: View {
                 }
             }
             .animation(.spring(response: 0.45, dampingFraction: 0.82), value: vm.todayState == .completed)
-            // Kayıt dalgası burada: `SaveRitualMoment` üstte çizilen bir
-            // katman, onu bükmek görünmez bir şeyi bükmek olurdu.
-            .saveRipple(start: ritualStart)
 
             // Streak milestone kutlaması
             if showMilestone, let milestone = vm.streakMilestone {
@@ -113,9 +107,6 @@ struct TodayView: View {
                 SaveRitualMoment(mood: mood) {
                     showRitual = false
                     ritualMood = nil
-                    // nil'e dönünce TimelineView duruyor — shader boşuna
-                    // her kareyi yeniden çizmesin.
-                    ritualStart = nil
                 }
                 .accessibilityHidden(true)
             }
@@ -249,8 +240,11 @@ struct TodayView: View {
     /// içinde — burada yalnız hangi mood'la başlayacağı söyleniyor.
     /// Temizliği de o view kendi bitişinde yapıyor (`onFinished`).
     private func triggerRitual(mood: ONEMood?) {
+        // mood çözülemezse (ör. arşivin nötr gri placeholder'ı) ritüel hiç
+        // açılmıyor — eskiden burada yalnız `ritualMood` nil kalıyor ama
+        // shader yine de başlatılıyordu, yani kapatacak kimse olmadan.
+        guard let mood else { return }
         ritualMood = mood
-        ritualStart = Date()
         showRitual = true
     }
 }

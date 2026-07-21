@@ -8,77 +8,92 @@
 
 import SwiftUI
 
-// MARK: - Ripple modifier
+// MARK: - Ripple field
 
-/// Kayıt anında ekranın kendisini büken dalga.
+/// Kayıt anının dalgası — Metal ile bükülen, kendi kendine yeten katman.
 ///
-/// Neden shader: `.distortionEffect` altındaki view'ın **piksellerini**
-/// yeniden örnekliyor. Üstüne çizilen bir halka "bir animasyon oynadı"
-/// der; bükülen ekran "bir şey oldu" der. Kayıt günün tek eylemi olduğu
-/// için ikincisini hak ediyor.
+/// **Bu shader'lar bilerek uygulamanın içeriğine UYGULANMIYOR.**
+/// `.distortionEffect` / `.layerEffect` altındaki ağacı ekran dışında
+/// rasterize ediyor. O ağaçta arka planını örnekleyen bir yüzey varsa —
+/// iOS 26+ `glassEffect` (Liquid Glass) tam olarak öyle — örnekleyecek
+/// arka plan kalmıyor ve kare boş çiziliyor. Kaydettikten sonra ekranın
+/// beyaz kalmasının sebebi buydu: `TodayCompletedView` üç yerde
+/// `.liquidGlass(...)` kullanıyor ve cihaz iOS 26+ olduğu için gerçek
+/// cam çiziliyordu.
 ///
-/// Reduce Motion'da tamamen atlanır — bu efekt vestibüler rahatsızlık
-/// yaratabilecek türden ve alternatifi sade bir soluşma.
-struct SaveRippleModifier: ViewModifier {
-    /// Dalganın başladığı an. nil ise shader hiç devreye girmez.
-    let start: Date?
-    /// Merkez — kayıt butonunun konumu. Birim kare (0…1) içinde.
-    var originUnit: CGPoint = CGPoint(x: 0.5, y: 0.62)
+/// Buradaki ağaçta yalnızca şekil var: güvenle rasterize olur ve efekt
+/// kimsenin arka planına bağlı değil.
+///
+/// Reduce Motion'da hiç çizilmez — bu efekt vestibüler rahatsızlık
+/// yaratabilecek türden.
+struct SaveRippleField: View {
+    let mood: ONEMood
+    /// Dalganın başladığı an.
+    let start: Date
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Cephe hızı (pt/sn). Shader ile çizim aynı değeri paylaşıyor,
+    /// yoksa prizmatik kenar halkanın üstüne oturmuyor.
+    private let speed: Double = 760
+    /// Dalganın toplam ömrü. Bundan sonra her iki shader da birim
+    /// dönüşüme iner — boşuna kare çizmemek için katman kapanır.
+    private let lifetime: Double = 1.6
 
-    func body(content: Content) -> some View {
-        if reduceMotion || start == nil {
-            content
-        } else {
-            // `GeometryReader` KULLANILMIYOR: bir modifier'ın içeriğini
-            // GeometryReader'a sarmak düzeni bozar (tüm alanı kaplar,
-            // çocuğu sol-üste hizalar). `visualEffect` geometriyi düzene
-            // dokunmadan verir — shader'ı ekranın tamamına uygulamanın
-            // tek güvenli yolu bu.
+    var body: some View {
+        GeometryReader { geo in
+            let origin = CGPoint(x: geo.size.width * 0.5, y: geo.size.height * 0.5)
+            let reach  = hypot(geo.size.width, geo.size.height)
+
             TimelineView(.animation) { timeline in
-                let elapsed = Float(start.map { timeline.date.timeIntervalSince($0) } ?? 0)
+                let elapsed = max(0, timeline.date.timeIntervalSince(start))
 
-                content.visualEffect { view, proxy in
-                    view
-                        .distortionEffect(
-                            ShaderLibrary.oneSaveRipple(
-                                .float2(
-                                    proxy.size.width * originUnit.x,
-                                    proxy.size.height * originUnit.y
-                                ),
-                                .float(elapsed),
-                                .float(14),     // amplitude
-                                .float(11),     // frequency
-                                .float(5.2),    // decay
-                                .float(760)     // speed
-                            ),
-                            maxSampleOffset: CGSize(width: 24, height: 24)
-                        )
-                        .layerEffect(
-                            ShaderLibrary.oneSaveChroma(
-                                .float2(
-                                    proxy.size.width * originUnit.x,
-                                    proxy.size.height * originUnit.y
-                                ),
-                                .float(elapsed),
-                                .float(760),    // speed — ripple ile aynı
-                                .float(34),     // band genişliği
-                                .float(0.9)     // kayma şiddeti (px)
-                            ),
-                            maxSampleOffset: CGSize(width: 2, height: 2)
-                        )
-                }
+                rings(reach: reach, elapsed: elapsed)
+                    .frame(width: geo.size.width, height: geo.size.height)
+                    .distortionEffect(
+                        ShaderLibrary.oneSaveRipple(
+                            .float2(Float(origin.x), Float(origin.y)),
+                            .float(Float(elapsed)),
+                            .float(18),     // amplitude
+                            .float(11),     // frequency
+                            .float(4.6),    // decay
+                            .float(Float(speed))
+                        ),
+                        maxSampleOffset: CGSize(width: 30, height: 30)
+                    )
+                    .layerEffect(
+                        ShaderLibrary.oneSaveChroma(
+                            .float2(Float(origin.x), Float(origin.y)),
+                            .float(Float(elapsed)),
+                            .float(Float(speed)),
+                            .float(40),     // band genişliği
+                            .float(1.2)     // kayma şiddeti (px)
+                        ),
+                        maxSampleOffset: CGSize(width: 3, height: 3)
+                    )
+                    .opacity(elapsed > lifetime ? 0 : 1)
             }
         }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
     }
-}
 
-extension View {
-    /// Kayıt dalgası. `start` set edildiği anda tetiklenir, nil'e
-    /// dönünce shader devreden çıkar (TimelineView de durur).
-    func saveRipple(start: Date?, origin: CGPoint = CGPoint(x: 0.5, y: 0.62)) -> some View {
-        modifier(SaveRippleModifier(start: start, originUnit: origin))
+    /// Genişleyen üç cephe. Halkalar mükemmel daire olarak başlıyor,
+    /// shader onları bükünce organik bir dalgaya dönüşüyorlar — asıl
+    /// etkiyi yapan bu, halkanın kendisi değil.
+    private func rings(reach: CGFloat, elapsed: Double) -> some View {
+        ZStack {
+            ForEach(0..<3, id: \.self) { index in
+                let delay    = Double(index) * 0.16
+                let progress = min(max(0, elapsed - delay) / 1.15, 1)
+                let fade     = 1 - progress
+
+                Circle()
+                    .stroke(
+                        mood.color.opacity(0.55 * fade),
+                        lineWidth: 3.2 - Double(index) * 0.7
+                    )
+                    .frame(width: reach * progress, height: reach * progress)
+            }
+        }
     }
 }
 
@@ -95,6 +110,9 @@ struct SaveRitualMoment: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var phase: Phase = .idle
+    /// Dalganın sıfır anı. View doğduğunda sabitleniyor — dışarıdan
+    /// taşınan bir tarih, sahibi silinse bile shader'ı açık bırakabilir.
+    @State private var start = Date()
 
     /// Mührün üç aşaması — `KeyframeAnimator` yerine açık bir faz makinesi:
     /// her aşamanın kendi haptiği var ve sıra dışarıdan okunabilir olmalı.
@@ -102,6 +120,12 @@ struct SaveRitualMoment: View {
 
     var body: some View {
         ZStack {
+            // Dalga en altta: bloom ve mühür onun üstünde okunur kalmalı.
+            // Shader artık burada — koreografiyi zaten bu view yönetiyor,
+            // ömrü de sahibiyle birlikte bitiyor.
+            if !reduceMotion {
+                SaveRippleField(mood: mood, start: start)
+            }
             bloom
             seal
         }
