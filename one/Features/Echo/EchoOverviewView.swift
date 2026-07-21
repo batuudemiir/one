@@ -14,6 +14,8 @@ import SwiftUI
 /// Prototip ikiye indiriyor: ayın rengi, ve müzikle mood'un kesiştiği yer.
 struct EchoOverviewView: View {
     let data: EchoData
+    /// Prototip 15 — aylık poster girişi.
+    var onPoster: (() -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: ONETokens.spacingMD) {
@@ -21,10 +23,23 @@ struct EchoOverviewView: View {
                 .displayLG()
                 .foregroundColor(ONETokens.oneInk)
 
-            Text(NSLocalizedString("echo.subtitle", comment: ""))
-                .bodySM()
-                .foregroundColor(ONETokens.oneAsh)
-                .padding(.top, -5)
+            HStack(alignment: .firstTextBaseline) {
+                Text(NSLocalizedString("echo.subtitle", comment: ""))
+                    .bodySM()
+                    .foregroundColor(ONETokens.oneAsh)
+
+                Spacer()
+
+                if let onPoster {
+                    Button(action: onPoster) {
+                        Text(NSLocalizedString("year.poster", comment: ""))
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(ONETokens.oneBrand)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.top, -5)
 
             glanceCard
                 .padding(.top, ONETokens.spacingSM)

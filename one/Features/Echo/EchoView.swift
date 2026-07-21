@@ -21,6 +21,13 @@ struct EchoView: View {
         _vm = StateObject(wrappedValue: EchoViewModel(context: context))
     }
 
+    @State private var showPoster = false
+    @StateObject private var posterVM = MonthlySummaryViewModel(
+        context: PersistenceController.shared.container.viewContext,
+        year: Calendar.current.component(.year, from: Date()),
+        month: Calendar.current.component(.month, from: Date())
+    )
+
     var body: some View {
         ZStack(alignment: .topLeading) {
             ONETokens.oneCream.ignoresSafeArea()
@@ -36,10 +43,20 @@ struct EchoView: View {
                 // dosyada duruyor ama çağrılmıyor — ilk yeşil build'den
                 // sonra temizlenecek.
                 ScrollView(showsIndicators: false) {
-                    EchoOverviewView(data: vm.data)
+                    EchoOverviewView(data: vm.data, onPoster: { showPoster = true })
                         .padding(.top, onDismiss != nil ? 90 : ONETokens.spacingXL3)
                 }
             }
+
+            // Prototip 15 — aylık poster.
+            EmptyView()
+                .fullScreenCover(isPresented: $showPoster) {
+                    if let data = posterVM.summaryData {
+                        MonthPosterView(data: data, onBack: { showPoster = false })
+                    } else {
+                        ProgressView().task { posterVM.load() }
+                    }
+                }
 
             // Fixed back button (outside ScrollView)
             if let onDismiss {
