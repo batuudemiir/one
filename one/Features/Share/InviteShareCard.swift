@@ -18,9 +18,6 @@ struct InviteShareCard: View {
     let userName: String
     var format: ShareFormat = .story
     
-    // Aesthetic colors for the card
-    private let bgColor1 = Color(hex: "#151516")
-    private let bgColor2 = Color(hex: "#2C2C2C")
     
     var body: some View {
         ZStack {

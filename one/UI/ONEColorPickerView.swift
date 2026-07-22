@@ -21,9 +21,9 @@ struct ONEColorPickerView: View {
     /// `vm.currentScreen` becomes a non-tab screen (e.g. .confirm/.done).
     @State private var lastTab: ScreenType = Experiment.defaultLaunchScreen
 
-    /// Sekme çubuğu — tek kaynak `PrimaryTab`. Bugün/confirm/done/search burada
-    /// yok; kökte tam ekran yönlendiriliyorlar. Ritüel bir yer değil, ortadaki
-    /// "+" butonuyla açılan bir eylem.
+    /// Sekme çubuğu — tek kaynak `PrimaryTab`. Bugün burada yok ama artık
+    /// kabuğun İÇİNDE çiziliyor: dock duruyor, ortadaki "+" onu açıyor.
+    /// Kökte yalnız confirm/done tam ekran kalıyor.
     private var primaryTabs: [ScreenType] { PrimaryTab.screens }
 
     var body: some View {
@@ -48,10 +48,9 @@ struct ONEColorPickerView: View {
                 }
             }
 
-            // Root router:
-            // • confirm/done: full-screen overlays that replace the tab UI
-            // • everything else: the 5-tab interface (native Liquid Glass on
-            //   iOS 26+, legacy BottomNavigation fallback below)
+            // Kök yönlendirici:
+            // • confirm/done: sekme arayüzünü değiştiren tam ekranlar
+            // • diğer her şey: `BottomNavigation`'lı kabuk (Bugün dahil)
             Group {
                 switch vm.currentScreen {
                 case .confirm:
@@ -388,166 +387,6 @@ struct BreatheBlob: Shape {
         }
         path.closeSubpath()
         return path
-    }
-}
-
-// MARK: - Feeling Button Component
-struct FeelingButton: View {
-    let feeling: FeelingOption
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                // Icon
-                FeelingIconView(type: feeling.type)
-                    .frame(width: isSelected ? 44 : 40, height: isSelected ? 36 : 32)
-                    .opacity(isSelected ? 1.0 : 0.6)
-                    .animation(ONEAnimation.micro, value: isSelected)
-
-                // Label
-                Text(feeling.label.uppercased())
-                    .monoLabel(tracking: 0.8)
-                    .foregroundColor(isSelected ? ONETokens.oneInk : ONETokens.oneAsh)
-                    .opacity(isSelected ? 1.0 : 0.7)
-                    .animation(ONEAnimation.micro, value: isSelected)
-            }
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? ONETokens.oneCreamMid : Color.clear)
-                    .animation(ONEAnimation.micro, value: isSelected)
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
-        .accessibilityLabel(String(format: NSLocalizedString("accessibility.confirm.feelingButton", comment: ""), feeling.label))
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-}
-
-// MARK: - Legacy Pattern Screen (kept for backward compatibility)
-struct PatternScreen: View {
-    @ObservedObject var vm: ColorPickerViewModel
-    @Environment(\.managedObjectContext) private var viewContext
-    @State private var animateBars = false
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(NSLocalizedString("colorPicker.echoes", comment: ""))
-                .monoBase(tracking: 2)
-                .foregroundColor(ONETokens.oneAsh)
-                .padding(.top, 24)
-
-            Text(NSLocalizedString("colorPicker.echoesDesc", comment: ""))
-                .displayLG()
-                .foregroundColor(ONETokens.oneInk)
-                .tracking(-0.02)
-                .padding(.top, 14)
-                .lineSpacing(4)
-            
-            if vm.songPatterns.isEmpty {
-                // Empty state
-                VStack(spacing: 16) {
-                    Text("🎵")
-                        .font(.system(size: 60))
-                        .padding(.top, 60)
-                    
-                    Text(NSLocalizedString("colorPicker.noEchoes", comment: ""))
-                        .displaySM()
-                        .foregroundColor(ONETokens.oneInk)
-
-                    Text(NSLocalizedString("colorPicker.echoesHint", comment: ""))
-                        .monoSM(tracking: 0)
-                        .foregroundColor(ONETokens.oneAsh)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .padding(.horizontal, 40)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 40)
-                
-                Spacer()
-            } else {
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 22) {
-                        ForEach(vm.songPatterns) { pattern in
-                            VStack(alignment: .leading, spacing: 5) {
-                                HStack {
-                                    Text(pattern.songName)
-                                        .displaySM()
-                                        .foregroundColor(ONETokens.oneInk)
-                                        .tracking(-0.01)
-                                        .lineLimit(1)
-                                    Spacer()
-                                    Text(String(format: NSLocalizedString("colorPicker.times", comment: ""), pattern.count))
-                                        .monoSM(tracking: 0.06)
-                                        .foregroundColor(ONETokens.oneAsh)
-                                }
-                                
-                                Text(pattern.artistName)
-                                    .monoSM(tracking: 0)
-                                    .foregroundColor(ONETokens.oneAsh)
-                                    .lineLimit(1)
-                                
-                                // Bar
-                                GeometryReader { geo in
-                                    ZStack(alignment: .leading) {
-                                        RoundedRectangle(cornerRadius: 1)
-                                            .fill(ONETokens.oneCreamLow)
-                                            .frame(height: 2)
-                                        
-                                        RoundedRectangle(cornerRadius: 1)
-                                            .fill(pattern.color)
-                                            .frame(width: animateBars ? geo.size.width * CGFloat(pattern.percentage) : 0, height: 2)
-                                    }
-                                }
-                                .frame(height: 2)
-                                .padding(.vertical, 8)
-                                
-                                Text(pattern.dateString)
-                                    .monoBase()
-                                    .foregroundColor(ONETokens.oneAsh)
-                            }
-                        }
-                        
-                        // Insight Card
-                        if let topSong = vm.mostFrequentSong {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    if let emoji = topSong.emoji {
-                                        Text(emoji)
-                                            .font(.system(size: 32))
-                                    }
-                                    Spacer()
-                                }
-                                
-                                Text(String(format: NSLocalizedString("colorPicker.insightText", comment: ""), topSong.songName, topSong.count))
-                                    .displayXS()
-                                    .foregroundColor(ONETokens.oneCream)
-                                    .lineSpacing(4)
-                            }
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 28)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(ONETokens.oneInk)
-                            .cornerRadius(20)
-                            .padding(.top, 20)
-                        }
-                    }
-                    .padding(.top, 32)
-                    .padding(.bottom, 100)
-                }
-            }
-        }
-        .padding(.horizontal, 26)
-        .onAppear {
-            vm.loadPatternData(context: viewContext)
-            withAnimation(.easeOut(duration: ONEAnimation.durationLong).delay(0.2)) {
-                animateBars = true
-            }
-        }
     }
 }
 

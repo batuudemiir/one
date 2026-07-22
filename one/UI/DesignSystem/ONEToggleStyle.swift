@@ -39,21 +39,6 @@ struct ONEToggleStyle: ToggleStyle {
     }
 }
 
-/// Navigation pip indicator for bottom navigation
-/// Purpose: Visual indicator for active navigation state
-/// Usage: Bottom navigation bars, tab indicators, page indicators
-/// Components used: ONETokens.oneInk (active), ONETokens.oneStone (inactive), ONEAnimation.micro
-struct NavigationPip: View {
-    let isActive: Bool
-    
-    var body: some View {
-        Circle()
-            .fill(isActive ? ONETokens.oneInk : ONETokens.oneStone)
-            .frame(width: 6, height: 6)
-            .animation(ONEAnimation.micro, value: isActive)
-    }
-}
-
 extension ToggleStyle where Self == ONEToggleStyle {
     /// ONE app toggle style
     static var one: ONEToggleStyle { ONEToggleStyle() }

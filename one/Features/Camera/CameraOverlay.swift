@@ -25,7 +25,6 @@ struct CameraOverlay: View {
 
     private var bInset: CGFloat { max(safeBottom, 20) }
     private var sw: CGFloat { UIScreen.main.bounds.width  }
-    private var sh: CGFloat { UIScreen.main.bounds.height }
 
     var body: some View {
         ZStack {
@@ -578,14 +577,4 @@ struct GridFrameGuide: View {
         .accessibilityHidden(true)
     }
 
-}
-
-// MARK: - ScaleButtonStyle
-
-struct ScaleButtonStyleCamera: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.93 : 1)
-            .animation(.spring(response: 0.18, dampingFraction: 0.7), value: configuration.isPressed)
-    }
 }

@@ -23,11 +23,6 @@ class TicketmasterManager {
     private let cacheTTL: TimeInterval = 24 * 60 * 60  // 24 saat — günde bir yenileme
     private var didLogMissingKey = false
 
-    /// Tier-1: cities where Biletix has active event pages and direct TM→Biletix links work reliably.
-    /// All other cities use the Biletix category search page URL which never returns 404.
-    private let biletixTier1Cities: Set<String> = [
-        "istanbul", "ankara", "izmir", "bursa", "antalya", "adana", "gaziantep"
-    ]
 
     private init() {
         let possibleKeys = [
@@ -723,9 +718,6 @@ class TicketmasterManager {
         }
     }
 
-    private func fallbackToMock(for moodLabel: String, city: String) -> [MoodEvent] {
-        []
-    }
 
     @discardableResult
     private func cacheAndReturn(_ events: [MoodEvent], key: String) -> [MoodEvent] {

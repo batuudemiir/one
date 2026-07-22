@@ -385,33 +385,7 @@ struct CircleView: View {
         .accessibilityLabel(NSLocalizedString("accessibility.circle.addFriend", comment: ""))
     }
 
-    private var quickAddHeaderButton: some View {
-        Button(action: { showQuickAdd = true }) {
-            Image(systemName: "bolt.fill")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(ONETokens.oneBrand)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .background(Capsule().fill(ONETokens.oneSilver.opacity(0.9)))
-        }
-        .buttonStyle(ScaleButtonStyle())
-        .accessibilityLabel("Hızlı ekle")
-    }
 
-    /// Keşfet sekme çubuğundan çıktı — girişi burada.
-    /// Odak Frekans'ta kalırken keşif yüzeyi (ve gelir modeli) korunuyor.
-    private var discoverHeaderButton: some View {
-        Button(action: { onNavigateToDiscover?() }) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(ONETokens.oneAsh)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .background(Capsule().fill(ONETokens.oneSilver.opacity(0.9)))
-        }
-        .buttonStyle(ScaleButtonStyle())
-        .accessibilityLabel(NSLocalizedString("nav.discover", comment: ""))
-    }
 
     private var notificationsHeaderButton: some View {
         Button(action: { showNotifications = true }) {
@@ -611,38 +585,6 @@ struct CircleView: View {
     
     // MARK: - Rhythm Strip Data
 
-    /// Kullanıcı dahil çevrenin streak verisi — giriş sırası korunur.
-    private var rhythmEntries: [CircleRhythmStrip.Entry] {
-        var result: [CircleRhythmStrip.Entry] = []
-
-        // Kendisi
-        let selfName = cloudKitManager.currentUser?["displayName"] as? String ?? "Sen"
-        let selfColorHex = cloudKitManager.currentUser?["avatarColor"] as? String ?? "#5B8DEF"
-        result.append(.init(
-            name: selfName,
-            streakDays: localCurrentStreak,
-            avatarColorHex: selfColorHex,
-            isSelf: true
-        ))
-
-        // Arkadaşlar
-        for data in friendsShares {
-            let name = data.user["displayName"] as? String ?? "?"
-            let colorHex = data.user["avatarColor"] as? String
-                ?? data.share?["moodColor"] as? String
-                ?? "#888888"
-            // TODO: CloudKit FriendCircleData'ya kalıcı streakDays alanı eklenince burası güncellenmeli.
-            let days = data.share?["currentStreak"] as? Int ?? 0
-            result.append(.init(
-                name: name,
-                streakDays: days,
-                avatarColorHex: colorHex,
-                isSelf: false
-            ))
-        }
-
-        return result
-    }
 
     // Card builders extracted to CircleView+Cards.swift (Faz 3.1, 2026-04-26).
     // Helpers extracted to CircleView+Helpers.swift (Faz 3.1, 2026-04-26).

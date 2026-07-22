@@ -11,8 +11,3 @@ import SwiftUI
 struct PremiumBadge: View {
     var body: some View { EmptyView() }
 }
-
-/// Stub — premium kaldırıldığı için kullanılmıyor.
-struct PremiumLockOverlay: View {
-    var body: some View { EmptyView() }
-}

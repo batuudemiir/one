@@ -213,11 +213,6 @@ struct ONEShareSheet: View {
 
     // MARK: - Helpers
 
-    private var platformSublabel: String {
-        entry.platform.lowercased().contains("spotify")
-            ? NSLocalizedString("share.spotifyLink", comment: "")
-            : NSLocalizedString("share.appleMusicLink", comment: "")
-    }
 
     private var platformURL: URL? {
         if let url = entry.spotifyURL { return url }

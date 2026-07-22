@@ -77,9 +77,6 @@ struct MonthlySummaryView: View {
         )
     }
 
-    // Sayfa etiketleri — picker için
-    private let pageLabels = ["Kapak", "Ruh Hali", "Top Şarkılar"]
-    private let pageIcons  = ["rectangle.portrait.fill", "calendar.badge.clock", "music.note.list"]
 
     var body: some View {
         ZStack {

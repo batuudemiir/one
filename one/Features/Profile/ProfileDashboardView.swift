@@ -169,19 +169,5 @@ struct ProfileDashboardView: View {
 
     // MARK: - Derived data shared by hero + recent strip
 
-    private var totalDaysCount: Int {
-        let request = NSFetchRequest<DailySong>(entityName: "DailySong")
-        return (try? context.count(for: request)) ?? 0
-    }
 
-    private var recentMoodColors: [Color?] {
-        let cal = Calendar.current
-        let today = cal.startOfDay(for: Date())
-        return (0..<7).reversed().map { offset in
-            guard let day = cal.date(byAdding: .day, value: -offset, to: today),
-                  let song = PersistenceController.shared.fetchDailySong(for: day, context: context),
-                  let hex = song.moodColorHex, !hex.isEmpty else { return nil }
-            return Color(hex: hex)
-        }
-    }
 }

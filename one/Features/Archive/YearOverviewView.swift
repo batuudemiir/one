@@ -157,12 +157,6 @@ struct YearOverviewView: View {
         return month.primaryEntry(for: date)
     }
 
-    private func color(day: Int, in month: MonthSummary) -> Color? {
-        guard let date = Calendar.current.date(
-            from: DateComponents(year: month.year, month: month.month, day: day)
-        ) else { return nil }
-        return month.primaryEntry(for: date)?.moodColor
-    }
 
     private func monthName(_ month: Int) -> String {
         var comps = DateComponents(); comps.year = year; comps.month = month

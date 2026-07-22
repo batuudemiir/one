@@ -3,7 +3,6 @@ import SwiftUI
 struct MoodHeroView: View {
     @ObservedObject var vm: KesfetViewModel
 
-    private let ink = ONETokens.oneInk
     private let sub = ONETokens.oneInk.opacity(0.55)
     private let dim = ONETokens.oneInk.opacity(0.35)
 
@@ -18,17 +17,6 @@ struct MoodHeroView: View {
         }
     }
 
-    private func gradientBg(mood: KesfetMood) -> some View {
-        LinearGradient(
-            gradient: Gradient(stops: [
-                .init(color: mood.color.opacity(0.15), location: 0),
-                .init(color: mood.color.opacity(0.04), location: 0.6),
-                .init(color: .clear, location: 1),
-            ]),
-            startPoint: UnitPoint(x: 0.5, y: 0),
-            endPoint: UnitPoint(x: 0.1, y: 1)
-        )
-    }
 
     private func decorativeCircles(mood: KesfetMood) -> some View {
         GeometryReader { geo in

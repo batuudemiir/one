@@ -76,13 +76,3 @@ enum PremiumFeature: String, CaseIterable {
         }
     }
 }
-
-// MARK: - Subscription Plan
-// These identifiers must match the product IDs configured in App Store Connect
-// and in the RevenueCat dashboard.
-
-enum SubscriptionPlan: String, CaseIterable {
-    case monthly  = "com.batudemir.ones.oneplus.monthly"
-    case yearly   = "com.batudemir.ones.oneplus.yearly"
-    case lifetime = "com.batudemir.ones.oneplus.lifetime"
-}

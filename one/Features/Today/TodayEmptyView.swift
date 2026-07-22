@@ -18,7 +18,6 @@ struct TodayEmptyView: View {
     @ObservedObject var vm: TodayViewModel
     @Binding var currentStep: Step
     @Environment(\.managedObjectContext) var viewContext
-    @AppStorage(ONETokens.cityPreferenceKey) private var preferredCity: String = ONETokens.defaultCity
     @StateObject var recommendationEngine: RecommendationEngine
 
     // Seçimler
@@ -52,9 +51,6 @@ struct TodayEmptyView: View {
 
     // Scroll proxy — mood/feeling action'larından erişmek için
     @State var scrollProxy: ScrollViewProxy? = nil
-    // Empati kartı — oturumda bir kez gösterilir
-    @State private var empathyCardDismissed: Bool = false
-    @State private var returnWelcomeDismissed: Bool = false
 
     init(vm: TodayViewModel, currentStep: Binding<Step>) {
         self.vm = vm

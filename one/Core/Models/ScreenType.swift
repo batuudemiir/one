@@ -21,11 +21,6 @@ enum ScreenType {
     case search
 }
 
-enum ReflectionType {
-    case reflect   // Yansıtıyor
-    case transport // Bir yere taşıyor
-}
-
 // MARK: - Mock Data
 let mockSongs: [Song] = [
     Song(name: "Last Last", artist: "Burna Boy", genre: "Afrobeats", emoji: "🌍", grad: [ONETokens.moodOrange, Color(hex: "#E8501A")], shadow: ONETokens.moodOrange.opacity(0.45)),

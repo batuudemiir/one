@@ -32,7 +32,6 @@ final class AppUpdateChecker: ObservableObject {
         willSet { objectWillChange.send() }
     }
 
-    private let bundleID = "com.batudemir.ones"
     private let lookupURL = "https://itunes.apple.com/lookup?bundleId=com.batudemir.ones&country=tr"
 
     /// Mevcut yüklü sürüm (CFBundleShortVersionString)

@@ -21,7 +21,6 @@ import SwiftUI
 /// any photograph.
 struct ProfileHeroSection: View {
     @ObservedObject var vm: ProfileViewModel
-    @Environment(\.profilePalette) private var palette
 
     /// Week of recent mood colors (nil = no entry that day). Used by the
     /// fallback gradient to blend today's mood color into the avatar

@@ -9,7 +9,6 @@ import PhotosUI
 
 struct TodayView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var vm: TodayViewModel
     @Binding var entryStep: Step
 

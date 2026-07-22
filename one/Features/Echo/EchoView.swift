@@ -39,9 +39,7 @@ struct EchoView: View {
                 echoEmptyState
             } else {
                 // Prototip: yedi bölümlü pano değil, iki içgörü kartı.
-                // Eski bölümler (statsSection, weekSection, hourSection…)
-                // dosyada duruyor ama çağrılmıyor — ilk yeşil build'den
-                // sonra temizlenecek.
+                // Eski bölümler silindi.
                 ScrollView(showsIndicators: false) {
                     EchoOverviewView(data: vm.data, onPoster: { showPoster = true })
                         .padding(.top, onDismiss != nil ? 90 : ONETokens.spacingXL3)
@@ -152,56 +150,8 @@ struct EchoView: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: — Kart sarmalayıcı
-    private func sectionCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            content()
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(ONETokens.onePaper.opacity(0.72))
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(ONETokens.oneSilver, lineWidth: 1)
-        )
-        .padding(.horizontal, 16)
-        .padding(.top, 12)
-    }
 
-    // MARK: — Header
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(NSLocalizedString("echo.title", comment: ""))
-                .displayLG()
-                .foregroundColor(ONETokens.oneInk)
 
-            Text(NSLocalizedString("echo.subtitle", comment: ""))
-                .bodySM()
-                .foregroundColor(ONETokens.oneAsh)
-        }
-        .padding(.bottom, 4)
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 8)
-        .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.0), value: appeared)
-    }
-
-    // MARK: — Period Toggle
-    private var periodToggle: some View {
-        HStack(spacing: 0) {
-            periodBtn(NSLocalizedString("echo.thisMonth", comment: ""), isSelected: vm.showThisMonth) {
-                withAnimation(.easeInOut(duration: 0.18)) { vm.showThisMonth = true }
-            }
-            periodBtn(NSLocalizedString("echo.allTime", comment: ""), isSelected: !vm.showThisMonth) {
-                withAnimation(.easeInOut(duration: 0.18)) { vm.showThisMonth = false }
-            }
-        }
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(ONETokens.oneSilver.opacity(0.5))
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(ONETokens.oneSilver, lineWidth: 1))
-        )
-    }
 
     private func periodBtn(_ label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -270,52 +220,6 @@ struct EchoView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    // MARK: — Mood Dağılımı
-    private var moodDistributionSection: some View {
-        let moods = vm.showThisMonth ? vm.data.thisMonthMoodDistribution : vm.data.moodDistribution
-        let topMoods = Array(moods.prefix(6))
-        let maxCount = topMoods.map(\.count).max() ?? 1
-
-        return VStack(alignment: .leading, spacing: 14) {
-            label(NSLocalizedString("echo.moodDistribution", comment: ""))
-
-            if topMoods.isEmpty {
-                emptyNote(NSLocalizedString("echo.noData", comment: ""))
-            } else {
-                VStack(spacing: 8) {
-                    ForEach(topMoods) { mood in
-                        HStack(spacing: 10) {
-                            Text(mood.label)
-                                .monoSM(tracking: 0.3)
-                                .foregroundColor(ONETokens.oneAsh)
-                                .frame(width: 72, alignment: .leading)
-                                .lineLimit(1)
-
-                            GeometryReader { geo in
-                                let barWidth = geo.size.width * CGFloat(mood.count) / CGFloat(maxCount)
-                                ZStack(alignment: .leading) {
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(ONETokens.oneSilver.opacity(0.6))
-                                        .frame(maxWidth: .infinity)
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(Color(hex: mood.colorHex))
-                                        .frame(width: max(barWidth, 8))
-                                }
-                            }
-                            .frame(height: 10)
-
-                            Text("\(mood.count)")
-                                .monoSM(tracking: 0)
-                                .foregroundColor(ONETokens.oneCharcoal)
-                                .frame(width: 28, alignment: .trailing)
-                        }
-                        .opacity(appeared ? 1 : 0)
-                        .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.1), value: appeared)
-                    }
-                }
-            }
-        }
-    }
 
     // MARK: — Hafta Bölümü
     private var weekSection: some View {
@@ -366,27 +270,6 @@ struct EchoView: View {
             .map { NSLocalizedString($0, comment: "") })[idx % 7]
     }
 
-    // MARK: — Tekrar Eden Şarkılar
-    private var repeatedSongsSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            label(NSLocalizedString("echo.repeatedSongs", comment: ""))
-
-            if vm.data.repeatedSongs.isEmpty {
-                emptyNote(NSLocalizedString("echo.noRepeatedSongs", comment: ""))
-            } else {
-                VStack(spacing: 0) {
-                    ForEach(Array(vm.data.repeatedSongs.enumerated()), id: \.element.id) { idx, song in
-                        songRow(song, idx: idx)
-                        if idx < vm.data.repeatedSongs.count - 1 {
-                            Divider()
-                                .background(ONETokens.oneCream)
-                                .padding(.vertical, 2)
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     private func songRow(_ song: RepeatedSong, idx: Int) -> some View {
         HStack(spacing: 12) {
@@ -472,136 +355,7 @@ struct EchoView: View {
         }
     }
 
-    // MARK: — En Uzun Seri
-    private var streakSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            label(NSLocalizedString("echo.longestStreak", comment: ""))
 
-            if vm.data.longestStreak.days == 0 {
-                emptyNote(NSLocalizedString("echo.noStreak", comment: ""))
-            } else {
-                VStack(alignment: .leading, spacing: 10) {
-                    // Büyük sayı
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("\(vm.data.longestStreak.days)")
-                            .font(.system(size: 52, weight: .semibold))
-                            .foregroundColor(ONETokens.oneInk)
-                            .tracking(-1.5)
-                        Text(NSLocalizedString("echo.days", comment: ""))
-                            .displayXS()
-                            .foregroundColor(ONETokens.oneAsh)
-                    }
-                    .opacity(appeared ? 1 : 0)
-                    .offset(y: appeared ? 0 : 10)
-                    .animation(ONEAnimation.cardSpring.delay(0.2), value: appeared)
-
-                    // Tarih aralığı
-                    Text("\(vm.data.longestStreak.startDate)  →  \(vm.data.longestStreak.endDate)")
-                        .monoSM()
-                        .foregroundColor(ONETokens.oneCharcoal)
-
-                    // Renk şeridi
-                    if !vm.data.longestStreak.colors.isEmpty {
-                        HStack(spacing: 3) {
-                            ForEach(Array(vm.data.longestStreak.colors.enumerated()), id: \.offset) { _, color in
-                                RoundedRectangle(cornerRadius: 3)
-                                    .fill(color)
-                                    .frame(height: 10)
-                                    .frame(maxWidth: .infinity)
-                            }
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: 5))
-                        .opacity(appeared ? 1 : 0)
-                        .animation(.easeOut(duration: ONEAnimation.durationLong).delay(0.4), value: appeared)
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: — Çevre Eşleşmesi
-    private var syncSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // Başlık + loading
-            HStack {
-                label(NSLocalizedString("echo.circle", comment: ""))
-                Spacer()
-                if vm.isSyncLoading {
-                    ProgressView()
-                        .scaleEffect(0.7)
-                }
-            }
-
-            // Özet sayı
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(vm.data.syncCount)")
-                    .displayXL()
-                    .fontWeight(.semibold)
-                    .foregroundColor(ONETokens.oneInk)
-                Text(NSLocalizedString("echo.circleMatches", comment: ""))
-                    .bodyMD()
-                    .foregroundColor(ONETokens.oneAsh)
-            }
-
-            // Eşleşme listesi
-            if !vm.data.circleSyncMatches.isEmpty {
-                VStack(spacing: 8) {
-                    ForEach(vm.data.circleSyncMatches.prefix(5)) { match in
-                        HStack(spacing: 12) {
-                            // Mood rengi dot
-                            Circle()
-                                .fill(Color(hex: match.moodColorHex))
-                                .frame(width: 10, height: 10)
-
-                            // Şarkı + sanatçı
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(match.songName)
-                                    .bodyMD()
-                                    .foregroundColor(ONETokens.oneInk)
-                                    .lineLimit(1)
-                                Text(match.artistName)
-                                    .monoSM(tracking: 0)
-                                    .foregroundColor(ONETokens.oneAsh)
-                            }
-
-                            Spacer()
-
-                            // Arkadaş + tarih
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text(match.friendDisplayName)
-                                    .monoSM(tracking: 0.4)
-                                    .foregroundColor(ONETokens.oneInk)
-                                Text(match.dateLabel)
-                                    .monoSM(tracking: 0)
-                                    .foregroundColor(ONETokens.oneMist)
-                            }
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(ONETokens.oneSilver)
-                        )
-                    }
-
-                    // 5'ten fazlası varsa "ve X daha"
-                    if vm.data.circleSyncMatches.count > 5 {
-                        Text(String(format: NSLocalizedString("echo.moreMatches", comment: ""), vm.data.circleSyncMatches.count - 5))
-                            .monoSM(tracking: 0.5)
-                            .foregroundColor(ONETokens.oneMist)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.top, 2)
-                    }
-                }
-            } else if !vm.isSyncLoading {
-                // Boş durum
-                Text(NSLocalizedString("echo.noCircleMatches", comment: ""))
-                    .monoSM(tracking: 0.3)
-                    .foregroundColor(ONETokens.oneMist)
-                    .padding(.top, 2)
-            }
-        }
-    }
 
 
     // MARK: — Yardımcılar

@@ -235,22 +235,4 @@ struct SearchScreen: View {
         .padding(.horizontal, 26)
     }
     
-    private func deleteTodaysSong() {
-        let today = Calendar.current.startOfDay(for: Date())
-        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "date == %@", today as NSDate)
-        
-        do {
-            let results = try viewContext.fetch(fetchRequest)
-            for song in results {
-                viewContext.delete(song)
-            }
-            try viewContext.save()
-            
-            // Reload archive data
-            vm.loadArchiveData(context: viewContext)
-        } catch {
-            ONELogger.debug("Error deleting today's song: \(error)", category: .music)
-        }
-    }
 }

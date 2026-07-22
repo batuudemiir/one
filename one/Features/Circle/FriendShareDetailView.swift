@@ -654,23 +654,6 @@ struct FriendShareDetailView: View {
     }
 }
 
-// MARK: - Photo Viewer Full Screen
-
-struct PhotoViewerFullScreen: View {
-    let image: UIImage
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFit()
-        }
-        .onTapGesture { dismiss() }
-    }
-}
-
 // MARK: - Photo Data Viewer (for Data-based images)
 
 struct PhotoDataViewerSheet: View {

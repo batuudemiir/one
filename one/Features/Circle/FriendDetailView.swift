@@ -26,7 +26,6 @@ struct FriendDetailView: View {
     @State private var showPhotoViewer = false
     @State private var showRemoveAlert = false
     @State private var showBlockAlert  = false
-    @State private var showProfileZoom = false
     @State private var profilePhotoPressed = false
     @State private var showFriendProfile = false  // v2.6 — public profile sheet
     @State private var showCommentSheet  = false
@@ -262,9 +261,6 @@ struct FriendDetailView: View {
 
     // MARK: - Header
 
-    private var friendUsername: String? {
-        friendData.user["username"] as? String
-    }
     private var friendStreak: Int {
         friendData.share?["currentStreak"] as? Int ?? 0
     }

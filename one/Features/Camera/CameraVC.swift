@@ -64,7 +64,6 @@ final class CameraVC: UIViewController {
     private var baseZoom:     CGFloat = 1.0
     private var localMinZoom: CGFloat = 1.0
     private var localMaxZoom: CGFloat = 12.0
-    private var localFlash:   CameraFlash = .off   // mirror of state.flash, read on sq
 
     // State flags (main thread only)
     private var isLocked        = false

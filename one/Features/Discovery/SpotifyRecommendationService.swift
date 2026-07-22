@@ -445,30 +445,6 @@ class SpotifyRecommendationService {
     
     // MARK: - Helper: Generate Recommendation Reason
     
-    private func generateReason(_ track: SpotifyTrack, _ profile: TasteProfile?) -> String? {
-        guard let profile = profile else { return nil }
-
-        // Artist or track seeds used → most personalised signal
-        if !profile.topArtists.isEmpty {
-            if profile.topArtists.contains(where: { track.artistName.localizedCaseInsensitiveContains($0) }) {
-                return "Sevdiğin sanatçılara benzer"
-            }
-        }
-        if !profile.topTrackIds.isEmpty {
-            return "Seçtiğin şarkılara göre"
-        }
-
-        // Fallback: artist or mood match
-        if profile.topArtists.contains(where: { track.artistName.localizedCaseInsensitiveContains($0) }) {
-            return "Sevdiğin sanatçılara benzer"
-        }
-        if profile.averageMoodScore > 0.6 {
-            return "Ruh haline uygun"
-        } else if profile.averageMoodScore < 0.4 {
-            return "Sakin anların için"
-        }
-        return "Senin için seçtik"
-    }
 }
 
 // MARK: - Response Models

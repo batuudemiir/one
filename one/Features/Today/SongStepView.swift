@@ -12,12 +12,6 @@ struct SongStepView: View {
     @ObservedObject private var nowPlaying = NowPlayingManager.shared
     @ObservedObject private var previewer = SongPreviewPlayer.shared
 
-    private var dateEyebrow: String {
-        let df = DateFormatter()
-        df.locale = Locale(identifier: "tr_TR")
-        df.dateFormat = "d MMMM, HH:mm"
-        return df.string(from: Date())
-    }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -29,9 +23,8 @@ struct SongStepView: View {
                     .foregroundStyle(ONETokens.oneInk)
                     .padding(.bottom, ONETokens.spacingMD)
 
-                // "Şu an çalıyor" banner'ı kaldırıldı — prototipte adım
-                // arama + liste + paylaş + bırak, o kadar. (Fonksiyon
-                // dosyada duruyor, çağrılmıyor.)
+                // "Şu an çalıyor" banner'ı yok — prototipte adım
+                // arama + liste + paylaş + bırak, o kadar.
 
                 searchField
                     .padding(.top, 8)
@@ -39,7 +32,7 @@ struct SongStepView: View {
                 // "Son sanatçılar" ve "SANA YAKIN" blokları kaldırıldı:
                 // prototipte adım arama + liste, o kadar. Öneriler seçimi
                 // hızlandırmıyor, erteliyordu — kullanıcı zaten aklındaki
-                // şarkıyı aramaya geliyor. (Bölümlerin kodu duruyor.)
+                // şarkıyı aramaya geliyor.
 
                 if !vm.searchResults.isEmpty {
                     searchResultsList
@@ -169,88 +162,8 @@ struct SongStepView: View {
         .background(RoundedRectangle(cornerRadius: 13).fill(ONETokens.oneSilver))
     }
 
-    private var recentArtistsSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Son sanatçılar")
-                .font(.custom("DMSans24pt-Medium", size: 9))
-                .tracking(1.4)
-                .foregroundStyle(ONETokens.oneMist)
-                .textCase(.uppercase)
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(vm.recentArtists, id: \.self) { artist in
-                        Button(action: { searchText = artist; vm.search(artist) }) {
-                            Text(artist)
-                                .monoSM(tracking: 0.6)
-                                .foregroundStyle(ONETokens.oneAsh)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 7)
-                                .background(Capsule().stroke(ONETokens.oneCreamMid, lineWidth: 1))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-        }
-    }
 
-    private var recommendedSongsSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text("SANA YAKIN")
-                    .font(ONETypography.monoMicro)
-                    .tracking(1.4)
-                    .foregroundStyle(ONETokens.oneMist)
-                Spacer()
-                Button {
-                    vm.refreshRecommendedSongs()
-                } label: {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(ONETokens.oneMist)
-                }
-                .accessibilityLabel("Önerileri yenile")
-            }
-            .padding(.bottom, 8)
 
-            VStack(spacing: 0) {
-                ForEach(vm.recommendedSongs) { song in
-                    songRow(song)
-                    if song.id != vm.recommendedSongs.last?.id {
-                        Divider().background(ONETokens.oneSilver)
-                    }
-                }
-            }
-        }
-    }
-
-    private var recommendedSongsLoadingView: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("SANA YAKIN")
-                .font(ONETypography.monoMicro)
-                .tracking(1.4)
-                .foregroundStyle(ONETokens.oneMist)
-                .padding(.bottom, 4)
-            ForEach(0..<4, id: \.self) { i in
-                HStack(spacing: 12) {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(ONETokens.oneSilver)
-                        .frame(width: 40, height: 40)
-                    VStack(alignment: .leading, spacing: 6) {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(ONETokens.oneSilver)
-                            .frame(width: [130, 110, 145, 100][i], height: 11)
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(ONETokens.oneCreamMid)
-                            .frame(width: [80, 90, 70, 85][i], height: 9)
-                    }
-                    Spacer()
-                }
-                .shimmeringCircle()
-                if i < 3 { Divider().background(ONETokens.oneSilver) }
-            }
-        }
-    }
 
     private var searchResultsList: some View {
         songSection(songs: vm.searchResults, header: "Sonuçlar")
@@ -357,46 +270,4 @@ struct SongStepView: View {
         // tercihini göremeden kayıt olurdu.
     }
 
-    @ViewBuilder
-    private func nowPlayingBanner(track: NowPlayingTrack) -> some View {
-        Button(action: {
-            let song = SongResult(
-                id: UUID(),
-                name: track.name,
-                artist: track.artist,
-                genre: "Müzik",
-                coverURL: track.artworkURL,
-                spotifyURL: track.spotifyURL,
-                artworkURLString: track.artworkURL?.absoluteString
-            )
-            selectSong(song)
-        }) {
-            HStack(spacing: 12) {
-                Image(systemName: "music.note")
-                    .bodyMD()
-                    .foregroundStyle(ONETokens.oneAsh)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Şu an çalıyor")
-                        .font(ONETypography.monoMicro)
-                        .tracking(1.4)
-                        .foregroundStyle(ONETokens.oneMist)
-                        .textCase(.uppercase)
-                    Text(track.name)
-                        .bodySM()
-                        .foregroundStyle(ONETokens.oneShadow)
-                        .lineLimit(1)
-                    Text(track.artist)
-                        .monoSM(tracking: 0)
-                        .foregroundStyle(ONETokens.oneMist)
-                }
-                Spacer()
-                Image(systemName: "arrow.right")
-                    .monoSM()
-                    .foregroundStyle(ONETokens.oneMist)
-            }
-            .padding(14)
-            .background(RoundedRectangle(cornerRadius: 14).fill(ONETokens.oneSilver))
-        }
-        .buttonStyle(.plain)
-    }
 }
