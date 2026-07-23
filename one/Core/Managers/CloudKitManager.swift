@@ -770,6 +770,7 @@ class CloudKitManager: ObservableObject {
             ("Resonance",      "senderID"),
             ("Resonance",      "receiverID"),
             ("ContentReport",  "reporterUserID"),
+            ("SubCircle",      "ownerID"),
         ]
 
         for (recordType, field) in recordTypes {
