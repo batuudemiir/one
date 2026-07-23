@@ -75,7 +75,7 @@ extension CloudKitManager {
                 self?.registerFriendRequestSubscription()
                 self?.registerFriendShareSubscription()
                 self?.registerFriendAcceptSubscription()
-                self?.registerCommentSubscription()
+                // Yorum sistemi kaldırıldı (efemer karşılığa geçildi) — abonelik yok.
                 // v2.5 — emoji subscription artık kayıt edilmiyor (v8)
                 // Eski kayıt legacy list'te silindi. Tutulan handler back-compat
                 // için — yeni sub olmadığı için handler hiç tetiklenmez.
@@ -86,68 +86,6 @@ extension CloudKitManager {
             registerFriendRequestSubscription()
             registerFriendShareSubscription()
             registerFriendAcceptSubscription()
-            registerCommentSubscription()
-        }
-    }
-
-    // MARK: - 5. Comment Subscription (paylaşımıma yorum geldi) — v2.5
-
-    /// Paylaşımıma gelen yorumları push ile dinler.
-    /// `shareOwnerID == me` predicate — yorum yazarı ben olsam da push gelir
-    /// (handler tarafta filtrelenir: kendi yorumumsa ignore edilir).
-    func registerCommentSubscription() {
-        guard currentUser?["userID"] as? String != nil else { return }
-
-        let subID = Self.commentSubID
-        publicDatabase.fetch(withSubscriptionID: subID) { [weak self] existing, _ in
-            guard let self else { return }
-            if existing != nil { return }
-
-            guard let currentUserID = self.currentUser?["userID"] as? String else { return }
-
-            // Yorumun paylaşım sahibine + yazarın reply'ladığı yoruma ait paylaşım sahibine
-            // fan-out için iki yönlü filtre. CloudKit public DB single-predicate desteklediği
-            // için en basit: shareOwnerID == me. Reply detection handler tarafında
-            // parentCommentID lookup ile yapılır.
-            let predicate = NSPredicate(format: "shareOwnerID == %@ AND moderationStatus == %@",
-                                        currentUserID, "active")
-            let sub = CKQuerySubscription(
-                recordType: "Comment",
-                predicate: predicate,
-                subscriptionID: subID,
-                options: [.firesOnRecordCreation]
-            )
-            let info = CKSubscription.NotificationInfo()
-            // Visible push — uygulama kapalıyken de APNs bildirim gösterir.
-            // App arka planda kalktığında handler personalize lokal bildirim üretir ve bu
-            // generic APNs bildirimi temizler (dedup). App tamamen kapalıysa generic metin kalır.
-            info.alertBody                  = "Paylaşımına yeni bir yorum geldi 💬"
-            info.shouldSendContentAvailable = true
-            info.shouldBadge                = true
-            info.collapseIDKey              = "shareRecordName"
-            info.category                   = "COMMENT_NOTIFICATION"
-            info.desiredKeys                = [
-                "shareRecordName",
-                "shareOwnerID",
-                "authorUserID",
-                "body",
-                "parentCommentID"
-            ]
-            sub.notificationInfo = info
-
-            self.publicDatabase.save(sub) { _, error in
-                if let ckError = error as? CKError {
-                    if ckError.code == .invalidArguments || ckError.code == .unknownItem {
-                        ONELogger.info("Comment schema CloudKit'te henüz yok — subscription atlandı. Dashboard'dan deploy edin.", category: .notification)
-                    } else {
-                        ONELogger.error("Comment sub failed", error: ckError, category: .notification)
-                    }
-                } else if let error {
-                    ONELogger.error("Comment sub failed", error: error, category: .notification)
-                } else {
-                    ONELogger.success("Comment subscription registered (v1 silent)", category: .notification)
-                }
-            }
         }
     }
 
@@ -337,133 +275,9 @@ extension CloudKitManager {
             // v2.5 — emoji reactions deprecated. Kayıt olmuyor; handler back-compat için.
             handleEmojiReactionPush(notification: notification, completion: completion)
 
-        case Self.commentSubID:
-            handleCommentPush(notification: notification, completion: completion)
-
         default:
             completion()
         }
-    }
-
-    // MARK: - Comment push handler (v2.5)
-
-    private func handleCommentPush(notification: CKQueryNotification, completion: @escaping () -> Void) {
-        guard let shareRecordName = notification.recordFields?["shareRecordName"] as? String,
-              let shareOwnerID   = notification.recordFields?["shareOwnerID"]    as? String,
-              let authorUserID   = notification.recordFields?["authorUserID"]    as? String,
-              let rawBody        = notification.recordFields?["body"]            as? String
-        else { completion(); return }
-        let body = String(rawBody.trimmingCharacters(in: .whitespacesAndNewlines).prefix(500))
-
-        // P1 fix: use the actual CKRecord recordName from the notification
-        let commentID = notification.recordID?.recordName
-            ?? "comment_\(authorUserID)_\(Int(Date().timeIntervalSince1970))"
-
-        // Self-filter — kendi yorumumuz push ettiyse gösterme
-        guard let currentUserID = currentUser?["userID"] as? String,
-              authorUserID != currentUserID
-        else { completion(); return }
-
-        // Block filter — engelli kullanıcının yorumunu gösterme
-        if hasBlockRelation(with: authorUserID) {
-            ONELogger.info("Comment push dropped (block relation) from \(authorUserID)", category: .notification)
-            completion(); return
-        }
-
-        let parentCommentID = notification.recordFields?["parentCommentID"] as? String
-
-        // Reply mi? parentCommentID varsa ve parent yazarı ben isem → commentReply
-        if let parentCommentID {
-            checkIfCommentAuthoredByMe(commentID: parentCommentID) { [weak self] isMine in
-                guard let self else { completion(); return }
-                self.dispatchCommentNotification(
-                    commentID: commentID,
-                    isReply: isMine,
-                    shareRecordName: shareRecordName,
-                    shareOwnerID: shareOwnerID,
-                    authorUserID: authorUserID,
-                    body: body
-                )
-                completion()
-            }
-        } else {
-            dispatchCommentNotification(
-                commentID: commentID,
-                isReply: false,
-                shareRecordName: shareRecordName,
-                shareOwnerID: shareOwnerID,
-                authorUserID: authorUserID,
-                body: body
-            )
-            completion()
-        }
-    }
-
-    private func dispatchCommentNotification(
-        commentID: String,
-        isReply: Bool,
-        shareRecordName: String,
-        shareOwnerID: String,
-        authorUserID: String,
-        body: String
-    ) {
-        fetchDisplayName(for: authorUserID) { [weak self] name in
-            // Paylaşımın mood rengi — rich attachment için
-            self?.fetchShareMoodHex(shareRecordName: shareRecordName) { moodHex in
-                // Circle notifikasyon store'a düş
-                let notif = CircleNotification(
-                    id: "comment_\(commentID)",
-                    type: .comment,
-                    title: isReply ? "\(name) yorumuna yanıt verdi 💬" : "\(name) paylaşımına yorum bıraktı 💬",
-                    body: body,
-                    date: Date(),
-                    isRead: false,
-                    relatedUserID: authorUserID,
-                    emoji: nil,
-                    moodColorHex: moodHex,
-                    shareRecordName: shareRecordName
-                )
-                Task { @MainActor in CircleNotificationStore.shared.add(notif) }
-
-                CommentNotificationBundler.shared.ingest(
-                    commentID: commentID,
-                    shareRecordName: shareRecordName,
-                    authorUserID: authorUserID,
-                    authorDisplayName: name,
-                    bodyExcerpt: body,
-                    moodColorHex: moodHex,
-                    isReplyToMe: isReply
-                )
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .init("circleDataNeedsRefresh"), object: nil)
-                }
-            }
-        }
-    }
-
-    private func checkIfCommentAuthoredByMe(commentID: String, completion: @escaping (Bool) -> Void) {
-        guard let currentUserID = currentUser?["userID"] as? String else {
-            completion(false); return
-        }
-        let recordID = CKRecord.ID(recordName: commentID)
-        publicDatabase.fetch(withRecordID: recordID) { record, _ in
-            let isMine = (record?["authorUserID"] as? String) == currentUserID
-            completion(isMine)
-        }
-    }
-
-    private func fetchShareMoodHex(shareRecordName: String, completion: @escaping (String?) -> Void) {
-        let recordID = CKRecord.ID(recordName: shareRecordName)
-        publicDatabase.fetch(withRecordID: recordID) { record, _ in
-            let raw = record?["moodColor"] as? String
-            completion(raw.flatMap { Self.validatedHex($0) })
-        }
-    }
-
-    private static func validatedHex(_ hex: String) -> String? {
-        let stripped = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        guard [3, 6, 8].contains(stripped.count), stripped.allSatisfy(\.isHexDigit) else { return nil }
-        return "#\(stripped)"
     }
 
     // MARK: - Friend request push handler
@@ -847,9 +661,9 @@ extension CloudKitManager {
             let required: [(String, () -> Void)] = [
                 (Self.friendRequestSubID,  { self.registerFriendRequestSubscription() }),
                 (Self.friendShareSubID,    { self.registerFriendShareSubscription() }),
-                (Self.friendAcceptSubID,   { self.registerFriendAcceptSubscription() }),
-                (Self.commentSubID,        { self.registerCommentSubscription() })
+                (Self.friendAcceptSubID,   { self.registerFriendAcceptSubscription() })
                 // v2.5 — emojiReactionSubID kaldırıldı.
+                // Yorum aboneliği kaldırıldı (efemer karşılığa geçildi).
             ]
 
             for (subID, register) in required where !existingIDs.contains(subID) {

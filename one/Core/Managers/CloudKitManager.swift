@@ -73,9 +73,6 @@ class CloudKitManager: ObservableObject {
         weeklyCircleDataLastFetched = nil
     }
 
-    // MARK: - Comment count cache (prevents N+1 CloudKit queries in circle list)
-    var commentCountCache: [String: Int] = [:]
-
     // MARK: - Friend ID cache (for push notification fast-path)
     var cachedFriendIDs: Set<String> = []
     var cachedFriendIDsTimestamp: Date = .distantPast
@@ -95,7 +92,6 @@ class CloudKitManager: ObservableObject {
     func invalidateCircleCache() {
         cachedCircleData = nil
         circleDataLastFetched = nil
-        commentCountCache.removeAll()
     }
 
     func invalidateFriendCache() {

@@ -447,21 +447,6 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             case "FRIEND_ACCEPTED", "EMOJI_REACTION":
                 self.shouldNavigateToCircle = true
 
-            case "COMMENT_NOTIFICATION":
-                switch actionID {
-                case "REPLY_ACTION":
-                    if let textResp = response as? UNTextInputNotificationResponse {
-                        self.handleQuickReply(
-                            text: textResp.userText,
-                            userInfo: userInfo
-                        )
-                    }
-                case "OPEN_COMMENTS":
-                    self.shouldNavigateToCircle = true
-                default:
-                    self.shouldNavigateToCircle = true
-                }
-
             case "STREAK_WARNING":
                 self.shouldNavigateToToday = true
 
@@ -490,61 +475,6 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         }
 
         completionHandler()
-    }
-
-    // MARK: - Quick Reply (v2.5)
-
-    /// Push üzerinden "Yanıtla" aksiyonuyla gelen inline text'i yorum olarak gönderir.
-    /// Rate-limit + içerik guard'ları CloudKitCommentService'in içinde; burası sadece
-    /// userInfo'dan shareRecordName + shareOwnerID çözer.
-    private func handleQuickReply(text rawText: String, userInfo: [AnyHashable: Any]) {
-        let text = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { return }
-        guard let shareRecordName = userInfo["shareRecordName"] as? String else {
-            ONELogger.error("QuickReply: shareRecordName eksik", category: .notification)
-            return
-        }
-        // parentCommentID — yanıtlanan comment
-        let parentCommentID = userInfo["commentID"] as? String
-
-        // Rate limiter
-        let rl = CommentRateLimiter.shared.check()
-        guard rl.isAllowed else {
-            ONELogger.info("QuickReply rate-limited", category: .notification)
-            return
-        }
-
-        // shareOwnerID — yorum paylaşımın sahibini bilmek zorunda. Push'tan gelmiyorsa
-        // önce CKRecord fetch et.
-        if let ownerID = userInfo["shareOwnerID"] as? String {
-            sendQuickReply(body: text, shareRecordName: shareRecordName,
-                           shareOwnerID: ownerID, parentCommentID: parentCommentID)
-        } else {
-            let recID = CKRecord.ID(recordName: shareRecordName)
-            CloudKitManager.shared.publicDatabase.fetch(withRecordID: recID) { [weak self] rec, _ in
-                guard let ownerID = rec?["userID"] as? String else { return }
-                self?.sendQuickReply(body: text, shareRecordName: shareRecordName,
-                                     shareOwnerID: ownerID, parentCommentID: parentCommentID)
-            }
-        }
-    }
-
-    private func sendQuickReply(body: String, shareRecordName: String,
-                                shareOwnerID: String, parentCommentID: String?) {
-        CloudKitManager.shared.createComment(
-            body: body,
-            shareRecordName: shareRecordName,
-            shareOwnerID: shareOwnerID,
-            parentCommentID: parentCommentID
-        ) { result in
-            switch result {
-            case .success:
-                CommentRateLimiter.shared.record()
-                ONELogger.success("QuickReply yorum gönderildi", category: .notification)
-            case .failure(let err):
-                ONELogger.error("QuickReply yorum gönderimi başarısız", error: err, category: .notification)
-            }
-        }
     }
 
     // MARK: - App Update Notification

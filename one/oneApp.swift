@@ -157,25 +157,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             options: []
         )
 
-        // v2.5 — Yorum bildirimleri: Yanıtla (inline text) + Paylaşımı aç
-        let replyAction = UNTextInputNotificationAction(
-            identifier: "REPLY_ACTION",
-            title: "Yanıtla",
-            options: [.authenticationRequired],
-            textInputButtonTitle: "Gönder",
-            textInputPlaceholder: "Yanıtını yaz…"
-        )
-        let openCommentsAction = UNNotificationAction(
-            identifier: "OPEN_COMMENTS",
-            title: "Paylaşımı aç",
-            options: [.foreground]
-        )
-        let commentNotificationCategory = UNNotificationCategory(
-            identifier: "COMMENT_NOTIFICATION",
-            actions: [replyAction, openCommentsAction],
-            intentIdentifiers: [],
-            options: []
-        )
+        // Yorum sistemi kaldırıldı (efemer karşılığa geçildi) — yorum
+        // bildirim kategorisi ve inline yanıt aksiyonu yok.
 
         UNUserNotificationCenter.current().setNotificationCategories([
             friendRequestCategory,
@@ -184,8 +167,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             discoveryCategory,
             friendSharedCategory,
             moodResonanceCategory,
-            appUpdateCategory,
-            commentNotificationCategory
+            appUpdateCategory
         ])
     }
 }

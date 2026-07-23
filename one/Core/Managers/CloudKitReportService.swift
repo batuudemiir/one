@@ -150,14 +150,11 @@ extension CloudKitManager {
                 case .success:
                     ONELogger.success("Report submitted: \(targetType.rawValue)/\(targetID) [\(reason.rawValue)] new=\(isNewReport)", category: .cloudkit)
 
-                    // Only increment reportCount for the FIRST report from this user.
-                    if targetType == .comment && isNewReport {
-                        self?.incrementCommentReportCount(commentID: targetID) { _ in
-                            DispatchQueue.main.async { completion(.success(())) }
-                        }
-                    } else {
-                        DispatchQueue.main.async { completion(.success(())) }
-                    }
+                    // Yorum sistemi kaldırıldı (efemer karşılığa geçildi) —
+                    // yorum reportCount artırımı yok. `_ = isNewReport` sadece
+                    // rapor kaydının ilk mi olduğunu logluyordu.
+                    _ = isNewReport
+                    DispatchQueue.main.async { completion(.success(())) }
                 case .failure(let err):
                     ONELogger.error("submitReport failed", error: err, category: .cloudkit)
                     DispatchQueue.main.async { completion(.failure(.underlying(err))) }
