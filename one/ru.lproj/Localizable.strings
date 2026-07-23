@@ -1238,3 +1238,10 @@ one day.";
 "addFriend.tileScan" = "сканировать\nкод";
 "addFriend.contactsOnOne" = "из твоих контактов в ONE";
 "addFriend.contactsOnlyHint" = "только сохранённые в телефоне. ONE не предлагает незнакомцев.";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "ответить";
+"reaction.replyPlaceholder" = "одна строка… (видит только %@)";
+"reaction.sent" = "отправлено";
+"reaction.ephemeralNote" = "исчезнет в конце дня · видит только %@";

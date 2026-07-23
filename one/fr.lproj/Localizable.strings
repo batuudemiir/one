@@ -1237,3 +1237,10 @@ one day.";
 "addFriend.tileScan" = "scanner\nle code";
 "addFriend.contactsOnOne" = "tes contacts sur ONE";
 "addFriend.contactsOnlyHint" = "seulement les contacts de ton téléphone. ONE ne suggère pas d'inconnus.";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "répondre";
+"reaction.replyPlaceholder" = "une ligne… (seul %@ voit)";
+"reaction.sent" = "envoyé";
+"reaction.ephemeralNote" = "disparaît en fin de journée · seul %@ le voit";

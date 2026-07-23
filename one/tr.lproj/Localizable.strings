@@ -1380,3 +1380,10 @@ bir gün.";
 "addFriend.tileScan" = "kod\nokut";
 "addFriend.contactsOnOne" = "rehberinde ONE'da olanlar";
 "addFriend.contactsOnlyHint" = "yalnızca telefonunda kayıtlı olanlar. ONE tanımadığın kimseyi önermez.";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "karşılık ver";
+"reaction.replyPlaceholder" = "tek satır… (yalnızca %@ görür)";
+"reaction.sent" = "gönderildi";
+"reaction.ephemeralNote" = "bu karşılık gün bitince kaybolur · yalnız %@ görür";

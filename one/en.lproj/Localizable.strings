@@ -1363,3 +1363,10 @@ one day.";
 "addFriend.tileScan" = "scan\ncode";
 "addFriend.contactsOnOne" = "in your contacts on ONE";
 "addFriend.contactsOnlyHint" = "only people saved on your phone. ONE never suggests strangers.";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "respond";
+"reaction.replyPlaceholder" = "one line… (only %@ sees)";
+"reaction.sent" = "sent";
+"reaction.ephemeralNote" = "this fades at day's end · only %@ sees it";

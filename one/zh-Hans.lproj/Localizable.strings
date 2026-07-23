@@ -1235,3 +1235,10 @@ one day.";
 "addFriend.tileScan" = "扫描\n代码";
 "addFriend.contactsOnOne" = "通讯录中在 ONE 的人";
 "addFriend.contactsOnlyHint" = "仅限手机中已保存的人。ONE 不会推荐陌生人。";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "回应";
+"reaction.replyPlaceholder" = "一行…（只有%@看得到）";
+"reaction.sent" = "已发送";
+"reaction.ephemeralNote" = "当天结束后消失 · 只有%@看得到";

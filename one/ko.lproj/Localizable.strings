@@ -1238,3 +1238,10 @@ one day.";
 "addFriend.tileScan" = "코드\n스캔";
 "addFriend.contactsOnOne" = "연락처 중 ONE 사용자";
 "addFriend.contactsOnlyHint" = "전화에 저장된 사람만. ONE은 낯선 사람을 추천하지 않아요.";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "응답";
+"reaction.replyPlaceholder" = "한 줄… (%@만 봅니다)";
+"reaction.sent" = "보냄";
+"reaction.ephemeralNote" = "하루가 끝나면 사라져요 · %@만 봅니다";

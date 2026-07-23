@@ -1237,3 +1237,10 @@ one day.";
 "addFriend.tileScan" = "コードを\n読取";
 "addFriend.contactsOnOne" = "連絡先でONEにいる人";
 "addFriend.contactsOnlyHint" = "電話に登録済みの人だけ。ONEは知らない人を勧めません。";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "応える";
+"reaction.replyPlaceholder" = "一行… (%@だけが見ます)";
+"reaction.sent" = "送信済み";
+"reaction.ephemeralNote" = "一日の終わりに消えます · %@だけが見ます";
