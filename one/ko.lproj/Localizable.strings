@@ -1227,3 +1227,14 @@ one day.";
 "addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
 
 "circle.gateProgress" = "%d more, then your frequency opens.";
+
+
+/* Hızlı ekle — prototip parity */
+"addFriend.mutualCount" = "%d명 공통";
+"addFriend.sent" = "보냄";
+"addFriend.inviteMessage" = "ONE에서 기분과 음악을 공유해요. 함께해요.";
+"addFriend.tileShareLink" = "링크\n공유";
+"addFriend.tileShowCode" = "코드\n보기";
+"addFriend.tileScan" = "코드\n스캔";
+"addFriend.contactsOnOne" = "연락처 중 ONE 사용자";
+"addFriend.contactsOnlyHint" = "전화에 저장된 사람만. ONE은 낯선 사람을 추천하지 않아요.";

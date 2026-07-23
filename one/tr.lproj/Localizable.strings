@@ -1369,3 +1369,14 @@ bir gün.";
 "addFriend.suggestedHint" = "ortak arkadaşlarına göre sıralı. rastgele insan önerilmez.";
 
 "circle.gateProgress" = "%d kişi daha, sonra frekansın açılıyor.";
+
+
+/* Hızlı ekle — prototip parity */
+"addFriend.mutualCount" = "%d ortak";
+"addFriend.sent" = "gönderildi";
+"addFriend.inviteMessage" = "ONE'da mood ve müzik paylaşıyorum. Seni de bekliyorum.";
+"addFriend.tileShareLink" = "bağlantı\npaylaş";
+"addFriend.tileShowCode" = "kodunu\ngöster";
+"addFriend.tileScan" = "kod\nokut";
+"addFriend.contactsOnOne" = "rehberinde ONE'da olanlar";
+"addFriend.contactsOnlyHint" = "yalnızca telefonunda kayıtlı olanlar. ONE tanımadığın kimseyi önermez.";

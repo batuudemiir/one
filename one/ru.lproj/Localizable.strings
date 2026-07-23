@@ -1227,3 +1227,14 @@ one day.";
 "addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
 
 "circle.gateProgress" = "%d more, then your frequency opens.";
+
+
+/* Hızlı ekle — prototip parity */
+"addFriend.mutualCount" = "%d общих";
+"addFriend.sent" = "отправлено";
+"addFriend.inviteMessage" = "Я делюсь настроением и музыкой в ONE. Присоединяйся.";
+"addFriend.tileShareLink" = "поделиться\nссылкой";
+"addFriend.tileShowCode" = "показать\nкод";
+"addFriend.tileScan" = "сканировать\nкод";
+"addFriend.contactsOnOne" = "из твоих контактов в ONE";
+"addFriend.contactsOnlyHint" = "только сохранённые в телефоне. ONE не предлагает незнакомцев.";

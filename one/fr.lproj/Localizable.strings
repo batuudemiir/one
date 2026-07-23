@@ -1226,3 +1226,14 @@ one day.";
 "addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
 
 "circle.gateProgress" = "%d more, then your frequency opens.";
+
+
+/* Hızlı ekle — prototip parity */
+"addFriend.mutualCount" = "%d en commun";
+"addFriend.sent" = "envoyé";
+"addFriend.inviteMessage" = "Je partage mon humeur et ma musique sur ONE. Rejoins-moi.";
+"addFriend.tileShareLink" = "partager\nle lien";
+"addFriend.tileShowCode" = "afficher\nle code";
+"addFriend.tileScan" = "scanner\nle code";
+"addFriend.contactsOnOne" = "tes contacts sur ONE";
+"addFriend.contactsOnlyHint" = "seulement les contacts de ton téléphone. ONE ne suggère pas d'inconnus.";

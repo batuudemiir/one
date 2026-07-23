@@ -1352,3 +1352,14 @@ one day.";
 "addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
 
 "circle.gateProgress" = "%d more, then your frequency opens.";
+
+
+/* Hızlı ekle — prototip parity */
+"addFriend.mutualCount" = "%d mutual";
+"addFriend.sent" = "sent";
+"addFriend.inviteMessage" = "I share my mood and music on ONE. Come join me.";
+"addFriend.tileShareLink" = "share\nlink";
+"addFriend.tileShowCode" = "show\ncode";
+"addFriend.tileScan" = "scan\ncode";
+"addFriend.contactsOnOne" = "in your contacts on ONE";
+"addFriend.contactsOnlyHint" = "only people saved on your phone. ONE never suggests strangers.";

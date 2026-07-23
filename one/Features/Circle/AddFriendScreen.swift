@@ -27,7 +27,7 @@ struct AddFriendScreen: View {
 
     // MARK: State
 
-    @State private var segment = 0            // 0 kullanıcı adı · 1 kod · 2 kişiler
+    @State private var showCode = false       // "kodunu göster" kutucuğu
     @State private var query = ""
     @State private var isSearching = false
     @State private var foundUser: CKRecord? = nil
@@ -35,7 +35,6 @@ struct AddFriendScreen: View {
     @State private var isSending = false
     @State private var sentToName: String? = nil
     @State private var showScanner = false
-    @State private var showContacts = false
     @State private var codeCopied = false
     /// Prototip 19'daki "hızlı ekle" önerileri. `fetchSuggestedUsers`
     /// zaten vardı ama hiçbir ekrandan çağrılmıyordu — ortak arkadaş
@@ -59,33 +58,26 @@ struct AddFriendScreen: View {
             onBack: { dismiss() }
         ) {
             VStack(alignment: .leading, spacing: 0) {
-                SegmentedControl(
-                    options: [
-                        NSLocalizedString("addFriend.segUsername", comment: ""),
-                        NSLocalizedString("addFriend.segCode", comment: ""),
-                        NSLocalizedString("addFriend.segContacts", comment: "")
-                    ],
-                    selection: $segment
-                )
-                .padding(.bottom, ONETokens.spacingLG)
+                // Prototip: segment yok. Üstte üç hızlı eylem, altında
+                // "rehberinde ONE'da olanlar" şeridi, en altta kullanıcı
+                // adı araması.
+                quickTiles
 
-                switch segment {
-                case 0: usernameTab
-                case 1: codeTab
-                default: contactsTab
-                }
+                suggestionRail
+
+                usernameTab
+                    .padding(.top, ONETokens.spacingXL)
             }
         }
         .sheet(isPresented: $showScanner) {
             QRScannerView { scanned in
                 showScanner = false
-                segment = 0
                 query = scanned
                 search()
             }
         }
-        .sheet(isPresented: $showContacts) {
-            ContactsInviteView()
+        .sheet(isPresented: $showCode) {
+            codeSheet
         }
         .task {
             CloudKitManager.shared.fetchSuggestedUsers(limit: 5) { list in
@@ -98,6 +90,109 @@ struct AddFriendScreen: View {
                 search()
             }
         }
+    }
+
+    // MARK: - Hızlı ekle kutucukları
+
+    /// Prototipteki `.qadd`: üç eşit kutucuk — bağlantı paylaş, kodunu
+    /// göster, kod okut. Segmentli sekmelerin yerini alıyor; kod ve tarama
+    /// artık burada, kişiler ise aşağıdaki öneri şeridiyle.
+    private var quickTiles: some View {
+        HStack(spacing: 8) {
+            ShareLink(
+                item: URL(string: "https://one.forvibe.app/invite/\(myInviteCode)")!,
+                message: Text(NSLocalizedString("addFriend.inviteMessage", comment: ""))
+            ) {
+                quickTileLabel(glyph: "arrow.up.forward", title: NSLocalizedString("addFriend.tileShareLink", comment: ""))
+            }
+            .buttonStyle(.plain)
+
+            Button { showCode = true } label: {
+                quickTileLabel(glyph: "qrcode", title: NSLocalizedString("addFriend.tileShowCode", comment: ""))
+            }
+            .buttonStyle(.plain)
+
+            Button { showScanner = true } label: {
+                quickTileLabel(glyph: "viewfinder", title: NSLocalizedString("addFriend.tileScan", comment: ""))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func quickTileLabel(glyph: String, title: String) -> some View {
+        VStack(spacing: 7) {
+            Image(systemName: glyph)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(ONETokens.oneCream)
+                .frame(width: 32, height: 32)
+                .background(Circle().fill(ONETokens.oneInk))
+
+            Text(title)
+                .font(.system(size: 11, weight: .semibold))
+                .multilineTextAlignment(.center)
+                .foregroundColor(ONETokens.oneInk)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
+                .fill(Color.white.opacity(0.6))
+                .overlay(
+                    RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
+                        .strokeBorder(ONETokens.oneInk.opacity(0.16),
+                                      style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                )
+        )
+    }
+
+    // MARK: - "rehberinde ONE'da olanlar" şeridi
+
+    @ViewBuilder
+    private var suggestionRail: some View {
+        if !suggestions.isEmpty {
+            Text(NSLocalizedString("addFriend.contactsOnOne", comment: ""))
+                .monoLabel(tracking: 1.3)
+                .foregroundColor(ONETokens.oneStone)
+                .padding(.top, ONETokens.spacingXL)
+                .padding(.bottom, ONETokens.spacingSM)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(suggestions) { user in
+                        QuickSuggestCard(user: user, sent: sentUserIDs.contains(user.id)) {
+                            sendToSuggested(user)
+                        }
+                    }
+                }
+            }
+
+            // Prototipin gizlilik sözü.
+            Text(NSLocalizedString("addFriend.contactsOnlyHint", comment: ""))
+                .bodyXS()
+                .foregroundColor(ONETokens.oneAsh)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, ONETokens.spacingSM)
+        }
+    }
+
+    // MARK: - Kod sayfası (kutucuktan açılır)
+
+    private var codeSheet: some View {
+        VStack(spacing: 0) {
+            Capsule()
+                .fill(ONETokens.oneInk.opacity(0.16))
+                .frame(width: 36, height: 4)
+                .padding(.top, 10)
+                .padding(.bottom, ONETokens.spacingXL)
+
+            codeTab
+                .padding(.horizontal, ONETokens.spacingXL)
+
+            Spacer()
+        }
+        .presentationDetents([.medium, .large])
     }
 
     // MARK: - Kullanıcı adı
@@ -150,31 +245,7 @@ struct AddFriendScreen: View {
                     .padding(.top, ONETokens.spacingXL)
             }
 
-            if !suggestions.isEmpty {
-                Text(NSLocalizedString("addFriend.suggested", comment: ""))
-                    .monoLabel(tracking: 1.3)
-                    .foregroundColor(ONETokens.oneStone)
-                    .padding(.top, ONETokens.spacingXL)
-                    .padding(.bottom, ONETokens.spacingSM)
-
-                VStack(spacing: 7) {
-                    ForEach(suggestions) { user in
-                        SuggestedUserRow(user: user) {
-                            sendToSuggested(user)
-                        }
-                        .opacity(sentUserIDs.contains(user.id) ? 0.45 : 1)
-                        .disabled(sentUserIDs.contains(user.id))
-                    }
-                }
-
-                Text(NSLocalizedString("addFriend.suggestedHint", comment: ""))
-                    .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, ONETokens.spacingMD)
-            }
-
-            // Prototipin sözü: rastgele insan önerilmez.
+            // Prototipin sözü: rastgele insan önerilmez, tam eşleşme gerekir.
             Text(NSLocalizedString("addFriend.exactHint", comment: ""))
                 .bodyXS()
                 .multilineTextAlignment(.center)
@@ -310,32 +381,6 @@ struct AddFriendScreen: View {
         let scaled = output.transformed(by: CGAffineTransform(scaleX: 8, y: 8))
         guard let cg = CIContext().createCGImage(scaled, from: scaled.extent) else { return nil }
         return UIImage(cgImage: cg)
-    }
-
-    // MARK: - Kişiler
-
-    /// Prototipin gizlilik sözü buradaki caption: "kişilerin telefonundan
-    /// çıkmaz — sadece şifrelenmiş özetleri karşılaştırılır." İzin butonuna
-    /// basmadan ÖNCE okunuyor; izin ekranına güvenle gidilsin diye.
-    private var contactsTab: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(NSLocalizedString("addFriend.contactsPrivacy", comment: ""))
-                .bodyXS()
-                .foregroundColor(ONETokens.oneAsh)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.bottom, ONETokens.spacingMD)
-
-            Button {
-                showContacts = true
-            } label: {
-                Text(NSLocalizedString("addFriend.allowContacts", comment: ""))
-                    .bodySMMedium()
-                    .foregroundColor(ONETokens.oneCream)
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .background(Capsule(style: .continuous).fill(ONETokens.oneInk))
-            }
-            .buttonStyle(.plain)
-        }
     }
 
     // MARK: - Actions

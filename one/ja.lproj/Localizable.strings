@@ -1226,3 +1226,14 @@ one day.";
 "addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
 
 "circle.gateProgress" = "%d more, then your frequency opens.";
+
+
+/* Hızlı ekle — prototip parity */
+"addFriend.mutualCount" = "共通%d人";
+"addFriend.sent" = "送信済み";
+"addFriend.inviteMessage" = "ONEで気分と音楽をシェアしています。あなたも。";
+"addFriend.tileShareLink" = "リンクを\n共有";
+"addFriend.tileShowCode" = "コードを\n表示";
+"addFriend.tileScan" = "コードを\n読取";
+"addFriend.contactsOnOne" = "連絡先でONEにいる人";
+"addFriend.contactsOnlyHint" = "電話に登録済みの人だけ。ONEは知らない人を勧めません。";
