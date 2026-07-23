@@ -1245,3 +1245,14 @@ one day.";
 "reaction.replyPlaceholder" = "одна строка… (видит только %@)";
 "reaction.sent" = "отправлено";
 "reaction.ephemeralNote" = "исчезнет в конце дня · видит только %@";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "отклики за день";
+"echoes.screenTitle" = "отклики за день";
+"echoes.reactors" = "кто ответил";
+"echoes.threadWith" = "с %@";
+"echoes.replyPlaceholder" = "ответить…";
+"echoes.ephemeralNote" = "отклики не архивируются — остаются в моменте";
+"echoes.empty" = "пока нет откликов. появятся в течение дня.";
+"echoes.someone" = "кто-то";

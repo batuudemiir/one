@@ -1244,3 +1244,14 @@ one day.";
 "reaction.replyPlaceholder" = "一行… (%@だけが見ます)";
 "reaction.sent" = "送信済み";
 "reaction.ephemeralNote" = "一日の終わりに消えます · %@だけが見ます";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "今日の反響";
+"echoes.screenTitle" = "今日の反響";
+"echoes.reactors" = "応えた人";
+"echoes.threadWith" = "%@と";
+"echoes.replyPlaceholder" = "返信…";
+"echoes.ephemeralNote" = "応えは保存されません — その瞬間だけ";
+"echoes.empty" = "まだ反響はありません。日が進むと現れるかも。";
+"echoes.someone" = "誰か";

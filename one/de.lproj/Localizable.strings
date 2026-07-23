@@ -1244,3 +1244,14 @@ one day.";
 "reaction.replyPlaceholder" = "eine Zeile… (nur %@ sieht es)";
 "reaction.sent" = "gesendet";
 "reaction.ephemeralNote" = "verschwindet am Tagesende · nur %@ sieht es";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "Echos von heute";
+"echoes.screenTitle" = "Echos von heute";
+"echoes.reactors" = "wer geantwortet hat";
+"echoes.threadWith" = "mit %@";
+"echoes.replyPlaceholder" = "antworten…";
+"echoes.ephemeralNote" = "Antworten werden nicht archiviert — sie bleiben im Moment";
+"echoes.empty" = "noch keine Echos. Vielleicht später am Tag.";
+"echoes.someone" = "jemand";

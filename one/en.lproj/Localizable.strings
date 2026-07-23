@@ -1370,3 +1370,14 @@ one day.";
 "reaction.replyPlaceholder" = "one line… (only %@ sees)";
 "reaction.sent" = "sent";
 "reaction.ephemeralNote" = "this fades at day's end · only %@ sees it";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "today's echoes";
+"echoes.screenTitle" = "today's echoes";
+"echoes.reactors" = "who responded";
+"echoes.threadWith" = "with %@";
+"echoes.replyPlaceholder" = "reply…";
+"echoes.ephemeralNote" = "responses aren't archived — they stay in the moment";
+"echoes.empty" = "no echoes yet. they may appear as the day goes on.";
+"echoes.someone" = "someone";

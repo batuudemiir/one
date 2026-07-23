@@ -1242,3 +1242,14 @@ one day.";
 "reaction.replyPlaceholder" = "一行…（只有%@看得到）";
 "reaction.sent" = "已发送";
 "reaction.ephemeralNote" = "当天结束后消失 · 只有%@看得到";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "今日回响";
+"echoes.screenTitle" = "今日回响";
+"echoes.reactors" = "回应的人";
+"echoes.threadWith" = "与%@";
+"echoes.replyPlaceholder" = "回复…";
+"echoes.ephemeralNote" = "回应不会存档 — 只留在当下";
+"echoes.empty" = "还没有回响。随着一天推移可能出现。";
+"echoes.someone" = "某人";

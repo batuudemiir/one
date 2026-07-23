@@ -1245,3 +1245,14 @@ one day.";
 "reaction.replyPlaceholder" = "한 줄… (%@만 봅니다)";
 "reaction.sent" = "보냄";
 "reaction.ephemeralNote" = "하루가 끝나면 사라져요 · %@만 봅니다";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "오늘의 반향";
+"echoes.screenTitle" = "오늘의 반향";
+"echoes.reactors" = "응답한 사람";
+"echoes.threadWith" = "%@와";
+"echoes.replyPlaceholder" = "답장…";
+"echoes.ephemeralNote" = "응답은 보관되지 않아요 — 그 순간만";
+"echoes.empty" = "아직 반향이 없어요. 하루가 지나며 나타날 수 있어요.";
+"echoes.someone" = "누군가";

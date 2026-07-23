@@ -1387,3 +1387,14 @@ bir gün.";
 "reaction.replyPlaceholder" = "tek satır… (yalnızca %@ görür)";
 "reaction.sent" = "gönderildi";
 "reaction.ephemeralNote" = "bu karşılık gün bitince kaybolur · yalnız %@ görür";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "bugüne gelenler";
+"echoes.screenTitle" = "bugüne gelenler";
+"echoes.reactors" = "karşılık verenler";
+"echoes.threadWith" = "%@ ile";
+"echoes.replyPlaceholder" = "yanıt…";
+"echoes.ephemeralNote" = "gelen karşılıklar arşivlenmez — anlık kalır";
+"echoes.empty" = "henüz karşılık yok. gün ilerledikçe belirebilir.";
+"echoes.someone" = "biri";

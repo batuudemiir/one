@@ -146,11 +146,10 @@ struct TodayCompletedView: View {
                         // ama prototipin kapanışından SONRA. Ekran yukarıdan
                         // aşağı prototip gibi okunsun, hiçbir şey kaybolmasın.
 
-                        // Kendi paylaşımıma gelen yorumlar — v3
-                        if CommentsFeatureFlag.isEnabled,
-                           let myUserID = CloudKitManager.shared.currentUser?["userID"] as? String,
+                        // Kendi paylaşımıma gelen efemer karşılıklar (yankılar)
+                        if let myUserID = CloudKitManager.shared.currentUser?["userID"] as? String,
                            entry.shareWithCircle {
-                            CommentEntryButton(
+                            EchoesEntryButton(
                                 shareOwnerID: myUserID,
                                 accentColorHex: entry.moodColorHex,
                                 resolveShareRecordName: { completion in

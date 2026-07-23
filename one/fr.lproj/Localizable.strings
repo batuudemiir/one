@@ -1244,3 +1244,14 @@ one day.";
 "reaction.replyPlaceholder" = "une ligne… (seul %@ voit)";
 "reaction.sent" = "envoyé";
 "reaction.ephemeralNote" = "disparaît en fin de journée · seul %@ le voit";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "échos du jour";
+"echoes.screenTitle" = "échos du jour";
+"echoes.reactors" = "qui a répondu";
+"echoes.threadWith" = "avec %@";
+"echoes.replyPlaceholder" = "répondre…";
+"echoes.ephemeralNote" = "les réponses ne sont pas archivées — elles restent l'instant";
+"echoes.empty" = "pas encore d'échos. ils peuvent apparaître plus tard.";
+"echoes.someone" = "quelqu'un";
