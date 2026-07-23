@@ -200,19 +200,11 @@ struct oneApp: App {
         MidnightResetManager.shared.registerBackgroundTask()
 
         // Observability bootstrap.
-        // DEBUG: console logger (eventler Console.app'te görünür)
-        // RELEASE: PostHog (analytics) + Sentry (crash reporting)
+        // DEBUG: console logger init'te (ucuz, senkron)
+        // RELEASE: PostHog Tier 3'e ertelendi — SDK setup dosya I/O + session
+        // bootstrap yapıyor, main thread'i splash boyunca bloke ediyordu.
         #if DEBUG
         AppAnalytics.shared.register(ConsoleAnalyticsService())
-        #else
-        // TODO: Kendi API key ve DSN değerlerini gir.
-        // PostHog → https://eu.posthog.com → Project Settings → API Key
-        // Sentry  → app.sentry.io → Settings → Client Keys (DSN)
-        #if canImport(PostHog)
-        AppAnalytics.shared.register(
-            PostHogAnalyticsService(apiKey: "phc_tK3yiMVDwQFCHvmacqu93f42FB4sSRHbqHQ58SWy6Bkg")
-        )
-        #endif
         #endif
 
         Experiment.assign()
@@ -250,6 +242,16 @@ struct oneApp: App {
 
                     // Tier 3 — bekleyebilir (engagement, telemetri, network)
                     Task.detached(priority: .background) {
+                        // PostHog setup burada — SDK dosya I/O yapıyor, main'e
+                        // gerek yok. RELEASE-only.
+                        #if !DEBUG
+                        #if canImport(PostHog)
+                        AppAnalytics.shared.register(
+                            PostHogAnalyticsService(apiKey: "phc_tK3yiMVDwQFCHvmacqu93f42FB4sSRHbqHQ58SWy6Bkg")
+                        )
+                        #endif
+                        #endif
+
                         await MainActor.run {
                             NotificationOrchestrator.shared.bootOnLaunch()
                             NotificationOrchestrator.shared.onAppOpened()

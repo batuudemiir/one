@@ -124,8 +124,10 @@ struct SplashScreen: View {
             }
         }
 
-        // ── Faz 4: Ana uygulamaya geçiş (t=2.80s) ──
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.80) {
+        // ── Faz 4: Ana uygulamaya geçiş (t=1.90s) ──
+        // Slogan 1.70s'de fade-in başlıyor; 200ms sonra pickera geçiyoruz.
+        // Cold start TTI'yi ~900ms kısalttı.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.90) {
             isActive = true
         }
     }

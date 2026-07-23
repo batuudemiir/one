@@ -1398,3 +1398,20 @@ bir gün.";
 "echoes.ephemeralNote" = "gelen karşılıklar arşivlenmez — anlık kalır";
 "echoes.empty" = "henüz karşılık yok. gün ilerledikçe belirebilir.";
 "echoes.someone" = "biri";
+
+// MARK: - Alt-çevre (SubCircle)
+"subcircle.title" = "Gruplar";
+"subcircle.new" = "Yeni";
+"subcircle.subtitle" = "Arkadaşlarını gruplara ayır, Çevre'yi gruba göre filtrele.";
+"subcircle.emptyTitle" = "Henüz grup yok";
+"subcircle.emptyBody" = "Bir grup oluştur, arkadaşlarını ekle ve Çevre'yi gruba göre gör.";
+"subcircle.memberCount" = "%d kişi";
+"subcircle.editTitle" = "Grubu düzenle";
+"subcircle.nameLabel" = "Grup adı";
+"subcircle.namePlaceholder" = "Örn. Yakınlar";
+"subcircle.colorLabel" = "Renk";
+"subcircle.emojiLabel" = "Emoji (isteğe bağlı)";
+"subcircle.membersLabel" = "Üyeler · %d";
+"subcircle.noFriends" = "Önce arkadaş ekle.";
+"subcircle.delete" = "Grubu sil";
+"subcircle.deleteConfirm" = "Bu grup silinsin mi?";

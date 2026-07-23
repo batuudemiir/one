@@ -1256,3 +1256,20 @@ one day.";
 "echoes.ephemeralNote" = "응답은 보관되지 않아요 — 그 순간만";
 "echoes.empty" = "아직 반향이 없어요. 하루가 지나며 나타날 수 있어요.";
 "echoes.someone" = "누군가";
+
+// MARK: - SubCircle
+"subcircle.title" = "Groups";
+"subcircle.new" = "New";
+"subcircle.subtitle" = "Sort your friends into groups and filter your Circle by group.";
+"subcircle.emptyTitle" = "No groups yet";
+"subcircle.emptyBody" = "Create a group, add friends, and view your Circle by group.";
+"subcircle.memberCount" = "%d people";
+"subcircle.editTitle" = "Edit group";
+"subcircle.nameLabel" = "Group name";
+"subcircle.namePlaceholder" = "e.g. Close friends";
+"subcircle.colorLabel" = "Color";
+"subcircle.emojiLabel" = "Emoji (optional)";
+"subcircle.membersLabel" = "Members · %d";
+"subcircle.noFriends" = "Add friends first.";
+"subcircle.delete" = "Delete group";
+"subcircle.deleteConfirm" = "Delete this group?";

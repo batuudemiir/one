@@ -1381,3 +1381,20 @@ one day.";
 "echoes.ephemeralNote" = "responses aren't archived — they stay in the moment";
 "echoes.empty" = "no echoes yet. they may appear as the day goes on.";
 "echoes.someone" = "someone";
+
+// MARK: - SubCircle
+"subcircle.title" = "Groups";
+"subcircle.new" = "New";
+"subcircle.subtitle" = "Sort your friends into groups and filter your Circle by group.";
+"subcircle.emptyTitle" = "No groups yet";
+"subcircle.emptyBody" = "Create a group, add friends, and view your Circle by group.";
+"subcircle.memberCount" = "%d people";
+"subcircle.editTitle" = "Edit group";
+"subcircle.nameLabel" = "Group name";
+"subcircle.namePlaceholder" = "e.g. Close friends";
+"subcircle.colorLabel" = "Color";
+"subcircle.emojiLabel" = "Emoji (optional)";
+"subcircle.membersLabel" = "Members · %d";
+"subcircle.noFriends" = "Add friends first.";
+"subcircle.delete" = "Delete group";
+"subcircle.deleteConfirm" = "Delete this group?";

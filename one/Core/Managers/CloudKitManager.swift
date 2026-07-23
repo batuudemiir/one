@@ -118,8 +118,11 @@ class CloudKitManager: ObservableObject {
             ONELogger.warning("CloudKit throttle restored — retry after \(saved)", category: .cloudkit)
         }
 
-        checkCloudKitAvailability()
-        loadCurrentUser()
+        // Cold start optimizasyonu: checkCloudKitAvailability() ve loadCurrentUser()
+        // eskiden burada senkron çağrılıyordu. `@StateObject` construction'ı ilk
+        // frame'den önce çalıştığı için iki hesap round-trip'i splash'a bindiriyordu.
+        // Artık her ikisi de oneApp.body .onAppear'daki Tier 2 Task.detached'te
+        // (userInitiated) çağrılıyor; init ucuz kalıyor.
     }
     
     // MARK: - Load Current User
