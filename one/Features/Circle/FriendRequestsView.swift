@@ -28,7 +28,6 @@ struct FriendRequestsView: View {
     @State private var isLoading = false
     @State private var processingIDs: Set<String> = []
 
-    @State private var selectedCommentShareName: IdentifiableString? = nil
     @State private var fetchedFriendShare: IdentifiableCKRecord? = nil
     @State private var isFetchingShare = false
 
@@ -101,16 +100,6 @@ struct FriendRequestsView: View {
             .onAppear {
                 load()
                 notificationStore.markAllRead()
-            }
-            .sheet(item: $selectedCommentShareName) { item in
-                CommentThreadView(
-                    shareRecordName: item.value,
-                    shareOwnerID: cloudKitManager.currentUser?["userID"] as? String ?? "",
-                    showComposer: false
-                )
-                .id(item.value)
-                .presentationDetents([.large])
-                .presentationDragIndicator(.hidden)
             }
             .sheet(item: $fetchedFriendShare) { item in
                 FriendShareDetailView(share: item.record, friendDisplayName: item.friendDisplayName)
@@ -329,9 +318,9 @@ struct FriendRequestsView: View {
 
         switch notif.type {
         case .comment, .resonance:
-            if let shareName = notif.shareRecordName {
-                selectedCommentShareName = IdentifiableString(shareName)
-            }
+            // Yorum thread'i kaldırıldı (efemer karşılık sistemine geçildi).
+            // Bildirim yalnız okundu işaretlenir.
+            break
         case .friendShare:
             if let shareName = notif.shareRecordName, !isFetchingShare {
                 isFetchingShare = true

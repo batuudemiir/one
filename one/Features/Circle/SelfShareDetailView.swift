@@ -16,8 +16,7 @@ struct SelfShareDetailView: View {
     @State private var showPhotoViewer = false
     @State private var loadedPhotoData: Data? = nil
     @State private var loadedPhotoImage: UIImage? = nil
-    @State private var showCommentSheet = false
-    @State private var commentCount: Int? = nil
+    @State private var showEchoes = false
 
     private var moodColorHex: String { share["moodColor"] as? String ?? "#5B8DEF" }
     private var moodColor: Color { Color(hex: moodColorHex) }
@@ -56,7 +55,7 @@ struct SelfShareDetailView: View {
                 VStack(spacing: 0) {
                     headerSection
                     mainCard
-                    commentThreadSection
+                    echoesSection
                     closeButton
                 }
             }
@@ -69,21 +68,16 @@ struct SelfShareDetailView: View {
             }
         }
         .liquidGlassSheetBackground()
-        .sheet(isPresented: $showCommentSheet) {
-            CommentThreadView(
+        .sheet(isPresented: $showEchoes) {
+            IncomingReactionsView(
                 shareRecordName: share.recordID.recordName,
-                shareOwnerID: myUserID,
-                showComposer: false
+                myUserID: myUserID,
+                accentColorHex: share["moodColor"] as? String ?? "#5B8DEF"
             )
-            .id(share.recordID.recordName)
             .presentationDetents([.large])
-            .presentationDragIndicator(.hidden)
         }
         .onAppear {
             withAnimation(ONEAnimation.screenTransition) { appeared = true }
-            CloudKitManager.shared.fetchCommentCount(shareRecordName: share.recordID.recordName) { count in
-                self.commentCount = count
-            }
         }
         .task {
             guard loadedPhotoData == nil else { return }
@@ -104,14 +98,6 @@ struct SelfShareDetailView: View {
                     }
                 }
             }.value
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .commentCountChanged)) { notif in
-            guard let name = notif.object as? String,
-                  name == share.recordID.recordName else { return }
-            CloudKitManager.shared.commentCountCache.removeValue(forKey: name)
-            CloudKitManager.shared.fetchCommentCount(shareRecordName: share.recordID.recordName) { count in
-                self.commentCount = count
-            }
         }
     }
 
@@ -282,16 +268,17 @@ struct SelfShareDetailView: View {
         .animation(ONEAnimation.panelSpring.delay(0.2), value: appeared)
     }
 
-    // MARK: - Comment Thread
+    // MARK: - Yankılar (kendi paylaşımına gelen efemer karşılıklar)
 
-    private var commentThreadSection: some View {
-        Button(action: { showCommentSheet = true }) {
+    private var echoesSection: some View {
+        Button(action: { ONEHaptics.feelingSelected(); showEchoes = true }) {
             HStack(spacing: 8) {
-                Image(systemName: "bubble.left.fill").bodySM()
-                Text(commentCount.map { "\($0) Yorum" } ?? "Yorumlar")
+                Image(systemName: "dot.radiowaves.left.and.right")
+                    .font(.system(size: 14, weight: .medium))
+                Text(NSLocalizedString("echoes.title", comment: ""))
                     .monoBase(tracking: 0.5)
                 Spacer()
-                Image(systemName: "chevron.up").monoBase().fontWeight(.semibold)
+                Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
             }
             .foregroundColor(ONETokens.oneCharcoal)
             .padding(.horizontal, 20)

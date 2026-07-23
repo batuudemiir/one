@@ -28,8 +28,6 @@ struct FriendDetailView: View {
     @State private var showBlockAlert  = false
     @State private var profilePhotoPressed = false
     @State private var showFriendProfile = false  // v2.6 — public profile sheet
-    @State private var showCommentSheet  = false
-    @State private var commentCount: Int? = nil
     @State private var friendProfileImageCache: UIImage? = nil
     @State private var cardPhotoCache: UIImage? = nil  // sync I/O'yu pre-load eder; tap anında jank olmaz
 
@@ -72,36 +70,6 @@ struct FriendDetailView: View {
         return raw.map { $0 != 0 } ?? true
     }
 
-    private var commentButtonLabel: String {
-        if let count = commentCount { return "\(count) Yorum" }
-        return "Yorumlar"
-    }
-
-    private var commentButtonDisabled: Bool {
-        guard let name = share?.recordID.recordName else { return true }
-        return name.isEmpty
-    }
-
-    private var commentButton: some View {
-        Button { showCommentSheet = true } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "bubble.left.fill").font(.system(size: 14))
-                Text(commentButtonLabel).monoBase(tracking: 0.5)
-                Spacer()
-                Image(systemName: "chevron.up").font(.system(size: 12, weight: .semibold))
-            }
-            .foregroundColor(ONETokens.oneCharcoal)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-            .background(RoundedRectangle(cornerRadius: 16).fill(ONETokens.oneCreamLow))
-        }
-        .buttonStyle(.plain)
-        .disabled(commentButtonDisabled)
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
-        .padding(.bottom, 8)
-    }
-
     var body: some View {
         ZStack {
             ONETokens.oneCream.ignoresSafeArea()
@@ -115,9 +83,16 @@ struct FriendDetailView: View {
                         } else {
                             privacyPlaceholder(label: "Müzik Paylaşımı")
                         }
-                        if CommentsFeatureFlag.isEnabled,
-                           let _ = friendData.user["userID"] as? String {
-                            commentButton
+                        if let ownerID = friendData.user["userID"] as? String,
+                           let recordName = share?.recordID.recordName, !recordName.isEmpty {
+                            ReactionComposer(
+                                shareRecordName: recordName,
+                                shareOwnerID: ownerID,
+                                friendDisplayName: displayName
+                            )
+                            .padding(.horizontal, 20)
+                            .padding(.top, 16)
+                            .padding(.bottom, 8)
                         } else if friendMoodHistoryVisible {
                             emojiRow
                         }
@@ -139,19 +114,6 @@ struct FriendDetailView: View {
         .sheet(isPresented: $showFriendProfile) {
             // v2.6 — Arkadaşın aggregate profili
             PublicProfileView(userID: friendData.user["userID"] as? String ?? "")
-        }
-        .sheet(isPresented: $showCommentSheet) {
-            if let recordName = share?.recordID.recordName,
-               let ownerID = friendData.user["userID"] as? String {
-                CommentThreadView(
-                    shareRecordName: recordName,
-                    shareOwnerID: ownerID,
-                    showComposer: true
-                )
-                .id(recordName)
-                .presentationDetents([.large])
-                .presentationDragIndicator(.hidden)
-            }
         }
         .overlay {
             if profilePhotoPressed, let img = friendProfileImageCache {
@@ -192,12 +154,6 @@ struct FriendDetailView: View {
             // Eğer şarkı henüz seçilmemişse polling başlat
             if !hasSong { startPolling() }
 
-            if let recordName = share?.recordID.recordName {
-                CloudKitManager.shared.fetchCommentCount(shareRecordName: recordName) { count in
-                    self.commentCount = count
-                }
-            }
-
             DispatchQueue.global(qos: .userInitiated).async {
                 guard let asset = friendData.user["profilePhoto"] as? CKAsset,
                       let url = asset.fileURL,
@@ -226,10 +182,7 @@ struct FriendDetailView: View {
             }
         }
         .onChange(of: share?.recordID.recordName) { _, newName in
-            guard let recordName = newName else { return }
-            CloudKitManager.shared.fetchCommentCount(shareRecordName: recordName) { count in
-                self.commentCount = count
-            }
+            guard newName != nil else { return }
             // Yeni share geldiğinde foto cache'ini yenile
             if let asset = share?["photoAsset"] as? CKAsset {
                 DispatchQueue.global(qos: .userInitiated).async {
@@ -247,15 +200,6 @@ struct FriendDetailView: View {
         // CircleView'den gelen canlı güncelleme sinyali
         .onReceive(NotificationCenter.default.publisher(for: .init("circleDataNeedsRefresh"))) { _ in
             fetchLatestShare()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .commentCountChanged)) { notif in
-            guard let name = notif.object as? String,
-                  let recordName = share?.recordID.recordName,
-                  name == recordName else { return }
-            CloudKitManager.shared.commentCountCache.removeValue(forKey: recordName)
-            CloudKitManager.shared.fetchCommentCount(shareRecordName: recordName) { count in
-                self.commentCount = count
-            }
         }
     }
 

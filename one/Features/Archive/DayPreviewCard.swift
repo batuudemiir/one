@@ -314,19 +314,8 @@ struct DayPreviewCard: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 14)
 
-            // Yorum butonu — kendi paylaşımlarındaki yorumlar
-            if CommentsFeatureFlag.isEnabled,
-               let myUserID = cloudKit.currentUser?["userID"] as? String {
-                CommentEntryButton(
-                    shareOwnerID: myUserID,
-                    accentColorHex: entry.moodColorHex,
-                    resolveShareRecordName: { completion in
-                        CloudKitManager.shared.fetchOwnDailyShareRecordName(date: entry.date, completion: completion)
-                    }
-                )
-                .padding(.horizontal, 20)
-                .padding(.bottom, 16)
-            }
+            // Efemer karşılıklar yalnız bugüne ait; arşivde (geçmiş) yok.
+            // Prototip: geçmiş herkesin kendinde kalır.
         }
         .background(
             RoundedRectangle(cornerRadius: 20)

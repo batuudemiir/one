@@ -173,17 +173,7 @@ struct DayDetailCarouselView: View {
                         .padding(.top, ONETokens.spacingXS)
                 }
 
-                // Yorumlar — kendi paylaşımıma gelen yorumlar
-                if let myUserID = CloudKitManager.shared.currentUser?["userID"] as? String {
-                    CommentEntryButton(
-                        shareOwnerID: myUserID,
-                        accentColorHex: entry.moodColorHex,
-                        resolveShareRecordName: { completion in
-                            CloudKitManager.shared.fetchOwnDailyShareRecordName(date: entry.date, completion: completion)
-                        }
-                    )
-                    .padding(.top, ONETokens.spacingMD)
-                }
+                // Efemer karşılıklar yalnız bugüne ait; arşivde (geçmiş) yok.
             }
             .padding(ONETokens.spacingLG)
             .frame(maxWidth: .infinity, alignment: .leading)

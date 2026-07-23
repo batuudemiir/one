@@ -32,12 +32,6 @@ struct FriendShareDetailView: View {
     @State private var showFriendProfile = false  // v2.6 — public profile sheet
     @ObservedObject private var previewer = SongPreviewPlayer.shared
     @State private var stableSong: SongResult? = nil
-    // Prototip: efemer karşılık. Tek tepki + tek satır yanıt; gün bitince
-    // kaybolur, sayaç yok, yalnız paylaşım sahibi görür.
-    @State private var sentReaction: DailyReaction.Kind? = nil
-    @State private var replyText = ""
-    @State private var replySent = false
-    @State private var isSendingReaction = false
 
     private var moodColorHex: String {
         share["moodColor"] as? String ?? "#5B8DEF"
@@ -529,165 +523,16 @@ struct FriendShareDetailView: View {
     // MARK: - Karşılık ver (prototip: sessiz cevaplaşma)
 
     private var reactionSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(NSLocalizedString("reaction.respond", comment: ""))
-                .monoLabel(tracking: 1.3)
-                .foregroundColor(ONETokens.oneStone)
-                .padding(.bottom, ONETokens.spacingSM)
-
-            // .rx-strip — üç hazır tepki + kendi rengini gönder.
-            HStack(spacing: 7) {
-                ForEach([DailyReaction.Kind.yanindayim, .bende, .iyiki], id: \.rawValue) { kind in
-                    reactionChip(kind)
-                }
-
-                Button {
-                    send(kind: .color, colorHex: myColorHex)
-                } label: {
-                    Text(DailyReaction.Kind.color.glyph)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.white)
-                        .frame(width: 38, height: 38)
-                        .background(Circle().fill(Color(hex: myColorHex)))
-                        .overlay(Circle().strokeBorder(Color.white.opacity(0.4), lineWidth: 2))
-                }
-                .buttonStyle(.plain)
-                .disabled(isSendingReaction)
-                .accessibilityLabel(DailyReaction.Kind.color.label)
-            }
-
-            // .reply — tek satır yanıt, yalnızca sahibi görür.
-            HStack(spacing: 9) {
-                TextField(
-                    String(format: NSLocalizedString("reaction.replyPlaceholder", comment: ""), getUserDisplayName()),
-                    text: $replyText
-                )
-                .textFieldStyle(.plain)
-                .font(.system(size: 14))
-                .foregroundColor(ONETokens.oneInk)
-                .submitLabel(.send)
-                .onSubmit { sendReply() }
-                .onChange(of: replyText) { _, v in
-                    if v.count > DailyReaction.maxReplyLength {
-                        replyText = String(v.prefix(DailyReaction.maxReplyLength))
-                    }
-                }
-
-                Button(action: sendReply) {
-                    Image(systemName: "arrow.up")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(ONETokens.oneCream)
-                        .frame(width: 34, height: 34)
-                        .background(Circle().fill(ONETokens.oneInk))
-                }
-                .buttonStyle(.plain)
-                .disabled(replyText.trimmingCharacters(in: .whitespaces).isEmpty || isSendingReaction)
-                .opacity(replyText.trimmingCharacters(in: .whitespaces).isEmpty ? 0.3 : 1)
-            }
-            .padding(.leading, 15)
-            .padding(.trailing, 8)
-            .padding(.vertical, 8)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(Color.white.opacity(0.82))
-                    .overlay(Capsule().strokeBorder(ONETokens.oneInk.opacity(0.09), lineWidth: 1))
-            )
-            .padding(.top, ONETokens.spacingMD)
-
-            if replySent {
-                HStack(spacing: 6) {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .semibold))
-                    Text(NSLocalizedString("reaction.sent", comment: ""))
-                        .font(.system(size: 12))
-                }
-                .foregroundColor(ONETokens.oneAsh)
-                .frame(maxWidth: .infinity)
-                .padding(.top, ONETokens.spacingMD)
-                .transition(.opacity)
-            }
-
-            // .ephem — efemerlik sözü.
-            HStack(spacing: 7) {
-                Circle().fill(ONETokens.oneStone).frame(width: 5, height: 5)
-                Text(String(format: NSLocalizedString("reaction.ephemeralNote", comment: ""), getUserDisplayName()))
-                    .font(.system(size: 11))
-                    .foregroundColor(ONETokens.oneStone)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.top, ONETokens.spacingLG)
-        }
+        ReactionComposer(
+            shareRecordName: share.recordID.recordName,
+            shareOwnerID: targetUserID(),
+            friendDisplayName: getUserDisplayName()
+        )
         .padding(.horizontal, 20)
         .padding(.top, 20)
         .padding(.bottom, 8)
         .opacity(appeared ? 1 : 0)
         .animation(.easeOut(duration: 0.3).delay(0.3), value: appeared)
-    }
-
-    private func reactionChip(_ kind: DailyReaction.Kind) -> some View {
-        let selected = sentReaction == kind
-        return Button {
-            send(kind: kind)
-        } label: {
-            HStack(spacing: 7) {
-                Text(kind.glyph)
-                    .font(.system(size: 14))
-                Text(kind.label)
-                    .font(.system(size: 13, weight: .semibold))
-            }
-            .foregroundColor(selected ? ONETokens.oneCream : ONETokens.oneInk)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 9)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(selected ? ONETokens.oneInk : Color.white.opacity(0.72))
-                    .overlay(Capsule().strokeBorder(ONETokens.oneInk.opacity(selected ? 0 : 0.09), lineWidth: 1))
-            )
-        }
-        .buttonStyle(.plain)
-        .disabled(isSendingReaction)
-        .accessibilityAddTraits(selected ? .isSelected : [])
-    }
-
-    private var myColorHex: String {
-        cloudKitManager.currentUser?["avatarColor"] as? String ?? "#5B8DEF"
-    }
-
-    private func send(kind: DailyReaction.Kind, colorHex: String? = nil) {
-        isSendingReaction = true
-        ONEHaptics.feelingSelected()
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { sentReaction = kind }
-        CloudKitManager.shared.sendDailyReaction(
-            shareRecordName: share.recordID.recordName,
-            shareOwnerID: targetUserID(),
-            kind: kind,
-            colorHex: colorHex
-        ) { result in
-            isSendingReaction = false
-            if case .failure = result {
-                withAnimation { sentReaction = nil }
-            }
-        }
-    }
-
-    private func sendReply() {
-        let trimmed = replyText.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty, !isSendingReaction else { return }
-        isSendingReaction = true
-        ONEHaptics.songSaved()
-        CloudKitManager.shared.sendDailyReaction(
-            shareRecordName: share.recordID.recordName,
-            shareOwnerID: targetUserID(),
-            kind: .reply,
-            text: trimmed
-        ) { result in
-            isSendingReaction = false
-            if case .success = result {
-                replyText = ""
-                withAnimation { replySent = true }
-            }
-        }
     }
 
     // MARK: - Close Button
