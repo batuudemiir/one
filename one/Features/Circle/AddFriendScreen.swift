@@ -41,6 +41,10 @@ struct AddFriendScreen: View {
     /// sayısına göre sıralı geliyor, rastgele insan önermiyor.
     @State private var suggestions: [SuggestedUser] = []
     @State private var sentUserIDs: Set<String> = []
+    /// İstek gönderiminde servisin döndüğü kullanıcıya dönük hata
+    /// (zaten arkadaş / bekleyen istek / engelli / kendini ekleme).
+    /// Önceden sessizce yutuluyordu.
+    @State private var errorText: String? = nil
 
     private var myInviteCode: String {
         cloudKitManager.currentUser?["inviteCode"] as? String ?? "------"
@@ -245,6 +249,19 @@ struct AddFriendScreen: View {
                     .padding(.top, ONETokens.spacingXL)
             }
 
+            // İstek gönderilemediyse (zaten arkadaş / bekleyen istek /
+            // engelli / kendini ekleme) servisin mesajını yumuşak bir
+            // uyarı tonuyla göster — eskiden sessizce yutuluyordu.
+            if let errorText {
+                Text(errorText)
+                    .bodyXS()
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(ONETokens.moodOrange)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, ONETokens.spacingMD)
+                    .transition(.opacity)
+            }
+
             // Prototipin sözü: rastgele insan önerilmez, tam eşleşme gerekir.
             Text(NSLocalizedString("addFriend.exactHint", comment: ""))
                 .bodyXS()
@@ -393,6 +410,7 @@ struct AddFriendScreen: View {
         foundUser = nil
         notFound = false
         sentToName = nil
+        errorText = nil
 
         // @ ile başlıyorsa kullanıcı adı, 6 karakterse kod olarak aranır.
         let term = q.hasPrefix("@") ? q : (q.count == 6 ? q.uppercased() : q)
@@ -414,10 +432,17 @@ struct AddFriendScreen: View {
 
     private func sendToSuggested(_ user: SuggestedUser) {
         sentUserIDs.insert(user.id)
+        errorText = nil
         ONEHaptics.songSaved()
         CloudKitManager.shared.sendFriendRequest(toUserID: user.id) { result in
             DispatchQueue.main.async {
-                if case .failure = result { sentUserIDs.remove(user.id) }
+                if case .failure(let err) = result {
+                    sentUserIDs.remove(user.id)   // kart "eklenmedi"e döner
+                    ONEHaptics.error()
+                    withAnimation(.easeOut(duration: 0.15)) {
+                        errorText = err.localizedDescription
+                    }
+                }
             }
         }
     }
@@ -428,15 +453,25 @@ struct AddFriendScreen: View {
         guard !userID.isEmpty else { return }
 
         isSending = true
+        errorText = nil
         cloudKitManager.sendFriendRequest(toUserID: userID) { result in
             DispatchQueue.main.async {
                 isSending = false
-                if case .success = result {
+                switch result {
+                case .success:
                     ONEHaptics.songSaved()
                     withAnimation(.easeOut(duration: 0.2)) {
                         sentToName = name
                         foundUser = nil
                         query = ""
+                    }
+                case .failure(let err):
+                    // Zaten arkadaş / bekleyen istek / engelli / kendini ekleme —
+                    // servisin mesajını göster, foundUser'ı bırak ki kimi
+                    // eklemeye çalıştığı görünsün.
+                    ONEHaptics.error()
+                    withAnimation(.easeOut(duration: 0.15)) {
+                        errorText = err.localizedDescription
                     }
                 }
             }
