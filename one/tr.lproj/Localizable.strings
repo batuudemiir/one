@@ -1415,3 +1415,6 @@ bir gün.";
 "subcircle.noFriends" = "Önce arkadaş ekle.";
 "subcircle.delete" = "Grubu sil";
 "subcircle.deleteConfirm" = "Bu grup silinsin mi?";
+
+"subcircle.all" = "Tümü";
+"subcircle.emptyToday" = "Bu grupta bugün paylaşan yok.";

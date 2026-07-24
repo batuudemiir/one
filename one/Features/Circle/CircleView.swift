@@ -58,6 +58,12 @@ struct CircleView: View {
     @State var showComeback: Bool = EngagementTracker.pendingComebackDays != nil
     @State var comebackDays: Int = EngagementTracker.pendingComebackDays ?? 0
     @State var hasLoadedOnce: Bool = false
+    /// Alt-çevreler — başlık altındaki grup çipleri. selectedCircleID nil
+    /// iken "Tümü" seçili; dolu iken bubble-cloud o grubun üyelerine
+    /// istemci tarafında filtrelenir (yeni sorgu yok).
+    @State var subCircles: [SubCircle] = []
+    @State var selectedCircleID: String? = nil
+    @State var showSubCircleManager = false
     @State var receivedReactions: [EmojiReactionItem] = []
     @State var isViewVisible: Bool = false
     @State var unseenShareCount: Int = 0
@@ -207,12 +213,16 @@ struct CircleView: View {
                             onStartAlone: onNavigateToToday
                         )
                     } else {
+                        subCircleChips
                         cloudSection
                     }
                 }
             }
         }
         .navigationBarHidden(true)
+        .fullScreenCover(isPresented: $showSubCircleManager, onDismiss: { loadSubCircles() }) {
+            SubCircleManagerView()
+        }
         .fullScreenCover(isPresented: $showNotifications) {
             NotificationFeedView(
                 onBack: { showNotifications = false },
@@ -470,8 +480,96 @@ struct CircleView: View {
         .padding(.bottom, 0)
     }
     
+    // MARK: - Alt-çevre filtresi
+
+    /// Seçili gruba göre filtrelenmiş arkadaş paylaşımları. "Tümü" (nil)
+    /// veya grup bulunamazsa tüm liste döner.
+    var displayedShares: [CloudKitManager.FriendCircleData] {
+        guard let id = selectedCircleID,
+              let circle = subCircles.first(where: { $0.id == id }) else { return friendsShares }
+        let members = Set(circle.memberIDs)
+        return friendsShares.filter { data in
+            (data.user["userID"] as? String).map(members.contains) ?? false
+        }
+    }
+
+    /// Başlık altındaki yatay grup çipleri: Tümü + gruplar + "düzenle".
+    /// Grup yoksa yalnız keşif için tek bir "Gruplar" çipi görünür.
+    @ViewBuilder
+    private var subCircleChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 7) {
+                if !subCircles.isEmpty {
+                    chip(title: NSLocalizedString("subcircle.all", comment: ""),
+                         emoji: "", colorHex: nil,
+                         selected: selectedCircleID == nil) {
+                        selectedCircleID = nil
+                    }
+                    ForEach(subCircles) { circle in
+                        chip(title: circle.name, emoji: circle.emoji, colorHex: circle.colorHex,
+                             selected: selectedCircleID == circle.id) {
+                            selectedCircleID = (selectedCircleID == circle.id) ? nil : circle.id
+                        }
+                    }
+                }
+
+                Button {
+                    ONEHaptics.feelingSelected()
+                    showSubCircleManager = true
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: subCircles.isEmpty ? "person.2" : "slider.horizontal.3")
+                            .font(.system(size: 11, weight: .semibold))
+                        if subCircles.isEmpty {
+                            Text(NSLocalizedString("subcircle.title", comment: ""))
+                                .font(.system(size: 12.5, weight: .semibold))
+                        }
+                    }
+                    .foregroundColor(ONETokens.oneAsh)
+                    .padding(.horizontal, subCircles.isEmpty ? 12 : 10)
+                    .padding(.vertical, 7)
+                    .background(
+                        Capsule().stroke(ONETokens.oneInk.opacity(0.14),
+                                         style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, ONETokens.spacingXL)
+        }
+        .padding(.top, ONETokens.spacingMD)
+    }
+
+    private func chip(title: String, emoji: String, colorHex: String?,
+                      selected: Bool, action: @escaping () -> Void) -> some View {
+        Button {
+            ONEHaptics.feelingSelected()
+            withAnimation(.easeOut(duration: 0.16)) { action() }
+        } label: {
+            HStack(spacing: 5) {
+                if let colorHex {
+                    Circle().fill(Color(hex: colorHex)).frame(width: 9, height: 9)
+                } else if !emoji.isEmpty {
+                    Text(emoji).font(.system(size: 12))
+                }
+                Text(title)
+                    .font(.system(size: 12.5, weight: .semibold))
+            }
+            .foregroundColor(selected ? ONETokens.oneCream : ONETokens.oneInk)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(
+                Capsule().fill(selected ? ONETokens.oneInk : Color.white.opacity(0.7))
+            )
+            .overlay(
+                Capsule().stroke(ONETokens.oneInk.opacity(selected ? 0 : 0.1), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Cloud Section (structured cards, no overlapping)
-    
+
     private var cloudSection: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 9) {
@@ -486,7 +584,7 @@ struct CircleView: View {
                     .animation(ONEAnimation.cardSpring, value: bubblesVisible)
 
                 // ── ARKADAŞLAR ────────────────────────────────────
-                ForEach(Array(friendsShares.enumerated()), id: \.element.id) { index, data in
+                ForEach(Array(displayedShares.enumerated()), id: \.element.id) { index, data in
                     friendCard(data: data, index: index)
                         .scaleEffect(bubblesVisible ? 1.0 : 0.92)
                         .opacity(bubblesVisible ? 1.0 : 0)
@@ -495,6 +593,16 @@ struct CircleView: View {
                             .delay(ONEAnimation.staggerDelay(index: index + 1, baseDelay: 0.06)),
                             value: bubblesVisible
                         )
+                }
+
+                // Seçili grupta bugün kimse yoksa — davet satırını bastırmadan
+                // kısa bir not.
+                if selectedCircleID != nil && displayedShares.isEmpty {
+                    Text(NSLocalizedString("subcircle.emptyToday", comment: ""))
+                        .bodyXS()
+                        .foregroundColor(ONETokens.oneAsh)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
                 }
 
                 // ── BEKLEYEN İSTEKLER ─────────────────────────────

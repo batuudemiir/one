@@ -1270,3 +1270,6 @@ one day.";
 "subcircle.noFriends" = "Add friends first.";
 "subcircle.delete" = "Delete group";
 "subcircle.deleteConfirm" = "Delete this group?";
+
+"subcircle.all" = "All";
+"subcircle.emptyToday" = "No one in this group shared today.";

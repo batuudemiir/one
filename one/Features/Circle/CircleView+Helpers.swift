@@ -172,12 +172,24 @@ extension CircleView {
         performLoadFriendsShares()
     }
 
+    /// Alt-çevreleri getirir. Seçili grup silinmişse "Tümü"ye döner.
+    func loadSubCircles() {
+        cloudKitManager.fetchMySubCircles { list in
+            self.subCircles = list
+            if let sel = self.selectedCircleID,
+               !list.contains(where: { $0.id == sel }) {
+                self.selectedCircleID = nil
+            }
+        }
+    }
+
     func performLoadFriendsShares() {
         guard !isFetchingShares else {
             ONELogger.debug("performLoadFriendsShares: zaten uçuşta, atlanıyor", category: .circle)
             return
         }
         isFetchingShares = true
+        loadSubCircles()
 
         // ── Serve today's cache instantly if valid ───────────────────────
         if cloudKitManager.isCircleCacheValid, let cached = cloudKitManager.cachedCircleData {
