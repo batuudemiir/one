@@ -36,6 +36,15 @@ enum KeychainHelper {
         return Date(timeIntervalSinceReferenceDate: interval)
     }
 
+    static func set(_ value: String, forKey key: String) {
+        set(Data(value.utf8), forKey: key)
+    }
+
+    static func string(forKey key: String) -> String? {
+        guard let data = get(forKey: key) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
     static func remove(forKey key: String) {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,

@@ -65,7 +65,7 @@ struct DiscoverEventCard: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(event.title)
                         .displayXS()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
 
@@ -75,7 +75,7 @@ struct DiscoverEventCard: View {
                     if !venueCity.isEmpty {
                         Text(venueCity)
                             .bodyMD()
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                             .lineLimit(1)
                     }
 
@@ -83,12 +83,12 @@ struct DiscoverEventCard: View {
                         if !event.timing.isEmpty {
                             Text(event.timing)
                                 .monoSM(tracking: 0.2)
-                                .foregroundColor(ONETokens.oneStone)
+                                .foregroundColor(V3Tokens.faintText)
                         }
                         if !event.price.isEmpty {
                             Text(isFree ? NSLocalizedString("discover.free", comment: "") : event.price)
                                 .monoSM(tracking: 0.2)
-                                .foregroundColor(isFree ? ONETokens.oneGreen : ONETokens.oneStone)
+                                .foregroundColor(isFree ? ONETokens.oneGreen : V3Tokens.faintText)
                         }
                     }
                 }
@@ -101,7 +101,7 @@ struct DiscoverEventCard: View {
                 VStack(alignment: .trailing, spacing: 0) {
                     Image(systemName: savedManager.isEventSaved(event.id) ? "bookmark.fill" : "bookmark")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(savedManager.isEventSaved(event.id) ? moodColor : ONETokens.oneStone)
+                        .foregroundColor(savedManager.isEventSaved(event.id) ? moodColor : V3Tokens.faintText)
                         .padding(8)
                         .contentShape(Rectangle())
                         .onTapGesture {
@@ -118,7 +118,7 @@ struct DiscoverEventCard: View {
                     if actionURL != nil {
                         Image(systemName: isOutdoor ? "map.fill" : "ticket.fill")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(isOutdoor ? ONETokens.oneBlue.opacity(0.85) : ONETokens.oneBrand.opacity(0.85))
+                            .foregroundColor(isOutdoor ? ONETokens.oneBlue.opacity(0.85) : ONEBrand.kor.opacity(0.85))
                             .padding(.bottom, 14)
                             .padding(.trailing, 8)
                     }
@@ -129,11 +129,11 @@ struct DiscoverEventCard: View {
             .frame(minHeight: 76)
             .background(
                 RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                    .fill(ONETokens.onePaper)
+                    .fill(V3Tokens.surface)
                     .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
                     .overlay(
                         RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                            .stroke(ONETokens.oneInk.opacity(0.05), lineWidth: 1)
+                            .stroke(V3Tokens.ink.opacity(0.05), lineWidth: 1)
                     )
             )
         }
@@ -201,7 +201,7 @@ struct DiscoverEventCard: View {
                 sourceURL: URL(string: "https://www.biletix.com"),
                 kind: .liveEvent
             ),
-            moodColor: ONETokens.oneRed
+            moodColor: ONEBrand.kor
         )
 
         DiscoverEventCard(
@@ -219,5 +219,5 @@ struct DiscoverEventCard: View {
         )
     }
     .padding(24)
-    .background(ONETokens.oneCream)
+    .background(ONEBrand.bone)
 }

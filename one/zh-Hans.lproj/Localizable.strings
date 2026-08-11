@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "在圈子中分享";
 
 /* ── 圈子 ── */
-"circle.title" = "频率";
+"circle.title" = "圈子";
 "circle.sharedCount" = "%d/%d 已分享";
 "circle.removeFriend" = "从好友中删除？";
 "circle.setupCTA" = "创建你的圈子";
@@ -532,7 +532,8 @@
 "nav.discover" = "发现";
 "nav.archive" = "存档";
 "nav.today" = "今天";
-"nav.circle" = "频率";
+"nav.entry" = "此刻";
+"nav.circle" = "圈子";
 "nav.profile" = "个人";
 "nav.tabAccessibility" = "%@标签";
 
@@ -1273,3 +1274,25 @@ one day.";
 
 "subcircle.all" = "All";
 "subcircle.emptyToday" = "No one in this group shared today.";
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.v3Subtitle" = "看看今天大家的状态。";
+"circle.peopleCount" = "%d 人";
+"circle.momentCount" = "%d 个瞬间";
+"circle.youCard" = "你";
+"circle.youNotShared" = "今天还没有分享";
+"circle.notSharedToday" = "今天还没有分享";
+"circle.scopeShared" = "已分享";
+"circle.scopePrivate" = "仅自己";
+"circle.v3EmptyTitle" = "这里还没有人。";
+"circle.v3EmptyBody" = "添加一个人，互相看见彼此的颜色。";
+"circle.scanQR" = "扫描二维码";
+"circle.resonance" = "共鸣";
+"circle.sameColorLabel" = "今天同色的人";
+"circle.distributionLabel" = "你的圈子里的颜色";
+"circle.yourColorToday" = "你今天的颜色";
+"circle.noColorToday" = "今天还没有颜色";
+"circle.noColorTodayBody" = "记录一个瞬间，共鸣就会出现。";
+"circle.sameColorCount" = "今天有 %d 人与你同色";
+"circle.requests" = "好友请求";
+"circle.notifications" = "通知";

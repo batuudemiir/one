@@ -127,14 +127,14 @@ struct AddFriendScreen: View {
         VStack(spacing: 7) {
             Image(systemName: glyph)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(ONETokens.oneCream)
+                .foregroundColor(ONEBrand.bone)
                 .frame(width: 32, height: 32)
-                .background(Circle().fill(ONETokens.oneInk))
+                .background(Circle().fill(V3Tokens.ink))
 
             Text(title)
-                .font(.system(size: 11, weight: .semibold))
+                .font(V3Typography.sans(11, weight: .semibold))
                 .multilineTextAlignment(.center)
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity)
@@ -145,7 +145,7 @@ struct AddFriendScreen: View {
                 .fill(Color.white.opacity(0.6))
                 .overlay(
                     RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
-                        .strokeBorder(ONETokens.oneInk.opacity(0.16),
+                        .strokeBorder(V3Tokens.ink.opacity(0.16),
                                       style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
                 )
         )
@@ -158,7 +158,7 @@ struct AddFriendScreen: View {
         if !suggestions.isEmpty {
             Text(NSLocalizedString("addFriend.contactsOnOne", comment: ""))
                 .monoLabel(tracking: 1.3)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
                 .padding(.top, ONETokens.spacingXL)
                 .padding(.bottom, ONETokens.spacingSM)
 
@@ -175,7 +175,7 @@ struct AddFriendScreen: View {
             // Prototipin gizlilik sözü.
             Text(NSLocalizedString("addFriend.contactsOnlyHint", comment: ""))
                 .bodyXS()
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, ONETokens.spacingSM)
         }
@@ -186,7 +186,7 @@ struct AddFriendScreen: View {
     private var codeSheet: some View {
         VStack(spacing: 0) {
             Capsule()
-                .fill(ONETokens.oneInk.opacity(0.16))
+                .fill(V3Tokens.ink.opacity(0.16))
                 .frame(width: 36, height: 4)
                 .padding(.top, 10)
                 .padding(.bottom, ONETokens.spacingXL)
@@ -206,7 +206,7 @@ struct AddFriendScreen: View {
             HStack(spacing: 9) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 14))
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                 TextField(
                     NSLocalizedString("addFriend.usernamePlaceholder", comment: ""),
                     text: $query
@@ -225,7 +225,7 @@ struct AddFriendScreen: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                    .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
             )
 
             if isSearching {
@@ -235,7 +235,7 @@ struct AddFriendScreen: View {
             } else if let sent = sentToName {
                 Text(String(format: NSLocalizedString("addFriend.requestSent", comment: ""), sent))
                     .bodySM()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .frame(maxWidth: .infinity)
                     .padding(.top, ONETokens.spacingXL)
             } else if let user = foundUser {
@@ -244,7 +244,7 @@ struct AddFriendScreen: View {
             } else if notFound {
                 Text(NSLocalizedString("addFriend.notFound", comment: ""))
                     .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .frame(maxWidth: .infinity)
                     .padding(.top, ONETokens.spacingXL)
             }
@@ -266,7 +266,7 @@ struct AddFriendScreen: View {
             Text(NSLocalizedString("addFriend.exactHint", comment: ""))
                 .bodyXS()
                 .multilineTextAlignment(.center)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .frame(maxWidth: .infinity)
                 .padding(.top, ONETokens.spacingXL)
         }
@@ -283,18 +283,18 @@ struct AddFriendScreen: View {
                 .frame(width: 36, height: 36)
                 .overlay(
                     Text(String(name.prefix(1)).uppercased())
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(V3Typography.sans(13, weight: .semibold))
                         .foregroundColor(.white)
                 )
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(name)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(ONETokens.oneInk)
+                    .font(V3Typography.sans(14, weight: .semibold))
+                    .foregroundColor(V3Tokens.ink)
                 if !uname.isEmpty {
                     Text("@\(uname)")
                         .bodyXS()
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
             }
 
@@ -307,7 +307,7 @@ struct AddFriendScreen: View {
                     send(to: user)
                 }
                 .font(.system(size: 12.5, weight: .semibold))
-                .foregroundColor(ONETokens.oneBrand)
+                .foregroundColor(ONEBrand.kor)
                 .buttonStyle(.plain)
             }
         }
@@ -326,17 +326,17 @@ struct AddFriendScreen: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                        .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
                 )
 
             Text(myHandle)
-                .font(.system(size: 19, weight: .bold))
-                .foregroundColor(ONETokens.oneInk)
+                .font(V3Typography.sans(19, weight: .bold))
+                .foregroundColor(V3Tokens.ink)
                 .padding(.top, ONETokens.spacingLG)
 
             Text(NSLocalizedString("addFriend.codeHint", comment: ""))
                 .bodyXS()
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .padding(.top, 6)
 
             VStack(spacing: 8) {
@@ -351,9 +351,9 @@ struct AddFriendScreen: View {
                         comment: ""
                     ))
                     .bodySMMedium()
-                    .foregroundColor(ONETokens.oneCream)
+                    .foregroundColor(ONEBrand.bone)
                     .frame(maxWidth: .infinity, minHeight: 44)
-                    .background(Capsule(style: .continuous).fill(ONETokens.oneInk))
+                    .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                 }
                 .buttonStyle(.plain)
 
@@ -362,11 +362,11 @@ struct AddFriendScreen: View {
                 } label: {
                     Text(NSLocalizedString("addFriend.scanWithCamera", comment: ""))
                         .bodySMMedium()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .frame(maxWidth: .infinity, minHeight: 44)
                         .background(
                             Capsule(style: .continuous)
-                                .stroke(ONETokens.oneInk.opacity(0.14), lineWidth: 1.5)
+                                .stroke(V3Tokens.ink.opacity(0.14), lineWidth: 1.5)
                         )
                 }
                 .buttonStyle(.plain)
@@ -387,7 +387,7 @@ struct AddFriendScreen: View {
         } else {
             Image(systemName: "qrcode")
                 .font(.system(size: 64, weight: .light))
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
         }
     }
 

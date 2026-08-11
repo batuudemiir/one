@@ -117,7 +117,7 @@ struct ProfileFeaturesSection: View {
 
                         Image(systemName: isYearlySummaryAvailable ? "chevron.right" : "lock")
                             .monoBase()
-                            .foregroundColor(ONETokens.oneStone)
+                            .foregroundColor(V3Tokens.faintText)
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 12)
@@ -134,7 +134,7 @@ struct ProfileFeaturesSection: View {
                 VStack(alignment: .center, spacing: 12) {
                     Image(systemName: "lock.fill")
                         .displayMD()
-                        .foregroundColor(ONETokens.oneBrand.opacity(0.8))
+                        .foregroundColor(ONEBrand.kor.opacity(0.8))
                         .padding(.top, 12)
 
                     Text(NSLocalizedString("profile.features.lockedTitle", comment: ""))
@@ -298,11 +298,9 @@ struct ProfileLoyaltyCard: View {
     private var profileColor: Color { Color(hex: vm.selectedAvatarColor) }
 
     var body: some View {
-        let days     = daysSinceJoin
-        let entries  = totalDaysCount
-        let unlocked = BadgeManager.shared.unlocked.count
-        let streak   = currentStreak
-        let nextMilestone = StreakEngine.milestones.first { $0 > streak }
+        // v3: streak/rozet UI yasak — sadece "kaç gündür ONE'daysın" ve "toplam an".
+        let days    = daysSinceJoin
+        let entries = totalDaysCount
 
         return VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 8) {
@@ -320,39 +318,10 @@ struct ProfileLoyaltyCard: View {
                 Spacer()
             }
 
-            // Streak hero
-            VStack(alignment: .center, spacing: 4) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("\(streak)")
-                        .displayMD()
-                        .foregroundColor(palette.primaryText)
-                    Text("🔥")
-                        .font(.system(size: 22))
-                }
-                Text("günlük seri")
-                    .monoLabel(tracking: 0.7)
-                    .foregroundColor(palette.secondaryText)
-
-                if let next = nextMilestone {
-                    let remaining = next - streak
-                    Text("Sonraki rozete \(remaining) gün")
-                        .monoMicro(tracking: 0.5)
-                        .foregroundColor(palette.tertiaryText)
-                        .padding(.top, 2)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
-
-            Rectangle().fill(palette.statDivider).frame(height: 1)
-
-            // Alt 3'lü metrik
             HStack(alignment: .top, spacing: 0) {
                 loyaltyMetric(value: "\(days)", label: NSLocalizedString("profile.loyalty.daysWithONE", comment: ""))
                 Rectangle().fill(palette.statDivider).frame(width: 1, height: 30).accessibilityHidden(true)
                 loyaltyMetric(value: "\(entries)", label: NSLocalizedString("profile.loyalty.entries", comment: ""))
-                Rectangle().fill(palette.statDivider).frame(width: 1, height: 30).accessibilityHidden(true)
-                loyaltyMetric(value: "\(unlocked)", label: NSLocalizedString("profile.loyalty.badges", comment: ""))
             }
         }
         .padding(.horizontal, 18)

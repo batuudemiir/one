@@ -19,7 +19,7 @@ private struct CircleShimmerModifier: ViewModifier {
                 LinearGradient(
                     gradient: Gradient(colors: [
                         Color.clear,
-                        ONETokens.oneCreamMid.opacity(0.4),
+                        V3Tokens.surface.opacity(0.4),
                         Color.clear
                     ]),
                     startPoint: .init(x: phase - 0.5, y: 0.5),

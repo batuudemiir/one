@@ -22,12 +22,12 @@ struct LanguagePickerView: View {
                     HStack {
                         Text(language.displayName)
                             .font(ONETypography.bodyLG)
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                         Spacer()
                         if languageManager.currentLanguage == language {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(ONETokens.oneBrand)
+                                .foregroundColor(ONEBrand.kor)
                         }
                     }
                     .contentShape(Rectangle())
@@ -45,7 +45,7 @@ struct LanguagePickerView: View {
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                             .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
                             .contentShape(Rectangle())
                     }

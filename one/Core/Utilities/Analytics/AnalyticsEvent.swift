@@ -83,6 +83,10 @@ enum AnalyticsEvent {
     case smartNotificationScheduled(hour: Int)             // #01 — kişisel bildirim saati kilitlendi
     case onboardingFirstColorPicked(mood: String)          // #08 — onboarding ilk renk seçimi
 
+    // ── Launch performance ──────────────────────────────────────────
+    /// MetricKit tarafından raporlanan cold/warm launch histogram özeti.
+    case launchMetricReport(p50Ms: Int, p95Ms: Int, sampleCount: Int, isResume: Bool)
+
     // ── Name + properties for dispatch ─────────────────────────────
 
     /// Stable event name emitted to analytics backends.
@@ -139,6 +143,7 @@ enum AnalyticsEvent {
         case .milestoneCardShared:              return "milestone_card_shared"
         case .smartNotificationScheduled:       return "smart_notification_scheduled"
         case .onboardingFirstColorPicked:       return "onboarding_first_color_picked"
+        case .launchMetricReport:               return "launch_metric_report"
         }
     }
 
@@ -211,6 +216,13 @@ enum AnalyticsEvent {
             return ["hour": hour]
         case .onboardingFirstColorPicked(let mood):
             return ["mood": mood]
+        case .launchMetricReport(let p50Ms, let p95Ms, let sampleCount, let isResume):
+            return [
+                "p50_ms": p50Ms,
+                "p95_ms": p95Ms,
+                "sample_count": sampleCount,
+                "is_resume": isResume
+            ]
         }
     }
 }

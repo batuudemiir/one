@@ -27,7 +27,7 @@ struct WeeklyProgressDots: View {
                 Text("bu hafta \(displayedCount) gün")
                     .font(.custom("GeistMono-Regular", size: 10))
                     .tracking(0.6)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
             }
         }
     }

@@ -32,7 +32,7 @@ struct YearlySummaryView: View {
                     content(data: data)
                 }
             }
-            .background(ONETokens.oneCream.ignoresSafeArea())
+            .background(ONEBrand.bone.ignoresSafeArea())
             .navigationTitle(String(year))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -65,10 +65,10 @@ struct YearlySummaryView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(NSLocalizedString("yearly.title", comment: ""))
                     .monoBase(tracking: 2.0)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                 Text("\(data.year)")
                     .font(.custom("GeistMono-Regular", size: 48))
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                 Text(data.dominantMood.uppercased())
                     .font(.custom("GeistMono-Regular", size: 13))
                     .tracking(2.0)
@@ -86,7 +86,7 @@ struct YearlySummaryView: View {
                 Text(NSLocalizedString("yearly.monthlyMoods", comment: ""))
                     .font(.custom("GeistMono-Regular", size: 11))
                     .tracking(1.4)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
 
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 6), spacing: 6) {
                     ForEach(0..<12, id: \.self) { m in
@@ -101,7 +101,7 @@ struct YearlySummaryView: View {
                                 )
                             Text(monthShort(m + 1))
                                 .font(.custom("GeistMono-Regular", size: 9))
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                         }
                     }
                 }
@@ -114,7 +114,7 @@ struct YearlySummaryView: View {
                     Text(NSLocalizedString("yearly.topTracks", comment: ""))
                         .font(.custom("GeistMono-Regular", size: 11))
                         .tracking(1.4)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
 
                     VStack(spacing: 0) {
                         ForEach(data.topTracks) { track in
@@ -124,7 +124,7 @@ struct YearlySummaryView: View {
                             }
                         }
                     }
-                    .background(ONETokens.oneCreamMid.opacity(0.4))
+                    .background(V3Tokens.surface.opacity(0.4))
                     .clipShape(RoundedRectangle(cornerRadius: 2))
                 }
                 .padding(.horizontal, 20)
@@ -136,22 +136,22 @@ struct YearlySummaryView: View {
                     Text(NSLocalizedString("yearly.topArtists", comment: ""))
                         .font(.custom("GeistMono-Regular", size: 11))
                         .tracking(1.4)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
 
                     VStack(spacing: 8) {
                         ForEach(Array(data.topArtists.enumerated()), id: \.offset) { idx, a in
                             HStack {
                                 Text("\(idx + 1).")
                                     .font(.custom("GeistMono-Regular", size: 11))
-                                    .foregroundColor(ONETokens.oneStone)
+                                    .foregroundColor(V3Tokens.faintText)
                                     .frame(width: 24, alignment: .leading)
                                 Text(a.name)
                                     .font(.custom("GeistMono-Regular", size: 13))
-                                    .foregroundColor(ONETokens.oneInk)
+                                    .foregroundColor(V3Tokens.ink)
                                 Spacer()
                                 Text("\(a.days)")
                                     .font(.custom("GeistMono-Regular", size: 11))
-                                    .foregroundColor(ONETokens.oneAsh)
+                                    .foregroundColor(V3Tokens.mutedText)
                             }
                         }
                     }
@@ -179,19 +179,19 @@ struct YearlySummaryView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(value)
                 .font(.custom("GeistMono-Regular", size: 22))
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
             Text(label)
                 .font(.custom("GeistMono-Regular", size: 9))
                 .tracking(1.0)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 2)
-                .strokeBorder(ONETokens.oneInk.opacity(0.08), lineWidth: 1)
+                .strokeBorder(V3Tokens.ink.opacity(0.08), lineWidth: 1)
         )
     }
 
@@ -199,23 +199,23 @@ struct YearlySummaryView: View {
         HStack(spacing: 12) {
             Text("\(t.rank).")
                 .font(.custom("GeistMono-Regular", size: 11))
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
                 .frame(width: 24, alignment: .leading)
             Text(t.emoji)
             VStack(alignment: .leading, spacing: 1) {
                 Text(t.name)
                     .font(.custom("GeistMono-Regular", size: 13))
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(1)
                 Text(t.artist)
                     .font(.custom("GeistMono-Regular", size: 10))
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
             }
             Spacer()
             Text("\(t.days)×")
                 .font(.custom("GeistMono-Regular", size: 11))
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

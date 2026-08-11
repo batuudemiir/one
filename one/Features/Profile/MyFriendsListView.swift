@@ -120,7 +120,7 @@ struct MyFriendsListView: View {
             }
 
             Rectangle()
-                .fill(ONETokens.oneInk.opacity(0.09))
+                .fill(V3Tokens.ink.opacity(0.09))
                 .frame(height: 1)
                 .padding(.vertical, ONETokens.spacingXL)
 
@@ -142,7 +142,7 @@ struct MyFriendsListView: View {
                     comment: ""
                 ))
                 .bodySM()
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, ONETokens.spacingXL)
             } else {
@@ -154,7 +154,7 @@ struct MyFriendsListView: View {
             }
 
             Rectangle()
-                .fill(ONETokens.oneInk.opacity(0.09))
+                .fill(V3Tokens.ink.opacity(0.09))
                 .frame(height: 1)
                 .padding(.vertical, ONETokens.spacingXL)
 
@@ -162,7 +162,7 @@ struct MyFriendsListView: View {
             Text(NSLocalizedString("friends.footer", comment: ""))
                 .bodyXS()
                 .multilineTextAlignment(.center)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .frame(maxWidth: .infinity)
         }
     }
@@ -176,7 +176,7 @@ struct MyFriendsListView: View {
             if incoming.isEmpty {
                 Text(NSLocalizedString("friends.noIncoming", comment: ""))
                     .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .padding(.vertical, ONETokens.spacingMD)
             } else {
                 VStack(spacing: 7) {
@@ -187,7 +187,7 @@ struct MyFriendsListView: View {
             }
 
             Rectangle()
-                .fill(ONETokens.oneInk.opacity(0.09))
+                .fill(V3Tokens.ink.opacity(0.09))
                 .frame(height: 1)
                 .padding(.vertical, ONETokens.spacingXL)
 
@@ -196,7 +196,7 @@ struct MyFriendsListView: View {
             if outgoing.isEmpty {
                 Text(NSLocalizedString("friends.noOutgoing", comment: ""))
                     .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .padding(.vertical, ONETokens.spacingMD)
             } else {
                 VStack(spacing: 7) {
@@ -213,7 +213,7 @@ struct MyFriendsListView: View {
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
             .monoLabel(tracking: 1.3)
-            .foregroundColor(ONETokens.oneStone)
+            .foregroundColor(V3Tokens.faintText)
             .padding(.bottom, ONETokens.spacingSM)
     }
 
@@ -226,17 +226,17 @@ struct MyFriendsListView: View {
         Button(action: action) {
             VStack(spacing: 7) {
                 Circle()
-                    .fill(ONETokens.oneInk)
+                    .fill(V3Tokens.ink)
                     .frame(width: 32, height: 32)
                     .overlay(
                         Image(systemName: glyph)
                             .font(.system(size: 13))
-                            .foregroundColor(ONETokens.oneCream)
+                            .foregroundColor(ONEBrand.bone)
                     )
                 Text(label)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(V3Typography.sans(11, weight: .semibold))
                     .multilineTextAlignment(.center)
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(2)
             }
             .frame(maxWidth: .infinity)
@@ -248,7 +248,7 @@ struct MyFriendsListView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
                     .strokeBorder(
-                        ONETokens.oneInk.opacity(0.16),
+                        V3Tokens.ink.opacity(0.16),
                         style: StrokeStyle(lineWidth: 1, dash: [4, 3])
                     )
             )
@@ -260,7 +260,7 @@ struct MyFriendsListView: View {
         HStack(spacing: 9) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 14))
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
             TextField(
                 NSLocalizedString("friends.searchPlaceholder", comment: ""),
                 text: $query
@@ -275,7 +275,7 @@ struct MyFriendsListView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
         )
     }
 
@@ -300,17 +300,17 @@ struct MyFriendsListView: View {
         } label: {
             HStack(spacing: 13) {
                 Circle()
-                    .fill(hasSong ? Color(hex: moodHex) : ONETokens.oneStone)
+                    .fill(hasSong ? Color(hex: moodHex) : V3Tokens.faintText)
                     .frame(width: 46, height: 46)
                     .overlay(
                         Text(String(name.prefix(1)).uppercased())
-                            .font(.system(size: 15, weight: .bold))
+                            .font(V3Typography.sans(15, weight: .bold))
                             .foregroundColor(.white)
                     )
                     .overlay(
                         Circle()
                             .stroke(
-                                hasSong ? Color(hex: moodHex) : ONETokens.oneStone,
+                                hasSong ? Color(hex: moodHex) : V3Tokens.faintText,
                                 lineWidth: 1.5
                             )
                             .opacity(0.22)
@@ -320,13 +320,13 @@ struct MyFriendsListView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 7) {
                         Text(name)
-                            .font(.system(size: 14.5, weight: .semibold))
-                            .foregroundColor(ONETokens.oneInk)
+                            .font(V3Typography.sans(14.5, weight: .semibold))
+                            .foregroundColor(V3Tokens.ink)
                             .lineLimit(1)
 
                         if hasSong && !moodWord.isEmpty {
                             Text(moodWord)
-                                .font(.system(size: 10.5, weight: .semibold))
+                                .font(V3Typography.sans(10.5, weight: .semibold))
                                 .foregroundColor(Color(hex: moodHex))
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 2)
@@ -342,7 +342,7 @@ struct MyFriendsListView: View {
                          ? "\(song) — \(artist)"
                          : NSLocalizedString("circle.notSharedYet", comment: ""))
                         .font(.system(size: 12.5))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .lineLimit(1)
                 }
             }
@@ -362,17 +362,17 @@ struct MyFriendsListView: View {
 
         return HStack(spacing: 12) {
             Circle()
-                .fill(ONETokens.oneCreamLow)
+                .fill(V3Tokens.wash)
                 .frame(width: 36, height: 36)
                 .overlay(
                     Text(String(name.prefix(1)).uppercased())
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .font(V3Typography.sans(13, weight: .semibold))
+                        .foregroundColor(V3Tokens.mutedText)
                 )
 
             Text(name)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(ONETokens.oneInk)
+                .font(V3Typography.sans(14, weight: .semibold))
+                .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
 
             Spacer()
@@ -384,14 +384,14 @@ struct MyFriendsListView: View {
                     accept(recordName: recordName)
                 }
                 .font(.system(size: 12.5, weight: .semibold))
-                .foregroundColor(ONETokens.oneBrand)
+                .foregroundColor(ONEBrand.kor)
                 .buttonStyle(.plain)
 
                 Button(NSLocalizedString("friends.ignore", comment: "")) {
                     decline(recordName: recordName)
                 }
                 .font(.system(size: 12.5, weight: .semibold))
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
                 .buttonStyle(.plain)
                 .padding(.leading, 6)
             }
@@ -406,24 +406,24 @@ struct MyFriendsListView: View {
 
         return HStack(spacing: 12) {
             Circle()
-                .fill(ONETokens.oneCreamLow)
+                .fill(V3Tokens.wash)
                 .frame(width: 36, height: 36)
                 .overlay(
                     Text(String(name.prefix(1)).uppercased())
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .font(V3Typography.sans(13, weight: .semibold))
+                        .foregroundColor(V3Tokens.mutedText)
                 )
 
             Text(name)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(ONETokens.oneInk)
+                .font(V3Typography.sans(14, weight: .semibold))
+                .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
 
             Spacer()
 
             Text(NSLocalizedString("friends.waiting", comment: ""))
-                .font(.system(size: 12.5, weight: .semibold))
-                .foregroundColor(ONETokens.oneStone)
+                .font(V3Typography.sans(12.5, weight: .semibold))
+                .foregroundColor(V3Tokens.faintText)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)

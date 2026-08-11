@@ -12,15 +12,15 @@ struct NotificationsSheetView: View {
 
     var body: some View {
         ZStack {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
                 HStack {
                     Spacer()
                     Text("Bildirimler")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(18, weight: .bold))
+                        .foregroundColor(V3Tokens.ink)
                     Spacer()
                 }
                 .padding(.horizontal, 24)
@@ -31,7 +31,7 @@ struct NotificationsSheetView: View {
                         Button(action: { presentationMode.wrappedValue.dismiss() }) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(ONETokens.oneInk)
+                                .foregroundColor(V3Tokens.ink)
                         }
                         Spacer()
                     }
@@ -43,13 +43,13 @@ struct NotificationsSheetView: View {
                     Spacer().frame(height: 100)
                     Image(systemName: "bell.slash")
                         .font(.system(size: 40))
-                        .foregroundColor(ONETokens.oneInk.opacity(0.2))
+                        .foregroundColor(V3Tokens.ink.opacity(0.2))
                     Text("Yeni Bildirim Yok")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(18, weight: .bold))
+                        .foregroundColor(V3Tokens.ink)
                     Text("Şu an için gösterilecek bir bildirim bulunmuyor.")
-                        .font(.system(size: 14, weight: .regular))
-                        .foregroundColor(ONETokens.oneInk.opacity(0.6))
+                        .font(V3Typography.sans(14, weight: .regular))
+                        .foregroundColor(V3Tokens.ink.opacity(0.6))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                     Spacer()

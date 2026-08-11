@@ -22,7 +22,7 @@ struct ProfileView: View {
             if vm.isDarkMode {
                 Color.black.ignoresSafeArea()
             } else {
-                ONETokens.oneCream.ignoresSafeArea()
+                ONEBrand.bone.ignoresSafeArea()
             }
             
             if isFromTab && vm.hasExistingProfile && !vm.isEditingFromTab {
@@ -39,9 +39,9 @@ struct ProfileView: View {
                                     Button(action: { dismiss() }) {
                                         Image(systemName: "xmark")
                                             .font(.system(size: 13, weight: .medium))
-                                            .foregroundColor(ONETokens.oneAsh)
+                                            .foregroundColor(V3Tokens.mutedText)
                                             .frame(width: 32, height: 32)
-                                            .background(ONETokens.onePaper.opacity(0.8))
+                                            .background(V3Tokens.surface.opacity(0.8))
                                             .clipShape(Circle())
                                     }
                                     .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)

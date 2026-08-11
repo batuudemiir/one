@@ -50,12 +50,12 @@ struct DiscoverScreen: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(vm.headlineCopy.headline)
                     .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(NSLocalizedString("discover.subtitle", comment: ""))
                     .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 7)
 
@@ -66,11 +66,15 @@ struct DiscoverScreen: View {
                                 title: NSLocalizedString("discover.all", comment: ""),
                                 isSelected: selectedCategory == nil
                             ) { selectedCategory = nil }
+                                .accessibilityLabel(Text(NSLocalizedString("discover.all", comment: "")))
+                                .accessibilityValue(Text(selectedCategory == nil ? "seçili" : "seçili değil"))
 
                             ForEach(categories, id: \.self) { cat in
                                 FilterChip(title: cat, isSelected: selectedCategory == cat) {
                                     selectedCategory = cat
                                 }
+                                .accessibilityLabel(Text(cat))
+                                .accessibilityValue(Text(selectedCategory == cat ? "seçili" : "seçili değil"))
                             }
                         }
                     }
@@ -81,7 +85,7 @@ struct DiscoverScreen: View {
                 if visibleEvents.isEmpty {
                     Text(NSLocalizedString("discover.empty", comment: ""))
                         .bodySM()
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, ONETokens.spacingXL3)
                 } else {
@@ -94,7 +98,7 @@ struct DiscoverScreen: View {
                 }
 
                 Rectangle()
-                    .fill(ONETokens.oneInk.opacity(0.09))
+                    .fill(V3Tokens.ink.opacity(0.09))
                     .frame(height: 1)
                     .padding(.vertical, ONETokens.spacingXL)
 
@@ -102,7 +106,7 @@ struct DiscoverScreen: View {
                 Text(NSLocalizedString("discover.footer", comment: ""))
                     .bodyXS()
                     .multilineTextAlignment(.center)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -128,7 +132,7 @@ struct DiscoverScreen: View {
                     .frame(height: 74)
 
                     Text(event.category.rawValue.uppercased())
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(V3Typography.sans(10, weight: .semibold))
                         .tracking(1.3)
                         .foregroundColor(.white.opacity(0.85))
                         .padding(.horizontal, 14)
@@ -137,32 +141,32 @@ struct DiscoverScreen: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(event.title)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(15, weight: .semibold))
+                        .foregroundColor(V3Tokens.ink)
                         .multilineTextAlignment(.leading)
                         .lineLimit(2)
 
                     Text(event.reason ?? "\(event.venue) · \(event.city)")
-                        .font(.system(size: 12.5))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .font(V3Typography.sans(12.5))
+                        .foregroundColor(V3Tokens.mutedText)
                         .multilineTextAlignment(.leading)
                         .lineLimit(2)
 
                     HStack(spacing: 8) {
                         Text(event.timing)
-                            .font(.system(size: 11))
-                            .foregroundColor(ONETokens.oneStone)
+                            .font(V3Typography.sans(11))
+                            .foregroundColor(V3Tokens.faintText)
 
                         if let source = event.sourceLabel, !source.isEmpty {
                             Text(source)
-                                .font(.system(size: 9))
+                                .font(V3Typography.sans(9))
                                 .tracking(1)
-                                .foregroundColor(ONETokens.oneStone)
+                                .foregroundColor(V3Tokens.faintText)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 4, style: .continuous)
-                                        .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                                        .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
                                 )
                         }
                         Spacer()
@@ -180,7 +184,7 @@ struct DiscoverScreen: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: ONETokens.radiusSheet, style: .continuous)
-                    .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                    .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusSheet, style: .continuous))
         }
@@ -215,7 +219,7 @@ struct DiscoverDetailScreen: View {
                 if let reason = event.reason, !reason.isEmpty {
                     Text(reason)
                         .bodySM()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, ONETokens.spacingLG)
                 }
@@ -223,7 +227,7 @@ struct DiscoverDetailScreen: View {
                 infoRows.padding(.top, ONETokens.spacingXL)
 
                 Rectangle()
-                    .fill(ONETokens.oneInk.opacity(0.09))
+                    .fill(V3Tokens.ink.opacity(0.09))
                     .frame(height: 1)
                     .padding(.vertical, ONETokens.spacingXL)
 
@@ -233,9 +237,9 @@ struct DiscoverDetailScreen: View {
                     } label: {
                         Text(NSLocalizedString("discover.open", comment: ""))
                             .bodySMMedium()
-                            .foregroundColor(ONETokens.oneCream)
+                            .foregroundColor(ONEBrand.bone)
                             .frame(maxWidth: .infinity, minHeight: 44)
-                            .background(Capsule(style: .continuous).fill(ONETokens.oneInk))
+                            .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                     }
                     .buttonStyle(.plain)
                 }
@@ -243,7 +247,7 @@ struct DiscoverDetailScreen: View {
                 Text(NSLocalizedString("discover.notSponsored", comment: ""))
                     .bodyXS()
                     .multilineTextAlignment(.center)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .frame(maxWidth: .infinity)
                     .padding(.top, ONETokens.spacingLG)
             }
@@ -257,13 +261,13 @@ struct DiscoverDetailScreen: View {
                 .foregroundColor(.white.opacity(0.75))
 
             Text(event.title)
-                .font(.system(size: 29, weight: .bold))
+                .font(V3Typography.sans(29, weight: .bold))
                 .foregroundColor(.white)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 8)
 
             Text("\(event.venue) · \(event.city)")
-                .font(.system(size: 13.5))
+                .font(V3Typography.sans(13.5))
                 .foregroundColor(.white.opacity(0.82))
                 .padding(.top, 7)
         }

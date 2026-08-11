@@ -17,7 +17,7 @@ struct MoodExplorerView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString("discover.explore", comment: ""))
                 .monoBase(tracking: 2)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .padding(.horizontal, 24)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -37,7 +37,7 @@ struct MoodExplorerView: View {
                                     .foregroundColor(
                                         isSelected ? .white :
                                         isCurrentMood ? mood.color :
-                                        ONETokens.oneCharcoal
+                                        V3Tokens.mutedText
                                     )
 
                                 if isCurrentMood {
@@ -52,14 +52,14 @@ struct MoodExplorerView: View {
                             .padding(.vertical, 8)
                             .background(
                                 Capsule()
-                                    .fill(isSelected ? mood.color : ONETokens.onePaper)
+                                    .fill(isSelected ? mood.color : V3Tokens.surface)
                             )
                             .overlay(
                                 Capsule()
                                     .stroke(
                                         isSelected ? Color.clear :
                                         isCurrentMood ? mood.color.opacity(0.3) :
-                                        ONETokens.oneSilver,
+                                        V3Tokens.hairline,
                                         lineWidth: 1
                                     )
                             )

@@ -17,7 +17,7 @@ struct FirstEntryInviteSheet: View {
 
     var body: some View {
         ZStack {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
 
             // Soft mood ambience
             RadialGradient(
@@ -39,7 +39,7 @@ struct FirstEntryInviteSheet: View {
                         .frame(width: 86, height: 86)
                         .offset(x: -18)
                     Circle()
-                        .stroke(ONETokens.oneInk.opacity(0.55), lineWidth: 1.4)
+                        .stroke(V3Tokens.ink.opacity(0.55), lineWidth: 1.4)
                         .frame(width: 86, height: 86)
                         .offset(x: 18)
                 }
@@ -49,19 +49,19 @@ struct FirstEntryInviteSheet: View {
 
                 Text(NSLocalizedString("firstEntryInvite.eyebrow", comment: ""))
                     .monoSM(tracking: 1.6)
-                    .foregroundColor(ONETokens.oneBrand.opacity(0.85))
+                    .foregroundColor(ONEBrand.kor.opacity(0.85))
                     .padding(.bottom, 10)
 
                 Text(NSLocalizedString("firstEntryInvite.title", comment: ""))
                     .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 28)
                     .padding(.bottom, 14)
 
                 Text(NSLocalizedString("firstEntryInvite.body", comment: ""))
                     .bodyMD()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
                     .padding(.horizontal, 36)
@@ -76,19 +76,19 @@ struct FirstEntryInviteSheet: View {
                             Text(NSLocalizedString("firstEntryInvite.invite", comment: ""))
                                 .monoSM(tracking: 0.8)
                         }
-                        .foregroundColor(ONETokens.oneCream)
+                        .foregroundColor(ONEBrand.bone)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 14)
-                                .fill(ONETokens.oneInk)
+                                .fill(V3Tokens.ink)
                         )
                     }
 
                     Button(action: onSkip) {
                         Text(NSLocalizedString("firstEntryInvite.skip", comment: ""))
                             .monoSM(tracking: 0.6)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
                     }

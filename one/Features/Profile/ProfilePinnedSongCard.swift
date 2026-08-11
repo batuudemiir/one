@@ -131,10 +131,10 @@ struct ProfilePinnedSongCard: View {
                 Text("Bir şarkı sabitle")
                     .bodySMMedium()
             }
-            .foregroundColor(ONETokens.oneBrand)
+            .foregroundColor(ONEBrand.kor)
             .frame(maxWidth: .infinity)
             .frame(height: 48)
-            .background(Capsule().fill(ONETokens.oneBrand.opacity(0.08)))
+            .background(Capsule().fill(ONEBrand.kor.opacity(0.08)))
         }
         .buttonStyle(.plain)
     }

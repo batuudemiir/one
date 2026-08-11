@@ -33,7 +33,7 @@ struct MoodStepView: View {
                 Text("bugün ne renktin?")
                     .displayMD()
                     .multilineTextAlignment(.center)
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .padding(.bottom, 2)
 
                 // Kadran kalan dikey boşluğa göre ölçekleniyor — sabit
@@ -55,9 +55,9 @@ struct MoodStepView: View {
                 } label: {
                     Text("devam")
                         .bodySMMedium()
-                        .foregroundColor(ONETokens.oneCream)
+                        .foregroundColor(ONEBrand.bone)
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(Capsule(style: .continuous).fill(ONETokens.oneInk))
+                        .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                 }
                 .disabled(selectedMood == nil)
                 .opacity(selectedMood == nil ? 0.28 : 1)

@@ -24,8 +24,8 @@ struct ProfileFormView: View {
     private var profileColor: Color { Color(hex: vm.selectedAvatarColor) }
     private var isDark: Bool { vm.isDarkMode }
 
-    private var screenBG: Color { isDark ? Color.black : ONETokens.oneCream }
-    private var cardBG: Color { isDark ? Color.white.opacity(0.07) : ONETokens.onePaper.opacity(0.65) }
+    private var screenBG: Color { isDark ? Color.black : ONEBrand.bone }
+    private var cardBG: Color { isDark ? Color.white.opacity(0.07) : V3Tokens.surface.opacity(0.65) }
     private var cardBorder: Color { isDark ? Color.clear : ONETokens.oneSilver }
     private var primaryText: Color { isDark ? Color.white : ONETokens.oneInk }
     private var secondaryText: Color { isDark ? Color.white.opacity(0.55) : ONETokens.oneAsh }
@@ -389,7 +389,7 @@ struct ProfileFormView: View {
                             ? ONETokens.oneGreen.opacity(0.12)
                             : vm.canSaveProfile
                                 ? profileColor
-                                : (isDark ? Color.white.opacity(0.08) : ONETokens.oneCreamLow)
+                                : (isDark ? Color.white.opacity(0.08) : V3Tokens.wash)
                     )
             )
         }

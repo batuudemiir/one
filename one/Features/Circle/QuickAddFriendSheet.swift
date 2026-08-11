@@ -66,7 +66,7 @@ struct QuickAddFriendSheet: View {
         switch searchPhase {
         case .found:         return ONETokens.oneGreen
         case .notFound, .networkError: return Color.red.opacity(0.4)
-        default:             return isQueryReady ? ONETokens.oneInk.opacity(0.3) : Color.clear
+        default:             return isQueryReady ? V3Tokens.ink.opacity(0.3) : Color.clear
         }
     }
 
@@ -75,7 +75,7 @@ struct QuickAddFriendSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             Capsule()
-                .fill(ONETokens.oneStone.opacity(0.4))
+                .fill(V3Tokens.faintText.opacity(0.4))
                 .frame(width: 36, height: 4)
                 .padding(.top, 10)
                 .padding(.bottom, 18)
@@ -83,7 +83,7 @@ struct QuickAddFriendSheet: View {
             HStack(alignment: .center) {
                 Text("Hızlı Ekle")
                     .displaySM()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                 Spacer()
                 copyCodeChip
             }
@@ -106,7 +106,7 @@ struct QuickAddFriendSheet: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .background(ONETokens.oneCream.ignoresSafeArea())
+        .background(ONEBrand.bone.ignoresSafeArea())
         .onAppear {
             resetState()
             loadSuggestions()
@@ -123,7 +123,7 @@ struct QuickAddFriendSheet: View {
                 Text(codeCopied ? "Kopyalandı" : (codeReady ? myInviteCode : "Yükleniyor…"))
                     .monoLabel(tracking: 1.2)
             }
-            .foregroundColor(codeCopied ? ONETokens.oneGreen : (codeReady ? ONETokens.oneInk : ONETokens.oneStone))
+            .foregroundColor(codeCopied ? ONETokens.oneGreen : (codeReady ? ONETokens.oneInk : V3Tokens.faintText))
             .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .background(Capsule().fill(ONETokens.oneSilver.opacity(0.7)))
@@ -154,12 +154,12 @@ struct QuickAddFriendSheet: View {
                 HStack(spacing: 10) {
                     Image(systemName: queryTrimmed.hasPrefix("@") ? "at" : (isCodeQuery ? "number" : "magnifyingglass"))
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .frame(width: 20)
 
                     TextField("@kullanıcı adı veya 6 haneli kod", text: $smartQuery)
                         .monoLabel(tracking: 0.3)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                         .onSubmit { performSearch() }
@@ -172,7 +172,7 @@ struct QuickAddFriendSheet: View {
                             Button(action: performSearch) {
                                 Image(systemName: "arrow.right.circle.fill")
                                     .font(.system(size: 20))
-                                    .foregroundColor(ONETokens.oneInk)
+                                    .foregroundColor(V3Tokens.ink)
                             }
                             .buttonStyle(ScaleButtonStyle())
                         }
@@ -182,7 +182,7 @@ struct QuickAddFriendSheet: View {
                 .padding(14)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(ONETokens.onePaper)
+                        .fill(V3Tokens.surface)
                         .overlay(RoundedRectangle(cornerRadius: 12)
                             .stroke(searchBorderColor, lineWidth: 1.5))
                 )
@@ -200,17 +200,17 @@ struct QuickAddFriendSheet: View {
                     HStack(spacing: 10) {
                         Image(systemName: "wifi.slash")
                             .font(.system(size: 13))
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                         Text("Bağlantı hatası.")
                             .monoLabel(tracking: 0.3)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                         Spacer()
                         Button("Tekrar dene", action: performSearch)
                             .monoLabel(tracking: 0.4)
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                     }
                     .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(ONETokens.onePaper))
+                    .background(RoundedRectangle(cornerRadius: 10).fill(V3Tokens.surface))
                     .transition(.opacity)
 
                 case .found:
@@ -241,15 +241,15 @@ struct QuickAddFriendSheet: View {
                 ZStack {
                     Circle().fill(Color(hex: colorHex)).frame(width: 44, height: 44)
                     Text(initial)
-                        .font(.system(size: 16, weight: .medium))
+                        .font(V3Typography.sans(16, weight: .medium))
                         .foregroundColor(.white)
                 }
 
                 // İsim + username
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(displayName).bodySM().foregroundColor(ONETokens.oneInk)
+                    Text(displayName).bodySM().foregroundColor(V3Tokens.ink)
                     if let un = username {
-                        Text("@\(un)").monoLabel(tracking: 0.3).foregroundColor(ONETokens.oneAsh)
+                        Text("@\(un)").monoLabel(tracking: 0.3).foregroundColor(V3Tokens.mutedText)
                     }
                 }
 
@@ -263,7 +263,7 @@ struct QuickAddFriendSheet: View {
             // Relationship açıklama satırı (gerekirse)
             relationshipSubline
         }
-        .background(RoundedRectangle(cornerRadius: 12).fill(ONETokens.onePaper))
+        .background(RoundedRectangle(cornerRadius: 12).fill(V3Tokens.surface))
     }
 
     @ViewBuilder
@@ -275,14 +275,14 @@ struct QuickAddFriendSheet: View {
         case .canAdd:
             Button(action: sendRequest) {
                 if isLoading {
-                    ProgressView().scaleEffect(0.75).tint(ONETokens.oneCream).frame(width: 60)
+                    ProgressView().scaleEffect(0.75).tint(ONEBrand.bone).frame(width: 60)
                 } else {
                     Text("Ekle")
                         .monoLabel(tracking: 0.5)
-                        .foregroundColor(ONETokens.oneCream)
+                        .foregroundColor(ONEBrand.bone)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(Capsule().fill(ONETokens.oneInk))
+                        .background(Capsule().fill(V3Tokens.ink))
                 }
             }
             .buttonStyle(ScaleButtonStyle())
@@ -307,7 +307,7 @@ struct QuickAddFriendSheet: View {
                 Text("Bekliyor")
                     .monoLabel(tracking: 0.3)
             }
-            .foregroundColor(ONETokens.oneAsh)
+            .foregroundColor(V3Tokens.mutedText)
             .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .background(Capsule().fill(ONETokens.oneSilver.opacity(0.7)))
@@ -320,17 +320,17 @@ struct QuickAddFriendSheet: View {
                     Text("Kabul Et")
                         .monoLabel(tracking: 0.3)
                 }
-                .foregroundColor(ONETokens.oneCream)
+                .foregroundColor(ONEBrand.bone)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(Capsule().fill(ONETokens.oneBrand))
+                .background(Capsule().fill(ONEBrand.kor))
             }
             .buttonStyle(ScaleButtonStyle())
 
         case .isSelf:
             Text("Bu sensin 👋")
                 .monoLabel(tracking: 0.3)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
 
         case .blocked:
             // Privacy: dışarıdan not-found gibi görünmeli
@@ -379,7 +379,7 @@ struct QuickAddFriendSheet: View {
                 .foregroundColor(ONETokens.oneGreen)
             Text(successMessage)
                 .bodySM()
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
                 .multilineTextAlignment(.center)
         }
         .padding(.vertical, 24)
@@ -392,7 +392,7 @@ struct QuickAddFriendSheet: View {
             HStack {
                 Text("ÖNERİLEN")
                     .monoLabel(tracking: 1.8)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                 Spacer()
                 if suggestionsLoading {
                     ProgressView().scaleEffect(0.7)
@@ -400,7 +400,7 @@ struct QuickAddFriendSheet: View {
                     Button(action: { loadSuggestions(force: true) }) {
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                     .buttonStyle(ScaleButtonStyle())
                 }
@@ -443,20 +443,20 @@ struct QuickAddFriendSheet: View {
             ZStack {
                 Circle().fill(Color(hex: user.avatarColorHex)).frame(width: 40, height: 40)
                 Text(String(user.displayName.prefix(1)).uppercased())
-                    .font(.system(size: 15, weight: .medium))
+                    .font(V3Typography.sans(15, weight: .medium))
                     .foregroundColor(.white)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.displayName)
                     .bodySM()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(1)
                 HStack(spacing: 6) {
                     if let un = user.username {
                         Text("@\(un)")
                             .monoLabel(tracking: 0.3)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                             .lineLimit(1)
                     }
                     if user.mutualFriendCount > 0 {
@@ -474,7 +474,7 @@ struct QuickAddFriendSheet: View {
             Button(action: { dismissSuggestion(user) }) {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                     .frame(width: 22, height: 22)
                     .background(Circle().fill(ONETokens.oneSilver.opacity(0.5)))
             }
@@ -503,10 +503,10 @@ struct QuickAddFriendSheet: View {
             Button(action: { sendSuggestionRequest(user) }) {
                 Text("+ Ekle")
                     .monoLabel(tracking: 0.4)
-                    .foregroundColor(ONETokens.oneCream)
+                    .foregroundColor(ONEBrand.bone)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Capsule().fill(ONETokens.oneInk))
+                    .background(Capsule().fill(V3Tokens.ink))
             }
             .buttonStyle(ScaleButtonStyle())
         }

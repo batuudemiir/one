@@ -26,17 +26,17 @@ struct SubScreenNavBar: View {
             Button(action: onBack) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .frame(width: 32, height: 32)
                     .background(Circle().fill(Color.white.opacity(0.7)))
-                    .overlay(Circle().stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1))
+                    .overlay(Circle().stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
             .accessibilityLabel(NSLocalizedString("general.back", comment: ""))
 
             Text(title)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(ONETokens.oneInk)
+                .font(V3Typography.sans(16, weight: .semibold))
+                .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
 
             Spacer()
@@ -44,10 +44,10 @@ struct SubScreenNavBar: View {
             if let actionTitle, let onAction {
                 Button(action: onAction) {
                     Text(actionTitle)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(ONETokens.oneBrand)
+                        .font(V3Typography.sans(13, weight: .semibold))
+                        .foregroundColor(ONEBrand.kor)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
             }
         }
         .padding(.horizontal, ONETokens.spacingXL)
@@ -56,8 +56,8 @@ struct SubScreenNavBar: View {
         .background(
             LinearGradient(
                 stops: [
-                    .init(color: ONETokens.oneCream, location: 0.62),
-                    .init(color: ONETokens.oneCream.opacity(0), location: 1.0)
+                    .init(color: ONEBrand.bone, location: 0.62),
+                    .init(color: ONEBrand.bone.opacity(0), location: 1.0)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -79,7 +79,7 @@ struct SubScreen<Content: View>: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 content()
@@ -113,8 +113,8 @@ struct SegmentedControl: View {
                     withAnimation(.easeOut(duration: 0.16)) { selection = index }
                 } label: {
                     Text(label)
-                        .font(.system(size: 12.5, weight: .semibold))
-                        .foregroundColor(selection == index ? ONETokens.oneInk : ONETokens.oneAsh)
+                        .font(V3Typography.sans(12.5, weight: .semibold))
+                        .foregroundColor(selection == index ? V3Tokens.ink : V3Tokens.mutedText)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 7)
                         .background(
@@ -122,19 +122,19 @@ struct SegmentedControl: View {
                                 .fill(selection == index ? Color.white : .clear)
                                 .shadow(
                                     color: selection == index
-                                        ? ONETokens.oneInk.opacity(0.1) : .clear,
+                                        ? V3Tokens.ink.opacity(0.1) : .clear,
                                     radius: 3, y: 1
                                 )
                         )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
                 .accessibilityAddTraits(selection == index ? .isSelected : [])
             }
         }
         .padding(3)
         .background(
             RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .fill(ONETokens.oneInk.opacity(0.055))
+                .fill(V3Tokens.ink.opacity(0.055))
         )
     }
 }
@@ -150,12 +150,12 @@ struct StatRow: View {
             ForEach(Array(items.enumerated()), id: \.offset) { _, item in
                 VStack(spacing: 2) {
                     Text(item.value)
-                        .font(.system(size: 23, weight: .bold))
+                        .font(V3Typography.sans(23, weight: .bold))
                         .monospacedDigit()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                     Text(item.label)
-                        .font(.system(size: 10.5))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .font(V3Typography.sans(10.5))
+                        .foregroundColor(V3Tokens.mutedText)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
@@ -176,7 +176,7 @@ struct InsightCard<Content: View>: View {
             if let label {
                 Text(label)
                     .monoLabel(tracking: 1.3)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
             }
             content()
         }
@@ -214,24 +214,24 @@ struct SettingsRow: View {
                 HStack(spacing: ONETokens.spacingMD) {
                     Image(systemName: icon)
                         .font(.system(size: 15))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .frame(width: 22)
 
                     Text(title)
-                        .font(.system(size: 14))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(14))
+                        .foregroundColor(V3Tokens.ink)
 
                     Spacer()
 
                     if let value {
                         Text(value)
-                            .font(.system(size: 13))
-                            .foregroundColor(ONETokens.oneStone)
+                            .font(V3Typography.sans(13))
+                            .foregroundColor(V3Tokens.faintText)
                     }
                     if showsChevron {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12))
-                            .foregroundColor(ONETokens.oneStone)
+                            .foregroundColor(V3Tokens.faintText)
                     }
                 }
                 .padding(.horizontal, 15)
@@ -239,7 +239,7 @@ struct SettingsRow: View {
 
                 if !isLast {
                     Rectangle()
-                        .fill(ONETokens.oneInk.opacity(0.09))
+                        .fill(V3Tokens.ink.opacity(0.09))
                         .frame(height: 1)
                         .padding(.leading, 15)
                 }
@@ -260,18 +260,18 @@ struct FilterChip: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(isSelected ? ONETokens.oneCream : ONETokens.oneInk)
+                .font(V3Typography.sans(12, weight: .semibold))
+                .foregroundColor(isSelected ? ONEBrand.bone : V3Tokens.ink)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(
                     Capsule(style: .continuous)
-                        .fill(isSelected ? ONETokens.oneInk : Color.white.opacity(0.7))
+                        .fill(isSelected ? V3Tokens.ink : Color.white.opacity(0.7))
                 )
                 .overlay(
                     Capsule(style: .continuous)
                         .stroke(
-                            isSelected ? .clear : ONETokens.oneInk.opacity(0.09),
+                            isSelected ? .clear : V3Tokens.ink.opacity(0.09),
                             lineWidth: 1
                         )
                 )
@@ -294,30 +294,30 @@ struct SubScreenState: View {
         VStack(spacing: 11) {
             Image(systemName: systemImage)
                 .font(.system(size: 38, weight: .light))
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
 
             Text(title)
                 .displayMD()
                 .multilineTextAlignment(.center)
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
 
             if let message {
                 Text(message)
                     .bodySM()
                     .multilineTextAlignment(.center)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
             }
 
             if let actionTitle, let action {
                 Button(action: action) {
                     Text(actionTitle)
                         .bodySMMedium()
-                        .foregroundColor(ONETokens.oneCream)
+                        .foregroundColor(ONEBrand.bone)
                         .padding(.horizontal, 22)
                         .frame(minHeight: 44)
-                        .background(Capsule(style: .continuous).fill(ONETokens.oneInk))
+                        .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
                 .padding(.top, 5)
             }
         }
@@ -340,7 +340,7 @@ extension View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                    .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
             )
     }
 }
@@ -361,24 +361,24 @@ struct SettingsToggleRow: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(14, weight: .semibold))
+                        .foregroundColor(V3Tokens.ink)
                     Text(subtitle)
                         .bodyXS()
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
                 Toggle("", isOn: $isOn)
                     .labelsHidden()
-                    .tint(ONETokens.oneInk)
+                    .tint(V3Tokens.ink)
             }
             .padding(.horizontal, 15)
             .padding(.vertical, 14)
 
             if !isLast {
                 Rectangle()
-                    .fill(ONETokens.oneInk.opacity(0.09))
+                    .fill(V3Tokens.ink.opacity(0.09))
                     .frame(height: 1)
                     .padding(.leading, 15)
             }

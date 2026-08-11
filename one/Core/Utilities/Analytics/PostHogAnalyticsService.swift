@@ -25,7 +25,7 @@ final class PostHogAnalyticsService: AnalyticsService {
     init(apiKey: String) {
         let config = PostHogConfig(
             projectToken: apiKey,
-            host: "https://eu.posthog.com"   // EU server (KVKK / GDPR uyumlu)
+            host: "https://us.posthog.com"   // US server (hesap US bölgesinde)
         )
         config.captureApplicationLifecycleEvents = false  // manuel kontrol
         config.flushAt = 20

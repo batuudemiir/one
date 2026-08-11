@@ -32,10 +32,10 @@ struct RecommendationCardView: View {
                         }
                     } else {
                         ZStack {
-                            ONETokens.oneSilver
+                            V3Tokens.hairline
                             Image(systemName: "music.note")
                                 .font(.system(size: 24))
-                                .foregroundColor(ONETokens.oneCreamLow)
+                                .foregroundColor(V3Tokens.wash)
                         }
                     }
                 }
@@ -44,7 +44,7 @@ struct RecommendationCardView: View {
                 .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(ONETokens.oneInk.opacity(0.05), lineWidth: 1)
+                        .stroke(V3Tokens.ink.opacity(0.05), lineWidth: 1)
                 )
                 
                 // Song info
@@ -52,14 +52,14 @@ struct RecommendationCardView: View {
                     Text(recommendation.name)
                         .bodyXS()
                         .fontWeight(.semibold)
-                        .foregroundColor(ONETokens.oneShadow)
+                        .foregroundColor(V3Tokens.ink)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, minHeight: 34, alignment: .topLeading)
 
                     Text(recommendation.artist)
                         .monoSM(tracking: 0.4)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .lineLimit(1)
 
                 }
@@ -92,9 +92,18 @@ struct RecommendationCardView: View {
 // MARK: - Button Style
 
 struct RecommendationCardButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+            // Reduce Motion: keep an opacity-only press cue instead of scaling.
+            .scaleEffect(reduceMotion ? 1.0 : (configuration.isPressed ? 0.96 : 1.0))
+            .opacity(reduceMotion && configuration.isPressed ? 0.7 : 1.0)
+            .animation(
+                reduceMotion
+                    ? .easeOut(duration: 0.12)
+                    : .spring(response: 0.3, dampingFraction: 0.7),
+                value: configuration.isPressed
+            )
     }
 }

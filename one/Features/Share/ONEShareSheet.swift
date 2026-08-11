@@ -50,7 +50,7 @@ struct ONEShareSheet: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
         }
-        .background(ONETokens.oneCream.ignoresSafeArea())
+        .background(ONEBrand.bone.ignoresSafeArea())
         .presentationDetents([.height(640), .large])
         .presentationDragIndicator(.hidden)
         .task { await generateCard() }
@@ -66,7 +66,7 @@ struct ONEShareSheet: View {
 
     private var dragHandle: some View {
         RoundedRectangle(cornerRadius: 3)
-            .fill(ONETokens.oneStone)
+            .fill(V3Tokens.faintText)
             .frame(width: 36, height: 4)
             .padding(.top, 12)
             .padding(.bottom, 14)
@@ -77,17 +77,17 @@ struct ONEShareSheet: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(NSLocalizedString("share.title", comment: ""))
                     .monoLabel(tracking: 2.0)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                 Text(entry.songName)
                     .displaySM()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(1)
             }
             Spacer()
             Button(action: { dismiss() }) {
                 Image(systemName: "xmark")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .frame(width: 32, height: 32)
                     .background(Circle().fill(ONETokens.oneSilver))
             }
@@ -99,7 +99,7 @@ struct ONEShareSheet: View {
     private var loadingView: some View {
         VStack(spacing: 12) {
             Circle()
-                .fill(ONETokens.oneInk)
+                .fill(V3Tokens.ink)
                 .frame(width: 8, height: 8)
                 .scaleEffect(breathe ? 1.4 : 0.8)
                 .opacity(breathe ? 1.0 : 0.4)
@@ -110,7 +110,7 @@ struct ONEShareSheet: View {
                 }
             Text(NSLocalizedString("share.preparing", comment: ""))
                 .monoSM(tracking: 0.5)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
         }
         .frame(maxWidth: .infinity)
     }
@@ -151,7 +151,7 @@ struct ONEShareSheet: View {
                 ShareAppButton(
                     title: NSLocalizedString("share.otherApps", comment: ""),
                     icon: "ellipsis",
-                    gradient: [ONETokens.oneAsh, ONETokens.oneStone],
+                    gradient: [V3Tokens.mutedText, ONETokens.oneStone],
                     isEnabled: storyImage != nil && xImage != nil,
                     action: shareViaSystem
                 )
@@ -428,7 +428,7 @@ private struct ActionRow: View {
         case .bordered:
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(ONETokens.oneStone, lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(V3Tokens.faintText, lineWidth: 1))
         case .ghost:
             RoundedRectangle(cornerRadius: 14)
                 .fill(ONETokens.oneSilver.opacity(0.6))
@@ -465,7 +465,7 @@ private struct ShareAppButton: View {
                 
                 Text(title)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }

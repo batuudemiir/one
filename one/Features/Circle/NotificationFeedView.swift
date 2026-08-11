@@ -54,7 +54,7 @@ struct NotificationFeedView: View {
                     ForEach(Array(groups.enumerated()), id: \.offset) { index, group in
                         Text(group.label)
                             .monoLabel(tracking: 1.3)
-                            .foregroundColor(ONETokens.oneStone)
+                            .foregroundColor(V3Tokens.faintText)
                             .padding(.top, index == 0 ? 0 : ONETokens.spacingXL)
                             .padding(.bottom, ONETokens.spacingSM)
 
@@ -64,14 +64,14 @@ struct NotificationFeedView: View {
                     }
 
                     Rectangle()
-                        .fill(ONETokens.oneInk.opacity(0.09))
+                        .fill(V3Tokens.ink.opacity(0.09))
                         .frame(height: 1)
                         .padding(.vertical, ONETokens.spacingXL)
 
                     Text(NSLocalizedString("notif.promise", comment: ""))
                         .bodyXS()
                         .multilineTextAlignment(.center)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -93,7 +93,7 @@ struct NotificationFeedView: View {
                 // Okunmamış işareti solda, satırın dışında — prototipteki
                 // `.unread::before`. İçeride bir rozet olsaydı metni iterdi.
                 Circle()
-                    .fill(item.isRead ? .clear : ONETokens.oneBrand)
+                    .fill(item.isRead ? .clear : ONEBrand.kor)
                     .frame(width: 5, height: 5)
                     .padding(.top, 7)
 
@@ -101,14 +101,14 @@ struct NotificationFeedView: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.title)
-                        .font(.system(size: 13.5, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(13.5, weight: .semibold))
+                        .foregroundColor(V3Tokens.ink)
                         .multilineTextAlignment(.leading)
 
                     if !item.body.isEmpty {
                         Text(item.body)
-                            .font(.system(size: 13.5))
-                            .foregroundColor(ONETokens.oneAsh)
+                            .font(V3Typography.sans(13.5))
+                            .foregroundColor(V3Tokens.mutedText)
                             .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -118,14 +118,14 @@ struct NotificationFeedView: View {
 
                 Text(relativeTime(item.date))
                     .monoLabel(tracking: 0.4)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                     .padding(.top, 2)
             }
             .padding(.vertical, 13)
             .contentShape(Rectangle())
             .overlay(alignment: .bottom) {
                 Rectangle()
-                    .fill(ONETokens.oneInk.opacity(0.09))
+                    .fill(V3Tokens.ink.opacity(0.09))
                     .frame(height: 1)
             }
         }
@@ -146,7 +146,7 @@ struct NotificationFeedView: View {
             .frame(width: 30, height: 30)
             .overlay(
                 Text(item.emoji ?? "")
-                    .font(.system(size: 13))
+                    .font(V3Typography.sans(13))
             )
     }
 

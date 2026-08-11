@@ -8,15 +8,46 @@
 //  Usage: prefer `CachedAsyncImage` (drop-in AsyncImage replacement) instead of
 //  touching this directly.
 //
+//  2026-08 — decode yolu düzeltildi. Önceden `UIImage(data:)` kullanılıyordu;
+//  bunun iki maliyeti vardı:
+//
+//  1. `UIImage(data:)` çözmeyi (decode) **ilk çizime** erteler. Yani JPEG'i
+//     piksele açma işi, actor'ın arka planında değil, kare çizilirken main
+//     thread'de oluyordu — kaydırma sırasındaki takılmanın klasik nedeni.
+//  2. Tam çözünürlük saklanıyordu. Bir iPhone fotoğrafı 4032×3024, yani
+//     4032×3024×4 ≈ 48.7 MB — cache'in `totalCostLimit`'inin tamamı. Tek
+//     fotoğraf tüm cache'i doldurup boşaltıyordu, `countLimit = 150` hiç
+//     devreye girmiyordu.
+//
+//  Artık ImageIO ile hedef boyuta indirgenip **hemen** çözülüyor.
+//
 
 import Foundation
 import UIKit
+import ImageIO
 
 actor ImageCache {
     static let shared = ImageCache()
 
-    private let store: NSCache<NSURL, UIImage> = {
-        let c = NSCache<NSURL, UIImage>()
+    /// Varsayılan indirgeme hedefi — uzun kenar, piksel.
+    ///
+    /// Uygulamadaki en büyük görsel yüzeyi tam ekran fotoğraf görüntüleyici;
+    /// o bile bir telefon ekranının yatay çözünürlüğünden fazlasını
+    /// gösteremiyor (iPhone 16 Pro: 1206 px). 1400 hem oradaki en kötü hâli
+    /// karşılıyor hem de tipik bir fotoğrafı ~5 MB'a indiriyor — 48 MB'lık
+    /// tavana artık gerçekten onlarca görsel sığıyor.
+    ///
+    /// Avatar ya da kart küçük resmi çizen çağıranlar daha küçük bir değer
+    /// geçerek daha da kazanabilir; farklı boyutlar ayrı ayrı saklanıyor.
+    static let defaultMaxPixelSize: CGFloat = 1400
+
+    /// Liste satırlarındaki küçük kareler (albüm kapağı, avatar — 40–60 pt).
+    /// @3x'te bile 180 px; 240 payla yeter. Bunlar kaydırılan yüzeylerde
+    /// olduğu için en çok kazanan çağrılar.
+    static let thumbnailMaxPixelSize: CGFloat = 240
+
+    private let store: NSCache<NSString, UIImage> = {
+        let c = NSCache<NSString, UIImage>()
         c.countLimit = 150          // ~150 images in RAM is plenty for feeds
         c.totalCostLimit = 48 * 1024 * 1024 // 48 MB ceiling
         return c
@@ -25,8 +56,12 @@ actor ImageCache {
     /// Fetch image for URL — serves from cache if hit, otherwise loads and stores.
     /// Supports both remote (http/https) and local (file://) URLs. Returns nil on
     /// transport error or non-image data.
-    func image(for url: URL) async -> UIImage? {
-        if let cached = store.object(forKey: url as NSURL) {
+    ///
+    /// - Parameter maxPixelSize: indirgeme hedefi (uzun kenar, piksel).
+    ///   Aynı URL farklı boyutlarda ayrı girdiler olarak saklanır.
+    func image(for url: URL, maxPixelSize: CGFloat = ImageCache.defaultMaxPixelSize) async -> UIImage? {
+        let key = Self.cacheKey(url: url, maxPixelSize: maxPixelSize)
+        if let cached = store.object(forKey: key) {
             return cached
         }
 
@@ -35,10 +70,10 @@ actor ImageCache {
         // önizlemede hiç görünmez. Local URL'leri ayrı ele alıyoruz.
         if url.isFileURL {
             guard let data = try? Data(contentsOf: url),
-                  let image = UIImage(data: data) else {
+                  let image = Self.decode(data: data, maxPixelSize: maxPixelSize) else {
                 return nil
             }
-            store.setObject(image, forKey: url as NSURL, cost: Self.cacheCost(for: image))
+            store.setObject(image, forKey: key, cost: Self.cacheCost(for: image))
             return image
         }
 
@@ -49,8 +84,8 @@ actor ImageCache {
                !(200..<300).contains(httpResponse.statusCode) {
                 return nil
             }
-            guard let image = UIImage(data: data) else { return nil }
-            store.setObject(image, forKey: url as NSURL, cost: Self.cacheCost(for: image))
+            guard let image = Self.decode(data: data, maxPixelSize: maxPixelSize) else { return nil }
+            store.setObject(image, forKey: key, cost: Self.cacheCost(for: image))
             return image
         } catch {
             return nil
@@ -63,6 +98,43 @@ actor ImageCache {
     }
 
     // MARK: - Private helpers
+
+    private static func cacheKey(url: URL, maxPixelSize: CGFloat) -> NSString {
+        "\(url.absoluteString)|\(Int(maxPixelSize))" as NSString
+    }
+
+    /// Veriyi hedef boyuta indirger ve **burada** çözer.
+    ///
+    /// `kCGImageSourceShouldCacheImmediately` bu işin kalbi: çözme actor'ın
+    /// arka planında bitiyor, çizim anında main thread'e iş kalmıyor.
+    /// `…WithTransform` EXIF yönünü uygular, yani portre çekilmiş fotoğraflar
+    /// yan dönmez.
+    ///
+    /// İndirgeme başarısız olursa (bozuk veri, desteklenmeyen biçim) tam
+    /// çözünürlüklü `UIImage(data:)`'ya düşülüyor — görsel hiç görünmemektense
+    /// pahalı görünsün.
+    private static func decode(data: Data, maxPixelSize: CGFloat) -> UIImage? {
+        let sourceOptions: [CFString: Any] = [kCGImageSourceShouldCache: false]
+        guard let source = CGImageSourceCreateWithData(
+            data as CFData, sourceOptions as CFDictionary
+        ) else {
+            return UIImage(data: data)
+        }
+        let thumbnailOptions: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixelSize
+        ]
+
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(
+            source, 0, thumbnailOptions as CFDictionary
+        ) else {
+            return UIImage(data: data)
+        }
+        // scale: 1 — `cgImage` zaten piksel boyutunda ve yönü düzeltilmiş.
+        return UIImage(cgImage: cgImage, scale: 1, orientation: .up)
+    }
 
     /// Pixel-based cost: gerçek bellek kullanımı (w × h × 4 bytes RGBA).
     /// data.count (compressed) yerine rendered pixel size kullanılır —

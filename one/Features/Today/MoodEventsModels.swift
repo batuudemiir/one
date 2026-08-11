@@ -59,7 +59,7 @@ enum EventCategory: String, CaseIterable, Identifiable, Codable {
     var accentColor: Color {
         switch self {
         case .aktivite: return ONETokens.categoryActivity
-        case .konser:  return ONETokens.oneRed
+        case .konser:  return ONEBrand.kor
         case .spor:    return ONETokens.moodOrange
         case .sinema:  return ONETokens.moodYellow
         case .tiyatro: return ONETokens.moodPurple

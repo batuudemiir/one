@@ -34,15 +34,15 @@ struct PublicProfileCTARow: View {
         case .none:
             ctaButton(
                 title: "Çevrene ekle",
-                foreground: ONETokens.oneBrand,
-                background: ONETokens.oneBrand.opacity(0.10),
+                foreground: ONEBrand.kor,
+                background: ONEBrand.kor.opacity(0.10),
                 action: onAdd
             )
 
         case .pendingOutgoing:
             ctaButton(
                 title: "İstek gönderildi",
-                foreground: ONETokens.oneAsh,
+                foreground: V3Tokens.mutedText,
                 background: ONETokens.oneSilver,
                 action: onCancelRequest
             )
@@ -57,7 +57,7 @@ struct PublicProfileCTARow: View {
                 )
                 ctaButton(
                     title: "Reddet",
-                    foreground: ONETokens.oneAsh,
+                    foreground: V3Tokens.mutedText,
                     background: ONETokens.oneSilver,
                     action: onDecline
                 )
@@ -91,7 +91,7 @@ struct PublicProfileCTARow: View {
                 Text("\(count) ortak arkadaşınız var")
                     .monoSM(tracking: 0)
             }
-            .foregroundStyle(ONETokens.oneAsh)
+            .foregroundStyle(V3Tokens.mutedText)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(Capsule().fill(ONETokens.oneSilver))

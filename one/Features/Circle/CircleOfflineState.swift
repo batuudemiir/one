@@ -30,36 +30,36 @@ struct CircleOfflineState: View {
                 // düşmedi, aynı ekranın bağlantısız hali.
                 Text(NSLocalizedString("circle.title", comment: ""))
                     .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
 
                 Text(NSLocalizedString("offline.noConnection", comment: ""))
                     .monoLabel(tracking: 0.5)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .padding(.top, 4)
 
                 VStack(spacing: 11) {
                     Image(systemName: "wifi.slash")
                         .font(.system(size: 38, weight: .light))
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
 
                     Text(NSLocalizedString("offline.title", comment: ""))
                         .displayMD()
                         .multilineTextAlignment(.center)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
 
                     Text(NSLocalizedString("offline.body", comment: ""))
                         .bodySM()
                         .multilineTextAlignment(.center)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Button(action: onStartRitual) {
                         Text(NSLocalizedString("offline.leaveColour", comment: ""))
                             .bodySMMedium()
-                            .foregroundColor(ONETokens.oneCream)
+                            .foregroundColor(ONEBrand.bone)
                             .padding(.horizontal, 22)
                             .frame(minHeight: 44)
-                            .background(Capsule(style: .continuous).fill(ONETokens.oneInk))
+                            .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                     }
                     .buttonStyle(.plain)
                     .padding(.top, 6)
@@ -74,12 +74,12 @@ struct CircleOfflineState: View {
                         }
                     } label: {
                         if isRetrying {
-                            ProgressView().tint(ONETokens.oneAsh)
+                            ProgressView().tint(V3Tokens.mutedText)
                                 .frame(minHeight: 44)
                         } else {
                             Text(NSLocalizedString("offline.retry", comment: ""))
                                 .bodySMMedium()
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                                 .frame(minHeight: 44)
                         }
                     }
@@ -91,13 +91,13 @@ struct CircleOfflineState: View {
                 .padding(.horizontal, 24)
 
                 Rectangle()
-                    .fill(ONETokens.oneInk.opacity(0.09))
+                    .fill(V3Tokens.ink.opacity(0.09))
                     .frame(height: 1)
                     .padding(.vertical, ONETokens.spacingXL)
 
                 Text(NSLocalizedString("offline.readyOffline", comment: ""))
                     .monoLabel(tracking: 1.3)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                     .padding(.bottom, ONETokens.spacingSM)
 
                 SettingsGroup {

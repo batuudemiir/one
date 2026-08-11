@@ -24,26 +24,55 @@
 //  ─────────────────────────────────────────────────────────────
 
 import SwiftUI
+import UIKit
 
 // MARK: — Dynamic Type Helpers
 
 /// SF Pro için UIFontMetrics tabanlı ölçekleme.
 /// Varsayılan boyutu korur, erişilebilirlik font boyutlarında ölçekler.
-private func scaledSystemFont(size: CGFloat, weight: UIFont.Weight, textStyle: UIFont.TextStyle) -> Font {
+///
+/// `V3Typography` ve `ONEBrand.display` de buradan geçiyor — v3 katmanı
+/// eskiden düz `.system(size:)` döndürüyordu ve Dynamic Type'a hiç
+/// uymuyordu. Tek ölçekleme noktası olsun diye `internal`.
+func scaledSystemFont(
+    size: CGFloat,
+    weight: UIFont.Weight,
+    textStyle: UIFont.TextStyle,
+    maximumPointSize: CGFloat? = nil
+) -> Font {
     let baseFont = UIFont.systemFont(ofSize: size, weight: weight)
-    let scaledFont = UIFontMetrics(forTextStyle: textStyle).scaledFont(for: baseFont)
-    return Font(scaledFont)
+    return Font(scaledUIFont(baseFont, textStyle: textStyle, maximumPointSize: maximumPointSize))
 }
 
-/// SF Serif (New York) için UIFontMetrics tabanlı ölçekleme.
-/// Editorial eksen — sadece hero/brand yüzeyleri için.
-private func scaledSerifFont(size: CGFloat, weight: UIFont.Weight, textStyle: UIFont.TextStyle) -> Font {
-    let sysDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: textStyle)
-    let serifDescriptor = (sysDescriptor.withDesign(.serif) ?? sysDescriptor)
-        .addingAttributes([.traits: [UIFontDescriptor.TraitKey.weight: weight]])
-    let baseFont = UIFont(descriptor: serifDescriptor, size: size)
-    let scaledFont = UIFontMetrics(forTextStyle: textStyle).scaledFont(for: baseFont)
-    return Font(scaledFont)
+/// Hazır bir `UIFont`'u Dynamic Type'a göre ölçekler.
+/// Custom yüzler (Archivo) için de aynı yol kullanılıyor.
+func scaledUIFont(
+    _ base: UIFont,
+    textStyle: UIFont.TextStyle,
+    maximumPointSize: CGFloat? = nil
+) -> UIFont {
+    let metrics = UIFontMetrics(forTextStyle: textStyle)
+    if let maximumPointSize {
+        return metrics.scaledFont(for: base, maximumPointSize: maximumPointSize)
+    }
+    return metrics.scaledFont(for: base)
+}
+
+/// SwiftUI `Font.Weight` → UIKit `UIFont.Weight`.
+/// `Font.Weight` bir struct olduğu için `switch` edilemiyor; eşleşmeyen
+/// bir değer gelirse `.regular`'a düşer.
+func uiFontWeight(_ weight: Font.Weight) -> UIFont.Weight {
+    switch weight {
+    case .ultraLight: return .ultraLight
+    case .thin:       return .thin
+    case .light:      return .light
+    case .medium:     return .medium
+    case .semibold:   return .semibold
+    case .bold:       return .bold
+    case .heavy:      return .heavy
+    case .black:      return .black
+    default:          return .regular
+    }
 }
 
 // MARK: — DM Sans Font Helper
@@ -146,22 +175,8 @@ enum ONETypography {
     /// 9pt · Regular + tracking  →  Mikro açıklama (mümkünse kaçın)
     static let monoMicro = DMSans.regular(9, relativeTo: .caption2)
 
-    // ── Editorial — SF Serif / New York (hero/brand yüzeyleri) ───────────────
-    // Kullanım alanı: onboarding hero, profil monogram, aylık özet kapağı,
-    //                 arkadaş ekranı kişilik başlığı, share poster.
-    // KURAL: editorial token dışında .font(.system(design: .serif)) yazma.
-
-    /// 64pt Semibold Serif — Monthly recap kapağı, share poster hero.
-    static let editorialXXL = scaledSerifFont(size: 64, weight: .semibold, textStyle: .largeTitle)
-
-    /// 56pt Semibold Serif — Onboarding wordmark, brand reveal, profil hero monogram.
-    static let editorialXL  = scaledSerifFont(size: 56, weight: .semibold, textStyle: .largeTitle)
-
-    /// 40pt Regular Serif — Reveal kart, onboarding promise label, recap istatistik.
-    static let editorialLG  = scaledSerifFont(size: 40, weight: .regular,  textStyle: .title1)
-
-    /// 28pt Regular Serif — Echo alıntı, günlük yansıma, arkadaş kişilik notu.
-    static let editorialMD  = scaledSerifFont(size: 28, weight: .regular,  textStyle: .title2)
+    // Editorial (SF Serif) v3'te yok — Archivo display kullanılıyor.
+    // Silinen: editorialXXL/XL/LG/MD. Yerine `ONEBrand.display(size)`.
 }
 
 // MARK: — View Modifier'lar
@@ -285,25 +300,6 @@ extension View {
             .tracking(tracking)
     }
 
-    // ── Editorial (SF Serif / New York) ──────────────────────────────────────
-
-    /// 64pt Semibold Serif — monthly recap kapağı, share poster hero
-    func editorialXXL() -> some View {
-        self.font(ONETypography.editorialXXL).tracking(-1.2)
-    }
-
-    /// 56pt Semibold Serif — onboarding wordmark, profil hero monogram
-    func editorialXL() -> some View {
-        self.font(ONETypography.editorialXL).tracking(-1.0)
-    }
-
-    /// 40pt Regular Serif — reveal kart, promise label, recap istatistik
-    func editorialLG() -> some View {
-        self.font(ONETypography.editorialLG).tracking(-0.6)
-    }
-
-    /// 28pt Regular Serif — echo alıntı, günlük yansıma, arkadaş notu
-    func editorialMD() -> some View {
-        self.font(ONETypography.editorialMD).tracking(-0.3)
-    }
+    // Editorial serif modifier'ları (editorialXXL/XL/LG/MD) v3'te kaldırıldı.
+    // Yerine: `.font(ONEBrand.display(size))` + `.tracking(...)`.
 }

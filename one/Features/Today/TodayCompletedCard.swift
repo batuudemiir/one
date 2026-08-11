@@ -24,6 +24,12 @@ struct CompletedEntryCard: View {
     /// binding olarak dışarıda tutuluyor.
     @Binding var showPhotoViewer: Bool
 
+    /// Root'tan gelen hero namespace. Yoksa lokal fallback kullanılıyor,
+    /// böylece preview/izole kullanımlar da çalışıyor.
+    @Environment(\.todayPhotoNamespace) private var envPhotoNS
+    @Namespace private var localPhotoNS
+    private var photoNS: Namespace.ID { envPhotoNS ?? localPhotoNS }
+
     @State private var showShareOptions = false
     @State private var showChangeConfirm = false
     @State private var photoSaved = false
@@ -63,7 +69,7 @@ struct CompletedEntryCard: View {
             if let photoURL = entry.photoURL {
                 // Photo background - tıklanabilir
                 Button(action: {
-                    withAnimation(ONEAnimation.panelSpring) {
+                    withAnimation(.spring(response: 0.42, dampingFraction: 0.86)) {
                         showPhotoViewer = true
                     }
                 }) {
@@ -73,12 +79,14 @@ struct CompletedEntryCard: View {
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                         } else {
-                            ONETokens.onePaper
+                            V3Tokens.surface
                                 .overlay(ONEMood(hex: entry.moodColorHex)?.atmosphereGradient())
                         }
                     }
                     .frame(height: photoHeight(available: available))
                     .clipped()
+                    .matchedGeometryEffect(id: "todayPhoto", in: photoNS, isSource: !showPhotoViewer)
+                    .opacity(showPhotoViewer ? 0 : 1)
                     .overlay(
                         // Subtle tap indicator
                         ZStack {
@@ -87,6 +95,7 @@ struct CompletedEntryCard: View {
                                 .bodySMMedium()
                                 .foregroundColor(.white.opacity(0.6))
                         }
+                        .opacity(showPhotoViewer ? 0 : 1)
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -105,7 +114,7 @@ struct CompletedEntryCard: View {
                         endPoint: .bottomTrailing
                     )
                 } else {
-                    ONETokens.oneSilver
+                    V3Tokens.hairline
                 }
             }
 
@@ -147,14 +156,14 @@ struct CompletedEntryCard: View {
                     // Song name
                     Text(entry.songName)
                         .displayMD()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .tracking(-0.8)
                         .lineLimit(2)
 
                     // Artist & genre
                     Text("\(entry.artistName) · \(entry.genre)")
                         .monoBase(tracking: 0.5)
-                        .foregroundColor(ONETokens.oneCharcoal)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -162,7 +171,7 @@ struct CompletedEntryCard: View {
 
             // Divider
             Rectangle()
-                .fill(ONETokens.oneCreamLow)
+                .fill(V3Tokens.wash)
                 .frame(height: 1)
                 .padding(.vertical, 4)
                 .accessibilityHidden(true)
@@ -175,7 +184,7 @@ struct CompletedEntryCard: View {
                         .frame(width: 7, height: 7)
                     Text(entry.normalizedMoodLabel.uppercased())
                         .monoLabel(tracking: 1.2)
-                        .foregroundColor(ONETokens.oneCharcoal)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
                 .padding(.horizontal, ONETokens.spacingMD)
                 .padding(.vertical, 6)
@@ -192,10 +201,10 @@ struct CompletedEntryCard: View {
                 if entry.shareWithCircle {
                     HStack(spacing: 5) {
                         Text("🌍")
-                            .font(.system(size: 11))
+                            .font(V3Typography.sans(11))
                         Text(NSLocalizedString("today.sharedInCircle", comment: ""))
                             .monoLabel()
-                            .foregroundColor(ONETokens.oneCharcoal)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                 }
             }
@@ -208,12 +217,12 @@ struct CompletedEntryCard: View {
                     Text(NSLocalizedString("today.circleCanSee", comment: ""))
                         .monoSM(tracking: 0.2)
                 }
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(ONETokens.oneSilver)
+                        .fill(V3Tokens.hairline)
                 )
             }
 
@@ -222,11 +231,11 @@ struct CompletedEntryCard: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("today.note", comment: ""))
                         .monoLabel(tracking: 1.5)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
 
                     Text(note)
                         .bodySM()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .lineSpacing(2)
                         .tracking(-0.2)
                 }
@@ -244,7 +253,7 @@ struct CompletedEntryCard: View {
 
             // Divider
             Rectangle()
-                .fill(ONETokens.oneCreamLow)
+                .fill(V3Tokens.wash)
                 .frame(height: 1)
                 .padding(.top, 8)
                 .accessibilityHidden(true)
@@ -270,13 +279,13 @@ struct CompletedEntryCard: View {
                             Text(photoSaved ? NSLocalizedString("today.saved", comment: "") : NSLocalizedString("general.save", comment: ""))
                                 .monoBase(tracking: 0.5)
                         }
-                        .foregroundColor(photoSaved ? ONETokens.oneGreen : ONETokens.oneInk)
+                        .foregroundColor(photoSaved ? ONETokens.oneGreen : V3Tokens.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(
                             Capsule()
-                                .fill(photoSaved ? ONETokens.oneGreen.opacity(0.08) : ONETokens.oneCreamMid.opacity(0.5))
-                                .overlay(Capsule().stroke(photoSaved ? ONETokens.oneGreen.opacity(0.3) : ONETokens.oneSilver, lineWidth: 1))
+                                .fill(photoSaved ? ONETokens.oneGreen.opacity(0.08) : V3Tokens.surface.opacity(0.5))
+                                .overlay(Capsule().stroke(photoSaved ? ONETokens.oneGreen.opacity(0.3) : V3Tokens.hairline, lineWidth: 1))
                         )
                     }
                     .disabled(photoSaved)
@@ -294,7 +303,7 @@ struct CompletedEntryCard: View {
                         Text(NSLocalizedString("general.share", comment: ""))
                             .monoBase(tracking: 0.5)
                     }
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .liquidGlass(.regular.interactive(), in: Capsule())
@@ -313,7 +322,7 @@ struct CompletedEntryCard: View {
                         Text(NSLocalizedString("accessibility.today.changeEntry", comment: ""))
                             .bodySM()
                     }
-                    .foregroundColor(ONETokens.oneCharcoal.opacity(0.5))
+                    .foregroundColor(V3Tokens.mutedText.opacity(0.5))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                 }
@@ -337,7 +346,7 @@ struct CompletedEntryCard: View {
             VStack(alignment: .leading, spacing: ONETokens.spacingSM) {
                 Text("İSTERSEN EKLE")
                     .monoSM(tracking: 1.5)
-                    .foregroundStyle(ONETokens.oneMist)
+                    .foregroundStyle(V3Tokens.faintText)
 
                 HStack(spacing: ONETokens.spacingSM) {
                     if needsPhoto {
@@ -358,20 +367,20 @@ struct CompletedEntryCard: View {
             VStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.system(size: 18, weight: .regular))
-                    .foregroundStyle(ONETokens.oneAsh)
+                    .foregroundStyle(V3Tokens.mutedText)
                 Text(title)
                     .font(ONETypography.bodyXS)
                     .fontWeight(.medium)
-                    .foregroundStyle(ONETokens.oneShadow)
+                    .foregroundStyle(V3Tokens.ink)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, ONETokens.spacingLG)
             .background(
                 RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
-                    .fill(ONETokens.oneCreamMid)
+                    .fill(V3Tokens.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
-                            .strokeBorder(ONETokens.oneInk.opacity(0.10),
+                            .strokeBorder(V3Tokens.ink.opacity(0.10),
                                           style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
                     )
             )

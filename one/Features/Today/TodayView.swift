@@ -9,6 +9,7 @@ import PhotosUI
 
 struct TodayView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var vm: TodayViewModel
     @Binding var entryStep: Step
 
@@ -52,36 +53,12 @@ struct TodayView: View {
         ZStack {
             // Ekranlar arası geçiş
             Group {
-                switch vm.todayState {
-                case .empty:
-                    TodayRitualView(vm: vm, onFinish: onClose)
-                        .transition(.asymmetric(
-                            insertion: .opacity,
-                            removal: .scale(scale: 0.96).combined(with: .opacity)
-                        ))
-                case .completed:
-                    if let entry = vm.todayEntry {
-                        TodayCompletedView(
-                            entry: entry,
-                            onEdit: {
-                                withAnimation(.easeInOut(duration: 0.4)) {
-                                    vm.clearToday()
-                                }
-                            },
-                            streakDays: vm.streakDays,
-                            isFreezeActive: vm.streakFreezeUsedRecently,
-                            onAddPhoto: { showExtraPhotoPicker = true },
-                            onAddNote: { showExtraNoteSheet = true },
-                            weekRhythm: vm.weekRhythm,
-                            onBackfill: { backfillTarget = BackfillTarget(date: $0) },
-                            onReturnToCircle: onClose
-                        )
-                        .transition(.asymmetric(
-                            insertion: .scale(scale: 0.96).combined(with: .opacity),
-                            removal: .opacity
-                        ))
-                    }
-                }
+                // v3 tek ekran akışı — hem boş hem dolu gün V3EntryContainer'a
+                // gider. Container mevcut kayıt varsa doğrudan Step 2'yi açar,
+                // yoksa Step 0'dan başlar. Handoff kuralı: uygulama tek şey
+                // yapar — "Bugün nasılsın?".
+                V3EntryContainer(vm: vm, onArchive: onClose)
+                    .transition(.opacity)
             }
             .animation(.spring(response: 0.45, dampingFraction: 0.82), value: vm.todayState == .completed)
 
@@ -109,7 +86,21 @@ struct TodayView: View {
                 }
                 .accessibilityHidden(true)
             }
+
+            // Cached-mood echo — dimmed placeholder that fills the first frame
+            // while the initial CoreData fetch runs. Fades out the moment the
+            // ViewModel hydrates. First-run (no cached mood) falls through to
+            // whatever `todayState` renders normally.
+            if !vm.hasHydratedTodayEntry, let echo = vm.cachedEchoMood {
+                TodayEchoPlaceholder(hex: echo.hex, label: echo.label)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                    .transition(.opacity)
+            }
         }
+        // Reduce Motion → instant swap; otherwise a soft 0.25s ease-out.
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.25),
+                   value: vm.hasHydratedTodayEntry)
         .overlay(alignment: .bottom) {
             if vm.circleShareFailed {
                 HStack(spacing: 8) {
@@ -126,7 +117,7 @@ struct TodayView: View {
                             .font(.system(size: 11, weight: .semibold))
                     }
                 }
-                .foregroundStyle(ONETokens.oneCream)
+                .foregroundStyle(ONEBrand.bone)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .background(
@@ -143,6 +134,11 @@ struct TodayView: View {
         }
         .onChange(of: vm.todayEntry) { _, newEntry in
             guard let entry = newEntry else { return }
+            // Skip the ritual on the initial hydration transition (nil → cached
+            // entry). We only want it firing in response to an actual save.
+            // `hasHydratedTodayEntry` is set on the same tick the initial fetch
+            // publishes, so any later change is a real save.
+            guard vm.hasHydratedTodayEntry else { return }
             let mood = ONEMood(hex: entry.moodColorHex)
             triggerRitual(mood: mood)
             // VoiceOver kullanıcısı save ritual'ı görmez — sözel duyuru gerekli.
@@ -175,7 +171,7 @@ struct TodayView: View {
         }
         .sheet(isPresented: $vm.showFirstEntryInvite) {
             FirstEntryInviteSheet(
-                moodColor: vm.todayEntry?.moodColor ?? ONETokens.oneBrand,
+                moodColor: vm.todayEntry?.moodColor ?? ONEBrand.kor,
                 onInvite: {
                     vm.dismissFirstEntryInvite(action: "invite")
                     // Sheet kapandıktan sonra rehber davet ekranını aç
@@ -282,16 +278,16 @@ struct StreakMilestoneCard: View {
     var body: some View {
         HStack(spacing: 16) {
             Text(emoji)
-                .font(.system(size: 32))
+                .font(V3Typography.sans(32))
                 .accessibilityHidden(true) // emoji süs — title zaten gün sayısını söylüyor
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(ONETypography.displaySM)
-                    .foregroundColor(ONETokens.oneCream)
+                    .foregroundColor(ONEBrand.bone)
                 Text(subtitle)
                     .font(ONETypography.monoSM)
-                    .foregroundColor(ONETokens.oneCream.opacity(0.75))
+                    .foregroundColor(ONEBrand.bone.opacity(0.75))
             }
             Spacer()
         }
@@ -299,12 +295,57 @@ struct StreakMilestoneCard: View {
         .padding(.vertical, 18)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(ONETokens.oneInk)
+                .fill(V3Tokens.ink)
                 .shadow(color: Color.black.opacity(0.18), radius: 20, x: 0, y: 8)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title). \(subtitle)")
         .accessibilityAddTraits(.isHeader)
+    }
+}
+
+// MARK: - Echo placeholder
+
+/// Softened silhouette of the last recorded mood. Rendered instantly from
+/// UserDefaults so the first frame isn't an empty cream field while the
+/// initial CoreData fetch runs. Cross-fades out on hydration.
+///
+/// Deliberately minimal — no interactive elements, no fetches, no timers.
+/// Matches the resting layout of `TodayCompletedView` / `TodayEmptyView`
+/// (cream background, mood tint) so the transition to real UI is a fade,
+/// not a jump cut.
+private struct TodayEchoPlaceholder: View {
+    let hex: String
+    let label: String
+
+    private var moodColor: Color { Color(hex: hex) }
+
+    var body: some View {
+        ZStack {
+            ONEBrand.bone
+                .ignoresSafeArea()
+
+            // Gentle color wash — echoes the mood without asserting it.
+            moodColor
+                .opacity(0.08)
+                .ignoresSafeArea()
+
+            VStack(spacing: 14) {
+                Text("ONE")
+                    .font(ONETypography.displayXL)
+                    .foregroundColor(V3Tokens.ink)
+
+                Circle()
+                    .fill(moodColor)
+                    .frame(width: 96, height: 96)
+                    .blur(radius: 8)
+
+                Text(label)
+                    .font(ONETypography.monoSM)
+                    .foregroundColor(V3Tokens.ink)
+            }
+            .opacity(0.35)
+        }
     }
 }
 
@@ -331,12 +372,12 @@ private struct ExtraNoteSheet: View {
 
             TextEditor(text: $text)
                 .font(ONETypography.bodySM)
-                .foregroundStyle(ONETokens.oneInk)
+                .foregroundStyle(V3Tokens.ink)
                 .scrollContentBackground(.hidden)
                 .padding(ONETokens.spacingMD)
                 .background(
                     RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
-                        .fill(ONETokens.oneCreamMid)
+                        .fill(V3Tokens.surface)
                 )
                 .frame(height: 110)
                 .focused($focused)
@@ -345,17 +386,17 @@ private struct ExtraNoteSheet: View {
                 Text("kaydet")
                     .font(ONETypography.bodyMD)
                     .fontWeight(.semibold)
-                    .foregroundStyle(ONETokens.oneCream)
+                    .foregroundStyle(ONEBrand.bone)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 15)
-                    .background(Capsule().fill(ONETokens.oneInk))
+                    .background(Capsule().fill(V3Tokens.ink))
             }
             .buttonStyle(.plain)
             .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .opacity(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.4 : 1)
         }
         .padding(ONETokens.spacingXL2)
-        .background(ONETokens.oneCream)
+        .background(ONEBrand.bone)
         .onAppear { focused = true }
     }
 }

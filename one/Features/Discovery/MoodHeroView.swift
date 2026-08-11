@@ -3,8 +3,8 @@ import SwiftUI
 struct MoodHeroView: View {
     @ObservedObject var vm: KesfetViewModel
 
-    private let sub = ONETokens.oneInk.opacity(0.55)
-    private let dim = ONETokens.oneInk.opacity(0.35)
+    private let sub = V3Tokens.ink.opacity(0.55)
+    private let dim = V3Tokens.ink.opacity(0.35)
 
     var body: some View {
         if let mood = vm.mood, let curation = vm.curation {
@@ -36,7 +36,7 @@ struct MoodHeroView: View {
     private func content(mood: KesfetMood, curation: MoodCuration) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("ŞU AN HİSSEDİYORSUN")
-                .font(.system(size: 10, weight: .semibold))
+                .font(V3Typography.sans(10, weight: .semibold))
                 .tracking(2.64)
                 .foregroundColor(dim)
                 .padding(.bottom, 10)
@@ -48,7 +48,7 @@ struct MoodHeroView: View {
                 .padding(.bottom, 8)
 
             Text(curation.line)
-                .font(.system(size: 14, weight: .regular, design: .default))
+                .font(V3Typography.sans(14, weight: .regular))
                 .italic()
                 .foregroundColor(sub)
                 .lineLimit(2)
@@ -75,8 +75,8 @@ struct MoodHeroView: View {
                     .fill(mood.color)
                     .frame(width: 16, height: 16)
                 Text(mood.label.lowercased(with: Locale(identifier: "tr_TR")))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(ONETokens.oneInk)
+                    .font(V3Typography.sans(14, weight: .semibold))
+                    .foregroundColor(V3Tokens.ink)
                 Image(systemName: "chevron.down")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(dim)
@@ -95,15 +95,15 @@ struct MoodHeroView: View {
     private func headlineText(mood: KesfetMood, curation: MoodCuration) -> some View {
         Group {
             Text("Şehir ")
-                .font(.system(size: 36, weight: .heavy, design: .default))
-                .foregroundColor(ONETokens.oneInk)
+                .font(V3Typography.sans(36, weight: .heavy))
+                .foregroundColor(V3Tokens.ink)
             + Text(curation.quality)
-                .font(.system(size: 36, weight: .heavy, design: .default))
+                .font(V3Typography.sans(36, weight: .heavy))
                 .italic()
                 .foregroundColor(mood.color)
             + Text(" akşamlar için.")
-                .font(.system(size: 36, weight: .heavy, design: .default))
-                .foregroundColor(ONETokens.oneInk)
+                .font(V3Typography.sans(36, weight: .heavy))
+                .foregroundColor(V3Tokens.ink)
         }
         .tracking(-1.08)
         .lineSpacing(-1)
@@ -112,10 +112,10 @@ struct MoodHeroView: View {
     private func inviteText(curation: MoodCuration) -> some View {
         Group {
             Text("Bu hisle eşleşen, ")
-                .font(.system(size: 13, weight: .regular))
+                .font(V3Typography.sans(13, weight: .regular))
                 .foregroundColor(sub)
             + Text(curation.invite + " 14 öneri.")
-                .font(.system(size: 13, weight: .bold))
+                .font(V3Typography.sans(13, weight: .bold))
                 .foregroundColor(sub)
         }
     }
@@ -131,21 +131,21 @@ struct MoodHeroView: View {
                             endPoint: .bottomTrailing
                         )
                         Text(song.mono)
-                            .font(.system(size: 9, weight: .bold))
+                            .font(V3Typography.sans(9, weight: .bold))
                             .foregroundColor(.white)
                     }
                     .frame(width: 28, height: 28)
                     .clipShape(RoundedRectangle(cornerRadius: 6))
 
                     Text(song.title)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(13, weight: .semibold))
+                        .foregroundColor(V3Tokens.ink)
 
                     Text("·")
                         .foregroundColor(dim)
 
                     Text(song.artist)
-                        .font(.system(size: 12, weight: .regular))
+                        .font(V3Typography.sans(12, weight: .regular))
                         .foregroundColor(sub)
                         .lineLimit(1)
                 }
@@ -153,7 +153,7 @@ struct MoodHeroView: View {
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(ONETokens.oneInk.opacity(0.04))
+                        .fill(V3Tokens.ink.opacity(0.04))
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(mood.color.opacity(0.33), lineWidth: 1)

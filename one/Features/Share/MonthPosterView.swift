@@ -86,7 +86,7 @@ struct MonthPosterView: View {
                 }
 
                 Rectangle()
-                    .fill(ONETokens.oneInk.opacity(0.09))
+                    .fill(V3Tokens.ink.opacity(0.09))
                     .frame(height: 1)
                     .padding(.vertical, ONETokens.spacingXL)
 
@@ -94,16 +94,16 @@ struct MonthPosterView: View {
                     Button { share() } label: {
                         Text(NSLocalizedString("general.share", comment: ""))
                             .bodySMMedium()
-                            .foregroundColor(ONETokens.oneCream)
+                            .foregroundColor(ONEBrand.bone)
                             .frame(maxWidth: .infinity, minHeight: 44)
-                            .background(Capsule(style: .continuous).fill(ONETokens.oneInk))
+                            .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                     }
                     .buttonStyle(.plain)
 
                     Button { saveToPhotos() } label: {
                         Text(NSLocalizedString("poster.saveImage", comment: ""))
                             .bodySMMedium()
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                             .frame(maxWidth: .infinity, minHeight: 44)
                     }
                     .buttonStyle(.plain)
@@ -192,7 +192,7 @@ struct MonthPosterView: View {
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
             .monoLabel(tracking: 1.3)
-            .foregroundColor(ONETokens.oneStone)
+            .foregroundColor(V3Tokens.faintText)
             .padding(.top, ONETokens.spacingXL)
             .padding(.bottom, ONETokens.spacingSM)
     }

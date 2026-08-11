@@ -39,12 +39,14 @@ struct ProfileFriendStrip: View {
                         Text(String(format: NSLocalizedString("profile.friendsCount", comment: ""), vm.friendCount))
                             .bodySMMedium()
                             .foregroundColor(palette.primaryText)
+                            .contentTransition(.numericText())
+                            .animation(.snappy, value: vm.friendCount)
                         Image(systemName: "chevron.right")
                             .monoMicro()
                             .foregroundColor(palette.tertiaryText)
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
                 .accessibilityLabel(NSLocalizedString("profile.friendsList.a11y", comment: ""))
 
                 Spacer()
@@ -79,7 +81,7 @@ struct ProfileFriendStrip: View {
                         .liquidGlass(
                             tint: vm.isDarkMode
                                 ? Color.black.opacity(0.40)
-                                : ONETokens.oneInk.opacity(0.14),
+                                : V3Tokens.ink.opacity(0.14),
                             interactive: true,
                             in: RoundedRectangle(cornerRadius: 12)
                         )

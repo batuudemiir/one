@@ -69,7 +69,7 @@ struct EchoData {
     static func mock() -> EchoData {
         EchoData(
             weekColors: [
-                ONETokens.oneRed, ONETokens.oneBlue, nil,
+                ONEBrand.kor, ONETokens.oneBlue, nil,
                 ONETokens.oneGreen, ONETokens.moodYellow, ONETokens.moodPurple, nil
             ],
             dominantFeeling: .calm,
@@ -87,11 +87,11 @@ struct EchoData {
                 startDate: "3 Oca",
                 endDate: "16 Oca",
                 colors: [
-                    ONETokens.oneRed, ONETokens.moodOrange, ONETokens.moodYellow,
+                    ONEBrand.kor, ONETokens.moodOrange, ONETokens.moodYellow,
                     ONETokens.oneGreen, ONETokens.oneBlue, ONETokens.moodPurple,
-                    ONETokens.oneRed, ONETokens.oneGreen, ONETokens.oneBlue,
+                    ONEBrand.kor, ONETokens.oneGreen, ONETokens.oneBlue,
                     ONETokens.moodOrange, ONETokens.moodYellow, ONETokens.moodPurple,
-                    ONETokens.oneRed, ONETokens.oneBlue
+                    ONEBrand.kor, ONETokens.oneBlue
                 ]
             ),
             currentStreak: 5,

@@ -10,14 +10,14 @@ import SwiftUI
 struct DiscoverPlaceholderView: View {
     var body: some View {
         ZStack {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Header
                 HStack {
                     Text(NSLocalizedString("discover.title", comment: ""))
                         .font(ONETypography.displayLG)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                     Spacer()
                 }
                 .padding(.top, 56)
@@ -28,11 +28,11 @@ struct DiscoverPlaceholderView: View {
                 VStack(spacing: 16) {
                     Image(systemName: "sparkles")
                         .font(.system(size: 40))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
 
                     Text(NSLocalizedString("discover.comingSoon", comment: ""))
                         .font(ONETypography.bodyMD)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .multilineTextAlignment(.center)
                 }
 

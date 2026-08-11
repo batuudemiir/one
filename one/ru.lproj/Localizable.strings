@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "Поделиться в Круге";
 
 /* ── КРУГ ── */
-"circle.title" = "частота";
+"circle.title" = "Круг";
 "circle.sharedCount" = "%d/%d поделились";
 "circle.removeFriend" = "удалить из друзей?";
 "circle.setupCTA" = "Создать свой Круг";
@@ -535,7 +535,8 @@
 "nav.discover" = "открыть";
 "nav.archive" = "архив";
 "nav.today" = "сегодня";
-"nav.circle" = "частота";
+"nav.entry" = "миг";
+"nav.circle" = "круг";
 "nav.profile" = "профиль";
 "nav.tabAccessibility" = "вкладка %@";
 
@@ -1276,3 +1277,25 @@ one day.";
 
 "subcircle.all" = "All";
 "subcircle.emptyToday" = "No one in this group shared today.";
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.v3Subtitle" = "Посмотри, как у всех дела сегодня.";
+"circle.peopleCount" = "%d чел.";
+"circle.momentCount" = "%d момент.";
+"circle.youCard" = "Ты";
+"circle.youNotShared" = "Сегодня ты не делился";
+"circle.notSharedToday" = "Сегодня не делился";
+"circle.scopeShared" = "опубликовано";
+"circle.scopePrivate" = "только ты";
+"circle.v3EmptyTitle" = "Здесь пока никого.";
+"circle.v3EmptyBody" = "Добавь кого-нибудь и смотрите цвета друг друга.";
+"circle.scanQR" = "Сканировать QR-код";
+"circle.resonance" = "Резонанс";
+"circle.sameColorLabel" = "Тот же цвет сегодня";
+"circle.distributionLabel" = "Цвета твоего круга";
+"circle.yourColorToday" = "Твой цвет сегодня";
+"circle.noColorToday" = "Сегодня без цвета";
+"circle.noColorTodayBody" = "Сохрани момент — и появится резонанс.";
+"circle.sameColorCount" = "%d человек сегодня одного цвета с тобой";
+"circle.requests" = "Запросы в друзья";
+"circle.notifications" = "Уведомления";

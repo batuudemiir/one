@@ -23,7 +23,7 @@ struct RitualProgressDots: View {
     }
 
     private func dotColor(for index: Int) -> Color {
-        if index < current { return ONETokens.oneMist }
+        if index < current { return V3Tokens.faintText }
         if index == current { return ONETokens.oneVoid }
         return Color.black.opacity(0.12)
     }

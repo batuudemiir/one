@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "Share in Circle";
 
 /* ── CIRCLE ── */
-"circle.title" = "frequency";
+"circle.title" = "Circle";
 "circle.sharedCount" = "%d/%d shared";
 "circle.removeFriend" = "remove from friends?";
 "circle.setupCTA" = "Set up your Circle";
@@ -716,7 +716,8 @@
 "nav.discover" = "discover";
 "nav.archive" = "archive";
 "nav.today" = "today";
-"nav.circle" = "frequency";
+"nav.entry" = "moment";
+"nav.circle" = "circle";
 "nav.profile" = "profile";
 "nav.tabAccessibility" = "%@ tab";
 "nav.todayHint" = "Log today's mood";
@@ -1401,3 +1402,25 @@ one day.";
 
 "subcircle.all" = "All";
 "subcircle.emptyToday" = "No one in this group shared today.";
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.v3Subtitle" = "See how everyone is today.";
+"circle.peopleCount" = "%d people";
+"circle.momentCount" = "%d moments";
+"circle.youCard" = "You";
+"circle.youNotShared" = "You haven't shared today";
+"circle.notSharedToday" = "Hasn't shared today";
+"circle.scopeShared" = "shared";
+"circle.scopePrivate" = "only you";
+"circle.v3EmptyTitle" = "No one here yet.";
+"circle.v3EmptyBody" = "Add someone and see each other's colors.";
+"circle.scanQR" = "Scan QR code";
+"circle.resonance" = "Resonance";
+"circle.sameColorLabel" = "Same color today";
+"circle.distributionLabel" = "Colors in your circle";
+"circle.yourColorToday" = "Your color today";
+"circle.noColorToday" = "No color today";
+"circle.noColorTodayBody" = "Save a moment to see the resonance.";
+"circle.sameColorCount" = "%d people share your color today";
+"circle.requests" = "Friend requests";
+"circle.notifications" = "Notifications";

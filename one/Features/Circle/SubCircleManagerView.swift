@@ -48,7 +48,7 @@ struct SubCircleManagerView: View {
             VStack(alignment: .leading, spacing: ONETokens.spacingMD) {
                 Text(NSLocalizedString("subcircle.subtitle", comment: ""))
                     .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.bottom, ONETokens.spacingSM)
 
@@ -80,15 +80,15 @@ struct SubCircleManagerView: View {
         VStack(spacing: 12) {
             Image(systemName: "person.2.circle")
                 .font(.system(size: 40, weight: .light))
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
             Text(NSLocalizedString("subcircle.emptyTitle", comment: ""))
                 .bodyMD()
                 .fontWeight(.medium)
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
             Text(NSLocalizedString("subcircle.emptyBody", comment: ""))
                 .bodyXS()
                 .multilineTextAlignment(.center)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .padding(.horizontal, 24)
         }
         .frame(maxWidth: .infinity)
@@ -134,23 +134,23 @@ private struct SubCircleRow: View {
                     .frame(width: 40, height: 40)
                 Text(circle.emoji.isEmpty ? String(circle.name.prefix(1)).uppercased() : circle.emoji)
                     .font(.system(size: circle.emoji.isEmpty ? 16 : 18, weight: .semibold))
-                    .foregroundColor(ONETokens.oneInk.opacity(0.75))
+                    .foregroundColor(V3Tokens.ink.opacity(0.75))
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(circle.name)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(ONETokens.oneInk)
+                    .font(V3Typography.sans(15, weight: .semibold))
+                    .foregroundColor(V3Tokens.ink)
                 Text(String(format: NSLocalizedString("subcircle.memberCount", comment: ""), circle.memberIDs.count))
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
             }
 
             Spacer()
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)

@@ -176,7 +176,12 @@ enum AppError: LocalizedError, Identifiable {
         switch self {
         case .networkUnavailable, .networkTimeout, .networkUnknown,
              .cloudKitServerConflict, .cloudKitUnknown,
-             .musicSearchFailed, .circleFriendRequestFailed:
+             .musicSearchFailed, .circleFriendRequestFailed,
+             // .unknown ile birlikte retry closure verilmişse (örn.
+             // poster render fail), toast retry button'u göstermeli.
+             // Toast zaten `isRetryable && retry != nil` kontrolü yaptığı
+             // için closure verilmeyen çağrılar etkilenmez.
+             .unknown:
             return true
         default:
             return false

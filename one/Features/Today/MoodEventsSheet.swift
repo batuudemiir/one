@@ -54,7 +54,7 @@ struct MoodEventsSheet: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
@@ -70,7 +70,7 @@ struct MoodEventsSheet: View {
                                     .frame(width: 8, height: 8)
                                 Text(entry.normalizedMoodLabel.uppercased())
                                     .monoBase(tracking: 1.5)
-                                    .foregroundColor(ONETokens.oneCharcoal)
+                                    .foregroundColor(V3Tokens.mutedText)
                             }
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
@@ -78,7 +78,7 @@ struct MoodEventsSheet: View {
 
                             Text(" · ")
                                 .monoBase(tracking: 0.5)
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                                 .padding(.horizontal, 2)
 
                             // City pill — tappable Menu
@@ -97,17 +97,17 @@ struct MoodEventsSheet: View {
                                 HStack(spacing: 5) {
                                     Text(preferredCity.uppercased())
                                         .monoBase(tracking: 1.5)
-                                        .foregroundColor(ONETokens.oneCharcoal)
+                                        .foregroundColor(V3Tokens.mutedText)
                                     Image(systemName: "chevron.down")
                                         .monoMicro().fontWeight(.semibold)
-                                        .foregroundColor(ONETokens.oneAsh)
+                                        .foregroundColor(V3Tokens.mutedText)
                                 }
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 8)
                                 .background(
                                     Capsule()
-                                        .fill(ONETokens.oneCreamMid)
-                                        .overlay(Capsule().stroke(ONETokens.oneStone, lineWidth: 0.5))
+                                        .fill(V3Tokens.surface)
+                                        .overlay(Capsule().stroke(V3Tokens.faintText, lineWidth: 0.5))
                                 )
                             }
             .accessibilityLabel(String(format: NSLocalizedString("accessibility.discover.city", comment: ""), preferredCity))
@@ -117,7 +117,7 @@ struct MoodEventsSheet: View {
                         Text(NSLocalizedString("moodEvents.ourPicks", comment: ""))
                             .displayHero().fontWeight(.black)
                             .italic()
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                             .lineSpacing(2)
                     }
                     .padding(.horizontal, 24)
@@ -129,20 +129,20 @@ struct MoodEventsSheet: View {
                         HStack(spacing: 10) {
                             Image(systemName: "location.slash.fill")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(ONETokens.oneStone)
+                                .foregroundColor(V3Tokens.faintText)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("\(preferredCity) için etkinlik bulunamadı")
                                     .font(ONETypography.monoSM)
-                                    .foregroundColor(ONETokens.oneCharcoal)
+                                    .foregroundColor(V3Tokens.mutedText)
                                 Text("\(fb) etkinlikleri gösteriliyor")
                                     .font(ONETypography.monoMicro)
-                                    .foregroundColor(ONETokens.oneStone)
+                                    .foregroundColor(V3Tokens.faintText)
                             }
                             Spacer()
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(ONETokens.oneCreamMid))
+                        .background(RoundedRectangle(cornerRadius: 12).fill(V3Tokens.surface))
                         .padding(.horizontal, 20)
                         .padding(.bottom, 12)
                     }
@@ -170,11 +170,11 @@ struct MoodEventsSheet: View {
                         if isLoading {
                             ProgressView()
                                 .padding(.top, 40)
-                                .tint(ONETokens.oneInk)
+                                .tint(V3Tokens.ink)
                         } else if filteredItemCount == 0 {
                             Text(NSLocalizedString("moodEvents.noEvents", comment: ""))
                                 .bodyLG().fontWeight(.medium)
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                                 .padding(.top, 40)
                         } else {
                             ForEach(filteredSections) { section in
@@ -182,10 +182,10 @@ struct MoodEventsSheet: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(section.title)
                                             .bodyXL().fontWeight(.bold)
-                                            .foregroundColor(ONETokens.oneInk)
+                                            .foregroundColor(V3Tokens.ink)
                                         Text(section.subtitle)
                                             .monoSM(tracking: 0.3)
-                                            .foregroundColor(ONETokens.oneAsh)
+                                            .foregroundColor(V3Tokens.mutedText)
                                     }
 
                                     ForEach(section.items) { event in
@@ -197,8 +197,8 @@ struct MoodEventsSheet: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 48)
-                    .animation(.easeInOut(duration: 0.2), value: selectedCategory)
-                    .animation(.easeInOut(duration: 0.2), value: isLoading)
+                    .animation(.spring(response: 0.32, dampingFraction: 0.82), value: selectedCategory)
+                    .animation(.spring(response: 0.32, dampingFraction: 0.82), value: isLoading)
                 }
             }
         }
@@ -212,7 +212,7 @@ struct MoodEventsSheet: View {
             }
             isLoading = true
             sections = await ActivityRecommendationEngine.shared.fetchSections(for: entry, city: preferredCity)
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
                 isLoading = false
             }
         }
@@ -230,15 +230,15 @@ private struct EventFilterPill: View {
         Button(action: action) {
             Text(label)
                 .bodySMMedium()
-                .foregroundColor(isSelected ? .white : ONETokens.oneCharcoal)
+                .foregroundColor(isSelected ? .white : V3Tokens.mutedText)
                 .padding(.horizontal, 18)
                 .padding(.vertical, 9)
                 .background(
-                    Capsule().fill(isSelected ? ONETokens.oneInk : ONETokens.onePaper)
+                    Capsule().fill(isSelected ? V3Tokens.ink : V3Tokens.surface)
                 )
                 .overlay(
                     isSelected ? nil :
-                    Capsule().stroke(ONETokens.oneCreamLow, lineWidth: 1)
+                    Capsule().stroke(V3Tokens.wash, lineWidth: 1)
                 )
         }
         .buttonStyle(PlainButtonStyle())
@@ -266,7 +266,7 @@ private struct MoodEventCard: View {
                     HStack(spacing: 6) {
                         Text(event.category.rawValue.uppercased())
                             .monoLabel(tracking: 1.5)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
 
                         if let sourceLabel = event.sourceLabel {
                             Text(sourceLabel.uppercased())
@@ -291,28 +291,28 @@ private struct MoodEventCard: View {
                         Text(String(format: NSLocalizedString("moodEvents.nearbyCity", comment: ""), event.city))
                             .monoLabel(tracking: 0.5)
                     }
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Capsule().fill(ONETokens.oneCreamMid))
+                    .background(Capsule().fill(V3Tokens.surface))
                 }
 
                 // Event title
                 Text(event.title)
                     .bodyXL().fontWeight(.bold)
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
 
                 // Venue
                 Text("\(event.venue), \(event.city)")
                     .monoSM(tracking: 0.5)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
 
                 if let reason = event.reason {
                     Text(reason)
                         .bodySMMedium()
-                        .foregroundColor(ONETokens.oneCharcoal)
+                        .foregroundColor(V3Tokens.mutedText)
                         .lineLimit(3)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -323,11 +323,11 @@ private struct MoodEventCard: View {
                 HStack(alignment: .center) {
                     Text(event.timing)
                         .monoSM(tracking: 0.5)
-                        .foregroundColor(ONETokens.oneCharcoal)
+                        .foregroundColor(V3Tokens.mutedText)
                     Spacer()
                     Text(event.price)
                         .bodyLG().fontWeight(.bold)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                 }
 
                 // Smart CTA: bilet gerektiren → Biletix, aktivite/micro → Harita, diğer → gizle
@@ -336,7 +336,7 @@ private struct MoodEventCard: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 16)
         }
-        .background(ONETokens.onePaper)
+        .background(V3Tokens.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
         .accessibilityElement(children: .combine)
@@ -367,7 +367,7 @@ private struct MoodEventCard: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .background(Capsule().fill(ONETokens.oneBrand))
+                    .background(Capsule().fill(ONEBrand.kor))
                 }
             }
         } else if !isTicketed, let url = appleMapsURL(venue: event.venue, city: event.city) {

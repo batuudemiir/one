@@ -21,17 +21,17 @@ struct GenreChipsView: View {
             HStack {
                 Text(NSLocalizedString("discover.yourProfile", comment: ""))
                     .monoBase(tracking: 2)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
 
                 if selectedGenre != nil {
                     Spacer()
                     Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { selectedGenre = nil }
+                        withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) { selectedGenre = nil }
                         onGenreSelected?(nil)
                     } label: {
                         Text(NSLocalizedString("general.clearFilter", comment: ""))
                             .monoLabel(tracking: 0.4)
-                            .foregroundColor(ONETokens.oneBrand)
+                            .foregroundColor(ONEBrand.kor)
                     }
                 }
             }
@@ -43,7 +43,7 @@ struct GenreChipsView: View {
                         ForEach(genres, id: \.self) { genre in
                             let isSelected = selectedGenre == genre
                             Button {
-                                withAnimation(.easeInOut(duration: 0.2)) {
+                                withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
                                     selectedGenre = isSelected ? nil : genre
                                 }
                                 onGenreSelected?(isSelected ? nil : genre)
@@ -54,10 +54,10 @@ struct GenreChipsView: View {
                                     Text(genre)
                                         .monoSM(tracking: 0.4)
                                 }
-                                .foregroundColor(isSelected ? .white : ONETokens.oneCharcoal)
+                                .foregroundColor(isSelected ? .white : V3Tokens.mutedText)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 7)
-                                .liquidGlass((isSelected ? LiquidGlassVariant.regular.tint(ONETokens.oneBrand) : .regular).interactive(), in: Capsule())
+                                .liquidGlass((isSelected ? LiquidGlassVariant.regular.tint(ONEBrand.kor) : .regular).interactive(), in: Capsule())
                             }
                             .buttonStyle(.plain)
                         }
@@ -76,12 +76,12 @@ struct GenreChipsView: View {
                                 Text(artist)
                                     .monoSM(tracking: 0.4)
                             }
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 7)
                             .background(
                                 Capsule()
-                                    .stroke(ONETokens.oneSilver, lineWidth: 1)
+                                    .stroke(V3Tokens.hairline, lineWidth: 1)
                             )
                         }
                     }

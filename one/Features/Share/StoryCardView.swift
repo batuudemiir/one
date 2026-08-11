@@ -109,7 +109,7 @@ struct StoryCardView_Previews: PreviewProvider {
             coverImage: UIImage(systemName: "music.note") ?? UIImage(),
             songTitle: "Test Song",
             artistName: "Test Artist",
-            moodColor: ONETokens.oneCreamLow,
+            moodColor: V3Tokens.wash,
             dateString: "1 Ocak 2024",
             brandWatermark: UIImage(systemName: "circle") ?? UIImage(),
             userNote: "This is a test note",

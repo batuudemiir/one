@@ -26,15 +26,15 @@ extension TodayEmptyView {
             VStack(alignment: .leading, spacing: 3) {
                 Text("365 gün önce")
                     .monoLabel(tracking: 1.0)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                 Text(entry.songName)
                     .bodySMMedium()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(2)
                     .minimumScaleFactor(0.75)
                 Text(entry.artistName)
                     .monoSM(tracking: 0)
-                    .foregroundColor(ONETokens.oneCharcoal)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
             }
@@ -52,10 +52,10 @@ extension TodayEmptyView {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(ONETokens.onePaper)
+                .fill(V3Tokens.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(ONETokens.oneSilver, lineWidth: 1)
+                        .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         )
         .accessibilityElement(children: .combine)
@@ -77,15 +77,15 @@ extension TodayEmptyView {
             VStack(alignment: .leading, spacing: 3) {
                 Text("7 gün önce")
                     .monoLabel(tracking: 1.0)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                 Text(entry.songName)
                     .bodySMMedium()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(2)
                     .minimumScaleFactor(0.75)
                 Text(entry.artistName)
                     .monoSM(tracking: 0)
-                    .foregroundColor(ONETokens.oneCharcoal)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
             }
@@ -103,10 +103,10 @@ extension TodayEmptyView {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(ONETokens.onePaper)
+                .fill(V3Tokens.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(ONETokens.oneSilver, lineWidth: 1)
+                        .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         )
         .accessibilityElement(children: .combine)
@@ -117,7 +117,7 @@ extension TodayEmptyView {
 
     var sectionDivider: some View {
         Rectangle()
-            .fill(ONETokens.oneSilver)
+            .fill(V3Tokens.hairline)
             .frame(height: 1)
             .padding(.top, 24)
     }
@@ -145,10 +145,10 @@ extension TodayEmptyView {
                         CachedAsyncImage(url: url) { img in
                             img.resizable().scaledToFill()
                         } placeholder: {
-                            ONETokens.oneSilver
+                            V3Tokens.hairline
                         }
                     } else {
-                        ONETokens.oneSilver
+                        V3Tokens.hairline
                     }
                 }
                 .frame(width: 48, height: 48)
@@ -167,12 +167,12 @@ extension TodayEmptyView {
                     }
                     Text(track.name)
                         .bodyMD()
-                        .foregroundColor(ONETokens.oneShadow)
+                        .foregroundColor(V3Tokens.ink)
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
                     Text(track.artist)
                         .monoSM(tracking: 0)
-                        .foregroundColor(ONETokens.oneMist)
+                        .foregroundColor(V3Tokens.faintText)
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
                 }
@@ -183,17 +183,17 @@ extension TodayEmptyView {
                 VStack(spacing: 2) {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 24))
-                        .foregroundColor(ONETokens.oneShadow)
+                        .foregroundColor(V3Tokens.ink)
                     Text(NSLocalizedString("today.select", comment: ""))
                         .monoLabel(tracking: 0.5)
-                        .foregroundColor(ONETokens.oneMist)
+                        .foregroundColor(V3Tokens.faintText)
                 }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(ONETokens.onePaper)
+                    .fill(V3Tokens.surface)
                     .shadow(color: Color.black.opacity(0.07), radius: 12, x: 0, y: 4)
             )
         }

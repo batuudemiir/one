@@ -511,13 +511,13 @@ struct WeeklyPlaylistView: View {
                         RoundedRectangle(cornerRadius: ONETokens.radiusCardLg)
                             .fill(
                                 LinearGradient(
-                                    colors: [ONETokens.oneBrand, ONETokens.oneBrandLight],
+                                    colors: [ONEBrand.kor, ONETokens.oneBrandLight],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
                             )
                     )
-                    .shadow(color: ONETokens.oneBrand.opacity(0.4), radius: 12, x: 0, y: 6)
+                    .shadow(color: ONEBrand.kor.opacity(0.4), radius: 12, x: 0, y: 6)
                 }
                 .buttonStyle(.plain)
                 .disabled(service.isCreatingPlaylist || service.playlistSongs.isEmpty)

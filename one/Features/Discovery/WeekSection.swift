@@ -25,13 +25,13 @@ struct WeekSection: View {
         HStack(alignment: .bottom) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("HAFTA İÇİ")
-                    .font(.system(size: 10.5, weight: .semibold))
+                    .font(V3Typography.sans(10.5, weight: .semibold))
                     .tracking(1.89)
-                    .foregroundColor(ONETokens.oneInk.opacity(0.35))
+                    .foregroundColor(V3Tokens.ink.opacity(0.35))
                 Text("Sonraki günlerde")
-                    .font(.system(size: 22, weight: .bold))
+                    .font(V3Typography.sans(22, weight: .bold))
                     .tracking(-0.44)
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
             }
             Spacer()
             Button {
@@ -41,11 +41,11 @@ struct WeekSection: View {
             } label: {
                 HStack(spacing: 2) {
                     Text("Takvim")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(V3Typography.sans(13, weight: .medium))
                     Image(systemName: "chevron.right")
                         .font(.system(size: 10, weight: .semibold))
                 }
-                .foregroundColor(ONETokens.oneInk.opacity(0.35))
+                .foregroundColor(V3Tokens.ink.opacity(0.35))
             }
         }
     }
@@ -57,7 +57,7 @@ struct WeekSection: View {
             if isStarred {
                 HStack {
                     Text("SENİN İÇİN")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(V3Typography.sans(9, weight: .bold))
                         .tracking(1.2)
                         .foregroundColor(.white)
                         .padding(.horizontal, 8)
@@ -77,27 +77,27 @@ struct WeekSection: View {
                         .frame(width: 50, height: 50)
                     VStack(spacing: 0) {
                         Text(event.day)
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(V3Typography.sans(9, weight: .semibold))
                             .foregroundColor(eventMood.color)
                         Text(event.date)
-                            .font(.system(size: 19, weight: .bold))
-                            .foregroundColor(ONETokens.oneInk)
+                            .font(V3Typography.sans(19, weight: .bold))
+                            .foregroundColor(V3Tokens.ink)
                     }
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(event.title)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(15, weight: .semibold))
+                        .foregroundColor(V3Tokens.ink)
                     Text("\(event.venue) · \(event.time)")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(ONETokens.oneInk.opacity(0.55))
+                        .font(V3Typography.sans(12, weight: .regular))
+                        .foregroundColor(V3Tokens.ink.opacity(0.55))
                 }
 
                 Spacer()
 
                 Text(eventMood.label)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(V3Typography.sans(10, weight: .semibold))
                     .tracking(0.5)
                     .foregroundColor(eventMood.color)
                     .padding(.horizontal, 8)
@@ -110,7 +110,7 @@ struct WeekSection: View {
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(ONETokens.oneCream)
+                    .fill(ONEBrand.bone)
                     .overlay(
                         isStarred
                         ? RoundedRectangle(cornerRadius: 16).stroke(eventMood.color.opacity(0.55), lineWidth: 1.5)

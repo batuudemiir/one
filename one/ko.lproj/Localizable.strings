@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "서클에서 공유";
 
 /* ── 서클 ── */
-"circle.title" = "주파수";
+"circle.title" = "서클";
 "circle.sharedCount" = "%d/%d 공유됨";
 "circle.removeFriend" = "친구에서 삭제할까요?";
 "circle.setupCTA" = "서클 만들기";
@@ -535,7 +535,8 @@
 "nav.discover" = "발견";
 "nav.archive" = "아카이브";
 "nav.today" = "오늘";
-"nav.circle" = "주파수";
+"nav.entry" = "순간";
+"nav.circle" = "서클";
 "nav.profile" = "프로필";
 "nav.tabAccessibility" = "%@ 탭";
 
@@ -1276,3 +1277,25 @@ one day.";
 
 "subcircle.all" = "All";
 "subcircle.emptyToday" = "No one in this group shared today.";
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.v3Subtitle" = "오늘 모두의 기분을 확인하세요.";
+"circle.peopleCount" = "%d명";
+"circle.momentCount" = "%d개";
+"circle.youCard" = "나";
+"circle.youNotShared" = "오늘 공유하지 않음";
+"circle.notSharedToday" = "오늘 공유하지 않음";
+"circle.scopeShared" = "공유됨";
+"circle.scopePrivate" = "나만";
+"circle.v3EmptyTitle" = "아직 아무도 없어요.";
+"circle.v3EmptyBody" = "누군가를 추가하고 서로의 색을 보세요.";
+"circle.scanQR" = "QR 코드 스캔";
+"circle.resonance" = "공명";
+"circle.sameColorLabel" = "같은 색인 사람";
+"circle.distributionLabel" = "서클의 색 분포";
+"circle.yourColorToday" = "오늘 당신의 색";
+"circle.noColorToday" = "오늘 색이 없어요";
+"circle.noColorTodayBody" = "순간을 기록하면 공명이 보여요.";
+"circle.sameColorCount" = "오늘 당신과 같은 색인 사람 %d명";
+"circle.requests" = "친구 요청";
+"circle.notifications" = "알림";

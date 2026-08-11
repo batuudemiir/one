@@ -235,6 +235,33 @@ enum ONEHaptics {
         gen.impactOccurred(intensity: 0.9)
     }
 
+    // MARK: - Micro-taps (yeni)
+
+    /// Grid hücresi, segment, mini kart gibi seçim odaklı tıklamalar.
+    /// `moodSelected`'dan hafif — arka planda hissedilen bir "onay".
+    static func pick() {
+        guard isEnabled else { return }
+        let gen = UISelectionFeedbackGenerator()
+        gen.prepare()
+        gen.selectionChanged()
+    }
+
+    /// Toggle / switch / segment değişimi — tek net "tık".
+    static func toggle() {
+        guard isEnabled else { return }
+        let gen = UIImpactFeedbackGenerator(style: .rigid)
+        gen.prepare()
+        gen.impactOccurred(intensity: 0.45)
+    }
+
+    /// Yakınlaştırma, sayfalama, chevron nav gibi geçici geçişler.
+    static func nudge() {
+        guard isEnabled else { return }
+        let gen = UIImpactFeedbackGenerator(style: .light)
+        gen.prepare()
+        gen.impactOccurred(intensity: 0.35)
+    }
+
     // MARK: - Mood Bloom Reward
 
     /// Peak haptic pulse mid-ritual — light selection tick at ~0.35s.

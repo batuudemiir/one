@@ -43,8 +43,8 @@ struct CircleEmptyState: View {
                     // kartlarla karışıp okunmaz hale geliyordu.
                     LinearGradient(
                         colors: [
-                            ONETokens.oneCream.opacity(0.35),
-                            ONETokens.oneCream.opacity(0.90)
+                            ONEBrand.bone.opacity(0.35),
+                            ONEBrand.bone.opacity(0.90)
                         ],
                         startPoint: .top,
                         endPoint: .bottom
@@ -54,11 +54,11 @@ struct CircleEmptyState: View {
                         Text(NSLocalizedString("circle.empty.previewTitle", comment: ""))
                             .displayMD()
                             .multilineTextAlignment(.center)
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                         Text(NSLocalizedString("circle.empty.previewSubtitle", comment: ""))
                             .bodySM()
                             .multilineTextAlignment(.center)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                     .padding(.horizontal, ONETokens.spacingXL)
                 }
@@ -79,7 +79,7 @@ struct CircleEmptyState: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity, minHeight: 44)
                             .background(
-                                Capsule(style: .continuous).fill(ONETokens.oneBrand)
+                                Capsule(style: .continuous).fill(ONEBrand.kor)
                             )
                     }
                     .accessibilityLabel(NSLocalizedString("accessibility.circle.setupCircle", comment: ""))
@@ -88,7 +88,7 @@ struct CircleEmptyState: View {
                         Button(action: onStartAlone) {
                             Text(NSLocalizedString("circle.empty.startAlone", comment: ""))
                                 .bodySMMedium()
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                                 .frame(maxWidth: .infinity, minHeight: 44)
                         }
                     }
@@ -98,13 +98,13 @@ struct CircleEmptyState: View {
                 // Kapanış: davetin neden işe yaradığını söyleyen tek cümle.
                 VStack(spacing: ONETokens.spacingXL) {
                     Rectangle()
-                        .fill(ONETokens.oneInk.opacity(0.09))
+                        .fill(V3Tokens.ink.opacity(0.09))
                         .frame(height: 1)
 
                     Text(NSLocalizedString("circle.empty.closing", comment: ""))
                         .bodySM()
                         .multilineTextAlignment(.center)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.horizontal, ONETokens.spacingXL)
                 }
                 .padding(.horizontal, ONETokens.spacingXL2)
@@ -126,7 +126,7 @@ struct CircleEmptyState: View {
                     Circle()
                         .fill(index < friendCount
                               ? ONETokens.oneBrand
-                              : ONETokens.oneInk.opacity(0.12))
+                              : V3Tokens.ink.opacity(0.12))
                         .frame(width: 9, height: 9)
                 }
             }
@@ -136,7 +136,7 @@ struct CircleEmptyState: View {
                 max(requiredFriends - friendCount, 0)
             ))
             .bodyXS()
-            .foregroundColor(ONETokens.oneAsh)
+            .foregroundColor(V3Tokens.mutedText)
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
@@ -153,10 +153,10 @@ struct CircleEmptyState: View {
 
                     VStack(alignment: .leading, spacing: 6) {
                         RoundedRectangle(cornerRadius: 4, style: .continuous)
-                            .fill(ONETokens.oneInk.opacity(0.18))
+                            .fill(V3Tokens.ink.opacity(0.18))
                             .frame(width: 76, height: 11)
                         RoundedRectangle(cornerRadius: 4, style: .continuous)
-                            .fill(ONETokens.oneInk.opacity(0.10))
+                            .fill(V3Tokens.ink.opacity(0.10))
                             .frame(width: 132, height: 9)
                     }
                     Spacer()
@@ -164,7 +164,7 @@ struct CircleEmptyState: View {
                 .padding(ONETokens.spacingMD)
                 .background(
                     RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
-                        .fill(ONETokens.oneCreamMid)
+                        .fill(V3Tokens.surface)
                 )
             }
         }
@@ -186,12 +186,12 @@ struct CircleCloudKitUnavailableState: View {
             VStack(spacing: ONETokens.spacingLG) {
                 Image(systemName: "icloud.slash")
                     .font(.system(size: 56, weight: .ultraLight))
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
 
                 VStack(spacing: ONETokens.spacingSM) {
                     Text(NSLocalizedString("circle.iCloudRequired", comment: ""))
                         .displayMD()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
 
                     Text(NSLocalizedString("circle.iCloudMessage", comment: ""))
                         .monoSM(tracking: 0)
@@ -202,7 +202,7 @@ struct CircleCloudKitUnavailableState: View {
 #if DEBUG
                     Text("Debug: CloudKit durumu kontrol ediliyor...")
                         .monoMicro(tracking: 0)
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
                         .padding(.top, ONETokens.spacingSM)
 #endif
                 }
@@ -214,24 +214,24 @@ struct CircleCloudKitUnavailableState: View {
                 Button(action: onRetry) {
                     Text(NSLocalizedString("circle.tryAgain", comment: ""))
                         .monoBase(tracking: 1.0)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, ONETokens.spacingMD)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(ONETokens.oneAsh, lineWidth: 1)
+                                .stroke(V3Tokens.mutedText, lineWidth: 1)
                         )
                 }
 
                 Button(action: onOpenSettings) {
                     Text(NSLocalizedString("circle.goToSettings", comment: ""))
                         .monoBase(tracking: 1.0)
-                        .foregroundColor(ONETokens.oneCream)
+                        .foregroundColor(ONEBrand.bone)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, ONETokens.spacingMD)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(ONETokens.oneInk)
+                                .fill(V3Tokens.ink)
                         )
                 }
             }

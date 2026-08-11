@@ -26,7 +26,7 @@ struct SearchScreen: View {
         return VStack(alignment: .leading, spacing: 0) {
             Text(formatter.string(from: now).uppercased())
                 .monoSM(tracking: 2)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .padding(.top, 24)
             
             if let saved = todaysSong {
@@ -34,7 +34,7 @@ struct SearchScreen: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(NSLocalizedString("search.alreadySelected", comment: ""))
                         .displayLG()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .lineSpacing(4)
                         .tracking(-0.02)
                         .padding(.top, 14)
@@ -43,25 +43,25 @@ struct SearchScreen: View {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color(hex: saved.moodColorHex ?? "#EEECEA"))
                             .frame(width: 60, height: 60)
-                            .overlay(Text(saved.emoji ?? "🎵").font(.system(size: 28)))
+                            .overlay(Text(saved.emoji ?? "🎵").font(V3Typography.sans(28)))
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text(saved.songName ?? "")
                                 .monoBase(tracking: 0)
-                                .foregroundColor(ONETokens.oneInk)
+                                .foregroundColor(V3Tokens.ink)
                             Text(saved.artistName ?? "")
                                 .monoSM(tracking: 0)
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                             Text(saved.moodWord ?? "")
                                 .monoBase()
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                         }
                     }
                     .padding(.top, 20)
                     
                     Text(NSLocalizedString("search.canPickTomorrow", comment: ""))
                         .displaySM()
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.top, 16)
                 }
                 
@@ -70,7 +70,7 @@ struct SearchScreen: View {
                 // Normal search flow
                 Text(NSLocalizedString("search.todayQuestion", comment: ""))
                     .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .padding(.top, 14)
                     .lineSpacing(4)
                     .tracking(-0.02)
@@ -90,7 +90,7 @@ struct SearchScreen: View {
                             Text("Apple Music")
                         }
                         .monoBase(tracking: 0)
-                        .foregroundColor(vm.selectedPlatform == .appleMusic ? .white : ONETokens.oneInk)
+                        .foregroundColor(vm.selectedPlatform == .appleMusic ? .white : V3Tokens.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(vm.selectedPlatform == .appleMusic ? ONETokens.appleMusicRed : Color.clear)
@@ -113,7 +113,7 @@ struct SearchScreen: View {
                             Text("Spotify")
                         }
                         .monoBase(tracking: 0)
-                        .foregroundColor(vm.selectedPlatform == .spotify ? .white : ONETokens.oneInk)
+                        .foregroundColor(vm.selectedPlatform == .spotify ? .white : V3Tokens.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(vm.selectedPlatform == .spotify ? ONETokens.spotifyGreen : Color.clear)
@@ -124,7 +124,7 @@ struct SearchScreen: View {
                     .accessibilityAddTraits(vm.selectedPlatform == .spotify ? .isSelected : [])
                 }
                 .accessibilityLabel(NSLocalizedString("accessibility.search.platformPicker", comment: ""))
-                .background(ONETokens.oneCreamLow.opacity(0.5))
+                .background(V3Tokens.wash.opacity(0.5))
                 .clipShape(Capsule())
                 .padding(.top, 24)
                 
@@ -182,7 +182,7 @@ struct SearchScreen: View {
                 // Search Field
                 HStack {
                     Image(systemName: "magnifyingglass")
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.leading, 12)
                     TextField(NSLocalizedString("search.searchPlaceholder", comment: ""), text: $vm.searchQuery)
                         .monoSM(tracking: 0)
@@ -192,10 +192,10 @@ struct SearchScreen: View {
                             vm.performSearch(query: newValue)
                         }
                 }
-                .background(isFocused ? ONETokens.onePaper : ONETokens.oneCreamMid)
+                .background(isFocused ? V3Tokens.surface : V3Tokens.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 13)
-                        .stroke(isFocused ? ONETokens.oneCreamLow : Color.clear, lineWidth: 1.5)
+                        .stroke(isFocused ? V3Tokens.wash : Color.clear, lineWidth: 1.5)
                 )
                 .cornerRadius(13)
                 .padding(.top, 26)
@@ -214,7 +214,7 @@ struct SearchScreen: View {
                                     .listItemEntrance(isVisible: resultsVisible, index: index)
                             }
                             .buttonStyle(PlainButtonStyle())
-                            Divider().background(ONETokens.oneCreamMid)
+                            Divider().background(V3Tokens.surface)
                         }
                     }
                     .padding(.top, 8)

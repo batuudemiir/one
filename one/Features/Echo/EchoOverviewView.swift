@@ -21,20 +21,23 @@ struct EchoOverviewView: View {
         VStack(alignment: .leading, spacing: ONETokens.spacingMD) {
             Text(NSLocalizedString("echo.title", comment: ""))
                 .displayLG()
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
 
             HStack(alignment: .firstTextBaseline) {
                 Text(NSLocalizedString("echo.subtitle", comment: ""))
                     .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
 
                 Spacer()
 
                 if let onPoster {
-                    Button(action: onPoster) {
+                    Button {
+                        ONEHaptics.feelingSelected()
+                        onPoster()
+                    } label: {
                         Text(NSLocalizedString("year.poster", comment: ""))
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(ONETokens.oneBrand)
+                            .font(V3Typography.sans(13, weight: .semibold))
+                            .foregroundColor(ONEBrand.kor)
                     }
                     .buttonStyle(.plain)
                 }
@@ -67,17 +70,17 @@ struct EchoOverviewView: View {
         VStack(alignment: .leading, spacing: 9) {
             Text(NSLocalizedString("echo.glance", comment: ""))
                 .monoLabel(tracking: 1.3)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
 
             if let top = topMood {
                 (
                     Text(monthName + NSLocalizedString("echo.mostlyPrefix", comment: ""))
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                     + Text(top.label)
                         .foregroundColor(Color(hex: top.colorHex))
                         .fontWeight(.semibold)
                     + Text(NSLocalizedString("echo.mostlySuffix", comment: ""))
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                 )
                 .font(.system(size: 19, weight: .semibold))
             }
@@ -108,8 +111,8 @@ struct EchoOverviewView: View {
             HStack(spacing: 6) {
                 ForEach(chartMoods) { mood in
                     Text(mood.label)
-                        .font(.system(size: 8.5))
-                        .foregroundColor(ONETokens.oneStone)
+                        .monoSM(tracking: 0.4)
+                        .foregroundColor(V3Tokens.faintText)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                         .frame(maxWidth: .infinity)
@@ -132,19 +135,19 @@ struct EchoOverviewView: View {
         VStack(alignment: .leading, spacing: 9) {
             Text(NSLocalizedString("echo.musicMood", comment: ""))
                 .monoLabel(tracking: 1.3)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
 
             Text("\(song.songName) — \(song.artistName)")
                 .bodySM()
                 .fontWeight(.semibold)
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
 
             Text(String(
                 format: NSLocalizedString("echo.repeatedFormat", comment: ""),
                 song.count
             ))
             .bodySM()
-            .foregroundColor(ONETokens.oneAsh)
+            .foregroundColor(V3Tokens.mutedText)
         }
         .padding(ONETokens.spacingXL)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -165,7 +168,7 @@ struct EchoOverviewView: View {
             .fill(Color.white.opacity(0.75))
             .overlay(
                 RoundedRectangle(cornerRadius: ONETokens.radiusSheet, style: .continuous)
-                    .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                    .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
             )
     }
 }

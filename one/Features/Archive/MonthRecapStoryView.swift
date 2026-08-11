@@ -11,7 +11,9 @@ import Combine
 struct MonthRecapStoryView: View {
     let summary: MonthSummary
     @Environment(\.dismiss) private var dismiss
-    
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
+
     @State private var currentSlide = 0
     private let totalSlides = 4
     
@@ -96,15 +98,22 @@ struct MonthRecapStoryView: View {
                     .onTapGesture {
                         previousSlide()
                     }
+                    .accessibilityLabel("Önceki hikaye")
+                    .accessibilityAddTraits(.isButton)
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
                         nextSlide()
                     }
+                    .accessibilityLabel("Sonraki hikaye")
+                    .accessibilityAddTraits(.isButton)
             }
             .ignoresSafeArea()
         }
         .onReceive(timer) { _ in
+            // WCAG 2.2.2: Reduce Motion veya VoiceOver açıksa otomatik
+            // ilerlemeyi tamamen durdur — kullanıcı tap ile ilerler.
+            if reduceMotion || voiceOverEnabled { return }
             guard timerCount < slideDuration else {
                 nextSlide()
                 return
@@ -173,7 +182,7 @@ struct MonthRecapStoryView: View {
         case 2:
             Color(hex: "#E25A40") // Vibrant music color
         case 3:
-            Color(hex: "#EFECE8") // ONETokens.onePaper
+            Color(hex: "#EFECE8") // V3Tokens.surface
         default:
             Color.black
         }
@@ -267,7 +276,7 @@ struct MonthRecapStoryView: View {
             Text("Hikayeni Paylaş")
                 .font(.custom("GeistMono-Regular", size: 16))
                 .tracking(2)
-                .foregroundColor(ONETokens.oneShadow)
+                .foregroundColor(V3Tokens.ink)
             
             // Share Card Preview scaled down
             MonthlyPosterShareCard(
@@ -289,10 +298,10 @@ struct MonthRecapStoryView: View {
                     Text("Hikayende Paylaş")
                 }
                 .font(.system(size: 16, weight: .bold))
-                .foregroundColor(ONETokens.onePaper)
+                .foregroundColor(V3Tokens.surface)
                 .padding(.vertical, 16)
                 .frame(maxWidth: .infinity)
-                .background(ONETokens.oneInk)
+                .background(V3Tokens.ink)
                 .clipShape(Capsule())
             }
             .padding(.horizontal, 40)

@@ -84,7 +84,7 @@ struct TodayCompletedView: View {
         GeometryReader { geo in
             let available = geo.size.height
             ZStack {
-                ONETokens.oneCream.ignoresSafeArea()
+                ONEBrand.bone.ignoresSafeArea()
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
@@ -122,7 +122,7 @@ struct TodayCompletedView: View {
                         // sekme çubuğundan kaçabiliyordu.
                         if let onReturnToCircle {
                             Rectangle()
-                                .fill(ONETokens.oneInk.opacity(0.09))
+                                .fill(V3Tokens.ink.opacity(0.09))
                                 .frame(height: 1)
                                 .padding(.horizontal, ONETokens.spacingXL2)
                                 .padding(.top, ONETokens.spacingXL)
@@ -130,11 +130,11 @@ struct TodayCompletedView: View {
                             Button(action: onReturnToCircle) {
                                 Text(NSLocalizedString("today.backToFrequency", comment: ""))
                                     .bodySMMedium()
-                                    .foregroundColor(ONETokens.oneInk)
+                                    .foregroundColor(V3Tokens.ink)
                                     .frame(maxWidth: .infinity, minHeight: 44)
                                     .background(
                                         Capsule(style: .continuous)
-                                            .stroke(ONETokens.oneInk.opacity(0.14), lineWidth: 1.5)
+                                            .stroke(V3Tokens.ink.opacity(0.14), lineWidth: 1.5)
                                     )
                             }
                             .buttonStyle(.plain)
@@ -224,11 +224,17 @@ struct TodayCompletedView: View {
         }
         .onChange(of: showPhotoViewer) { _, show in
             if show {
-                GlobalUIState.shared.todayPhotoURL = entry.photoURL
+                withAnimation(.spring(response: 0.42, dampingFraction: 0.86)) {
+                    GlobalUIState.shared.todayPhotoURL = entry.photoURL
+                }
             }
         }
         .onChange(of: globalUI.todayPhotoURL) { _, newURL in
-            if newURL == nil { showPhotoViewer = false }
+            if newURL == nil {
+                withAnimation(.spring(response: 0.42, dampingFraction: 0.86)) {
+                    showPhotoViewer = false
+                }
+            }
         }
         .onAppear {
             // Streak reveal (one-shot)

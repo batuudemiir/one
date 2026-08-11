@@ -35,7 +35,7 @@ struct DayDetailView: View {
                     InsightCard {
                         Text(note)
                             .bodySM()
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -47,13 +47,13 @@ struct DayDetailView: View {
 
                 if !circleColors.isEmpty {
                     Rectangle()
-                        .fill(ONETokens.oneInk.opacity(0.09))
+                        .fill(V3Tokens.ink.opacity(0.09))
                         .frame(height: 1)
                         .padding(.vertical, ONETokens.spacingXL)
 
                     Text(NSLocalizedString("day.circleThatDay", comment: ""))
                         .monoLabel(tracking: 1.3)
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
                         .padding(.bottom, ONETokens.spacingSM)
 
                     HStack(spacing: -7) {
@@ -61,7 +61,23 @@ struct DayDetailView: View {
                             Circle()
                                 .fill(c)
                                 .frame(width: 32, height: 32)
-                                .overlay(Circle().stroke(ONETokens.oneCream, lineWidth: 2))
+                                .overlay(Circle().stroke(ONEBrand.bone, lineWidth: 2))
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(Circle())
+                        }
+
+                        // +N pill: arkadaş sayısı 10'u aşarsa taşınları özetle göster.
+                        if circleColors.count > 10 {
+                            Text("+\(circleColors.count - 10)")
+                                .monoLabel(tracking: 0.4)
+                                .foregroundColor(V3Tokens.ink)
+                                .frame(minWidth: 32, minHeight: 32)
+                                .padding(.horizontal, 6)
+                                .background(
+                                    Capsule().fill(V3Tokens.ink.opacity(0.08))
+                                )
+                                .overlay(Capsule().stroke(ONEBrand.bone, lineWidth: 2))
+                                .frame(minWidth: 44, minHeight: 44)
                         }
                     }
                     .accessibilityHidden(true)
@@ -79,13 +95,13 @@ struct DayDetailView: View {
                 .foregroundColor(.white.opacity(0.75))
 
             Text(entry.moodLabel.lowercased())
-                .font(.system(size: 34, weight: .bold))
+                .font(V3Typography.sans(34, weight: .bold))
                 .foregroundColor(.white)
                 .padding(.top, 8)
 
             if !entry.feelingLabel.isEmpty {
                 Text(entry.feelingLabel)
-                    .font(.system(size: 13.5))
+                    .font(V3Typography.sans(13.5))
                     .foregroundColor(.white.opacity(0.82))
                     .padding(.top, 7)
             }
@@ -113,12 +129,12 @@ struct DayDetailView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(entry.songName)
-                    .font(.system(size: 14.5, weight: .semibold))
-                    .foregroundColor(ONETokens.oneInk)
+                    .font(V3Typography.sans(14.5, weight: .semibold))
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(1)
                 Text("\(entry.artistName) · \(entry.genre)")
-                    .font(.system(size: 12.5))
-                    .foregroundColor(ONETokens.oneAsh)
+                    .font(V3Typography.sans(12.5))
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
             }
 
@@ -126,7 +142,7 @@ struct DayDetailView: View {
 
             Text(entry.time)
                 .monoLabel(tracking: 0.5)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
         }
         .padding(.horizontal, 15)
         .padding(.vertical, 13)
@@ -140,11 +156,11 @@ struct DayDetailView: View {
             image.resizable().scaledToFill()
         } placeholder: {
             RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
-                .fill(ONETokens.oneInk.opacity(0.06))
+                .fill(V3Tokens.ink.opacity(0.06))
                 .overlay(
                     Image(systemName: "photo")
                         .font(.system(size: 24, weight: .light))
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
                 )
         }
         .aspectRatio(4.0 / 3.0, contentMode: .fill)
@@ -157,7 +173,7 @@ struct DayDetailView: View {
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
             .monoLabel(tracking: 1.3)
-            .foregroundColor(ONETokens.oneStone)
+            .foregroundColor(V3Tokens.faintText)
             .padding(.top, ONETokens.spacingXL)
             .padding(.bottom, ONETokens.spacingSM)
     }

@@ -20,7 +20,7 @@ struct SongStepView: View {
                 // açıklama cümlesi ritüelin ikinci adımını yavaşlatıyordu.
                 Text("bugünün şarkısı?")
                     .displayMD()
-                    .foregroundStyle(ONETokens.oneInk)
+                    .foregroundStyle(V3Tokens.ink)
                     .padding(.bottom, ONETokens.spacingMD)
 
                 // "Şu an çalıyor" banner'ı yok — prototipte adım
@@ -34,13 +34,20 @@ struct SongStepView: View {
                 // hızlandırmıyor, erteliyordu — kullanıcı zaten aklındaki
                 // şarkıyı aramaya geliyor.
 
-                if !vm.searchResults.isEmpty {
+                if let err = vm.searchError, !err.isEmpty, !vm.isSearching {
+                    // Retry closure body içinde tanımlanır ki `searchText`
+                    // doğrudan @State property wrapper'ından okunsun; helper
+                    // fonksiyona geçirilen kapatmalarda closure'un yakaladığı
+                    // struct kopyasından okumak riskli olmasın diye.
+                    searchErrorRow(err, onRetry: { vm.search(searchText) })
+                        .padding(.top, 12)
+                } else if !vm.searchResults.isEmpty {
                     searchResultsList
                         .padding(.top, 4)
                 } else if !searchText.isEmpty && !vm.isSearching {
                     Text("Bir şey yaz, başlayalım.")
                         .monoSM(tracking: 0)
-                        .foregroundStyle(ONETokens.oneMist)
+                        .foregroundStyle(V3Tokens.faintText)
                         .padding(.top, 8)
                 }
 
@@ -75,11 +82,11 @@ struct SongStepView: View {
                     Text("bırak")
                         .font(ONETypography.bodyMD)
                         .fontWeight(.semibold)
-                        .foregroundStyle(ONETokens.oneCream)
+                        .foregroundStyle(ONEBrand.bone)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(
-                            Capsule().fill(coordinator.draft.mood?.color ?? ONETokens.oneInk)
+                            Capsule().fill(coordinator.draft.mood?.color ?? V3Tokens.ink)
                         )
                 }
                 .buttonStyle(.plain)
@@ -90,7 +97,7 @@ struct SongStepView: View {
             .padding(.top, 14)
             .background(
                 LinearGradient(
-                    colors: [ONETokens.oneCream.opacity(0), ONETokens.oneCream],
+                    colors: [ONEBrand.bone.opacity(0), ONEBrand.bone],
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -111,16 +118,16 @@ struct SongStepView: View {
                       ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 18, weight: .medium))
                     .foregroundStyle(coordinator.draft.shareToCircle
-                                     ? ONETokens.oneInk : ONETokens.oneMist)
+                                     ? V3Tokens.ink : V3Tokens.faintText)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text("çevrene göster")
                         .font(ONETypography.bodySM)
                         .fontWeight(.medium)
-                        .foregroundStyle(ONETokens.oneShadow)
+                        .foregroundStyle(V3Tokens.ink)
                     Text("rengin ve şarkın frekansta görünsün")
                         .font(ONETypography.monoMicro)
-                        .foregroundStyle(ONETokens.oneAsh)
+                        .foregroundStyle(V3Tokens.mutedText)
                 }
                 Spacer()
             }
@@ -128,7 +135,7 @@ struct SongStepView: View {
             .padding(.vertical, 11)
             .background(
                 RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
-                    .fill(ONETokens.oneCreamMid)
+                    .fill(V3Tokens.surface)
             )
         }
         .buttonStyle(.plain)
@@ -142,24 +149,61 @@ struct SongStepView: View {
             } else {
                 Image(systemName: "magnifyingglass")
                     .bodySM()
-                    .foregroundStyle(ONETokens.oneMist)
+                    .foregroundStyle(V3Tokens.faintText)
             }
             TextField("şarkı veya sanatçı", text: $searchText)
                 .monoSM(tracking: 0)
-                .foregroundStyle(ONETokens.oneShadow)
+                .foregroundStyle(V3Tokens.ink)
                 .onChange(of: searchText) { _, v in vm.search(v) }
             if !searchText.isEmpty {
-                Button(action: { searchText = ""; vm.searchResults = [] }) {
+                Button(action: { searchText = ""; vm.searchResults = []; vm.searchError = nil }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(ONETokens.oneMist)
+                        .foregroundStyle(V3Tokens.faintText)
                         .bodySM()
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(Text("Aramayı temizle"))
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(RoundedRectangle(cornerRadius: 13).fill(ONETokens.oneSilver))
+        .background(RoundedRectangle(cornerRadius: 13).fill(V3Tokens.hairline))
+    }
+
+    @ViewBuilder
+    private func searchErrorRow(_ message: String, onRetry: @escaping () -> Void) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(V3Tokens.faintText)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(message)
+                    .bodySM()
+                    .foregroundStyle(V3Tokens.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Button(action: onRetry) {
+                    Text("tekrar dene")
+                        .font(ONETypography.monoSM)
+                        .tracking(0.6)
+                        .foregroundStyle(V3Tokens.ink)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            Capsule().stroke(V3Tokens.ink.opacity(0.14), lineWidth: 1)
+                        )
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Aramayı tekrar dene"))
+            }
+        }
+        .padding(.horizontal, 4)
+        .accessibilityElement(children: .combine)
     }
 
 
@@ -174,7 +218,7 @@ struct SongStepView: View {
             Text(header)
                 .font(ONETypography.monoMicro)
                 .tracking(1.4)
-                .foregroundStyle(ONETokens.oneMist)
+                .foregroundStyle(V3Tokens.faintText)
                 .textCase(.uppercase)
                 .padding(.bottom, 8)
 
@@ -182,7 +226,7 @@ struct SongStepView: View {
                 ForEach(songs) { song in
                     songRow(song)
                     if song.id != songs.last?.id {
-                        Divider().background(ONETokens.oneSilver)
+                        Divider().background(V3Tokens.hairline)
                     }
                 }
             }
@@ -199,13 +243,13 @@ struct SongStepView: View {
                     ZStack {
                         Group {
                             if let urlStr = song.artworkURLString, let url = URL(string: urlStr) {
-                                CachedAsyncImage(url: url) { img in img.resizable().scaledToFill() }
-                                    placeholder: { ONETokens.oneSilver }
+                                CachedAsyncImage(url: url, maxPixelSize: ImageCache.thumbnailMaxPixelSize) { img in img.resizable().scaledToFill() }
+                                    placeholder: { V3Tokens.hairline }
                             } else if let url = song.coverURL {
-                                CachedAsyncImage(url: url) { img in img.resizable().scaledToFill() }
-                                    placeholder: { ONETokens.oneSilver }
+                                CachedAsyncImage(url: url, maxPixelSize: ImageCache.thumbnailMaxPixelSize) { img in img.resizable().scaledToFill() }
+                                    placeholder: { V3Tokens.hairline }
                             } else {
-                                ONETokens.oneSilver
+                                V3Tokens.hairline
                             }
                         }
                         .frame(width: 40, height: 40)
@@ -225,8 +269,8 @@ struct SongStepView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(song.name).bodyMD().foregroundStyle(ONETokens.oneShadow).lineLimit(1)
-                        Text(song.artist).monoSM(tracking: 0).foregroundStyle(ONETokens.oneMist)
+                        Text(song.name).bodyMD().foregroundStyle(V3Tokens.ink).lineLimit(1)
+                        Text(song.artist).monoSM(tracking: 0).foregroundStyle(V3Tokens.faintText)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -244,7 +288,7 @@ struct SongStepView: View {
                     } else {
                         Image(systemName: "arrow.right.circle")
                             .font(.system(size: 19, weight: .regular))
-                            .foregroundStyle(ONETokens.oneStone)
+                            .foregroundStyle(V3Tokens.faintText)
                             .transition(.scale.combined(with: .opacity))
                     }
                 }

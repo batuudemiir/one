@@ -22,16 +22,16 @@ struct PushSoftAskBanner: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "bell.badge")
                 .bodyXL().fontWeight(.light)
-                .foregroundColor(ONETokens.oneBrand)
+                .foregroundColor(ONEBrand.kor)
                 .padding(.top, 2)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Yarın da hatırlatayım mı?")
                     .bodySMMedium()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                 Text("Günlük kayıtlar mood örüntünü oluşturur.")
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineSpacing(2)
 
                 HStack(spacing: 8) {
@@ -50,16 +50,16 @@ struct PushSoftAskBanner: View {
                     } label: {
                         Text("Evet, hatırlat")
                             .monoLabel(tracking: 0.4)
-                            .foregroundColor(ONETokens.oneCream)
+                            .foregroundColor(ONEBrand.bone)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 7)
-                            .background(Capsule().fill(ONETokens.oneInk))
+                            .background(Capsule().fill(V3Tokens.ink))
                     }
 
                     Button { dismiss() } label: {
                         Text("Belki sonra")
                             .monoLabel(tracking: 0.4)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                 }
                 .padding(.top, 4)
@@ -71,8 +71,8 @@ struct PushSoftAskBanner: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(ONETokens.oneCreamMid.opacity(0.55))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(ONETokens.oneSilver, lineWidth: 1))
+                .fill(V3Tokens.surface.opacity(0.55))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(V3Tokens.hairline, lineWidth: 1))
         )
     }
 
@@ -93,16 +93,16 @@ struct WidgetNudgeBanner: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "rectangle.stack.badge.plus")
                 .bodyXL().fontWeight(.light)
-                .foregroundColor(ONETokens.oneBrand)
+                .foregroundColor(ONEBrand.kor)
                 .padding(.top, 2)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(NSLocalizedString("widget.nudge.title", comment: ""))
                     .bodySMMedium()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                 Text(NSLocalizedString("widget.nudge.body", comment: ""))
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineSpacing(2)
             }
 
@@ -114,7 +114,7 @@ struct WidgetNudgeBanner: View {
             } label: {
                 Image(systemName: "xmark")
                     .monoSM().fontWeight(.semibold)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                     .frame(width: 28, height: 28)
             }
             .accessibilityLabel(NSLocalizedString("general.close", comment: ""))
@@ -124,10 +124,10 @@ struct WidgetNudgeBanner: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(ONETokens.oneCreamMid.opacity(0.55))
+                .fill(V3Tokens.surface.opacity(0.55))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(ONETokens.oneSilver, lineWidth: 1)
+                        .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         )
     }
@@ -142,19 +142,19 @@ struct PassedDayView: View {
 
     var body: some View {
         ZStack {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
             VStack(spacing: 24) {
                 Spacer()
                 Text("—")
-                    .font(.system(size: 48, weight: .thin))
-                    .foregroundColor(ONETokens.oneMist)
+                    .font(V3Typography.sans(48, weight: .thin))
+                    .foregroundColor(V3Tokens.faintText)
                 VStack(spacing: 8) {
                     Text(NSLocalizedString("today.passedDay.title", comment: ""))
                         .displayMD()
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                     Text(NSLocalizedString("today.passedDay.sub", comment: ""))
                         .monoSM(tracking: 0.4)
-                        .foregroundColor(ONETokens.oneMist)
+                        .foregroundColor(V3Tokens.faintText)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                 }
@@ -162,7 +162,7 @@ struct PassedDayView: View {
                 Button(action: onEdit) {
                     Text(NSLocalizedString("today.passedDay.cta", comment: ""))
                         .monoSM(tracking: 1.0)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.vertical, 12)
                 }
                 .padding(.bottom, 48)

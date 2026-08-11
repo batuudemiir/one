@@ -45,42 +45,16 @@ struct CompletedHeroHeader: View {
             // ekranın konusu marka değil, o günün rengi. Streak chip'i kaldı
             // ama artık hero'nun üstünde.
             VStack(spacing: 0) {
-                HStack {
-                    Spacer()
-                    if streakDays >= 1 {
-                        let isMilestone = [3, 7, 14, 30, 50, 100, 200, 365].contains(streakDays)
-                        Text("🔥 \(displayedStreak)")
-                            .monoSM(tracking: 1)
-                            .foregroundColor(ONETokens.oneInk)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(
-                                Capsule()
-                                    .fill(ONETokens.onePaper)
-                                    .overlay(Capsule().stroke(isMilestone ? ONETokens.oneBrand.opacity(0.5) : ONETokens.oneSilver, lineWidth: isMilestone ? 1.5 : 1))
-                            )
-                            .scaleEffect((streakChipPulse ? 1.08 : 1.0) * streakFlamePulse)
-                            .animation(
-                                isMilestone && !reduceMotion
-                                    ? .easeInOut(duration: 1.4).repeatForever(autoreverses: true)
-                                    : .default,
-                                value: streakChipPulse
-                            )
-                            .onAppear {
-                                if isMilestone && !reduceMotion { streakChipPulse = true }
-                            }
-                    }
-                }
-
+                // v3: streak chip'i yasak (Section 9 — seri sayacı yok).
                 Text(NSLocalizedString("today.doneLabel", comment: ""))
                     .monoLabel(tracking: 1.3)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                     .padding(.top, ONETokens.spacingLG)
 
                 // "senin rengin: huzurlu" — mood adı kendi renginde.
                 (
                     Text(NSLocalizedString("today.yourColourIs", comment: ""))
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                     + Text(entry.moodLabel.lowercased())
                         .foregroundColor(entry.moodColor)
                 )
@@ -90,7 +64,7 @@ struct CompletedHeroHeader: View {
 
                 Text(NSLocalizedString("today.seeYouTomorrow", comment: ""))
                     .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .padding(.top, 11)
             }
             .frame(maxWidth: .infinity)
@@ -110,7 +84,7 @@ struct CompletedHeroHeader: View {
             if isFreezeActive {
                 HStack(spacing: 8) {
                     Text("❄️")
-                        .font(.system(size: 13))
+                        .font(V3Typography.sans(13))
                     Text("Serin bugün donduruldu")
                         .monoSM(tracking: 0.5)
                         .foregroundColor(Color(hex: "#5B9BD5"))

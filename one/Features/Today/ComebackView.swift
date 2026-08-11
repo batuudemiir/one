@@ -31,17 +31,17 @@ struct ComebackView: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(NSLocalizedString("comeback.eyebrow", comment: ""))
                     .monoLabel(tracking: 1.3)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
 
                 Text(headline)
                     .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 11)
 
                 Text(NSLocalizedString("comeback.reassurance", comment: ""))
                     .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .padding(.top, 12)
 
                 if !friendColors.isEmpty {
@@ -52,7 +52,7 @@ struct ComebackView: View {
                 if !backfillableDays.isEmpty {
                     Text(NSLocalizedString("comeback.fillIfYouWant", comment: ""))
                         .monoLabel(tracking: 1.3)
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
                         .padding(.top, ONETokens.spacingXL)
                         .padding(.bottom, ONETokens.spacingSM)
 
@@ -64,16 +64,16 @@ struct ComebackView: View {
                 }
 
                 Rectangle()
-                    .fill(ONETokens.oneInk.opacity(0.09))
+                    .fill(V3Tokens.ink.opacity(0.09))
                     .frame(height: 1)
                     .padding(.vertical, ONETokens.spacingXL)
 
                 Button(action: onStartToday) {
                     Text(NSLocalizedString("comeback.markToday", comment: ""))
                         .bodySMMedium()
-                        .foregroundColor(ONETokens.oneCream)
+                        .foregroundColor(ONEBrand.bone)
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(Capsule(style: .continuous).fill(ONETokens.oneInk))
+                        .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                 }
                 .buttonStyle(.plain)
             }
@@ -81,7 +81,7 @@ struct ComebackView: View {
             .padding(.top, ONETokens.spacingXL4)
             .padding(.bottom, 116)
         }
-        .background(ONETokens.oneCream.ignoresSafeArea())
+        .background(ONEBrand.bone.ignoresSafeArea())
     }
 
     // MARK: Headline
@@ -97,14 +97,14 @@ struct ComebackView: View {
         VStack(alignment: .leading, spacing: 9) {
             Text(NSLocalizedString("comeback.whileAway", comment: ""))
                 .monoLabel(tracking: 1.3)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
 
             Text(String(
                 format: NSLocalizedString("comeback.friendsShared", comment: ""),
                 friendColors.count
             ))
             .bodySM()
-            .foregroundColor(ONETokens.oneInk)
+            .foregroundColor(V3Tokens.ink)
 
             // Üst üste binen halkalar: kimliği değil, varlığı gösteriyor.
             HStack(spacing: -7) {
@@ -112,7 +112,7 @@ struct ComebackView: View {
                     Circle()
                         .fill(color)
                         .frame(width: 32, height: 32)
-                        .overlay(Circle().stroke(ONETokens.oneCream, lineWidth: 2))
+                        .overlay(Circle().stroke(ONEBrand.bone, lineWidth: 2))
                 }
             }
             .padding(.top, 3)
@@ -126,7 +126,7 @@ struct ComebackView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: ONETokens.radiusSheet, style: .continuous)
-                .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
         )
     }
 
@@ -137,19 +137,19 @@ struct ComebackView: View {
             HStack(spacing: ONETokens.spacingMD) {
                 Text(dayNumber(date))
                     .monoLabel(tracking: 0.4)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .frame(width: 36, height: 36)
-                    .background(Circle().fill(ONETokens.oneCreamMid))
+                    .background(Circle().fill(V3Tokens.surface))
 
                 Text(relativeName(date))
                     .bodySM()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
 
                 Spacer()
 
                 Text(NSLocalizedString("comeback.add", comment: ""))
                     .bodySMMedium()
-                    .foregroundColor(ONETokens.oneBrand)
+                    .foregroundColor(ONEBrand.kor)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 11)
@@ -159,7 +159,7 @@ struct ComebackView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                    .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)

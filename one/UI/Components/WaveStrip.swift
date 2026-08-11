@@ -47,7 +47,7 @@ struct WaveStrip: View {
                     } else {
                         // Empty day bar — non-interactive; only label, no .isButton, no hint
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(ONETokens.oneCreamMid.opacity(0.6))
+                            .fill(V3Tokens.surface.opacity(0.6))
                             .frame(width: barWidth, height: 4)
                             .accessibilityElement()
                             .accessibilityLabel(Self.accessibilityLabel(for: date, mood: nil))

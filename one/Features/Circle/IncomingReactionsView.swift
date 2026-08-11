@@ -45,7 +45,7 @@ struct EchoesEntryButton: View {
             .foregroundColor(ONETokens.oneCharcoal)
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
-            .background(RoundedRectangle(cornerRadius: 16).fill(ONETokens.oneCreamLow))
+            .background(RoundedRectangle(cornerRadius: 16).fill(V3Tokens.wash))
         }
         .buttonStyle(.plain)
         .task {
@@ -106,7 +106,7 @@ struct IncomingReactionsView: View {
                 }
             }
         }
-        .background(ONETokens.oneCream.ignoresSafeArea())
+        .background(ONEBrand.bone.ignoresSafeArea())
         .task { await load() }
     }
 
@@ -115,13 +115,13 @@ struct IncomingReactionsView: View {
     private var header: some View {
         HStack {
             Text(NSLocalizedString("echoes.screenTitle", comment: ""))
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(ONETokens.oneInk)
+                .font(V3Typography.sans(16, weight: .semibold))
+                .foregroundColor(V3Tokens.ink)
             Spacer()
             Button { dismiss() } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .frame(width: 32, height: 32)
                     .background(Circle().fill(Color.white.opacity(0.7)))
             }
@@ -137,11 +137,11 @@ struct IncomingReactionsView: View {
             Spacer()
             Image(systemName: "dot.radiowaves.left.and.right")
                 .font(.system(size: 34, weight: .light))
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
             Text(NSLocalizedString("echoes.empty", comment: ""))
                 .bodySM()
                 .multilineTextAlignment(.center)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .padding(.horizontal, 40)
             Spacer()
         }
@@ -154,7 +154,7 @@ struct IncomingReactionsView: View {
         VStack(alignment: .leading, spacing: ONETokens.spacingSM) {
             Text(NSLocalizedString("echoes.reactors", comment: ""))
                 .monoLabel(tracking: 1.3)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
 
             ForEach(reactors, id: \.id) { r in
                 HStack(spacing: 11) {
@@ -163,18 +163,18 @@ struct IncomingReactionsView: View {
                             .fill(Color(hex: r.senderColorHex ?? "#888888"))
                             .frame(width: 38, height: 38)
                         Text(String((r.senderName ?? "?").prefix(1)).uppercased())
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(V3Typography.sans(14, weight: .semibold))
                             .foregroundColor(.white)
                     }
                     Text(r.senderName ?? NSLocalizedString("echoes.someone", comment: ""))
-                        .font(.system(size: 13.5, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(13.5, weight: .semibold))
+                        .foregroundColor(V3Tokens.ink)
                     Spacer()
                     // Renk karşılığıysa nokta, tepkiyse glif.
                     if r.kind == .color {
                         Circle().fill(Color(hex: r.colorHex ?? accentColorHex)).frame(width: 16, height: 16)
                     } else {
-                        Text(r.kind.glyph).font(.system(size: 16))
+                        Text(r.kind.glyph).font(V3Typography.sans(16))
                             .foregroundColor(ONETokens.oneCharcoal)
                     }
                 }
@@ -190,7 +190,7 @@ struct IncomingReactionsView: View {
         VStack(alignment: .leading, spacing: ONETokens.spacingSM) {
             Text(String(format: NSLocalizedString("echoes.threadWith", comment: ""), thread.otherName))
                 .monoLabel(tracking: 1.3)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
 
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(thread.bubbles, id: \.id) { b in
@@ -207,8 +207,8 @@ struct IncomingReactionsView: View {
         HStack {
             if isMe { Spacer(minLength: 40) }
             Text(text)
-                .font(.system(size: 13.5))
-                .foregroundColor(isMe ? ONETokens.oneCream : ONETokens.oneInk)
+                .font(V3Typography.sans(13.5))
+                .foregroundColor(isMe ? ONEBrand.bone : V3Tokens.ink)
                 .padding(.horizontal, 13)
                 .padding(.vertical, 9)
                 .background(
@@ -216,7 +216,7 @@ struct IncomingReactionsView: View {
                         .fill(isMe ? ONETokens.oneInk : Color.white.opacity(0.85))
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .strokeBorder(ONETokens.oneInk.opacity(isMe ? 0 : 0.09), lineWidth: 1)
+                                .strokeBorder(V3Tokens.ink.opacity(isMe ? 0 : 0.09), lineWidth: 1)
                         )
                 )
             if !isMe { Spacer(minLength: 40) }
@@ -235,16 +235,16 @@ struct IncomingReactionsView: View {
             )
             .textFieldStyle(.plain)
             .font(.system(size: 14))
-            .foregroundColor(ONETokens.oneInk)
+            .foregroundColor(V3Tokens.ink)
             .submitLabel(.send)
             .onSubmit { sendReply(to: otherUserID) }
 
             Button { sendReply(to: otherUserID) } label: {
                 Image(systemName: "arrow.up")
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(ONETokens.oneCream)
+                    .foregroundColor(ONEBrand.bone)
                     .frame(width: 34, height: 34)
-                    .background(Circle().fill(ONETokens.oneInk))
+                    .background(Circle().fill(V3Tokens.ink))
             }
             .buttonStyle(.plain)
             .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty || isSending)
@@ -256,17 +256,18 @@ struct IncomingReactionsView: View {
         .background(
             Capsule(style: .continuous)
                 .fill(Color.white.opacity(0.82))
-                .overlay(Capsule().strokeBorder(ONETokens.oneInk.opacity(0.09), lineWidth: 1))
+                .overlay(Capsule().strokeBorder(V3Tokens.ink.opacity(0.09), lineWidth: 1))
         )
         .padding(.top, 4)
     }
 
     private var ephemNote: some View {
         HStack(spacing: 7) {
-            Circle().fill(ONETokens.oneStone).frame(width: 5, height: 5)
+            Circle().fill(V3Tokens.faintText).frame(width: 5, height: 5)
+                .accessibilityHidden(true)
             Text(NSLocalizedString("echoes.ephemeralNote", comment: ""))
-                .font(.system(size: 11))
-                .foregroundColor(ONETokens.oneStone)
+                .font(V3Typography.sans(11))
+                .foregroundColor(V3Tokens.faintText)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, ONETokens.spacingXL2)

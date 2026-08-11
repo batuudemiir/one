@@ -24,7 +24,7 @@ extension TodayEmptyView {
                     .displayMD()
                     .fontWeight(.semibold)
                     .tracking(-0.6)
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineSpacing(0)
                     .padding(.bottom, 10)
 
@@ -35,16 +35,16 @@ extension TodayEmptyView {
                     } else {
                         Image(systemName: "magnifyingglass")
                             .bodySM()
-                            .foregroundColor(ONETokens.oneMist)
+                            .foregroundColor(V3Tokens.faintText)
                     }
                     TextField(NSLocalizedString("search.searchPlaceholder", comment: ""), text: $searchText)
                         .monoSM(tracking: 0)
-                        .foregroundColor(ONETokens.oneShadow)
+                        .foregroundColor(V3Tokens.ink)
                         .onChange(of: searchText) { _, v in vm.search(v) }
                     if !searchText.isEmpty {
                         Button(action: { searchText = ""; vm.searchResults = [] }) {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(ONETokens.oneMist)
+                                .foregroundColor(V3Tokens.faintText)
                                 .bodySM()
                         }
                         .accessibilityLabel(NSLocalizedString("accessibility.today.clearSearch", comment: ""))
@@ -54,7 +54,7 @@ extension TodayEmptyView {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 13).fill(ONETokens.oneSilver))
+                .background(RoundedRectangle(cornerRadius: 13).fill(V3Tokens.hairline))
 
                 // Son sanatçılar
                 if searchText.isEmpty && !vm.recentArtists.isEmpty {
@@ -64,10 +64,10 @@ extension TodayEmptyView {
                                 Button(action: { searchText = artist; vm.search(artist) }) {
                                     Text(artist)
                                         .monoSM(tracking: 0.6)
-                                        .foregroundColor(ONETokens.oneAsh)
+                                        .foregroundColor(V3Tokens.mutedText)
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 7)
-                                        .background(Capsule().stroke(ONETokens.oneCreamMid, lineWidth: 1))
+                                        .background(Capsule().stroke(V3Tokens.surface, lineWidth: 1))
                                 }
                                 .accessibilityLabel(String(format: NSLocalizedString("accessibility.today.artistFilter", comment: ""), artist))
                             }
@@ -85,15 +85,15 @@ extension TodayEmptyView {
                                     Group {
                                         if let url = song.coverURL {
                                             CachedAsyncImage(url: url) { img in img.resizable().scaledToFill() }
-                                                placeholder: { ONETokens.oneSilver }
-                                        } else { ONETokens.oneSilver }
+                                                placeholder: { V3Tokens.hairline }
+                                        } else { V3Tokens.hairline }
                                     }
                                     .frame(width: 40, height: 40)
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .accessibilityHidden(true)
                                     VStack(alignment: .leading, spacing: 3) {
-                                        Text(song.name).bodyMD().foregroundColor(ONETokens.oneShadow).lineLimit(1).minimumScaleFactor(0.75)
-                                        Text(song.artist).monoSM(tracking: 0).foregroundColor(ONETokens.oneMist)
+                                        Text(song.name).bodyMD().foregroundColor(V3Tokens.ink).lineLimit(1).minimumScaleFactor(0.75)
+                                        Text(song.artist).monoSM(tracking: 0).foregroundColor(V3Tokens.faintText)
                                     }
                                     Spacer()
                                 }
@@ -102,7 +102,7 @@ extension TodayEmptyView {
                             .buttonStyle(PlainButtonStyle())
                             .accessibilityLabel(String(format: NSLocalizedString("accessibility.today.searchResult", comment: ""), song.name, song.artist))
                             .accessibilityHint(NSLocalizedString("accessibility.today.searchResultHint", comment: ""))
-                            Divider().background(ONETokens.oneSilver)
+                            Divider().background(V3Tokens.hairline)
                                 .accessibilityHidden(true)
                         }
                     }
@@ -110,9 +110,9 @@ extension TodayEmptyView {
                 }
 
                 if let err = vm.searchError {
-                    Text(err).monoSM(tracking: 0).foregroundColor(ONETokens.oneRed.opacity(0.7)).padding(.top, 6)
+                    Text(err).monoSM(tracking: 0).foregroundColor(ONEBrand.kor.opacity(0.7)).padding(.top, 6)
                 } else if !searchText.isEmpty && !vm.isSearching && vm.searchResults.isEmpty {
-                    Text(NSLocalizedString("today.noResults", comment: "")).monoSM(tracking: 0).foregroundColor(ONETokens.oneCreamLow).padding(.top, 6)
+                    Text(NSLocalizedString("today.noResults", comment: "")).monoSM(tracking: 0).foregroundColor(V3Tokens.wash).padding(.top, 6)
                 }
             }
 
@@ -131,28 +131,28 @@ extension TodayEmptyView {
             Group {
                 if let url = song.coverURL {
                     CachedAsyncImage(url: url) { img in img.resizable().scaledToFill() }
-                        placeholder: { ONETokens.oneSilver }
-                } else { ONETokens.oneSilver }
+                        placeholder: { V3Tokens.hairline }
+                } else { V3Tokens.hairline }
             }
             .frame(width: 52, height: 52)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(song.name).displaySM().foregroundColor(ONETokens.oneShadow).lineLimit(1).minimumScaleFactor(0.75)
-                Text(song.artist).monoSM(tracking: 0).foregroundColor(ONETokens.oneMist)
+                Text(song.name).displaySM().foregroundColor(V3Tokens.ink).lineLimit(1).minimumScaleFactor(0.75)
+                Text(song.artist).monoSM(tracking: 0).foregroundColor(V3Tokens.faintText)
             }
             Spacer()
 
             Button(action: { resetAll() }) {
                 Text(NSLocalizedString("today.photoChange", comment: ""))
                     .monoSM(tracking: 1.0)
-                    .foregroundColor(ONETokens.oneCreamLow)
+                    .foregroundColor(V3Tokens.wash)
             }
             .accessibilityLabel(NSLocalizedString("accessibility.today.changeSong", comment: ""))
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 16).fill(ONETokens.oneSilver))
+        .background(RoundedRectangle(cornerRadius: 16).fill(V3Tokens.hairline))
         .accessibilityElement(children: .contain)
     }
 
@@ -162,22 +162,22 @@ extension TodayEmptyView {
         HStack(spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(photoImage != nil ? ONETokens.oneGreen.opacity(0.15) : ONETokens.oneCreamMid)
+                    .fill(photoImage != nil ? ONETokens.oneGreen.opacity(0.15) : V3Tokens.surface)
                     .frame(width: 40, height: 40)
                 Image(systemName: photoImage != nil ? "checkmark" : "camera")
                     .bodyLG()
                     .fontWeight(.light)
-                    .foregroundColor(photoImage != nil ? ONETokens.oneGreen : ONETokens.oneAsh)
+                    .foregroundColor(photoImage != nil ? ONETokens.oneGreen : V3Tokens.mutedText)
             }
             Text(photoImage != nil ? "Fotoğraf eklendi" : NSLocalizedString("confirm.addPhoto", comment: ""))
-                .bodyMD().foregroundColor(ONETokens.oneShadow)
+                .bodyMD().foregroundColor(V3Tokens.ink)
             Spacer()
             if photoImage == nil {
-                Text(NSLocalizedString("today.optional", comment: "")).monoSM(tracking: 0.5).foregroundColor(ONETokens.oneMist)
+                Text(NSLocalizedString("today.optional", comment: "")).monoSM(tracking: 0.5).foregroundColor(V3Tokens.faintText)
             }
             if photoImage != nil {
                 Button(action: { withAnimation(ONEAnimation.micro) { photoImage = nil } }) {
-                    Image(systemName: "xmark.circle.fill").displayXS().foregroundColor(ONETokens.oneMist)
+                    Image(systemName: "xmark.circle.fill").displayXS().foregroundColor(V3Tokens.faintText)
                 }
                 .accessibilityLabel(NSLocalizedString("accessibility.today.removePhoto", comment: ""))
                 .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
@@ -188,7 +188,7 @@ extension TodayEmptyView {
         .padding(.horizontal, 14).padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(ONETokens.oneSilver)
+                .fill(V3Tokens.hairline)
                 .overlay(RoundedRectangle(cornerRadius: 14)
                     .stroke(photoImage != nil ? ONETokens.oneGreen.opacity(0.4) : Color.clear, lineWidth: 1))
         )
@@ -233,7 +233,7 @@ extension TodayEmptyView {
                 .bodyLG()
                 .fontWeight(.medium)
                 .tracking(-0.2)
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 14) {
                 ForEach(MoodOption.all) { mood in
@@ -253,13 +253,13 @@ extension TodayEmptyView {
                                 .fill(mood.color)
                                 .frame(width: 44, height: 44)
                                 .overlay(Circle()
-                                    .stroke(ONETokens.oneShadow, lineWidth: selectedMood?.key == mood.key ? 2 : 0)
+                                    .stroke(V3Tokens.ink, lineWidth: selectedMood?.key == mood.key ? 2 : 0)
                                     .padding(-3))
                                 .scaleEffect(selectedMood?.key == mood.key ? 1.08 : 1.0)
                                 .animation(ONEAnimation.micro, value: selectedMood?.key)
                             Text(mood.label)
                                 .monoLabel(tracking: 0.2)
-                                .foregroundColor(selectedMood?.key == mood.key ? ONETokens.oneGraphite : ONETokens.oneMist)
+                                .foregroundColor(selectedMood?.key == mood.key ? ONETokens.oneGraphite : V3Tokens.faintText)
                                 .multilineTextAlignment(.center)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
@@ -283,23 +283,23 @@ extension TodayEmptyView {
                 .bodyLG()
                 .fontWeight(.medium)
                 .tracking(-0.2)
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
 
             HStack(spacing: 12) {
                 TextField(NSLocalizedString("today.notePlaceholder", comment: ""), text: $dailyNote)
-                    .monoSM(tracking: 0).foregroundColor(ONETokens.oneShadow)
+                    .monoSM(tracking: 0).foregroundColor(V3Tokens.ink)
                     .submitLabel(.done).focused($isNoteFieldFocused)
                     .onSubmit { isNoteFieldFocused = false }
                 if !dailyNote.isEmpty {
                     Button(action: { dailyNote = "" }) {
-                        Image(systemName: "xmark.circle.fill").bodySM().foregroundColor(ONETokens.oneMist)
+                        Image(systemName: "xmark.circle.fill").bodySM().foregroundColor(V3Tokens.faintText)
                     }
                 }
             }
             .padding(.horizontal, 14).padding(.vertical, 13)
             .background(
                 RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                    .fill(isNoteFieldFocused ? ONETokens.onePaper : ONETokens.oneSilver)
+                    .fill(isNoteFieldFocused ? V3Tokens.surface : V3Tokens.hairline)
                     .shadow(color: isNoteFieldFocused ? Color.black.opacity(0.06) : Color.clear, radius: 8, x: 0, y: 3)
             )
             .animation(ONEAnimation.micro, value: isNoteFieldFocused)
@@ -313,11 +313,11 @@ extension TodayEmptyView {
             HStack(spacing: 6) {
                 Text(label)
                     .monoSM(tracking: 1.2)
-                    .foregroundColor(enabled ? ONETokens.oneShadow : ONETokens.oneMist)
+                    .foregroundColor(enabled ? V3Tokens.ink : V3Tokens.faintText)
                 Image(systemName: "arrow.down")
                     .monoSM()
                     .fontWeight(.semibold)
-                    .foregroundColor(enabled ? ONETokens.oneShadow : ONETokens.oneMist)
+                    .foregroundColor(enabled ? V3Tokens.ink : V3Tokens.faintText)
                     .accessibilityHidden(true)
             }
             .padding(.horizontal, 18).padding(.vertical, 11)
@@ -342,7 +342,7 @@ extension TodayEmptyView {
 
             Text(NSLocalizedString("onboarding.slogan", comment: ""))
                 .monoSM(tracking: 1.2)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
 
             // Ana CTA
             Button(action: {
@@ -354,12 +354,12 @@ extension TodayEmptyView {
             }) {
                 Text(NSLocalizedString("confirm.todaySong", comment: ""))
                     .displayXS()
-                    .foregroundColor(ONETokens.oneCream)
+                    .foregroundColor(ONEBrand.bone)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 18)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(selectedMood?.color ?? ONETokens.oneShadow)
+                            .fill(selectedMood?.color ?? V3Tokens.ink)
                     )
             }
             .buttonStyle(ScaleButtonStyle())
@@ -369,7 +369,7 @@ extension TodayEmptyView {
             // Şarkıyı değiştir
             Button(action: { resetAll() }) {
                 Text(NSLocalizedString("today.changeSong", comment: ""))
-                    .monoSM(tracking: 0.8).foregroundColor(ONETokens.oneMist)
+                    .monoSM(tracking: 0.8).foregroundColor(V3Tokens.faintText)
             }
             .frame(maxWidth: .infinity)
             .padding(.bottom, 8)
@@ -384,7 +384,7 @@ extension TodayEmptyView {
         }) {
             Text(NSLocalizedString("today.passButton", comment: ""))
                 .monoSM(tracking: 0.8)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
         }

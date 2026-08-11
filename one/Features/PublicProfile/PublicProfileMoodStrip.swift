@@ -16,7 +16,7 @@ struct PublicProfileMoodStrip: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Son 7 gün")
                 .monoSM(tracking: 1.2)
-                .foregroundStyle(ONETokens.oneAsh)
+                .foregroundStyle(V3Tokens.mutedText)
 
             if isVisible {
                 let allNil = colorHexes.allSatisfy { $0 == nil }
@@ -38,7 +38,7 @@ struct PublicProfileMoodStrip: View {
             ForEach(0..<7, id: \.self) { idx in
                 let hexOrNil = idx < colorHexes.count ? colorHexes[idx] : nil
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(hexOrNil.map { Color(hex: $0) } ?? ONETokens.oneCreamMid)
+                    .fill(hexOrNil.map { Color(hex: $0) } ?? V3Tokens.surface)
                     .frame(maxWidth: .infinity)
                     .frame(height: 32)
             }
@@ -54,10 +54,10 @@ struct PublicProfileMoodStrip: View {
             Text("Henüz paylaşım yok")
                 .monoSM(tracking: 0)
         }
-        .foregroundStyle(ONETokens.oneAsh)
+        .foregroundStyle(V3Tokens.mutedText)
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background(Capsule().fill(ONETokens.oneCreamMid))
+        .background(Capsule().fill(V3Tokens.surface))
     }
 
     // MARK: - Privacy placeholder
@@ -69,9 +69,9 @@ struct PublicProfileMoodStrip: View {
             Text("Mood geçmişi paylaşılmıyor")
                 .monoSM(tracking: 0)
         }
-        .foregroundStyle(ONETokens.oneAsh)
+        .foregroundStyle(V3Tokens.mutedText)
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background(Capsule().fill(ONETokens.oneCreamMid))
+        .background(Capsule().fill(V3Tokens.surface))
     }
 }

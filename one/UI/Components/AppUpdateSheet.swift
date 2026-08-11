@@ -17,11 +17,11 @@ struct AppUpdateSheet: View {
             // Icon
             ZStack {
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(ONETokens.oneCharcoal)
+                    .fill(V3Tokens.mutedText)
                     .frame(width: 72, height: 72)
                 Text("✦")
-                    .font(.system(size: 32))
-                    .foregroundColor(ONETokens.oneCream)
+                    .font(V3Typography.sans(32))
+                    .foregroundColor(ONEBrand.bone)
             }
             .padding(.top, ONETokens.spacingXL)
 
@@ -29,13 +29,13 @@ struct AppUpdateSheet: View {
 
             Text(NSLocalizedString("update.title", comment: ""))
                 .displaySM()
-                .foregroundColor(ONETokens.oneCharcoal)
+                .foregroundColor(V3Tokens.mutedText)
 
             Spacer().frame(height: ONETokens.spacingSM)
 
             Text(String(format: NSLocalizedString("update.body", comment: ""), newVersion))
                 .bodyMD()
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, ONETokens.spacingXL)
 
@@ -43,7 +43,7 @@ struct AppUpdateSheet: View {
 
             Text(String(format: NSLocalizedString("update.current", comment: ""), currentVersion))
                 .monoLabel(tracking: 0.5)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
 
             Spacer().frame(height: ONETokens.spacingXL)
 
@@ -51,10 +51,10 @@ struct AppUpdateSheet: View {
             Button(action: onUpdate) {
                 Text(NSLocalizedString("update.cta", comment: ""))
                     .monoSM(tracking: 1.4)
-                    .foregroundColor(ONETokens.oneCream)
+                    .foregroundColor(ONEBrand.bone)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .background(ONETokens.oneCharcoal)
+                    .background(V3Tokens.mutedText)
                     .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusCard, style: .continuous))
             }
             .padding(.horizontal, ONETokens.spacingLG)
@@ -66,7 +66,7 @@ struct AppUpdateSheet: View {
                 Button(action: onDismiss) {
                     Text(NSLocalizedString("update.later", comment: ""))
                         .monoSM(tracking: 0.8)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
                 .padding(.bottom, ONETokens.spacingLG)
             } else {
@@ -74,6 +74,6 @@ struct AppUpdateSheet: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .background(ONETokens.oneCream.ignoresSafeArea())
+        .background(ONEBrand.bone.ignoresSafeArea())
     }
 }

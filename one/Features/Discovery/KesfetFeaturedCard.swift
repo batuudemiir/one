@@ -17,9 +17,9 @@ struct KesfetFeaturedCard: View {
 
     private var sectionEyebrow: some View {
         Text("BU AKŞAMIN GÖZDESİ")
-            .font(.system(size: 10.5, weight: .semibold))
+            .font(V3Typography.sans(10.5, weight: .semibold))
             .tracking(1.89)
-            .foregroundColor(ONETokens.oneInk.opacity(0.35))
+            .foregroundColor(V3Tokens.ink.opacity(0.35))
     }
 
     private func card(featured: FeaturedCuration, mood: KesfetMood) -> some View {
@@ -83,12 +83,12 @@ struct KesfetFeaturedCard: View {
                     .padding(.bottom, 2)
 
                 Text("\(featured.sub) · \(featured.time)")
-                    .font(.system(size: 13, weight: .regular))
+                    .font(V3Typography.sans(13, weight: .regular))
                     .foregroundColor(.white.opacity(0.75))
                     .padding(.horizontal, 16)
 
                 Text("\(featured.going) kişi gidiyor · \(featured.distance)")
-                    .font(.system(size: 12, weight: .regular))
+                    .font(V3Typography.sans(12, weight: .regular))
                     .foregroundColor(.white.opacity(0.55))
                     .padding(.horizontal, 16)
 
@@ -106,7 +106,7 @@ struct KesfetFeaturedCard: View {
 
     private func titleText(featured: FeaturedCuration) -> some View {
         Text(featured.title)
-            .font(.system(size: 28, weight: .bold))
+            .font(V3Typography.sans(28, weight: .bold))
             .foregroundColor(.white)
             .lineLimit(nil)
             .fixedSize(horizontal: false, vertical: true)
@@ -118,7 +118,7 @@ struct KesfetFeaturedCard: View {
             Image(systemName: "mic.fill")
                 .font(.system(size: 10))
             Text(featured.tag)
-                .font(.system(size: 11, weight: .semibold))
+                .font(V3Typography.sans(11, weight: .semibold))
                 .tracking(0.5)
         }
         .foregroundColor(.white)
@@ -138,7 +138,7 @@ struct KesfetFeaturedCard: View {
             Image(systemName: "sparkles")
                 .font(.system(size: 10))
             Text("hissine uyar")
-                .font(.system(size: 11, weight: .semibold))
+                .font(V3Typography.sans(11, weight: .semibold))
         }
         .foregroundColor(.white)
         .padding(.horizontal, 12)
@@ -154,8 +154,8 @@ struct KesfetFeaturedCard: View {
 
     private var ticketButton: some View {
         Text("Bilet Al")
-            .font(.system(size: 13, weight: .semibold))
-            .foregroundColor(ONETokens.oneInk)
+            .font(V3Typography.sans(13, weight: .semibold))
+            .foregroundColor(V3Tokens.ink)
             .padding(.horizontal, 20)
             .padding(.vertical, 8)
             .background(Capsule().fill(.white))

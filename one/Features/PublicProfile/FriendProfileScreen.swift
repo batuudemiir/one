@@ -68,12 +68,12 @@ struct FriendProfileScreen: View {
                         InsightCard(label: NSLocalizedString("friendProfile.commonFrequency", comment: "")) {
                             (
                                 Text(NSLocalizedString("friendProfile.mostlyPrefix", comment: ""))
-                                    .foregroundColor(ONETokens.oneInk)
+                                    .foregroundColor(V3Tokens.ink)
                                 + Text(mood)
                                     .foregroundColor(Color(hex: profile.dominantMoodColor ?? "#5B8DEF"))
                                     .fontWeight(.semibold)
                                 + Text(NSLocalizedString("friendProfile.mostlySuffix", comment: ""))
-                                    .foregroundColor(ONETokens.oneInk)
+                                    .foregroundColor(V3Tokens.ink)
                             )
                             .bodySM()
                             .fixedSize(horizontal: false, vertical: true)
@@ -92,7 +92,7 @@ struct FriendProfileScreen: View {
 
                     if vm.relationship == .friend {
                         Rectangle()
-                            .fill(ONETokens.oneInk.opacity(0.09))
+                            .fill(V3Tokens.ink.opacity(0.09))
                             .frame(height: 1)
                             .padding(.vertical, ONETokens.spacingXL)
 
@@ -101,7 +101,7 @@ struct FriendProfileScreen: View {
                         } label: {
                             Text(NSLocalizedString("friendProfile.remove", comment: ""))
                                 .bodySMMedium()
-                                .foregroundColor(ONETokens.oneBrand)
+                                .foregroundColor(ONEBrand.kor)
                                 .frame(maxWidth: .infinity, minHeight: 44)
                         }
                         .buttonStyle(.plain)
@@ -111,7 +111,7 @@ struct FriendProfileScreen: View {
             } else if let error = vm.errorMessage {
                 Text(error)
                     .bodySM()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .frame(maxWidth: .infinity)
                     .padding(.top, ONETokens.spacingXL3)
             }
@@ -133,23 +133,35 @@ struct FriendProfileScreen: View {
 
     private func identity(_ profile: PublicUserProfile) -> some View {
         HStack(spacing: ONETokens.spacingLG) {
-            Circle()
-                .fill(accent)
-                .frame(width: 64, height: 64)
-                .overlay(
-                    Text(String(profile.displayName.prefix(1)).uppercased())
-                        .font(.system(size: 21, weight: .bold))
-                        .foregroundColor(.white)
-                )
+            // Kişinin yüklediği profil fotoğrafı — eskiden bu ekran her zaman
+            // baş harf çiziyordu, fotoğraf hiç okunmuyordu.
+            Group {
+                if let url = profile.profilePhotoFileURL,
+                   let image = UIImage(contentsOfFile: url.path) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    Circle()
+                        .fill(accent)
+                        .overlay(
+                            Text(String(profile.displayName.prefix(1)).uppercased())
+                                .font(V3Typography.sans(21, weight: .bold))
+                                .foregroundColor(.white)
+                        )
+                }
+            }
+            .frame(width: 64, height: 64)
+            .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(profile.displayName)
                     .displayMD()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
 
                 Text(subtitle(profile))
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
             }
 
             Spacer()
@@ -194,12 +206,12 @@ struct FriendProfileScreen: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 7) {
                     Text(NSLocalizedString("friendProfile.today", comment: ""))
-                        .font(.system(size: 14.5, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(14.5, weight: .semibold))
+                        .foregroundColor(V3Tokens.ink)
 
                     if !moodWord.isEmpty {
                         Text(moodWord)
-                            .font(.system(size: 10.5, weight: .semibold))
+                            .font(V3Typography.sans(10.5, weight: .semibold))
                             .foregroundColor(Color(hex: moodHex))
                             .padding(.horizontal, 7)
                             .padding(.vertical, 2)
@@ -213,13 +225,13 @@ struct FriendProfileScreen: View {
                     if !time.isEmpty {
                         Text(time)
                             .monoLabel(tracking: 0.5)
-                            .foregroundColor(ONETokens.oneStone)
+                            .foregroundColor(V3Tokens.faintText)
                     }
                 }
 
                 Text("\(song) — \(artist)")
-                    .font(.system(size: 12.5))
-                    .foregroundColor(ONETokens.oneAsh)
+                    .font(V3Typography.sans(12.5))
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
             }
         }
@@ -232,13 +244,13 @@ struct FriendProfileScreen: View {
     // MARK: İstatistik
 
     private func hasStats(_ p: PublicUserProfile) -> Bool {
-        (p.totalShareDays ?? 0) > 0 || (p.currentStreak ?? 0) > 0
+        // v3: streak/sayaç yasak — sadece toplam an ve peak saat.
+        (p.totalShareDays ?? 0) > 0
     }
 
     private func statRow(_ p: PublicUserProfile) -> some View {
         StatRow(items: [
             ("\(p.totalShareDays ?? 0)", NSLocalizedString("profile.stat.entries", comment: "")),
-            ("\(p.currentStreak ?? 0)", NSLocalizedString("friendProfile.streak", comment: "")),
             (p.peakActivityHour.map { String(format: "%02d:00", $0) } ?? "—",
              NSLocalizedString("friendProfile.peakHour", comment: ""))
         ])
@@ -256,8 +268,8 @@ struct FriendProfileScreen: View {
                 )
 
             Text(title)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(ONETokens.oneInk)
+                .font(V3Typography.sans(14, weight: .semibold))
+                .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
 
             Spacer()
@@ -269,7 +281,7 @@ struct FriendProfileScreen: View {
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
             .monoLabel(tracking: 1.3)
-            .foregroundColor(ONETokens.oneStone)
+            .foregroundColor(V3Tokens.faintText)
             .padding(.top, ONETokens.spacingXL)
             .padding(.bottom, ONETokens.spacingSM)
     }

@@ -30,7 +30,7 @@ struct ReactionComposer: View {
         VStack(alignment: .leading, spacing: 0) {
             Text(NSLocalizedString("reaction.respond", comment: ""))
                 .monoLabel(tracking: 1.3)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
                 .padding(.bottom, ONETokens.spacingSM)
 
             // .rx-strip
@@ -40,15 +40,20 @@ struct ReactionComposer: View {
                 }
                 Button { send(kind: .color, colorHex: myColorHex) } label: {
                     Text(DailyReaction.Kind.color.glyph)
-                        .font(.system(size: 15, weight: .medium))
+                        .font(V3Typography.sans(15, weight: .medium))
                         .foregroundColor(.white)
                         .frame(width: 38, height: 38)
                         .background(Circle().fill(Color(hex: myColorHex)))
                         .overlay(Circle().strokeBorder(Color.white.opacity(0.4), lineWidth: 2))
+                        // Görsel 38 kalır, dokunma alanı Apple minimumu 44pt.
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .disabled(isSending)
-                .accessibilityLabel(DailyReaction.Kind.color.label)
+                .accessibilityLabel(Text("\(DailyReaction.Kind.color.label) tepkisi"))
+                .accessibilityHint(Text("Aç/kapat"))
+                .accessibilityAddTraits(sentReaction == .color ? .isSelected : [])
             }
 
             // .reply
@@ -59,7 +64,7 @@ struct ReactionComposer: View {
                 )
                 .textFieldStyle(.plain)
                 .font(.system(size: 14))
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
                 .submitLabel(.send)
                 .onSubmit { sendReply() }
                 .onChange(of: replyText) { _, v in
@@ -71,13 +76,17 @@ struct ReactionComposer: View {
                 Button(action: sendReply) {
                     Image(systemName: "arrow.up")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(ONETokens.oneCream)
+                        .foregroundColor(ONEBrand.bone)
                         .frame(width: 34, height: 34)
-                        .background(Circle().fill(ONETokens.oneInk))
+                        .background(Circle().fill(V3Tokens.ink))
+                        // Görsel 34 kalır, dokunma alanı Apple minimumu 44pt.
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .disabled(replyText.trimmingCharacters(in: .whitespaces).isEmpty || isSending)
                 .opacity(replyText.trimmingCharacters(in: .whitespaces).isEmpty ? 0.3 : 1)
+                .accessibilityLabel("Yanıtı gönder")
             }
             .padding(.leading, 15)
             .padding(.trailing, 8)
@@ -85,7 +94,7 @@ struct ReactionComposer: View {
             .background(
                 Capsule(style: .continuous)
                     .fill(Color.white.opacity(0.82))
-                    .overlay(Capsule().strokeBorder(ONETokens.oneInk.opacity(0.09), lineWidth: 1))
+                    .overlay(Capsule().strokeBorder(V3Tokens.ink.opacity(0.09), lineWidth: 1))
             )
             .padding(.top, ONETokens.spacingMD)
 
@@ -94,17 +103,17 @@ struct ReactionComposer: View {
                     Image(systemName: "checkmark").font(.system(size: 11, weight: .semibold))
                     Text(NSLocalizedString("reaction.sent", comment: "")).font(.system(size: 12))
                 }
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .frame(maxWidth: .infinity)
                 .padding(.top, ONETokens.spacingMD)
                 .transition(.opacity)
             }
 
             HStack(spacing: 7) {
-                Circle().fill(ONETokens.oneStone).frame(width: 5, height: 5)
+                Circle().fill(V3Tokens.faintText).frame(width: 5, height: 5)
                 Text(String(format: NSLocalizedString("reaction.ephemeralNote", comment: ""), friendDisplayName))
-                    .font(.system(size: 11))
-                    .foregroundColor(ONETokens.oneStone)
+                    .font(V3Typography.sans(11))
+                    .foregroundColor(V3Tokens.faintText)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
@@ -116,20 +125,22 @@ struct ReactionComposer: View {
         let selected = sentReaction == kind
         return Button { send(kind: kind) } label: {
             HStack(spacing: 7) {
-                Text(kind.glyph).font(.system(size: 14))
-                Text(kind.label).font(.system(size: 13, weight: .semibold))
+                Text(kind.glyph).font(V3Typography.sans(14))
+                Text(kind.label).font(V3Typography.sans(13, weight: .semibold))
             }
-            .foregroundColor(selected ? ONETokens.oneCream : ONETokens.oneInk)
+            .foregroundColor(selected ? ONEBrand.bone : V3Tokens.ink)
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
             .background(
                 Capsule(style: .continuous)
                     .fill(selected ? ONETokens.oneInk : Color.white.opacity(0.72))
-                    .overlay(Capsule().strokeBorder(ONETokens.oneInk.opacity(selected ? 0 : 0.09), lineWidth: 1))
+                    .overlay(Capsule().strokeBorder(V3Tokens.ink.opacity(selected ? 0 : 0.09), lineWidth: 1))
             )
         }
         .buttonStyle(.plain)
         .disabled(isSending)
+        .accessibilityLabel(Text("\(kind.label) tepkisi"))
+        .accessibilityHint(Text("Aç/kapat"))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 

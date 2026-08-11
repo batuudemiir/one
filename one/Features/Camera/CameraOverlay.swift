@@ -13,7 +13,8 @@ import Combine
 
 struct CameraOverlay: View {
     @ObservedObject var state:  CameraState
-    private let ratio: CaptureRatio = .story
+    // v3 spec: 3:4 koyu vizör. .standard (4:3 storage → 3:4 portrait display).
+    private let ratio: CaptureRatio = .standard
     let safeTop:    CGFloat
     let safeBottom: CGFloat
     let onDismiss:  () -> Void
@@ -188,9 +189,11 @@ struct CameraOverlay: View {
                     .font(.system(size: 17, weight: .medium))
                     .foregroundColor(active ? .yellow : .white)
                     .frame(width: 40, height: 40)
+                    // v3 spec: cam çip — blur 22px, pasif rgba(12,12,16,0.34), aktif rgba(251,250,247,0.92).
                     .background(
                         Circle()
-                            .fill(.black.opacity(0.38))
+                            .fill(active ? Color(red: 0.984, green: 0.980, blue: 0.969).opacity(0.92) : Color(red: 0.047, green: 0.047, blue: 0.063).opacity(0.34))
+                            .background(Circle().fill(.ultraThinMaterial))
                     )
                     .shadow(color: .black.opacity(0.35), radius: 5, x: 0, y: 2)
 
@@ -215,7 +218,12 @@ struct CameraOverlay: View {
                 .font(.system(size: sz, weight: .semibold))
                 .foregroundColor(active ? .yellow : .white)
                 .frame(width: 40, height: 40)
-                .background(Circle().fill(.black.opacity(0.38)))
+                // v3 spec: cam çip
+                .background(
+                    Circle()
+                        .fill(active ? Color(red: 0.984, green: 0.980, blue: 0.969).opacity(0.92) : Color(red: 0.047, green: 0.047, blue: 0.063).opacity(0.34))
+                        .background(Circle().fill(.ultraThinMaterial))
+                )
                 .shadow(color: .black.opacity(0.35), radius: 5, x: 0, y: 2)
         }
     }
@@ -323,29 +331,29 @@ struct CameraOverlay: View {
             state.shoot()
         } label: {
             ZStack {
-                // Glow
+                // Glow — spec 74pt shutter, glow biraz daha büyük.
                 Circle()
                     .fill(
                         state.counting
                             ? Color.yellow.opacity(0.28)
-                            : ONETokens.oneRed.opacity(state.capturing ? 0.40 : 0.15)
+                            : ONEBrand.kor.opacity(state.capturing ? 0.40 : 0.15)
                     )
-                    .frame(width: 104, height: 104)
+                    .frame(width: 96, height: 96)
                     .blur(radius: 16)
 
-                // Dış halka
+                // Dış halka — v3 74pt.
                 Circle()
                     .stroke(
                         state.counting ? Color.yellow.opacity(0.90) : Color.white.opacity(0.90),
                         lineWidth: 3.5
                     )
-                    .frame(width: 82, height: 82)
+                    .frame(width: 74, height: 74)
 
-                // İç dolgu
+                // İç dolgu — press 0.94 scale (spec).
                 Circle()
                     .fill(state.counting ? Color.yellow : Color.white)
-                    .frame(width: 66, height: 66)
-                    .scaleEffect(shutterDown ? 0.72 : (state.capturing ? 0.85 : 1.0))
+                    .frame(width: 58, height: 58)
+                    .scaleEffect(shutterDown ? 0.94 : (state.capturing ? 0.85 : 1.0))
                     .animation(.spring(response: 0.18, dampingFraction: 0.6), value: state.capturing)
 
                 if state.counting {

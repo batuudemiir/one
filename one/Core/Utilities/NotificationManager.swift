@@ -66,7 +66,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     
     // Çeşitli bildirim metinleri — her gün farklı, Duolingo tarzı
     private static let reminderMessages: [(title: String, body: String)] = [
-        ("Hisset. Keşfet. Paylaş.", "Bugünün şarkısını seç, mood'unu bırak."),
+        ("Bugünün rengi seni bekliyor.", "Bir an bırak."),
         ("Çevren senden haber bekliyor.", "Bugünkü şarkını paylaş ve arkadaşlarının mood'unu gör."),
         ("Bugün nasıl hissediyorsun?", "Şarkını seç, etkinlikleri keşfet, çevrene katıl."),
         ("Bugünün ritmi hazır mı?", "Bir şarkı seç ve bugünü görünür yap."),
@@ -340,6 +340,8 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     /// Şarkı kaydedildikten 4 saat sonra mood'a özel keşfet hatırlatıcısı gönderir.
     /// Yalnızca Salı ve Cuma günleri tetiklenir.
     func scheduleDiscoveryReminder(moodLabel: String) {
+        // v3: Keşfet sekmesi yok — feature-flag ile bildirim de sessiz.
+        guard Features.discoveryEnabled else { return }
         guard UserDefaults.standard.bool(forKey: "discoveryNotificationsEnabled") else { return }
         let weekday = Calendar.current.component(.weekday, from: Date())
         guard weekday == 3 || weekday == 6 else { return }  // Salı=3, Cuma=6

@@ -31,12 +31,12 @@ struct PaywallView: View {
                                 .foregroundColor(ONETokens.oneVoid)
                             Text("+")
                                 .displayHero()
-                                .foregroundColor(ONETokens.oneBrand)
+                                .foregroundColor(ONEBrand.kor)
                         }
 
                         Text("Hissetmeyi derinleştir")
                             .bodyLG()
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                     .padding(.top, 56)
                     .padding(.bottom, 40)
@@ -49,7 +49,7 @@ struct PaywallView: View {
                             FeatureRow(icon: feature.icon, title: feature.title, detail: feature.detail)
                             if feature.title != features.last?.title {
                                 Divider()
-                                    .background(ONETokens.oneAsh.opacity(0.15))
+                                    .background(V3Tokens.mutedText.opacity(0.15))
                                     .padding(.leading, 52)
                             }
                         }
@@ -59,7 +59,7 @@ struct PaywallView: View {
                             .fill(Color.white.opacity(0.6))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .stroke(ONETokens.oneAsh.opacity(0.2), lineWidth: 1)
+                                    .stroke(V3Tokens.mutedText.opacity(0.2), lineWidth: 1)
                             )
                     )
                     .padding(.horizontal, 20)
@@ -67,12 +67,12 @@ struct PaywallView: View {
                     // Price badge
                     Text("Yakında geliyor")
                         .font(ONETypography.monoLabel)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.vertical, 6)
                         .padding(.horizontal, 14)
                         .background(
                             Capsule()
-                                .stroke(ONETokens.oneAsh.opacity(0.3), lineWidth: 1)
+                                .stroke(V3Tokens.mutedText.opacity(0.3), lineWidth: 1)
                         )
                         .padding(.top, 24)
                         .accessibilityLabel("Fiyatlandırma yakında açıklanacak")
@@ -89,7 +89,7 @@ struct PaywallView: View {
                             .padding(.vertical, 16)
                             .background(
                                 RoundedRectangle(cornerRadius: 14)
-                                    .fill(ONETokens.oneBrand.opacity(0.45))
+                                    .fill(ONEBrand.kor.opacity(0.45))
                             )
                     }
                     .disabled(true)
@@ -101,7 +101,7 @@ struct PaywallView: View {
                     // Restore / legal
                     Button("Satın alımları geri yükle") { }
                         .font(ONETypography.monoMicro)
-                        .foregroundColor(ONETokens.oneAsh.opacity(0.6))
+                        .foregroundColor(V3Tokens.mutedText.opacity(0.6))
                         .disabled(true)
                         .padding(.top, 12)
                         .accessibilityLabel("Önceki satın alımları geri yükle — yakında geliyor")
@@ -116,11 +116,11 @@ struct PaywallView: View {
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .frame(width: 32, height: 32)
                     .background(
                         Circle()
-                            .stroke(ONETokens.oneAsh.opacity(0.3), lineWidth: 1)
+                            .stroke(V3Tokens.mutedText.opacity(0.3), lineWidth: 1)
                             .background(Circle().fill(Color.white.opacity(0.6)))
                     )
             }
@@ -141,7 +141,7 @@ private struct FeatureRow: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(ONETokens.oneBrand)
+                .foregroundColor(ONEBrand.kor)
                 .frame(width: 36, height: 36)
                 .accessibilityHidden(true)
 
@@ -152,7 +152,7 @@ private struct FeatureRow: View {
                     .foregroundColor(ONETokens.oneVoid)
                 Text(detail)
                     .font(ONETypography.bodyXS)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
             }
             Spacer()
         }

@@ -29,17 +29,17 @@ struct MilestonesView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: ONETokens.spacingMD) {
                     Text(NSLocalizedString("milestones.title", comment: ""))
                         .displayLG()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
 
                     Text(NSLocalizedString("milestones.subtitle", comment: ""))
                         .bodySM()
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.top, -5)
 
                     ForEach(orderedBadges) { badge in
@@ -60,7 +60,7 @@ struct MilestonesView: View {
                         Text(NSLocalizedString("general.back", comment: ""))
                             .bodySMMedium()
                     }
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .padding(.horizontal, ONETokens.spacingXL)
                     .padding(.top, ONETokens.spacingXL3)
                 }
@@ -99,15 +99,15 @@ struct MilestonesView: View {
                 Text(labelText(for: badge, isUnlocked: isUnlocked))
                     .monoLabel(tracking: 1.3)
             }
-            .foregroundColor(isUnlocked ? accent : ONETokens.oneStone)
+            .foregroundColor(isUnlocked ? accent : V3Tokens.faintText)
 
             Text(badge.title)
                 .displayMD()
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
 
             Text(isUnlocked ? badge.description : lockedHint(for: badge))
                 .bodySM()
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(ONETokens.spacingXL)
@@ -119,7 +119,7 @@ struct MilestonesView: View {
         .overlay(
             RoundedRectangle(cornerRadius: ONETokens.radiusSheet, style: .continuous)
                 .stroke(
-                    isUnlocked ? accent.opacity(0.35) : ONETokens.oneInk.opacity(0.07),
+                    isUnlocked ? accent.opacity(0.35) : V3Tokens.ink.opacity(0.07),
                     lineWidth: 1
                 )
         )

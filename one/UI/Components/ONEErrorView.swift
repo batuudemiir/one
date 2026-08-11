@@ -25,12 +25,12 @@ struct ONEErrorView: View {
                 Button(action: onRetry) {
                     Text(NSLocalizedString("general.retry", comment: ""))
                         .monoBase(tracking: 1.0)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .padding(.horizontal, ONETokens.spacingXL)
                         .padding(.vertical, 10)
                         .overlay(
                             RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                                .stroke(ONETokens.oneInk.opacity(0.3), lineWidth: 1)
+                                .stroke(V3Tokens.ink.opacity(0.3), lineWidth: 1)
                         )
                 }
             }
@@ -42,7 +42,7 @@ struct ONEErrorView: View {
 
 #Preview {
     ZStack {
-        ONETokens.oneCream.ignoresSafeArea()
+        ONEBrand.bone.ignoresSafeArea()
         VStack(spacing: 40) {
             ONEErrorView(message: "Bir şeyler ters gitti.")
             ONEErrorView(message: "Bağlantı kurulamadı.", onRetry: {})

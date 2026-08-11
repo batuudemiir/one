@@ -55,6 +55,8 @@ final class LiveActivityManager {
         moodSFSymbol: String,
         streakCount: Int
     ) async {
+        // v3: Live Activity + Dynamic Island şimdilik iptal (Features.liveActivitiesEnabled).
+        guard Features.liveActivitiesEnabled else { return }
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
             ONELogger.debug("DailySong Live Activity: aktiviteler kapalı.", category: .general)
             return
@@ -190,6 +192,8 @@ final class LiveActivityManager {
         moodColorHex: String,
         moodSFSymbol: String
     ) async {
+        // v3: Live Activity + Dynamic Island şimdilik iptal.
+        guard Features.liveActivitiesEnabled else { return }
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
 
         for activity in Activity<FriendShareActivityAttributes>.activities {

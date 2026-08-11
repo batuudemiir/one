@@ -40,8 +40,8 @@ struct ContextPill: View {
             ForEach(Array(items.enumerated()), id: \.offset) { idx, item in
                 if idx > 0 {
                     Text("·")
-                        .font(.system(size: 10))
-                        .foregroundStyle(ONETokens.oneMist)
+                        .font(V3Typography.sans(10))
+                        .foregroundStyle(V3Tokens.faintText)
                 }
                 Button(action: { onTap(item.targetStep) }) {
                     HStack(spacing: 4) {
@@ -50,7 +50,7 @@ struct ContextPill: View {
                         }
                         Text(item.label)
                             .font(.custom("DMSans24pt-Medium", size: 10.5))
-                            .foregroundStyle(ONETokens.oneAsh)
+                            .foregroundStyle(V3Tokens.mutedText)
                             .lineLimit(1)
                     }
                 }

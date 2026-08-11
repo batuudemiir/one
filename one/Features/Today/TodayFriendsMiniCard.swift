@@ -28,7 +28,7 @@ struct TodayFriendsMiniCard: View {
                     .frame(width: 36, height: 36)
                     .overlay(
                         Text(String(displayName.prefix(1)).uppercased())
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(V3Typography.sans(14, weight: .semibold))
                             .foregroundColor(.white)
                     )
 
@@ -36,7 +36,7 @@ struct TodayFriendsMiniCard: View {
                     HStack(spacing: 6) {
                         Text(displayName)
                             .monoSM(tracking: 0.3)
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                             .lineLimit(1)
                         Spacer(minLength: 0)
                         if !moodWord.isEmpty {
@@ -46,19 +46,19 @@ struct TodayFriendsMiniCard: View {
                                     .frame(width: 5, height: 5)
                                 Text(moodWord)
                                     .monoLabel(tracking: 0.6)
-                                    .foregroundColor(ONETokens.oneAsh)
+                                    .foregroundColor(V3Tokens.mutedText)
                             }
                         }
                     }
 
                     Text(songName)
                         .bodySM()
-                        .foregroundColor(ONETokens.oneCharcoal)
+                        .foregroundColor(V3Tokens.mutedText)
                         .lineLimit(1)
 
                     Text(artistName)
                         .monoLabel()
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
                         .lineLimit(1)
                 }
             }
@@ -67,10 +67,10 @@ struct TodayFriendsMiniCard: View {
             .frame(width: 230)
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(ONETokens.onePaper)
+                    .fill(V3Tokens.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
-                            .stroke(ONETokens.oneSilver, lineWidth: 1)
+                            .stroke(V3Tokens.hairline, lineWidth: 1)
                     )
             )
         }

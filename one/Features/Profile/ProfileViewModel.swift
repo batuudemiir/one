@@ -32,6 +32,13 @@ final class ProfileViewModel: ObservableObject {
     /// İlk render `EngagementTracker.lastKnownFriendCount`'tan başlar,
     /// `loadFriendCount()` CloudKit'ten taze değer çeker.
     @Published var friendCount: Int = EngagementTracker.lastKnownFriendCount
+    /// CloudKit'ten arkadaş sayısı çekilirken UI inline spinner göstersin.
+    @Published var isRefreshingFriendCount: Bool = false
+    /// Her `loadFriendCount()` çağrısında artırılır; callback dönene
+    /// kadar sayaç değiştiyse (yeni istek başladı) eski sonuç atılır.
+    /// `checkUsernameAvailability` pattern'iyle aynı: concurrent
+    /// fetch'ler eski değerin taze değerin üstüne yazmasını engeller.
+    private var friendCountGeneration: Int = 0
 
     // MARK: - UI States
     @Published var isLoading = false
@@ -206,15 +213,27 @@ final class ProfileViewModel: ObservableObject {
 
     /// Profile redesign — CloudKit'ten taze arkadaş sayısı çek.
     /// Hata durumunda mevcut snapshot'ı korur.
+    /// Concurrent invocation guard: aynı anda birden fazla fetch
+    /// başlarsa geç dönen callback erken dönen callback'in yazdığı
+    /// taze değeri ezmez — generation counter'la sırayı kontrol ederiz.
     func loadFriendCount() {
+        // Re-entrance guard: zaten uçuşta olan bir istek varsa
+        // (spinner açık) yeni bir tur açmayalım.
+        guard !isRefreshingFriendCount else { return }
+        friendCountGeneration += 1
+        let myGeneration = friendCountGeneration
+        DispatchQueue.main.async { self.isRefreshingFriendCount = true }
         cloudKitManager.fetchFriends { [weak self] result in
             guard let self else { return }
-            if case .success(let friends) = result {
-                let count = friends.count
-                DispatchQueue.main.async {
-                    self.friendCount = count
+            DispatchQueue.main.async {
+                // Bu callback dönene kadar yeni bir fetch başlatıldıysa
+                // sonucu at — taze fetch'in çıktısını ezmesin.
+                guard self.friendCountGeneration == myGeneration else { return }
+                self.isRefreshingFriendCount = false
+                if case .success(let friends) = result {
+                    self.friendCount = friends.count
+                    EngagementTracker.lastKnownFriendCount = friends.count
                 }
-                EngagementTracker.lastKnownFriendCount = count
             }
         }
     }
@@ -349,6 +368,10 @@ final class ProfileViewModel: ObservableObject {
                                         self?.cloudKitManager.currentUser = record
                                     }
                                     UserProfileStore.shared.invalidateCurrentUser()
+                                    // Kurulum sırasında seçilen fotoğraf
+                                    // kuyrukta bekliyorsa şimdi yükle —
+                                    // AppUser kaydı artık var.
+                                    self?.flushPendingProfilePhotoUpload()
                                     completion(true)
                                 case .failure(let error):
                                     let nsError = error as NSError
@@ -415,8 +438,26 @@ final class ProfileViewModel: ObservableObject {
         UserProfileStore.shared.invalidateCurrentUser()
     }
 
+    /// AppUser kaydı henüz yokken seçilen fotoğraf. Kayıt oluşur oluşmaz
+    /// yüklenir — eskiden `guard` sessizce dönüyordu ve profil kurulumu
+    /// sırasında seçilen fotoğraf **hiçbir zaman** CloudKit'e gitmiyordu.
+    private static var pendingPhotoUpload: Data?
+
+    /// `currentUser` oluştuktan sonra çağrılır (createOrFetchUser / login).
+    func flushPendingProfilePhotoUpload() {
+        guard let data = Self.pendingPhotoUpload else { return }
+        Self.pendingPhotoUpload = nil
+        uploadProfilePhotoToCloudKit(data: data)
+    }
+
     private func uploadProfilePhotoToCloudKit(data: Data) {
-        guard let record = cloudKitManager.currentUser else { return }
+        guard let record = cloudKitManager.currentUser else {
+            // Kaydı bekle — kullanıcı fotoğrafı seçtiği anda AppUser henüz
+            // yaratılmamış olabilir (ilk kurulum akışı).
+            Self.pendingPhotoUpload = data
+            ONELogger.info("Profil fotoğrafı kuyruğa alındı — AppUser henüz yok", category: .profile)
+            return
+        }
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".jpg")
         do {
             try data.write(to: tempURL)
@@ -535,6 +576,14 @@ final class ProfileViewModel: ObservableObject {
                 // 8. Bildirimler iptal
                 UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
                 UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+
+                // 9. Kullanıcıyı onboarding'e döndür.
+                //
+                // Bu adım eksikti: her şey silindikten sonra uygulama silinmiş
+                // hesabın ekranında kalıyordu. `ContentView` bu bildirimi
+                // dinleyip Apple oturumunu düşürüyor ve
+                // `hasCompletedOnboarding`'i sıfırlıyor — tek çıkış yolu bu.
+                NotificationCenter.default.post(name: NSNotification.Name("resetToOnboarding"), object: nil)
             }
         }
     }

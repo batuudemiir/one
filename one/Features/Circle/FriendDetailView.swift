@@ -34,6 +34,10 @@ struct FriendDetailView: View {
     private var displayName: String {
         friendData.user["displayName"] as? String ?? "Arkadaş"
     }
+    /// An ekranında yalnız ad görünür — soyad kimlik kartı bilgisi gibi
+    /// duruyor ve başlığı gereksiz uzatıyor. Profil ve liste ekranlarında
+    /// tam ad durmaya devam ediyor.
+    private var firstName: String { displayName.firstNameOnly }
     private var initial: String { String(displayName.prefix(1)).uppercased() }
     private var avatarColorHex: String {
         share?["moodColor"] as? String
@@ -72,7 +76,7 @@ struct FriendDetailView: View {
 
     var body: some View {
         ZStack {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
@@ -231,9 +235,8 @@ struct FriendDetailView: View {
                                 .frame(width: 46, height: 46)
                                 .overlay(
                                     Text(initial)
-                                        .editorialMD()
-                                        .fontWeight(.regular)
-                                        .italic()
+                                        .font(ONEBrand.display(22))
+                                        .tracking(-0.4)
                                         .foregroundColor(.white.opacity(0.9))
                                 )
                         }
@@ -245,7 +248,7 @@ struct FriendDetailView: View {
                         if isPressing, friendProfileImageCache != nil { ONEHaptics.feelingSelected() }
                     }, perform: {})
 
-                    Text(displayName.uppercased())
+                    Text(firstName.uppercased())
                         .monoSM(tracking: 1.6)
                         .foregroundColor(ONETokens.oneCharcoal)
                 }
@@ -253,24 +256,7 @@ struct FriendDetailView: View {
                 Spacer()
 
                 HStack(spacing: 10) {
-                    // Streak rozeti
-                    if friendStreak >= 2 {
-                        HStack(spacing: 4) {
-                            Text("🔥")
-                                .font(.system(size: 11))
-                            Text("\(friendStreak)")
-                                .monoSM(tracking: 0.5)
-                                .foregroundColor(Color(hex: avatarColorHex))
-                        }
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 5)
-                        .background(
-                            Capsule()
-                                .fill(Color(hex: avatarColorHex).opacity(0.1))
-                                .overlay(Capsule().stroke(Color(hex: avatarColorHex).opacity(0.2), lineWidth: 1))
-                        )
-                    }
-
+                    // v3: friend profilinde streak/rozet yasak.
                     // Menü
                     Menu {
                         Button {
@@ -287,7 +273,7 @@ struct FriendDetailView: View {
                     } label: {
                         Image(systemName: "ellipsis")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(ONETokens.oneStone)
+                            .foregroundColor(V3Tokens.faintText)
                             .frame(width: 32, height: 32)
                             .contentShape(Rectangle())
                     }
@@ -298,7 +284,7 @@ struct FriendDetailView: View {
                  ? NSLocalizedString("circle.todayFeeling", comment: "")
                  : NSLocalizedString("circle.notSelectedYet", comment: ""))
                 .displayLG()
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
                 .lineSpacing(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -342,9 +328,8 @@ struct FriendDetailView: View {
                                 style: StrokeStyle(lineWidth: 1.5, dash: [4, 5]))
                         .frame(width: 72, height: 72)
                     Text(initial)
-                        .editorialMD()
-                        .fontWeight(.regular)
-                        .italic()
+                        .font(ONEBrand.display(22))
+                        .tracking(-0.4)
                         .foregroundColor(Color.gray.opacity(0.4))
                 }
                 .onAppear {
@@ -358,13 +343,9 @@ struct FriendDetailView: View {
                 VStack(spacing: 8) {
                     Text(NSLocalizedString("circle.waitingPick", comment: ""))
                         .displayMD()
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
 
-                    Text(
-                        (displayName.components(separatedBy: " ").first ?? displayName)
-                        + " "
-                        + NSLocalizedString("circle.willAppear", comment: "")
-                    )
+                    Text(displayName.firstNameOnly + " " + NSLocalizedString("circle.willAppear", comment: ""))
                     .monoSM(tracking: 0.3)
                     .foregroundColor(ONETokens.oneMist)
                 }
@@ -385,7 +366,7 @@ struct FriendDetailView: View {
             .background(
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color.white.opacity(0.5))
-                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(ONETokens.oneCreamLow, lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(V3Tokens.wash, lineWidth: 1))
             )
             .padding(.horizontal, 20)
             .scaleEffect(appeared ? 1 : 0.94)
@@ -481,7 +462,7 @@ struct FriendDetailView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(songName)
                             .displayMD()
-                            .foregroundColor(ONETokens.oneInk).tracking(-0.8).lineLimit(2)
+                            .foregroundColor(V3Tokens.ink).tracking(-0.8).lineLimit(2)
                         Text(artistName)
                             .monoSM(tracking: 0)
                             .foregroundColor(ONETokens.oneCharcoal)
@@ -494,10 +475,10 @@ struct FriendDetailView: View {
                                   ? "music.note" : "music.note.list")
                                 .font(.system(size: 9, weight: .medium))
                             Text(platform.contains("Spotify") ? "Spotify" : "Apple")
-                                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                .font(V3Typography.mono(9, weight: .medium))
                                 .tracking(0.3)
                         }
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(
@@ -512,7 +493,7 @@ struct FriendDetailView: View {
                         .foregroundColor(ONETokens.oneMist)
                 }
 
-                Rectangle().fill(ONETokens.oneCreamLow).frame(height: 1).padding(.vertical, 4)
+                Rectangle().fill(V3Tokens.wash).frame(height: 1).padding(.vertical, 4)
 
                 if !moodWord.isEmpty {
                     HStack(spacing: 6) {
@@ -527,15 +508,15 @@ struct FriendDetailView: View {
 
                 if !wDesc.isEmpty {
                     HStack(spacing: 5) {
-                        Text(wIcon).font(.system(size: 11))
+                        Text(wIcon).font(V3Typography.sans(11))
                         Text(wDesc).monoSM(tracking: 0).foregroundColor(ONETokens.oneCharcoal)
                     }
                 }
 
                 if let note = dailyNote {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(NSLocalizedString("circle.note", comment: "")).monoSM(tracking: 1.5).foregroundColor(ONETokens.oneAsh)
-                        Text(note).bodySM().foregroundColor(ONETokens.oneInk).lineSpacing(2)
+                        Text(NSLocalizedString("circle.note", comment: "")).monoSM(tracking: 1.5).foregroundColor(V3Tokens.mutedText)
+                        Text(note).bodySM().foregroundColor(V3Tokens.ink).lineSpacing(2)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(ONETokens.spacingLG)
@@ -545,7 +526,7 @@ struct FriendDetailView: View {
             }
             .padding(20).frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(ONETokens.onePaper)
+        .background(V3Tokens.surface)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.06), radius: 20, x: 0, y: 8)
         .padding(.horizontal, 20)
@@ -575,10 +556,10 @@ struct FriendDetailView: View {
             ForEach(["🤍", "🌊", "✨", "🫶", "🔥"], id: \.self) { emoji in
                 let moodColor = Color(hex: share?["moodColor"] as? String ?? "#888888")
                 Button { sendEmoji(emoji) } label: {
-                    Text(emoji).font(.system(size: 16))
+                    Text(emoji).font(V3Typography.sans(16))
                         .frame(width: 42, height: 42)
                         .background(
-                            Circle().fill(sentEmoji == emoji ? moodColor.opacity(0.15) : ONETokens.oneCreamLow)
+                            Circle().fill(sentEmoji == emoji ? moodColor.opacity(0.15) : V3Tokens.wash)
                                 .overlay(Circle().stroke(sentEmoji == emoji ? moodColor.opacity(0.3) : Color.clear, lineWidth: 1))
                         )
                 }
@@ -589,7 +570,7 @@ struct FriendDetailView: View {
             Spacer()
             Text(NSLocalizedString("circle.heard", comment: ""))
                 .monoSM(tracking: 1.4)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
         }
         .padding(.horizontal, 20).padding(.top, 20)
         .opacity(appeared ? 1 : 0)
@@ -602,10 +583,10 @@ struct FriendDetailView: View {
         HStack(spacing: 12) {
             Image(systemName: "lock")
                 .font(.system(size: 14, weight: .light))
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
             Text("\(label) bu kişinin gizlilik tercihi nedeniyle görüntülenemiyor")
                 .monoSM(tracking: 0.3)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .lineLimit(2)
             Spacer()
         }
@@ -623,7 +604,7 @@ struct FriendDetailView: View {
             }
             .foregroundColor(ONETokens.oneCharcoal)
             .padding(.horizontal, 20).padding(.vertical, ONETokens.spacingMD)
-            .background(Capsule().stroke(ONETokens.oneStone, lineWidth: 1.5))
+            .background(Capsule().stroke(V3Tokens.faintText, lineWidth: 1.5))
         }
         .padding(.top, 24).padding(.bottom, 40)
         .opacity(appeared ? 1 : 0)

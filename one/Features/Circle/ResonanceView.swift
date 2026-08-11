@@ -125,7 +125,7 @@ private struct ResonanceBubble: View {
             if resonance.songSuggestionName != nil {
                 Image(systemName: "music.note")
                     .monoMicro()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
             }
         }
         .frame(width: 60)
@@ -157,11 +157,11 @@ struct ResonanceSendSheet: View {
                     Text(NSLocalizedString("resonance.sheetTitle", comment: "Rezonans Gönder"))
                         .displaySM()
                         .fontWeight(.bold)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
 
                     Text(NSLocalizedString("resonance.sheetSubtitle", comment: ""))
                         .bodySM()
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 20)
                 }
@@ -172,7 +172,7 @@ struct ResonanceSendSheet: View {
                     Text(NSLocalizedString("resonance.pickMood", comment: "Rengini seç"))
                         .monoBase()
                         .fontWeight(.semibold)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .textCase(.uppercase)
                         .tracking(1.2)
                     
@@ -219,7 +219,7 @@ struct ResonanceSendSheet: View {
                                 )
                             } else {
                                 LinearGradient(
-                                    colors: [ONETokens.oneStone, ONETokens.oneStone],
+                                    colors: [V3Tokens.faintText, ONETokens.oneStone],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -232,7 +232,7 @@ struct ResonanceSendSheet: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
             }
-            .background(ONETokens.oneCream.ignoresSafeArea())
+            .background(ONEBrand.bone.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .onChange(of: vm.hasSent) { _, sent in
                 if sent { dismiss() }
@@ -243,7 +243,7 @@ struct ResonanceSendSheet: View {
                         Image(systemName: "xmark")
                             .bodySM()
                             .fontWeight(.medium)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                             .frame(width: 32, height: 32)
                             .background(Circle().fill(ONETokens.oneSilver))
                     }
@@ -284,7 +284,7 @@ private struct MoodChip: View {
                 Text(ONEMood(rawValue: mood.key)?.meaning ?? mood.label)
                     .monoMicro()
                     .fontWeight(isSelected ? .bold : .medium)
-                    .foregroundColor(isSelected ? ONETokens.oneInk : ONETokens.oneAsh)
+                    .foregroundColor(isSelected ? ONETokens.oneInk : V3Tokens.mutedText)
                     .lineLimit(1)
             }
         }

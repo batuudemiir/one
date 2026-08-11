@@ -31,6 +31,21 @@ struct SettingsRootView: View {
             VStack(alignment: .leading, spacing: 0) {
                 accountCard
 
+                sectionLabel(NSLocalizedString("settings.account",
+                                               value: "Hesap",
+                                               comment: ""))
+                SettingsGroup {
+                    SettingsRow(
+                        icon: "applelogo",
+                        title: NSLocalizedString("settings.appleSignIn",
+                                                 value: "Apple ile giriş",
+                                                 comment: ""),
+                        value: appleAccountValue,
+                        showsChevron: false,
+                        isLast: true
+                    )
+                }
+
                 sectionLabel(NSLocalizedString("settings.dailyRitual", comment: ""))
                 SettingsGroup {
                     SettingsRow(
@@ -84,7 +99,7 @@ struct SettingsRootView: View {
 
                 Text(versionText)
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                     .frame(maxWidth: .infinity)
                     .padding(.top, ONETokens.spacingXL3)
             }
@@ -100,17 +115,17 @@ struct SettingsRootView: View {
                 .frame(width: 46, height: 46)
                 .overlay(
                     Text(String(vm.displayName.prefix(1)).uppercased())
-                        .font(.system(size: 15, weight: .bold))
+                        .font(V3Typography.sans(15, weight: .bold))
                         .foregroundColor(.white)
                 )
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(vm.displayName.isEmpty ? "—" : vm.displayName)
-                    .font(.system(size: 14.5, weight: .semibold))
-                    .foregroundColor(ONETokens.oneInk)
+                    .font(V3Typography.sans(14.5, weight: .semibold))
+                    .foregroundColor(V3Tokens.ink)
                 Text("@\(vm.username) · \(NSLocalizedString("settings.freeTier", comment: ""))")
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
             }
 
             Spacer()
@@ -118,11 +133,11 @@ struct SettingsRootView: View {
             if let onPaywall {
                 Button(action: onPaywall) {
                     Text("ONE+")
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(V3Typography.sans(12.5, weight: .semibold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 14)
                         .frame(minHeight: 34)
-                        .background(Capsule(style: .continuous).fill(ONETokens.oneBrand))
+                        .background(Capsule(style: .continuous).fill(ONEBrand.kor))
                 }
                 .buttonStyle(.plain)
             }
@@ -135,7 +150,7 @@ struct SettingsRootView: View {
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
             .monoLabel(tracking: 1.3)
-            .foregroundColor(ONETokens.oneStone)
+            .foregroundColor(V3Tokens.faintText)
             .padding(.top, ONETokens.spacingXL)
             .padding(.bottom, ONETokens.spacingSM)
     }
@@ -146,6 +161,19 @@ struct SettingsRootView: View {
 
     private var musicPlatform: String {
         UserDefaults.standard.string(forKey: "preferredMusicService") ?? "Apple Music"
+    }
+
+    /// Apple sign-in durumu — email varsa göster, yoksa "Bağlı" fallback.
+    /// Email yalnız İLK sign-in'de gelir (Apple gizlilik kontratı), sonraki
+    /// oturumlarda nil — bu yüzden değeri Keychain'den okuyoruz.
+    private var appleAccountValue: String {
+        if let email = KeychainHelper.string(forKey: "appleSignInEmail"),
+           !email.isEmpty {
+            return email
+        }
+        return NSLocalizedString("settings.appleSignIn.connected",
+                                 value: "Bağlı",
+                                 comment: "")
     }
 
     private var versionText: String {
@@ -176,21 +204,21 @@ struct ReminderSettingsView: View {
                 InsightCard(label: NSLocalizedString("reminder.onceADay", comment: "")) {
                     Text(NSLocalizedString("reminder.promise", comment: ""))
                         .bodySM()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Text(NSLocalizedString("reminder.hour", comment: ""))
                     .monoLabel(tracking: 1.3)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                     .padding(.top, ONETokens.spacingXL)
                     .padding(.bottom, ONETokens.spacingSM)
 
                 VStack(spacing: ONETokens.spacingLG) {
                     Text(String(format: "%02d:%02d", vm.dailyReminderHour, vm.dailyReminderMinute))
-                        .font(.system(size: 46, weight: .ultraLight))
+                        .font(V3Typography.sans(46, weight: .ultraLight))
                         .monospacedDigit()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
 
                     HStack(spacing: 6) {
                         ForEach(presets, id: \.self) { hour in

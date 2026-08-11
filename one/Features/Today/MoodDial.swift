@@ -72,10 +72,10 @@ struct MoodDial: View {
                     // Prototip: seçiliyken krem boşluk + mürekkep halka.
                     if isSelected {
                         Circle()
-                            .stroke(ONETokens.oneCream, lineWidth: 3)
+                            .stroke(ONEBrand.bone, lineWidth: 3)
                             .overlay(
                                 Circle()
-                                    .stroke(ONETokens.oneInk, lineWidth: 2)
+                                    .stroke(V3Tokens.ink, lineWidth: 2)
                                     .padding(-2.5)
                             )
                             .padding(-1.5)
@@ -100,7 +100,7 @@ struct MoodDial: View {
     /// böylece kullanıcı parmağını kaldırmadan ne seçtiğini görüyor.
     private var core: some View {
         Circle()
-            .fill(ONETokens.oneCream)
+            .fill(ONEBrand.bone)
             .frame(width: coreSize, height: coreSize)
             .overlay {
                 Group {
@@ -108,17 +108,17 @@ struct MoodDial: View {
                         VStack(spacing: 3) {
                             Text(mood.label)
                                 .font(.system(size: 17 * scale, weight: .bold))
-                                .foregroundColor(ONETokens.oneInk)
+                                .foregroundColor(V3Tokens.ink)
                             Text(mood.meaning)
                                 .font(.system(size: 11 * scale))
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                                 .multilineTextAlignment(.center)
                         }
                         .transition(.opacity.combined(with: .scale(scale: 0.92)))
                     } else {
                         Text("bir renge\ndokun")
                             .font(.system(size: 12 * scale))
-                            .foregroundColor(ONETokens.oneStone)
+                            .foregroundColor(V3Tokens.faintText)
                             .multilineTextAlignment(.center)
                     }
                 }
@@ -135,7 +135,7 @@ struct MoodDial: View {
         @State private var mood: ONEMood?
         var body: some View {
             ZStack {
-                ONETokens.oneCream.ignoresSafeArea()
+                ONEBrand.bone.ignoresSafeArea()
                 MoodDial(selection: $mood)
             }
         }

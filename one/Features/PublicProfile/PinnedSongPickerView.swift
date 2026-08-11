@@ -32,7 +32,7 @@ struct PinnedSongPickerView: View {
                     Button("Kapat") { dismiss() }
                 }
             }
-            .background(ONETokens.oneCream.ignoresSafeArea())
+            .background(ONEBrand.bone.ignoresSafeArea())
             .onAppear { loadEntries() }
         }
     }
@@ -72,11 +72,11 @@ struct PinnedSongPickerView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(entry.songName ?? "Bilinmeyen")
                     .bodySMMedium()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(1)
                 Text(entry.artistName ?? "")
                     .monoLabel(tracking: 0)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
             }
 
@@ -84,11 +84,11 @@ struct PinnedSongPickerView: View {
 
             Text(dateStr)
                 .monoLabel(tracking: 0.3)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(ONETokens.onePaper)
+        .background(V3Tokens.surface)
         .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusCard))
         .overlay(
             RoundedRectangle(cornerRadius: ONETokens.radiusCard)
@@ -103,10 +103,10 @@ struct PinnedSongPickerView: View {
             Spacer()
             Image(systemName: "music.note.list")
                 .font(.system(size: 36, weight: .light))
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
             Text("Henüz hiç şarkı paylaşmadın")
                 .bodySM()
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .multilineTextAlignment(.center)
             Spacer()
         }

@@ -50,7 +50,7 @@ struct SelfShareDetailView: View {
 
     var body: some View {
         ZStack {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     headerSection
@@ -117,16 +117,16 @@ struct SelfShareDetailView: View {
                         )
                     Text(NSLocalizedString("circle.you", comment: "").uppercased())
                         .monoSM(tracking: 1.6)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
                 Spacer()
                 Text(getRelativeTime())
                     .monoLabel(tracking: 0.6)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
             }
             Text(NSLocalizedString("circle.todayFeeling", comment: ""))
                 .displayLG()
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
                 .lineSpacing(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -198,16 +198,16 @@ struct SelfShareDetailView: View {
             VStack(alignment: .leading, spacing: ONETokens.spacingLG) {
                 Text(songName)
                     .displayMD()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .tracking(-0.8)
                     .lineLimit(2)
 
                 Text("\(artistName) · \(genre.isEmpty ? platform : genre)")
                     .monoBase(tracking: 0.5)
-                    .foregroundColor(ONETokens.oneCharcoal)
+                    .foregroundColor(V3Tokens.mutedText)
 
                 Rectangle()
-                    .fill(ONETokens.oneCreamLow)
+                    .fill(V3Tokens.wash)
                     .frame(height: 1)
                     .padding(.vertical, 4)
 
@@ -217,7 +217,7 @@ struct SelfShareDetailView: View {
                             Circle().fill(moodColor).frame(width: 7, height: 7)
                             Text(moodWord.uppercased())
                                 .monoLabel(tracking: 1.2)
-                                .foregroundColor(ONETokens.oneCharcoal)
+                                .foregroundColor(V3Tokens.mutedText)
                         }
                         .padding(.horizontal, ONETokens.spacingMD)
                         .padding(.vertical, 6)
@@ -228,13 +228,13 @@ struct SelfShareDetailView: View {
                 HStack(spacing: ONETokens.spacingMD) {
                     if !weatherDesc.isEmpty {
                         HStack(spacing: 5) {
-                            Text(weatherIcon).font(.system(size: 11))
-                            Text(weatherDesc).monoLabel().foregroundColor(ONETokens.oneCharcoal)
+                            Text(weatherIcon).font(V3Typography.sans(11))
+                            Text(weatherDesc).monoLabel().foregroundColor(V3Tokens.mutedText)
                         }
                     }
                     HStack(spacing: 5) {
-                        Text("🎵").font(.system(size: 11))
-                        Text(platform).monoLabel().foregroundColor(ONETokens.oneCharcoal)
+                        Text("🎵").font(V3Typography.sans(11))
+                        Text(platform).monoLabel().foregroundColor(V3Tokens.mutedText)
                     }
                 }
                 .padding(.top, 4)
@@ -243,10 +243,10 @@ struct SelfShareDetailView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(NSLocalizedString("circle.note", comment: ""))
                             .monoLabel(tracking: 1.5)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                         Text(note)
                             .bodySM()
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                             .lineSpacing(2)
                             .tracking(-0.2)
                     }
@@ -259,7 +259,7 @@ struct SelfShareDetailView: View {
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(ONETokens.onePaper)
+        .background(V3Tokens.surface)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
         .padding(.horizontal, 20)
@@ -280,10 +280,10 @@ struct SelfShareDetailView: View {
                 Spacer()
                 Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
             }
-            .foregroundColor(ONETokens.oneCharcoal)
+            .foregroundColor(V3Tokens.mutedText)
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
-            .background(RoundedRectangle(cornerRadius: 16).fill(ONETokens.oneCreamLow))
+            .background(RoundedRectangle(cornerRadius: 16).fill(V3Tokens.wash))
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 20)
@@ -302,10 +302,10 @@ struct SelfShareDetailView: View {
                 Text(NSLocalizedString("general.close", comment: ""))
                     .monoBase(tracking: 1.0)
             }
-            .foregroundColor(ONETokens.oneCharcoal)
+            .foregroundColor(V3Tokens.mutedText)
             .padding(.horizontal, 20)
             .padding(.vertical, ONETokens.spacingMD)
-            .background(Capsule().stroke(ONETokens.oneStone, lineWidth: 1.5))
+            .background(Capsule().stroke(V3Tokens.faintText, lineWidth: 1.5))
         }
         .padding(.top, 24)
         .padding(.bottom, 40)

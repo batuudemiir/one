@@ -20,11 +20,11 @@ struct TodaySongMiniCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(NSLocalizedString("discover.todaySong", comment: ""))
                     .monoMicro(tracking: 1.2)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
 
                 Text(entry.songName)
                     .bodySMMedium()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(1)
             }
 
@@ -33,7 +33,7 @@ struct TodaySongMiniCard: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(entry.artistName)
                     .monoSM(tracking: 0.4)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
 
                 HStack(spacing: 4) {
@@ -50,7 +50,7 @@ struct TodaySongMiniCard: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                .fill(ONETokens.onePaper)
+                .fill(V3Tokens.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: ONETokens.radiusCard)
                         .stroke(entry.moodColor.opacity(0.15), lineWidth: 1)

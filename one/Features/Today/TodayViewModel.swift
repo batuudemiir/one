@@ -48,9 +48,35 @@ class TodayViewModel: ObservableObject {
     /// Yesterday's mood, if logged.
     @Published var yesterdayMood: (label: String, color: Color)? = nil
 
-    private let context: NSManagedObjectContext
+    /// Last recorded mood surfaced instantly from UserDefaults so the first
+    /// frame can echo it while the real CoreData fetch settles. `nil` on a
+    /// fresh install — fall back to the normal empty state.
+    let cachedEchoMood: (hex: String, label: String)?
+
+    /// Flips true after the initial CoreData fetch of today's entries
+    /// finishes. Views cross-fade the echo overlay off when this trips.
+    @Published private(set) var hasHydratedTodayEntry: Bool = false
+
+    let context: NSManagedObjectContext
     private var searchTask: Task<Void, Never>? = nil
     private var syncTask: Task<Void, Never>? = nil
+
+    // MARK: - Echo mood cache (fastest possible first frame)
+    private static let echoMoodHexKey   = "todayEchoMoodHex"
+    private static let echoMoodLabelKey = "todayEchoMoodLabel"
+
+    static func readCachedEchoMood() -> (hex: String, label: String)? {
+        let d = UserDefaults.standard
+        guard let hex = d.string(forKey: echoMoodHexKey),
+              let label = d.string(forKey: echoMoodLabelKey) else { return nil }
+        return (hex, label)
+    }
+
+    static func writeCachedEchoMood(hex: String, label: String) {
+        let d = UserDefaults.standard
+        d.set(hex,   forKey: echoMoodHexKey)
+        d.set(label, forKey: echoMoodLabelKey)
+    }
 
     /// B1 — Tek kaynak: StreakEngine.milestones ile hizalı.
     private static let streakMilestones: Set<Int> = Set(StreakEngine.milestones)
@@ -70,7 +96,29 @@ class TodayViewModel: ObservableObject {
 
     init(context: NSManagedObjectContext) {
         self.context = context
-        loadTodayEntry()
+        // Read the cached mood synchronously — this is the ONLY thing that
+        // must happen before first frame so the echo overlay can render.
+        self.cachedEchoMood = Self.readCachedEchoMood()
+
+        // Initial CoreData fetch deferred one runloop tick. The view renders
+        // the echo overlay for that tick, then cross-fades to real state.
+        // Follow-up refreshes (post-save) stay synchronous — we already own
+        // the write timing there.
+        //
+        // Two-phase publish (fetch, then hydration flag one tick later) is
+        // deliberate: the ritual `.onChange(of: vm.todayEntry)` needs a
+        // render pass where `hasHydratedTodayEntry == false` so it can
+        // ignore the initial nil → cached-entry transition. Collapsing both
+        // writes into one tick would trigger SaveRitualMoment on cold launch.
+        Task { @MainActor in
+            self.loadTodayEntry()
+            // Preserve the "one runloop tick later" guarantee that the
+            // two-phase publish depends on, without mixing GCD and the
+            // Swift concurrency domain. `Task.yield()` suspends and
+            // resumes on the next MainActor turn.
+            await Task.yield()
+            self.hasHydratedTodayEntry = true
+        }
         loadRecentArtists()
         loadLastYearEntry()
         loadLastWeekEntry()
@@ -78,6 +126,16 @@ class TodayViewModel: ObservableObject {
         loadTotalEntryCount()
         loadYesterdayMood()
         loadRecommendedSongs()
+    }
+
+    /// v3 kayıt sonrası ViewModel'in `todayEntries`/`thisWeekEntries`/streak
+    /// state'ini yeniden yükler. Sonraki view render'ında Kaydedildi ekranı ve
+    /// son 7 gün şeridi doğru veriyle boyanır.
+    func reloadAfterV3Save() {
+        loadTodayEntry()
+        loadThisWeekEntries()
+        loadTotalEntryCount()
+        loadYesterdayMood()
     }
 
     // MARK: - Load today's entries from CoreData
@@ -335,44 +393,29 @@ class TodayViewModel: ObservableObject {
         sharePhoto: Bool
     ) {
         let today = Calendar.current.startOfDay(for: Date())
-        let now = Date() // Gerçek timestamp
 
-        let item: DailySong
+        // v3: her `saveEntry` daima YENİ an ekler — aynı güne 2. şarkılı
+        // an geldiğinde birincisini ezmiyoruz. entryIndex auto atanır.
+        let item = PersistenceController.shared.insertNewMoment(
+            for: today,
+            moodColorHex: mood.color.toHex(),
+            moodWord: mood.label,
+            note: note,
+            songName: song.name,
+            songArtist: song.artist,
+            photoData: photo?.jpegData(compressionQuality: 0.75),
+            scope: sharePhoto ? .friends : .private,
+            context: context
+        )
 
-        // Update existing or create new (one per day)
-        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "date == %@", today as NSDate)
-
-        if let existing = try? context.fetch(fetchRequest).first {
-            item = existing
-            item.createdAt = now
-        } else {
-            item = DailySong(context: context)
-            item.date = today
-            item.createdAt = now
-            item.id = UUID()
-            item.entryIndex = 0
-        }
-
-        item.songName    = song.name
-        item.artistName  = song.artist
-        item.genre       = song.genre
-        item.emoji       = "🎵"
-        item.artworkURL  = song.artworkURLString
-        item.moodWord    = mood.label
-        item.moodColorHex = mood.color.toHex()
-        item.moodLabel   = mood.label
-        item.feeling     = feeling?.rawValue
+        // insertNewMoment tarafından set edilmeyen song/UX alanları.
+        item.genre        = song.genre
+        item.emoji        = "🎵"
+        item.artworkURL   = song.artworkURLString
+        item.moodLabel    = mood.label
+        item.feeling      = feeling?.rawValue
         item.feelingLabel = feeling.flatMap { f in FeelingOption.all.first { $0.type == f }?.label }
-        item.platform    = "Apple Music"
-        item.dailyNote   = note.isEmpty ? nil : note
-
-        // Photo
-        if let photo {
-            item.photoData = photo.jpegData(compressionQuality: 0.75)
-        }
-        item.shareWithCircle = sharePhoto
-        item.isSharedWithCircle = sharePhoto
+        item.platform     = "Apple Music"
 
         do {
             try context.save()
@@ -382,6 +425,10 @@ class TodayViewModel: ObservableObject {
             return
         }
 
+        // Echo cache — next launch's first frame can show this mood softly
+        // before the real fetch lands. Cheap: two UserDefaults writes.
+        Self.writeCachedEchoMood(hex: mood.color.toHex(), label: mood.label)
+
         // Sayaç aşağıda da tazeleniyor ama orası bir closure'ın içinde —
         // event'in `entry_index`'i bu kaydı İÇERMELİ, o yüzden burada bir kez.
         loadTotalEntryCount()
@@ -390,6 +437,10 @@ class TodayViewModel: ObservableObject {
             hasNote: !note.isEmpty,
             entryIndex: totalEntryCount
         ))
+        AppAnalytics.shared.track(.moodSelected(mood: mood.key))
+        if !note.isEmpty {
+            AppAnalytics.shared.track(.noteAdded(length: note.count))
+        }
 
         // A4 — İlk entry sonrası Çevre davet kancası (one-shot)
         evaluateFirstEntryInviteHook()
@@ -458,7 +509,7 @@ class TodayViewModel: ObservableObject {
             weatherIcon: item.weatherIcon ?? "☀️",
             weatherDesc: item.weatherDesc ?? "",
             currentStreak: streak,
-            entryIndex: 0
+            entryIndex: Int(item.entryIndex)
         ) { [weak self] result in
             switch result {
             case .success(let record):
@@ -497,27 +548,8 @@ class TodayViewModel: ObservableObject {
         BadgeManager.shared.evaluateEntryCount(totalEntryCount)
         trackWeekRhythmCompletionIfNeeded()
 
-        // Dynamic Island — kaydetme anı Live Activity (~30 sn)
-        if #available(iOS 16.1, *) {
-            let info = ActivityAuthorizationInfo()
-            if info.areActivitiesEnabled {
-                let sfSymbol = LiveActivityManager.sfSymbol(forMoodLabel: mood.label)
-                let isDarkText = LiveActivityManager.isDark(forHex: mood.color.toHex())
-                Task {
-                    await LiveActivityManager.shared.startDailySong(
-                        songName: song.name,
-                        artistName: song.artist,
-                        moodLabel: mood.label,
-                        moodColorHex: mood.color.toHex(),
-                        moodIsDark: isDarkText,
-                        moodSFSymbol: sfSymbol,
-                        streakCount: streak
-                    )
-                }
-            } else {
-                showLiveActivityAlert = true
-            }
-        }
+        // v3: Dynamic Island + Live Activity şimdilik iptal (Features.liveActivitiesEnabled).
+        // Tetiklemez, izin alert'i de göstermez.
     }
 
     // MARK: - Save Ritual Entry
@@ -605,6 +637,10 @@ class TodayViewModel: ObservableObject {
             CrashReporter.shared.capture(error: error, context: ["operation": "backfillEntry"])
             return false
         }
+
+        // Echo cache — keep freshest recorded mood on disk regardless of which
+        // day it belongs to. Next launch echoes this while CoreData settles.
+        Self.writeCachedEchoMood(hex: mood.color.toHex(), label: mood.label)
 
         let daysAgo = cal.dateComponents(
             [.day], from: day, to: cal.startOfDay(for: now)
@@ -987,45 +1023,58 @@ class TodayViewModel: ObservableObject {
             return
         }
 
+        // v3: entryIndex > 0 ise (aynı güne ikinci+ an) her seferinde
+        // YENİ CloudKit kaydı ekle — upsert guard'ını atla. entryIndex == 0
+        // olan ilk an için upsert (idempotent tekrar yükleme).
+        let itemEntryIndex = Int(item.entryIndex)
+        let doSync: () -> Void = { [weak self] in
+            guard let self else { return }
+            let photoData = item.shareWithCircle ? item.photoData : nil
+            let syncStreak = self.computeCurrentStreak(includingToday: true)
+            CloudKitManager.shared.shareDailySong(
+                songName: item.songName ?? "",
+                artistName: item.artistName ?? "",
+                genre: item.genre,
+                emoji: item.emoji ?? "🎵",
+                albumArtURL: item.artworkURL,
+                moodWord: item.moodWord ?? item.moodLabel ?? "",
+                moodColor: item.moodColorHex ?? "#5B8DEF",
+                moodTheme: "",
+                dailyNote: item.dailyNote,
+                platform: item.platform ?? "Apple Music",
+                date: today,
+                photoData: photoData,
+                feeling: item.feeling,
+                feelingLabel: item.feelingLabel,
+                weatherIcon: item.weatherIcon,
+                weatherDesc: item.weatherDesc,
+                currentStreak: syncStreak,
+                entryIndex: itemEntryIndex
+            ) { res in
+                switch res {
+                case .success(let record):
+                    ONELogger.success("CloudKit sync ok (entryIndex=\(itemEntryIndex)): \(record.recordID)", category: .general)
+                case .failure(let error):
+                    ONELogger.error("CloudKit sync hata: \(error.localizedDescription)", category: .general)
+                }
+            }
+        }
+
+        if itemEntryIndex > 0 {
+            doSync()
+            return
+        }
+
         CloudKitManager.shared.fetchUserDailyShare(for: today) { [weak self] result in
             self?.syncTask?.cancel()
-            self?.syncTask = Task { @MainActor [weak self] in
-                guard let self else { return }
+            self?.syncTask = Task { @MainActor in
                 switch result {
                 case .success:
-                    // Zaten CloudKit'te var
+                    // Zaten CloudKit'te var — entryIndex==0 için upsert; sync gerekmez.
                     break
                 case .failure:
-                    // CloudKit'te yok ama lokalde var. Hemen yükleyelim.
-                    ONELogger.debug("Senkronizasyon: Lokal şarkı bulundu ama CloudKit'te yok. Yükleniyor...", category: .general)
-                    let photoData = item.shareWithCircle ? item.photoData : nil
-                    let syncStreak = self.computeCurrentStreak(includingToday: true)
-                    CloudKitManager.shared.shareDailySong(
-                        songName: item.songName ?? "",
-                        artistName: item.artistName ?? "",
-                        genre: item.genre,
-                        emoji: item.emoji ?? "🎵",
-                        albumArtURL: item.artworkURL,
-                        moodWord: item.moodWord ?? item.moodLabel ?? "",
-                        moodColor: item.moodColorHex ?? "#5B8DEF",
-                        moodTheme: "",
-                        dailyNote: item.dailyNote,
-                        platform: item.platform ?? "Apple Music",
-                        date: today,
-                        photoData: photoData,
-                        feeling: item.feeling,
-                        feelingLabel: item.feelingLabel,
-                        weatherIcon: item.weatherIcon,
-                        weatherDesc: item.weatherDesc,
-                        currentStreak: syncStreak
-                    ) { res in
-                        switch res {
-                        case .success(let record):
-                            ONELogger.success("Başarıyla CloudKit'e senkronize edildi: \(record.recordID)", category: .general)
-                        case .failure(let error):
-                            ONELogger.error("CloudKit senkronizasyon hatası: \(error.localizedDescription)", category: .general)
-                        }
-                    }
+                    ONELogger.debug("Senkronizasyon: Lokal an bulundu ama CloudKit'te yok. Yükleniyor...", category: .general)
+                    doSync()
                 }
             }
         }

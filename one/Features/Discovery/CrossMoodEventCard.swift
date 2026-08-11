@@ -28,13 +28,13 @@ struct CrossMoodEventCard: View {
                         .fill(moodColor)
                         .frame(width: 6, height: 6)
                     Text(moodLabel.lowercased())
-                        .font(.system(size: 10, weight: .medium))
+                        .font(V3Typography.sans(10, weight: .medium))
                         .tracking(0.5)
                         .foregroundColor(moodColor)
                     if isContrast {
                         Spacer()
                         Text("farklı his")
-                            .font(.system(size: 9, weight: .regular))
+                            .font(V3Typography.sans(9, weight: .regular))
                             .foregroundColor(moodColor.opacity(0.7))
                     }
                 }
@@ -45,29 +45,29 @@ struct CrossMoodEventCard: View {
 
                 VStack(alignment: .leading, spacing: 5) {
                     Text(event.title)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(15, weight: .semibold))
+                        .foregroundColor(V3Tokens.ink)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
 
                     if !event.venue.isEmpty {
                         Text(event.venue)
-                            .font(.system(size: 12, weight: .regular))
-                            .foregroundColor(ONETokens.oneAsh)
+                            .font(V3Typography.sans(12, weight: .regular))
+                            .foregroundColor(V3Tokens.mutedText)
                             .lineLimit(1)
                     }
 
                     if !timeOnly.isEmpty {
                         Text(timeOnly)
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundColor(ONETokens.oneStone)
+                            .font(V3Typography.sans(11, weight: .regular))
+                            .foregroundColor(V3Tokens.faintText)
                     }
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .background(ONETokens.onePaper)
+            .background(V3Tokens.surface)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)

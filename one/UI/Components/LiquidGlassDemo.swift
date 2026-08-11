@@ -23,11 +23,11 @@ struct LiquidGlassDemo: View {
                 // Header
                 VStack(spacing: 8) {
                     Text("Liquid Glass")
-                        .font(.system(size: 34, weight: .bold))
+                        .font(V3Typography.sans(34, weight: .bold))
                         .foregroundColor(.primary)
                     
                     Text("iOS 26 Design System")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(V3Typography.sans(14, weight: .medium))
                         .foregroundColor(.secondary)
                         .tracking(1.2)
                 }
@@ -115,7 +115,7 @@ struct LiquidGlassDemo: View {
                             }
                         }) {
                             Text(isExpanded ? "Collapse" : "Expand")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(V3Typography.sans(14, weight: .semibold))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 24)
                                 .padding(.vertical, 12)
@@ -129,19 +129,19 @@ struct LiquidGlassDemo: View {
                     HStack(spacing: 16) {
                         // Circle
                         Text("●")
-                            .font(.system(size: 32))
+                            .font(V3Typography.sans(32))
                             .frame(width: 70, height: 70)
                             .liquidGlass(.regular, in: Circle())
                         
                         // Rounded Rectangle
                         Text("▢")
-                            .font(.system(size: 32))
+                            .font(V3Typography.sans(32))
                             .frame(width: 70, height: 70)
                             .liquidGlass(.regular, in: RoundedRectangle(cornerRadius: 16))
                         
                         // Capsule
                         Text("◯")
-                            .font(.system(size: 32))
+                            .font(V3Typography.sans(32))
                             .frame(width: 90, height: 70)
                             .liquidGlass(.regular, in: Capsule())
                     }
@@ -185,7 +185,7 @@ struct LiquidGlassDemo: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title)
-                .font(.system(size: 18, weight: .semibold))
+                .font(V3Typography.sans(18, weight: .semibold))
                 .foregroundColor(.primary)
             
             content()

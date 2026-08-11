@@ -39,15 +39,15 @@ struct TopTracksCardView: View {
 
                         // Track Listesi
                         if data.topTracks.isEmpty {
-                            // Boş durum
-                            VStack(spacing: 12) {
-                                Text("🎵")
-                                    .font(.system(size: 48))
-                                    .opacity(0.4)
-                                Text(NSLocalizedString("monthly.noSongs", comment: ""))
+                            // Boş durum — editoryal, tek satır + minimal glyph.
+                            VStack(spacing: 14) {
+                                Image(systemName: "music.note")
+                                    .font(.system(size: 26, weight: .light))
+                                    .foregroundColor(.white.opacity(0.35))
+                                Text("Bu ay dinlenen şarkı bulunamadı")
                                     .bodyLG()
                                     .fontWeight(.light)
-                                    .foregroundColor(.white.opacity(0.40))
+                                    .foregroundColor(.white.opacity(0.55))
                                     .multilineTextAlignment(.center)
                             }
                             .frame(maxWidth: .infinity)

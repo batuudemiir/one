@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "サークルでシェア";
 
 /* ── サークル ── */
-"circle.title" = "周波数";
+"circle.title" = "サークル";
 "circle.sharedCount" = "%d/%d がシェア済み";
 "circle.removeFriend" = "友達から削除しますか？";
 "circle.setupCTA" = "サークルを作る";
@@ -535,7 +535,8 @@
 "nav.discover" = "発見";
 "nav.archive" = "アーカイブ";
 "nav.today" = "今日";
-"nav.circle" = "周波数";
+"nav.entry" = "瞬間";
+"nav.circle" = "サークル";
 "nav.profile" = "プロフィール";
 "nav.tabAccessibility" = "%@タブ";
 
@@ -1275,3 +1276,25 @@ one day.";
 
 "subcircle.all" = "All";
 "subcircle.emptyToday" = "No one in this group shared today.";
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.v3Subtitle" = "今日のみんなの様子を見る。";
+"circle.peopleCount" = "%d人";
+"circle.momentCount" = "%d件";
+"circle.youCard" = "あなた";
+"circle.youNotShared" = "今日はまだ記録なし";
+"circle.notSharedToday" = "今日はまだ記録なし";
+"circle.scopeShared" = "共有済み";
+"circle.scopePrivate" = "自分だけ";
+"circle.v3EmptyTitle" = "まだ誰もいません。";
+"circle.v3EmptyBody" = "誰かを追加して、互いの色を見よう。";
+"circle.scanQR" = "QRコードをスキャン";
+"circle.resonance" = "共鳴";
+"circle.sameColorLabel" = "同じ色の人";
+"circle.distributionLabel" = "サークルの色分布";
+"circle.yourColorToday" = "今日のあなたの色";
+"circle.noColorToday" = "今日の色はまだ";
+"circle.noColorTodayBody" = "瞬間を記録すると共鳴が見えます。";
+"circle.sameColorCount" = "今日あなたと同じ色の人は%d人";
+"circle.requests" = "友達リクエスト";
+"circle.notifications" = "通知";

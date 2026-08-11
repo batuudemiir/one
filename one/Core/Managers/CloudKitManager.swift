@@ -13,10 +13,28 @@ import Security
 class CloudKitManager: ObservableObject {
     static let shared = CloudKitManager()
     
+    /// v3: bir arkadaşın **o güne ait tüm anları**. `share` ilk an (entryIndex 0)
+    /// — eski çağrı yerleri bozulmasın diye duruyor; kart ızgarası `shares`
+    /// üzerinden "N an" ve çok renkli şeridi çiziyor.
     struct FriendCircleData: Identifiable {
-        let id = UUID()
+        /// Stable across refreshes — `UUID()` her fetch'te değişip
+        /// `ForEach` kimliğini kaydırıyordu.
+        var id: String { user["userID"] as? String ?? user.recordID.recordName }
         let user: CKRecord
-        let share: CKRecord?
+        let shares: [CKRecord]
+
+        /// Günün ilk anı — tek-an varsayan eski okuma yolları için.
+        var share: CKRecord? { shares.first }
+
+        init(user: CKRecord, shares: [CKRecord]) {
+            self.user = user
+            self.shares = shares
+        }
+
+        init(user: CKRecord, share: CKRecord?) {
+            self.user = user
+            self.shares = share.map { [$0] } ?? []
+        }
     }
     
     let container: CKContainer
@@ -44,6 +62,9 @@ class CloudKitManager: ObservableObject {
     /// Unseen friend shares — drives the Circle tab badge dot.
     /// Updated by CircleView whenever the unseen count changes.
     @Published var unseenFriendShareCount: Int = 0
+    /// Bekleyen arkadaş isteği sayısı — üst bardaki istek ikonunun kor noktası
+    /// bunu okuyor. `fetchPendingRequestCount` her çağrıda tazeliyor.
+    @Published var pendingFriendRequestCount: Int = 0
 
     /// True if we're still within a CloudKit throttle window.
     var isThrottled: Bool {
@@ -89,6 +110,19 @@ class CloudKitManager: ObservableObject {
         return Date().timeIntervalSince(last) < circleCacheTTL
     }
 
+    /// Ekrana **hemen** basılabilecek en son çevre verisi (varsa).
+    ///
+    /// `isCircleCacheValid` "ağa gitmem gerekiyor mu" sorusunu yanıtlıyor ve
+    /// 5 dakikalık TTL uyguluyor. Bu ise farklı bir soruyu yanıtlıyor:
+    /// "elimde bugüne ait, gösterebileceğim bir şey var mı?" Gün değişmediyse
+    /// bayat veri de gösterilir — tazelemesi arkada koşar. Böylece Çevre
+    /// sekmesi skeleton'ı yalnızca gerçekten hiçbir şey yokken gösterir.
+    var circleCacheForDisplay: [FriendCircleData]? {
+        guard let last = circleDataLastFetched, let cached = cachedCircleData else { return nil }
+        guard Calendar.current.isDate(last, inSameDayAs: Date()) else { return nil }
+        return cached
+    }
+
     func invalidateCircleCache() {
         cachedCircleData = nil
         circleDataLastFetched = nil
@@ -107,6 +141,14 @@ class CloudKitManager: ObservableObject {
     }
     
     private init() {
+        // Launch contract: bu init Tier 0. Bütçe <30ms. Ağır iş için Tier 2/3'e
+        // taşı (oneApp.body .onAppear). Regresyon guard'ı için defer'lı assert.
+        let __initT0 = CFAbsoluteTimeGetCurrent()
+        defer {
+            let elapsed = CFAbsoluteTimeGetCurrent() - __initT0
+            assert(elapsed < 0.03, "CloudKitManager.init > 30ms (\(Int(elapsed * 1000))ms) — added sync work?")
+        }
+
         container = CKContainer(identifier: "iCloud.com.batu.ones")
         privateDatabase = container.privateCloudDatabase
         publicDatabase = container.publicCloudDatabase

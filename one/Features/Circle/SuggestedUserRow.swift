@@ -21,18 +21,18 @@ struct SuggestedUserRow: View {
                     .fill(Color(hex: user.avatarColorHex))
                     .frame(width: 40, height: 40)
                 Text(initial)
-                    .font(.system(size: 15, weight: .medium))
+                    .font(V3Typography.sans(15, weight: .medium))
                     .foregroundColor(.white)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.displayName)
                     .bodySM()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                 if let username = user.username {
                     Text("@\(username)")
                         .monoLabel(tracking: 0.3)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
                 if user.mutualFriendCount > 0 {
                     Text("• \(user.mutualFriendCount) ortak")
@@ -46,10 +46,10 @@ struct SuggestedUserRow: View {
             Button(action: onAdd) {
                 Text("+ Ekle")
                     .monoLabel(tracking: 0.5)
-                    .foregroundColor(ONETokens.oneCream)
+                    .foregroundColor(ONEBrand.bone)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
-                    .background(Capsule().fill(ONETokens.oneInk))
+                    .background(Capsule().fill(V3Tokens.ink))
             }
             .buttonStyle(ScaleButtonStyle())
         }
@@ -74,31 +74,31 @@ struct QuickSuggestCard: View {
                     .fill(Color(hex: user.avatarColorHex))
                     .frame(width: 40, height: 40)
                 Text(initial)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(V3Typography.sans(14, weight: .semibold))
                     .foregroundColor(.white)
             }
 
             Text(user.displayName)
-                .font(.system(size: 12.5, weight: .semibold))
-                .foregroundColor(ONETokens.oneInk)
+                .font(V3Typography.sans(12.5, weight: .semibold))
+                .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
 
             Text(user.mutualFriendCount > 0
                  ? String(format: NSLocalizedString("addFriend.mutualCount", comment: ""), user.mutualFriendCount)
                  : " ")
                 .font(.system(size: 10))
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
                 .lineLimit(1)
 
             Button(action: onAdd) {
                 Text(NSLocalizedString(sent ? "addFriend.sent" : "addFriend.addAction", comment: ""))
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(sent ? ONETokens.oneAsh : ONETokens.oneCream)
+                    .font(V3Typography.sans(11, weight: .semibold))
+                    .foregroundColor(sent ? ONETokens.oneAsh : ONEBrand.bone)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
                     .background(
                         RoundedRectangle(cornerRadius: 13, style: .continuous)
-                            .fill(sent ? ONETokens.oneInk.opacity(0.10) : ONETokens.oneInk)
+                            .fill(sent ? V3Tokens.ink.opacity(0.10) : V3Tokens.ink)
                     )
             }
             .buttonStyle(.plain)

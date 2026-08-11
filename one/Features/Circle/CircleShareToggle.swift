@@ -13,32 +13,32 @@ struct CircleShareToggle: View {
 
     var body: some View {
         Button(action: {
+            ONEHaptics.toggle()
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 isOn.toggle()
             }
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         }) {
             HStack(spacing: 14) {
                 // Icon
                 ZStack {
                     Circle()
-                        .fill(isOn ? ONETokens.oneBrand : ONETokens.oneCreamMid)
+                        .fill(isOn ? ONETokens.oneBrand : V3Tokens.surface)
                         .frame(width: 42, height: 42)
 
                     Image(systemName: isOn ? "person.2.fill" : "person.2")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(isOn ? .white : ONETokens.oneAsh)
+                        .foregroundColor(isOn ? .white : V3Tokens.mutedText)
                 }
 
                 // Text
                 VStack(alignment: .leading, spacing: 3) {
                     Text(NSLocalizedString("circle.shareWithCircle", comment: ""))
                         .bodySMMedium()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
 
                     Text(subtitleText)
                         .monoSM()
-                        .foregroundColor(isOn ? ONETokens.oneBrand : ONETokens.oneAsh)
+                        .foregroundColor(isOn ? ONETokens.oneBrand : V3Tokens.mutedText)
                 }
 
                 Spacer()
@@ -46,7 +46,7 @@ struct CircleShareToggle: View {
                 // Toggle indicator
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(isOn ? ONETokens.oneBrand : ONETokens.oneCreamLow)
+                        .fill(isOn ? ONETokens.oneBrand : V3Tokens.wash)
                         .frame(width: 44, height: 26)
 
                     Circle()
@@ -60,11 +60,11 @@ struct CircleShareToggle: View {
             .padding(.horizontal, 16)
             .background(
                 RoundedRectangle(cornerRadius: ONETokens.radiusCardLg)
-                    .fill(isOn ? ONETokens.oneBrand.opacity(0.08) : ONETokens.onePaper)
+                    .fill(isOn ? ONEBrand.kor.opacity(0.08) : V3Tokens.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: ONETokens.radiusCardLg)
                             .stroke(
-                                isOn ? ONETokens.oneBrand.opacity(0.3) : ONETokens.oneStone.opacity(0.2),
+                                isOn ? ONEBrand.kor.opacity(0.3) : V3Tokens.faintText.opacity(0.2),
                                 lineWidth: isOn ? 1.5 : 1
                             )
                     )
@@ -94,6 +94,6 @@ struct CircleShareToggle_Previews: PreviewProvider {
             CircleShareToggle(isOn: .constant(false), hasPhoto: false)
         }
         .padding()
-        .background(ONETokens.oneCream)
+        .background(ONEBrand.bone)
     }
 }

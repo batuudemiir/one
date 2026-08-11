@@ -29,6 +29,12 @@ struct ProfileOverviewSection: View {
     @State private var showPrivacy = false
     @State private var showPaywall = false
 
+    /// SettingsRootView'dan çıkarken tetiklenecek bir sonraki sunum.
+    /// Timer tabanlı asyncAfter yerine fullScreenCover(onDismiss:) ile
+    /// güvenilir zincirleme yapılır — cover animasyonu tamamlanınca çalışır.
+    private enum PendingSheet { case reminder, music, privacy, paywall, milestones }
+    @State private var pendingAfterSettings: PendingSheet? = nil
+
     @State private var stats: ProfileStats = .empty
 
     var body: some View {
@@ -40,7 +46,7 @@ struct ProfileOverviewSection: View {
 
             Text(NSLocalizedString("profile.colorReport", comment: ""))
                 .monoLabel(tracking: 1.3)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
                 .padding(.top, ONETokens.spacingLG)
                 .padding(.bottom, ONETokens.spacingSM)
 
@@ -51,34 +57,65 @@ struct ProfileOverviewSection: View {
         }
         .padding(.horizontal, ONETokens.spacingXL)
         .task { stats = await ProfileStats.load(context: context) }
-        .fullScreenCover(isPresented: $showSettingsScreen) {
+        .fullScreenCover(isPresented: $showSettingsScreen, onDismiss: {
+            // Guard: eğer başka bir sheet zaten açıksa (direct-tap yolundan
+            // gelinmiş olabilir) pending action'ı tetikleme — çift açılış
+            // olmasın. Bayrağı gene temizle ki bir sonraki settings turunda
+            // eski değer yeniden ateşlenmesin.
+            let anyOtherOpen = showReminder || showMusicSource || showPrivacy || showPaywall || showMilestones
+            if !anyOtherOpen {
+                // cover kapandıktan SONRA bir sonraki sheet açılır — timer yok.
+                switch pendingAfterSettings {
+                case .reminder:   showReminder = true
+                case .music:      showMusicSource = true
+                case .privacy:    showPrivacy = true
+                case .paywall:    showPaywall = true
+                case .milestones: showMilestones = true
+                case .none:       break
+                }
+            }
+            pendingAfterSettings = nil
+        }) {
             SettingsRootView(
                 vm: vm,
                 onBack: { showSettingsScreen = false },
                 onReminder: {
+                    pendingAfterSettings = .reminder
                     showSettingsScreen = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showReminder = true }
                 },
                 onMusic: {
+                    pendingAfterSettings = .music
                     showSettingsScreen = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showMusicSource = true }
                 },
                 onPrivacy: {
+                    pendingAfterSettings = .privacy
                     showSettingsScreen = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showPrivacy = true }
                 },
                 onPaywall: {
+                    pendingAfterSettings = .paywall
                     showSettingsScreen = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showPaywall = true }
                 },
                 onMilestones: {
+                    pendingAfterSettings = .milestones
                     showSettingsScreen = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showMilestones = true }
                 }
             )
         }
         .fullScreenCover(isPresented: $showReminder) {
-            ReminderSettingsView(vm: vm, onBack: { showReminder = false })
+            // v3 hatırlatma ekranı — eski `ReminderSettingsView` yerine.
+            ZStack {
+                V3Tokens.paper.ignoresSafeArea()
+                V3ReminderView(
+                    onBack: { showReminder = false },
+                    onSave: { _ in
+                        V3ReminderScheduler.reschedule()
+                        showReminder = false
+                    }
+                )
+                .padding(.horizontal, 24)
+                .padding(.top, 26)
+                .padding(.bottom, 24)
+            }
         }
         .fullScreenCover(isPresented: $showMusicSource) {
             MusicSourceSettingsView(vm: vm, onBack: { showMusicSource = false })
@@ -108,11 +145,11 @@ struct ProfileOverviewSection: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(vm.displayName.isEmpty ? "—" : vm.displayName)
                     .displayMD()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
 
                 Text(subtitleText)
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
             }
 
             Spacer()
@@ -137,7 +174,7 @@ struct ProfileOverviewSection: View {
                 Color(hex: vm.selectedAvatarColor)
                     .overlay(
                         Text(initial)
-                            .font(.system(size: 21, weight: .bold))
+                            .font(V3Typography.sans(21, weight: .bold))
                             .foregroundColor(.white)
                     )
             }
@@ -164,12 +201,12 @@ struct ProfileOverviewSection: View {
     private func statCard(_ value: Int, _ label: String) -> some View {
         VStack(spacing: 2) {
             Text("\(value)")
-                .font(.system(size: 23, weight: .bold))
+                .font(V3Typography.sans(23, weight: .bold))
                 .monospacedDigit()
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
             Text(label)
                 .bodyXS()
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 15)
@@ -184,7 +221,7 @@ struct ProfileOverviewSection: View {
             HStack(spacing: 6) {
                 ForEach(Array(stats.recentColors.enumerated()), id: \.offset) { _, hex in
                     Circle()
-                        .fill(hex.map { Color(hex: $0) } ?? ONETokens.oneInk.opacity(0.14))
+                        .fill(hex.map { Color(hex: $0) } ?? V3Tokens.ink.opacity(0.14))
                         .frame(width: 19, height: 19)
                 }
             }
@@ -193,10 +230,10 @@ struct ProfileOverviewSection: View {
             VStack(alignment: .trailing, spacing: 1) {
                 Text(NSLocalizedString("profile.mostFrequent", comment: ""))
                     .monoLabel(tracking: 0.2)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                 Text(stats.topMoodLabel ?? "—")
                     .monoLabel(tracking: 0.2)
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
             }
         }
         .padding(.horizontal, ONETokens.spacingLG)
@@ -209,18 +246,29 @@ struct ProfileOverviewSection: View {
     private var settingsRows: some View {
         VStack(spacing: 7) {
             row("bell", NSLocalizedString("profile.row.reminder", comment: ""), reminderText) {
+                // Direct-tap yolu: settings cover üzerinden gelmiyor,
+                // bu yüzden onDismiss'deki pending action ateşlenmemeli.
+                pendingAfterSettings = nil
                 showReminder = true
             }
             row("music.note", NSLocalizedString("profile.row.musicSource", comment: ""), musicPlatform) {
+                pendingAfterSettings = nil
                 showMusicSource = true
             }
             // Kilometre taşları satırı kaldırıldı — prototip 26'da profil
             // dört satır: hatırlatma, müzik kaynağı, arkadaşlar, ayarlar.
             // MilestonesView'a giriş ayarların içine taşındı.
-            row("person.2", NSLocalizedString("profile.row.friends", comment: ""), "\(vm.friendCount)") {
+            row(
+                "person.2",
+                NSLocalizedString("profile.row.friends", comment: ""),
+                "\(vm.friendCount)",
+                trailingSpinner: vm.isRefreshingFriendCount
+            ) {
+                pendingAfterSettings = nil
                 showFriendsList = true
             }
             row("gearshape", NSLocalizedString("profile.row.settings", comment: ""), nil) {
+                pendingAfterSettings = nil
                 showSettingsScreen = true
             }
         }
@@ -230,30 +278,37 @@ struct ProfileOverviewSection: View {
         _ icon: String,
         _ title: String,
         _ value: String?,
+        trailingSpinner: Bool = false,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
             HStack(spacing: ONETokens.spacingMD) {
                 Image(systemName: icon)
                     .font(.system(size: 15))
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .frame(width: 22)
 
                 Text(title)
                     .bodySM()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
 
                 Spacer()
 
                 if let value {
                     Text(value)
                         .bodySM()
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
+                }
+
+                if trailingSpinner {
+                    ProgressView()
+                        .controlSize(.mini)
+                        .tint(V3Tokens.faintText)
                 }
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12))
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
             }
             .padding(.horizontal, 15)
             .padding(.vertical, 14)
@@ -277,7 +332,7 @@ struct ProfileOverviewSection: View {
             .fill(Color.white.opacity(0.70))
             .overlay(
                 RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
-                    .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                    .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
             )
     }
 }

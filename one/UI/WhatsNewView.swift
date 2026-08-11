@@ -23,7 +23,7 @@ struct WhatsNewView: View {
         .init(
             icon: "dot.radiowaves.left.and.right",
             color: Color(hex: "#26A69A"),
-            title: "Frekans artık açılışta",
+            title: "Çevre artık açılışta",
             body: "Uygulamayı açtığında önce arkadaşlarının\nbugünkü rengini görüyorsun."
         ),
         .init(
@@ -66,7 +66,7 @@ struct WhatsNewView: View {
             HStack(spacing: 6) {
                 ForEach(features.indices, id: \.self) { i in
                     Capsule()
-                        .fill(i <= currentPage ? ONETokens.oneInk : ONETokens.oneCreamLow)
+                        .fill(i <= currentPage ? V3Tokens.ink : V3Tokens.wash)
                         .frame(width: i == currentPage ? 20 : 6, height: 6)
                         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: currentPage)
                 }
@@ -93,15 +93,15 @@ struct WhatsNewView: View {
             Button(action: advance) {
                 Text(isLastPage ? "Harika!" : "İlerle")
                     .monoBase()
-                    .foregroundStyle(isLastPage ? ONETokens.oneCream : .white)
+                    .foregroundStyle(isLastPage ? ONEBrand.bone : .white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .background(
                         isLastPage
                             ? AnyShapeStyle(LinearGradient(
-                                colors: [ONETokens.oneBrand, ONETokens.oneBrandLight],
+                                colors: [ONEBrand.kor, ONETokens.oneBrandLight],
                                 startPoint: .leading, endPoint: .trailing))
-                            : AnyShapeStyle(ONETokens.oneInk),
+                            : AnyShapeStyle(V3Tokens.ink),
                         in: Capsule()
                     )
                     .animation(.easeInOut(duration: 0.2), value: isLastPage)
@@ -116,7 +116,7 @@ struct WhatsNewView: View {
                 value: contentVisible
             )
         }
-        .background(ONETokens.oneCream.ignoresSafeArea())
+        .background(ONEBrand.bone.ignoresSafeArea())
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 withAnimation { contentVisible = true }
@@ -177,12 +177,12 @@ private struct FeaturePage: View {
             VStack(spacing: 12) {
                 Text(feature.title)
                     .displayMD()
-                    .foregroundStyle(ONETokens.oneInk)
+                    .foregroundStyle(V3Tokens.ink)
                     .multilineTextAlignment(.center)
 
                 Text(feature.body)
                     .bodyLG()
-                    .foregroundStyle(ONETokens.oneAsh)
+                    .foregroundStyle(V3Tokens.mutedText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
             }

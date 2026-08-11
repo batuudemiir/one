@@ -245,7 +245,7 @@ struct PublicProfileView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
 
             if vm.relationship == .blockedMe {
                 blockedMeState
@@ -329,7 +329,7 @@ struct PublicProfileView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("SABİTLENMİŞ ŞARKI")
                                 .monoBase(tracking: 1.5)
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                                 .padding(.leading, 4)
 
                             PublicProfilePinnedSongCard(song: song)
@@ -348,7 +348,7 @@ struct PublicProfileView: View {
                     if let toast {
                         Text(toast)
                             .monoSM(tracking: 0)
-                            .foregroundStyle(ONETokens.oneAsh)
+                            .foregroundStyle(V3Tokens.mutedText)
                             .padding(.top, 4)
                             .frame(maxWidth: .infinity)
                     }
@@ -430,11 +430,11 @@ struct PublicProfileView: View {
                 HStack(spacing: 8) {
                     Text(NSLocalizedString("profile.recentWeek.title", comment: ""))
                         .monoBase(tracking: 1.5)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                     Spacer()
                     Text(NSLocalizedString("profile.recentWeek.subtitle", comment: ""))
                         .monoLabel(tracking: 0.6)
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
                 }
 
                 HStack(spacing: 8) {
@@ -446,7 +446,7 @@ struct PublicProfileView: View {
                                 if recentColors[idx] == nil {
                                     Image(systemName: "minus")
                                         .monoMicro()
-                                        .foregroundColor(ONETokens.oneStone)
+                                        .foregroundColor(V3Tokens.faintText)
                                 }
                             }
                             .frame(maxWidth: .infinity)
@@ -454,20 +454,20 @@ struct PublicProfileView: View {
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
                                     .stroke(
-                                        idx == 6 ? ONETokens.oneInk.opacity(0.30) : Color.clear,
+                                        idx == 6 ? V3Tokens.ink.opacity(0.30) : Color.clear,
                                         lineWidth: 1.5
                                     )
                             )
 
                             Text(weekdayLabels[idx])
                                 .monoLabel(tracking: 0.4)
-                                .foregroundColor(idx == 6 ? ONETokens.oneInk : ONETokens.oneAsh)
+                                .foregroundColor(idx == 6 ? ONETokens.oneInk : V3Tokens.mutedText)
                         }
                     }
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 14)
-                .background(ONETokens.onePaper)
+                .background(V3Tokens.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 18))
                 .overlay(RoundedRectangle(cornerRadius: 18).stroke(ONETokens.oneSilver, lineWidth: 1))
             }
@@ -495,12 +495,12 @@ struct PublicProfileView: View {
             Spacer()
             Image(systemName: "hand.raised.slash")
                 .font(.system(size: 40, weight: .light))
-                .foregroundStyle(ONETokens.oneAsh)
+                .foregroundStyle(V3Tokens.mutedText)
             Text("Bu profil görüntülenemiyor.")
                 .bodySM()
-                .foregroundStyle(ONETokens.oneAsh)
+                .foregroundStyle(V3Tokens.mutedText)
             Button("Kapat") { dismiss() }
-                .foregroundStyle(ONETokens.oneBrand)
+                .foregroundStyle(ONEBrand.kor)
             Spacer()
         }
     }

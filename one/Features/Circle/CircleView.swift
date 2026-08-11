@@ -62,6 +62,9 @@ struct CircleView: View {
     /// iken "Tümü" seçili; dolu iken bubble-cloud o grubun üyelerine
     /// istemci tarafında filtrelenir (yeni sorgu yok).
     @State var subCircles: [SubCircle] = []
+    /// SceneStorage-backed persistence: filtre uygulama arka plana atılıp
+    /// dönüldüğünde kaybolmasın. Boş string = "Tümü".
+    @SceneStorage("one.scene.circleFilter") private var persistedCircleID: String = ""
     @State var selectedCircleID: String? = nil
     @State var showSubCircleManager = false
     @State var receivedReactions: [EmojiReactionItem] = []
@@ -73,6 +76,10 @@ struct CircleView: View {
 
     // Deep Link support
     @State var deepLinkInviteCode: String? = nil
+
+    /// Scroll-driven header shrink. 0 = başlık tam görünür, 1 = maks küçülmüş.
+    /// cloudSection'daki GeometryReader güncelliyor.
+    @State var headerShrinkProgress: CGFloat = 0
 
     var onNavigateToToday: (() -> Void)? = nil
     var onNavigateToDiscover: (() -> Void)? = nil
@@ -173,7 +180,7 @@ struct CircleView: View {
     @ViewBuilder
     private var circleContent: some View {
         ZStack(alignment: .bottom) {
-            (colorScheme == .dark ? Color.black : ONETokens.oneCream).ignoresSafeArea()
+            (colorScheme == .dark ? Color.black : ONEBrand.bone).ignoresSafeArea()
 
             if !cloudKitManager.isCloudKitAvailable {
                 CircleCloudKitUnavailableState(
@@ -213,14 +220,19 @@ struct CircleView: View {
                             onStartAlone: onNavigateToToday
                         )
                     } else {
-                        subCircleChips
+                        if Features.subCirclesEnabled {
+                            subCircleChips
+                        }
                         cloudSection
                     }
                 }
             }
         }
         .navigationBarHidden(true)
-        .fullScreenCover(isPresented: $showSubCircleManager, onDismiss: { loadSubCircles() }) {
+        .fullScreenCover(isPresented: Binding(
+            get: { showSubCircleManager && Features.subCirclesEnabled },
+            set: { showSubCircleManager = $0 }
+        ), onDismiss: { loadSubCircles() }) {
             SubCircleManagerView()
         }
         .fullScreenCover(isPresented: $showNotifications) {
@@ -296,6 +308,25 @@ struct CircleView: View {
                 initializeUser()
             }
             startPulseIfNeeded()
+
+            // Restore persisted filter (SceneStorage). Boş string = Tümü.
+            if !persistedCircleID.isEmpty, selectedCircleID == nil {
+                selectedCircleID = persistedCircleID
+            }
+        }
+        .onChange(of: selectedCircleID) { _, newValue in
+            persistedCircleID = newValue ?? ""
+        }
+        // Alt-çevre listesi tazelendiğinde stale filtreyi doğrula.
+        // SceneStorage'da persist edilen ID, uygulama arka planda iken
+        // silinmiş olabilir; onAppear restore bu ölü ID'yi geri getirir
+        // ve loadSubCircles callback'i yetişene kadar UI'da "yok grup"
+        // seçili görünür. Liste değişimini gözleyip anında sıfırla.
+        .onChange(of: subCircles) { _, list in
+            if let sel = selectedCircleID,
+               !list.contains(where: { $0.id == sel }) {
+                selectedCircleID = nil
+            }
         }
         .onChange(of: reduceMotion) { _, reduced in
             if reduced {
@@ -386,10 +417,10 @@ struct CircleView: View {
         Button(action: { showAddFriend = true }) {
             Image(systemName: "person.badge.plus")
                 .font(.system(size: 15, weight: .medium))
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .frame(width: 34, height: 34)
                 .background(Circle().fill(Color.white.opacity(0.6)))
-                .overlay(Circle().stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1))
+                .overlay(Circle().stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1))
         }
         .buttonStyle(ScaleButtonStyle())
         .accessibilityLabel(NSLocalizedString("accessibility.circle.addFriend", comment: ""))
@@ -403,20 +434,20 @@ struct CircleView: View {
                 Image(systemName: totalNotificationCount > 0 ? "bell.badge.fill" : "bell")
                     .font(.system(size: 15, weight: .medium))
                     .symbolRenderingMode(totalNotificationCount > 0 ? .hierarchical : .monochrome)
-                    .foregroundColor(totalNotificationCount > 0 ? ONETokens.oneInk : ONETokens.oneAsh)
+                    .foregroundColor(totalNotificationCount > 0 ? ONETokens.oneInk : V3Tokens.mutedText)
                     .frame(width: 34, height: 34)
                     .background(
                         Circle().fill(totalNotificationCount > 0
                                       ? ONETokens.oneCreamLow
                                       : Color.white.opacity(0.6))
                     )
-                    .overlay(Circle().stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1))
+                    .overlay(Circle().stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1))
 
                 if totalNotificationCount > 0 {
                     ZStack {
                         Circle().fill(Color.red)
                         Text(totalNotificationCount < 10 ? "\(totalNotificationCount)" : "9+")
-                            .font(.system(size: 8, weight: .bold))
+                            .font(V3Typography.sans(8, weight: .bold))
                             .foregroundColor(.white)
                     }
                     .frame(width: 16, height: 16)
@@ -445,11 +476,11 @@ struct CircleView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(NSLocalizedString("circle.title", comment: ""))
                         .displayLG()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
 
                     Text(counterText)
                         .monoLabel(tracking: 0.5)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .animation(ONEAnimation.micro, value: counterText)
                 }
 
@@ -478,8 +509,28 @@ struct CircleView: View {
         .padding(.top, ONETokens.spacingXL4)
         .padding(.horizontal, ONETokens.spacingXL)
         .padding(.bottom, 0)
+        // Scroll-driven shrink — sabit header, scroll ilerledikçe küçülür.
+        // headerShrinkProgress cloudSection'daki GeometryReader'dan geliyor.
+        .scaleEffect(1 - headerShrinkProgress * 0.10, anchor: .topLeading)
+        .opacity(1 - headerShrinkProgress * 0.55)
+        .animation(.easeOut(duration: 0.14), value: headerShrinkProgress)
     }
-    
+
+    // MARK: - Scroll offset PreferenceKey (header shrink)
+
+    struct CircleScrollOffsetKey: PreferenceKey {
+        static var defaultValue: CGFloat = 0
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = nextValue()
+        }
+    }
+
+    /// Ham offset → 0-1 progress. İlk 100pt scroll'da tamamen sıkışıyor.
+    static func computeShrinkProgress(offset: CGFloat) -> CGFloat {
+        let scroll = max(0, -offset)  // yukarı scroll = pozitif
+        return min(1, scroll / 100)
+    }
+
     // MARK: - Alt-çevre filtresi
 
     /// Seçili gruba göre filtrelenmiş arkadaş paylaşımları. "Tümü" (nil)
@@ -522,14 +573,14 @@ struct CircleView: View {
                             .font(.system(size: 11, weight: .semibold))
                         if subCircles.isEmpty {
                             Text(NSLocalizedString("subcircle.title", comment: ""))
-                                .font(.system(size: 12.5, weight: .semibold))
+                                .font(V3Typography.sans(12.5, weight: .semibold))
                         }
                     }
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .padding(.horizontal, subCircles.isEmpty ? 12 : 10)
                     .padding(.vertical, 7)
                     .background(
-                        Capsule().stroke(ONETokens.oneInk.opacity(0.14),
+                        Capsule().stroke(V3Tokens.ink.opacity(0.14),
                                          style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
                     )
                 }
@@ -550,20 +601,22 @@ struct CircleView: View {
                 if let colorHex {
                     Circle().fill(Color(hex: colorHex)).frame(width: 9, height: 9)
                 } else if !emoji.isEmpty {
-                    Text(emoji).font(.system(size: 12))
+                    Text(emoji).font(V3Typography.sans(12))
                 }
                 Text(title)
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(V3Typography.sans(12.5, weight: .semibold))
             }
-            .foregroundColor(selected ? ONETokens.oneCream : ONETokens.oneInk)
+            .foregroundColor(selected ? ONEBrand.bone : V3Tokens.ink)
             .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .background(
                 Capsule().fill(selected ? ONETokens.oneInk : Color.white.opacity(0.7))
             )
             .overlay(
-                Capsule().stroke(ONETokens.oneInk.opacity(selected ? 0 : 0.1), lineWidth: 1)
+                Capsule().stroke(V3Tokens.ink.opacity(selected ? 0 : 0.1), lineWidth: 1)
             )
+            .frame(minWidth: 44, minHeight: 44)
+            .contentShape(Capsule())
         }
         .buttonStyle(.plain)
     }
@@ -571,11 +624,24 @@ struct CircleView: View {
     // MARK: - Cloud Section (structured cards, no overlapping)
 
     private var cloudSection: some View {
+        // v3 talimat 2-kolon ızgara istiyor ama mevcut friendCard tam-genişlik
+        // için tasarlandı — 2-kol'da bilgiler kırpılıyor. Kart-yeniden-tasarımı
+        // yapılana kadar tek kolon full-width. (Faz 6 polish TODO.)
+        ScrollViewReader { proxy in
         ScrollView(showsIndicators: false) {
+            // Scroll offset probe — headerSection buradan progress hesaplıyor.
+            GeometryReader { geo in
+                Color.clear
+                    .preference(
+                        key: CircleScrollOffsetKey.self,
+                        value: geo.frame(in: .named("circleScroll")).minY
+                    )
+            }
+            .frame(height: 0)
+
             VStack(spacing: 9) {
-                // Çevre ritmi şeridi kaldırıldı: aynı streak sayısı ekranda
-                // üç kez görünüyordu (header'daki WeekRhythmView, bu şerit,
-                // her karttaki rozet). Ritim tek yerde — header'da.
+                // Sekme re-tap anchor'ı.
+                Color.clear.frame(height: 0).id("circleTop")
 
                 // ── SEN ──────────────────────────────────────────
                 senCard
@@ -596,12 +662,17 @@ struct CircleView: View {
                 }
 
                 // Seçili grupta bugün kimse yoksa — davet satırını bastırmadan
-                // kısa bir not.
-                if selectedCircleID != nil && displayedShares.isEmpty {
-                    Text(NSLocalizedString("subcircle.emptyToday", comment: ""))
+                // kısa bir not. Hangi grubun aktif olduğunu da belirt ki
+                // kullanıcı "bugün gerçekten kimse paylaşmadı" mı yoksa
+                // filtre yüzünden mi boş göründüğünü anlasın.
+                if let id = selectedCircleID,
+                   let activeName = subCircles.first(where: { $0.id == id })?.name,
+                   displayedShares.isEmpty {
+                    Text("\(activeName) · \(NSLocalizedString("subcircle.emptyToday", comment: ""))")
                         .bodyXS()
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
                         .padding(.vertical, 18)
                 }
 
@@ -635,6 +706,10 @@ struct CircleView: View {
             .padding(.top, ONETokens.spacingLG)
             .padding(.bottom, 100)
         }
+        .coordinateSpace(name: "circleScroll")
+        .onPreferenceChange(CircleScrollOffsetKey.self) { offset in
+            headerShrinkProgress = Self.computeShrinkProgress(offset: offset)
+        }
         .refreshable {
             await refreshData()
         }
@@ -643,6 +718,13 @@ struct CircleView: View {
                 bubblesVisible = true
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .circleTabRetapped)) { _ in
+            withAnimation(.spring(response: 0.42, dampingFraction: 0.88)) {
+                proxy.scrollTo("circleTop", anchor: .top)
+            }
+            Task { await refreshData() }
+        }
+        } // end ScrollViewReader
     }
     
     // MARK: - Pending Requests Teaser
@@ -652,37 +734,37 @@ struct CircleView: View {
             HStack(spacing: 12) {
                 ZStack {
                     Circle()
-                        .fill(ONETokens.oneInk.opacity(0.08))
+                        .fill(V3Tokens.ink.opacity(0.08))
                         .frame(width: 40, height: 40)
                     Image(systemName: "person.badge.clock")
                         .font(.system(size: 16))
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                 }
                 .accessibilityHidden(true)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(String(format: NSLocalizedString("circle.pendingRequests", comment: ""), pendingRequestCount))
                         .displaySM()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                     Text(NSLocalizedString("circle.tapToApprove", comment: ""))
                         .monoSM(tracking: 0)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .accessibilityHidden(true)
             }
             .padding(14)
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(ONETokens.onePaper.opacity(0.55))
+                    .fill(V3Tokens.surface.opacity(0.55))
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
-                            .stroke(ONETokens.oneInk.opacity(0.15), lineWidth: 1)
+                            .stroke(V3Tokens.ink.opacity(0.15), lineWidth: 1)
                     )
             )
         }

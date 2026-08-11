@@ -25,7 +25,7 @@ struct TodayRitualView: View {
 
     var body: some View {
         ZStack {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
 
             // Üst çubuk artık `.overlay` DEĞİL, düzenin içinde. Overlay
             // olduğu için adımın üstünü örtüyordu: "bugün ne renktin?"
@@ -82,7 +82,7 @@ struct TodayRitualView: View {
                 } label: {
                     Image(systemName: showsBack ? "chevron.left" : "xmark")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .frame(width: 44, height: 44, alignment: .leading)
                 }
                 .buttonStyle(.plain)
@@ -101,7 +101,7 @@ struct TodayRitualView: View {
 
                 Text("\(coordinator.step.rawValue + 1) / \(RitualStep.allCases.count)")
                     .monoLabel(tracking: 1.3)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                     .frame(width: 44, alignment: .trailing)
             }
 
@@ -122,11 +122,11 @@ struct TodayRitualView: View {
         HStack(spacing: 8) {
             Image(systemName: "arrow.uturn.backward")
                 .font(.system(size: 11, weight: .medium))
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
 
             Text("\(weekdayName(date)) gününü dolduruyorsun")
                 .bodyXS()
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
 
             Spacer(minLength: 0)
 
@@ -135,7 +135,7 @@ struct TodayRitualView: View {
             } label: {
                 Text("vazgeç")
                     .monoLabel(tracking: 0.4)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
             }
             .buttonStyle(.plain)
         }
@@ -143,7 +143,7 @@ struct TodayRitualView: View {
         .padding(.vertical, 9)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(ONETokens.oneCreamMid.opacity(0.55))
+                .fill(V3Tokens.surface.opacity(0.55))
         )
         .accessibilityElement(children: .combine)
     }

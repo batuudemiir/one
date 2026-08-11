@@ -13,6 +13,11 @@ struct FullScreenPhotoView: View {
     let url: URL
     @Binding var isPresented: Bool
 
+    /// DayPreviewCard'daki thumb ile morph için ortak namespace.
+    @Environment(\.archivePhotoNamespace) private var envPhotoNS
+    @Namespace private var localPhotoNS
+    private var photoNS: Namespace.ID { envPhotoNS ?? localPhotoNS }
+
     // Zoom state
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
@@ -21,20 +26,35 @@ struct FullScreenPhotoView: View {
 
     // Swipe-to-dismiss — @GestureState for zero-overhead live tracking
     @GestureState private var dragY: CGFloat = 0
-    @State private var isDismissing = false
+    @State private var appeared = false
 
     private let minScale: CGFloat = 1.0
     private let maxScale: CGFloat = 5.0
     private let dismissThreshold: CGFloat = 120
 
-    private var dismissOffset: CGFloat { isDismissing ? UIScreen.main.bounds.height : dragY }
     private var backgroundOpacity: Double {
-        isDismissing ? 0 : Double(max(0.3, 1.0 - dragY / 300))
+        Double(max(0.15, 1.0 - dragY / 320))
+    }
+
+    private var chromeOpacity: Double {
+        let fade = 1.0 - min(1.0, dragY / 80)
+        return appeared ? fade : 0
+    }
+
+    private var isZoomed: Bool { scale > 1.01 }
+
+    private func dismiss() {
+        ONEHaptics.moodSelected()
+        withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+            isPresented = false
+        }
     }
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            Color.black.opacity(backgroundOpacity).ignoresSafeArea()
+        ZStack {
+            Color.black.opacity(backgroundOpacity)
+                .ignoresSafeArea()
+                .onTapGesture { if !isZoomed { dismiss() } }
 
             CachedAsyncImagePhase(url: url) { phase in
                 switch phase {
@@ -43,9 +63,9 @@ struct FullScreenPhotoView: View {
                         .resizable()
                         .scaledToFit()
                         .drawingGroup()
+                        .matchedGeometryEffect(id: "archivePhoto", in: photoNS, isSource: true)
                         .scaleEffect(scale)
-                        .offset(x: offset.width, y: offset.height + dismissOffset)
-                        .animation(isDismissing ? .easeOut(duration: 0.22) : nil, value: dismissOffset)
+                        .offset(x: offset.width, y: offset.height + dragY)
                         .gesture(
                             SimultaneousGesture(
                                 MagnificationGesture()
@@ -82,19 +102,13 @@ struct FullScreenPhotoView: View {
                                         if scale > 1.01 {
                                             lastOffset = offset
                                         } else if val.translation.height > dismissThreshold {
-                                            ONEHaptics.moodSelected()
-                                            withAnimation(.easeOut(duration: 0.22)) {
-                                                isDismissing = true
-                                            }
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-                                                isPresented = false
-                                            }
+                                            dismiss()
                                         }
-                                        // dragY sıfırlanır otomatik (@GestureState)
                                     }
                             )
                         )
                         .onTapGesture(count: 2) {
+                            ONEHaptics.nudge()
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                                 if scale > 1.01 {
                                     scale = minScale; lastScale = minScale
@@ -120,25 +134,42 @@ struct FullScreenPhotoView: View {
                         .tint(.white)
                 }
             }
-            .ignoresSafeArea()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            // Kapat butonu — sağ üst, fotoğrafla birlikte kayar
-            Button {
-                withAnimation(.easeOut(duration: 0.22)) { isDismissing = true }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) { isPresented = false }
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 40, height: 40)
-                    .liquidGlass(in: Circle())
+            .padding(.vertical, 12)
+        }
+        .overlay(alignment: .top) {
+            HStack {
+                Spacer()
+                Button(action: dismiss) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .fill(.ultraThinMaterial)
+                                .environment(\.colorScheme, .dark)
+                        )
+                        .overlay(
+                            Circle().stroke(Color.white.opacity(0.18), lineWidth: 1)
+                        )
+                }
             }
-            .padding(.top, 56)
-            .padding(.trailing, 20)
-            .offset(y: dismissOffset)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .opacity(chromeOpacity)
+        }
+        .overlay(alignment: .bottom) {
+            Image(systemName: "chevron.compact.down")
+                .font(.system(size: 34, weight: .light))
+                .foregroundColor(.white.opacity(isZoomed ? 0 : 0.32))
+                .padding(.bottom, 8)
+                .opacity(chromeOpacity)
+                .accessibilityHidden(true)
         }
         .statusBarHidden(true)
+        .task {
+            withAnimation(.easeOut(duration: 0.25)) { appeared = true }
+        }
     }
 }
 
@@ -149,6 +180,14 @@ struct DayPreviewCard: View {
 
     @State private var showShareSheet = false
     @ObservedObject private var cloudKit = CloudKitManager.shared
+
+    /// Fotoğrafın FullScreenPhotoView'e morph'u için ortak namespace.
+    @Environment(\.archivePhotoNamespace) private var envPhotoNS
+    @Namespace private var localPhotoNS
+    private var photoNS: Namespace.ID { envPhotoNS ?? localPhotoNS }
+    /// FullScreenPhotoView açıksa thumb'ı gizle (fantom önlemek için).
+    @StateObject private var globalUI = GlobalUIState.shared
+    private var isViewerActive: Bool { globalUI.archivePhotoURL == entry.photoURL }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -162,7 +201,7 @@ struct DayPreviewCard: View {
                 Spacer()
                 Text(dayText)
                     .monoMicro(tracking: 0.8)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
             }
             .padding(.horizontal, 20)
             .padding(.top, 20)
@@ -181,15 +220,19 @@ struct DayPreviewCard: View {
                                 .clipped()
                         default:
                             RoundedRectangle(cornerRadius: 14)
-                                .fill(ONETokens.oneCreamMid)
+                                .fill(V3Tokens.surface)
                                 .frame(width: 300, height: 200)
                         }
                     }
                     .id(url)
+                    .matchedGeometryEffect(id: "archivePhoto", in: photoNS, isSource: !isViewerActive)
+                    .opacity(isViewerActive ? 0 : 1)
                     .contentShape(Rectangle())
                     .onTapGesture {
                         ONEHaptics.moodSelected()
-                        onPhotoTap?(url)
+                        withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+                            onPhotoTap?(url)
+                        }
                     }
                 } else {
                     // Fotoğraf yoksa mood pattern
@@ -206,13 +249,13 @@ struct DayPreviewCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(entry.songName)
                     .displayXS()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .tracking(-0.3)
                     .lineLimit(2)
                 
                 Text(entry.artistName)
                     .monoBase(tracking: 0.3)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
 
                 HStack(spacing: 8) {
@@ -222,7 +265,7 @@ struct DayPreviewCard: View {
                             .frame(width: 7, height: 7)
                         Text(entry.normalizedMoodLabel.uppercased())
                             .monoMicro(tracking: 0.8)
-                            .foregroundColor(ONETokens.oneCharcoal)
+                            .foregroundColor(V3Tokens.mutedText)
                             .lineLimit(1)
                     }
 
@@ -233,7 +276,7 @@ struct DayPreviewCard: View {
                 if let note = entry.note, !note.isEmpty {
                     Text(note)
                         .bodySM()
-                        .foregroundColor(ONETokens.oneCharcoal.opacity(0.85))
+                        .foregroundColor(V3Tokens.mutedText.opacity(0.85))
                         .lineLimit(3)
                         .padding(.top, 8)
                         .padding(.horizontal, 12)
@@ -251,7 +294,7 @@ struct DayPreviewCard: View {
 
             // ── Alt: Saat + Paylaşım (Daha Belirgin) ──────────────────────
             Divider()
-                .background(ONETokens.oneCreamMid)
+                .background(V3Tokens.surface)
                 .padding(.horizontal, 20)
                 .padding(.top, 14)
 
@@ -260,7 +303,7 @@ struct DayPreviewCard: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(String(format: NSLocalizedString("archive.selectedAt", comment: ""), entry.time))
                         .monoLabel(tracking: 0.5)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                     
                     Button(action: openSong) {
                         HStack(spacing: 4) {
@@ -269,12 +312,12 @@ struct DayPreviewCard: View {
                             Text(NSLocalizedString("archive.openSong", comment: ""))
                                 .monoLabel(tracking: 0.4)
                         }
-                        .foregroundColor(ONETokens.oneCharcoal)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(
                             Capsule()
-                                .fill(ONETokens.oneCreamMid)
+                                .fill(V3Tokens.surface)
                         )
                     }
                 }
@@ -292,7 +335,7 @@ struct DayPreviewCard: View {
                         Text(NSLocalizedString("general.share", comment: ""))
                             .monoBase(tracking: 0.6)
                     }
-                    .foregroundColor(ONETokens.oneCream)
+                    .foregroundColor(ONEBrand.bone)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 10)
                     .background(
@@ -319,7 +362,7 @@ struct DayPreviewCard: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(ONETokens.onePaper)
+                .fill(V3Tokens.surface)
                 .shadow(color: Color.black.opacity(0.14), radius: 30, x: 0, y: 14)
         )
         .frame(width: UIScreen.main.bounds.width * 0.88)
@@ -472,7 +515,7 @@ struct DayShareCard: View {
                         .frame(width: 40, height: 1.5)
 
                     Text(entry.songName)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(V3Typography.sans(15, weight: .semibold))
                         .foregroundColor(.white)
                         .lineLimit(2)
 
@@ -527,7 +570,7 @@ struct DayShareCard: View {
                     .padding(.bottom, 4)
 
                 Text(entry.songName)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(V3Typography.sans(24, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)

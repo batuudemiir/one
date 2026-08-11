@@ -38,18 +38,18 @@ struct BadgeUnlockToast: ViewModifier {
         HStack(spacing: 12) {
             Image(systemName: badge.iconSystemName)
                 .font(.system(size: 18, weight: .light))
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
                 .frame(width: 36, height: 36)
-                .background(Circle().fill(ONETokens.oneInk.opacity(0.08)))
+                .background(Circle().fill(V3Tokens.ink.opacity(0.08)))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(NSLocalizedString("badges.unlocked", comment: ""))
                     .font(.custom("GeistMono-Regular", size: 9))
                     .tracking(1.2)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                 Text(badge.title)
                     .font(.custom("GeistMono-Regular", size: 13))
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
             }
             Spacer(minLength: 0)
         }
@@ -57,12 +57,12 @@ struct BadgeUnlockToast: ViewModifier {
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 2)
-                .fill(ONETokens.oneCream)
+                .fill(ONEBrand.bone)
                 .shadow(color: .black.opacity(0.1), radius: 12, y: 4)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 2)
-                .strokeBorder(ONETokens.oneInk.opacity(0.1), lineWidth: 1)
+                .strokeBorder(V3Tokens.ink.opacity(0.1), lineWidth: 1)
         )
         .padding(.horizontal, 16)
         .padding(.top, 8)

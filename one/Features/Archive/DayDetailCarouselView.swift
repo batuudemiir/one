@@ -151,24 +151,24 @@ struct DayDetailCarouselView: View {
 
                     Text(entry.time)
                         .font(ONETypography.monoSM)
-                        .foregroundStyle(ONETokens.oneAsh)
+                        .foregroundStyle(V3Tokens.mutedText)
                 }
 
                 // Song name + artist
                 Text(entry.songName)
                     .font(ONETypography.displaySM)
-                    .foregroundStyle(ONETokens.oneInk)
+                    .foregroundStyle(V3Tokens.ink)
                     .lineLimit(2)
 
                 Text(entry.artistName)
                     .font(ONETypography.bodySM)
-                    .foregroundStyle(ONETokens.oneAsh)
+                    .foregroundStyle(V3Tokens.mutedText)
 
                 // Note
                 if let note = entry.note, !note.isEmpty {
                     Text(note)
                         .font(ONETypography.bodyXS)
-                        .foregroundStyle(ONETokens.oneAsh)
+                        .foregroundStyle(V3Tokens.mutedText)
                         .lineLimit(3)
                         .padding(.top, ONETokens.spacingXS)
                 }
@@ -177,7 +177,7 @@ struct DayDetailCarouselView: View {
             }
             .padding(ONETokens.spacingLG)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(ONETokens.onePaper)
+            .background(V3Tokens.surface)
         }
         .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusCardLg))
         .shadow(color: .black.opacity(0.15), radius: 12, y: 6)

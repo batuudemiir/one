@@ -73,7 +73,7 @@ struct SubCircleEditorSheet: View {
                 }
                 .padding(ONETokens.spacingXL)
             }
-            .background(ONETokens.oneCream.ignoresSafeArea())
+            .background(ONEBrand.bone.ignoresSafeArea())
             .navigationTitle(isEditing
                 ? NSLocalizedString("subcircle.editTitle", comment: "")
                 : NSLocalizedString("subcircle.new", comment: ""))
@@ -115,7 +115,7 @@ struct SubCircleEditorSheet: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                        .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
                 )
                 .onChange(of: name) { _, new in
                     if new.count > SubCircle.maxNameLength {
@@ -136,7 +136,7 @@ struct SubCircleEditorSheet: View {
                         .fill(Color(hex: hex))
                         .frame(width: 30, height: 30)
                         .overlay(
-                            Circle().stroke(ONETokens.oneInk,
+                            Circle().stroke(V3Tokens.ink,
                                             lineWidth: colorHex == hex ? 2 : 0)
                         )
                         .onTapGesture {
@@ -156,14 +156,14 @@ struct SubCircleEditorSheet: View {
             HStack(spacing: 8) {
                 ForEach(emojiPresets, id: \.self) { e in
                     Text(e.isEmpty ? "∅" : e)
-                        .font(.system(size: 18))
+                        .font(V3Typography.sans(18))
                         .foregroundColor(e.isEmpty ? ONETokens.oneStone : nil)
                         .frame(width: 34, height: 34)
                         .background(
-                            Circle().fill(emoji == e ? ONETokens.oneInk.opacity(0.1) : Color.white.opacity(0.6))
+                            Circle().fill(emoji == e ? V3Tokens.ink.opacity(0.1) : Color.white.opacity(0.6))
                         )
                         .overlay(
-                            Circle().stroke(ONETokens.oneInk, lineWidth: emoji == e ? 1.5 : 0)
+                            Circle().stroke(V3Tokens.ink, lineWidth: emoji == e ? 1.5 : 0)
                         )
                         .onTapGesture {
                             ONEHaptics.feelingSelected()
@@ -183,7 +183,7 @@ struct SubCircleEditorSheet: View {
             if friends.isEmpty {
                 Text(NSLocalizedString("subcircle.noFriends", comment: ""))
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .padding(.vertical, 8)
             } else {
                 VStack(spacing: 0) {
@@ -211,16 +211,16 @@ struct SubCircleEditorSheet: View {
                     .frame(width: 30, height: 30)
                     .overlay(
                         Text(String(friend.name.prefix(1)).uppercased())
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(V3Typography.sans(12, weight: .semibold))
                             .foregroundColor(.white)
                     )
                 Text(friend.name)
-                    .font(.system(size: 14))
-                    .foregroundColor(ONETokens.oneInk)
+                    .font(V3Typography.sans(14))
+                    .foregroundColor(V3Tokens.ink)
                 Spacer()
                 Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 20))
-                    .foregroundColor(isOn ? ONETokens.oneBrand : ONETokens.oneStone.opacity(0.4))
+                    .foregroundColor(isOn ? ONETokens.oneBrand : V3Tokens.faintText.opacity(0.4))
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 11)
@@ -234,7 +234,7 @@ struct SubCircleEditorSheet: View {
     private func fieldLabel(_ text: String) -> some View {
         Text(text.uppercased())
             .monoLabel(tracking: 1.3)
-            .foregroundColor(ONETokens.oneStone)
+            .foregroundColor(V3Tokens.faintText)
     }
 
     // MARK: - Aksiyonlar

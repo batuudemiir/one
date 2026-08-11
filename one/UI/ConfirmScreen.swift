@@ -29,7 +29,7 @@ struct ConfirmScreen: View {
                         Button(action: { vm.currentScreen = .search }) {
                             Text(NSLocalizedString("confirm.back", comment: ""))
                                 .monoBase(tracking: 1.5)
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                         }
                         .accessibilityLabel(NSLocalizedString("general.back", comment: ""))
                         .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
@@ -52,7 +52,7 @@ struct ConfirmScreen: View {
                                             image.resizable().aspectRatio(contentMode: .fill)
                                         } else {
                                             RoundedRectangle(cornerRadius: 18)
-                                                .fill(ONETokens.oneCreamMid)
+                                                .fill(V3Tokens.surface)
                                         }
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 18))
@@ -65,7 +65,7 @@ struct ConfirmScreen: View {
                                             endPoint: .bottomTrailing
                                         ))
                                         .shadow(color: song.shadow, radius: 16, x: 0, y: 8)
-                                        .overlay(Text(song.emoji).font(.system(size: 36)))
+                                        .overlay(Text(song.emoji).font(V3Typography.sans(36)))
                                 }
                             }
                             .frame(
@@ -93,12 +93,12 @@ struct ConfirmScreen: View {
                         VStack(alignment: .leading, spacing: 3) {
                             Text(song.name)
                                 .displaySM()
-                                .foregroundColor(ONETokens.oneInk)
+                                .foregroundColor(V3Tokens.ink)
                                 .tracking(-0.02)
                                 .lineLimit(1)
                             Text("\(song.artist) · \(song.genre)")
                                 .monoBase(tracking: 0.5)
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 26)
@@ -108,7 +108,7 @@ struct ConfirmScreen: View {
                         HStack {
                             Text(NSLocalizedString("confirm.moodQuestion", comment: ""))
                                 .monoBase(tracking: 1.5)
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                             Spacer()
                         }
                         .padding(.horizontal, 26)
@@ -168,7 +168,7 @@ struct ConfirmScreen: View {
             VStack(spacing: 0) {
                 // Üst blur kenarı
                 LinearGradient(
-                    colors: [ONETokens.oneCream.opacity(0), ONETokens.oneCream],
+                    colors: [ONEBrand.bone.opacity(0), ONEBrand.bone],
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -184,10 +184,10 @@ struct ConfirmScreen: View {
                                 .padding(.vertical, 18)
                                 .background(
                                     vm.selectedMood?.color
-                                        ?? ONETokens.oneStone
+                                        ?? V3Tokens.faintText
                                 )
                                 .foregroundColor(
-                                    vm.selectedMood?.isDark == false ? .black : ONETokens.oneCream
+                                    vm.selectedMood?.isDark == false ? .black : ONEBrand.bone
                                 )
                                 .cornerRadius(20)
                         }
@@ -198,7 +198,7 @@ struct ConfirmScreen: View {
                         Button(action: { vm.currentScreen = .search }) {
                             Text(NSLocalizedString("today.photoChange", comment: ""))
                                 .monoBase(tracking: 1.5)
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                         }
                         .accessibilityLabel(NSLocalizedString("general.back", comment: ""))
                         .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
@@ -206,7 +206,7 @@ struct ConfirmScreen: View {
                 }
                 .padding(.horizontal, 26)
                 .padding(.bottom, 28)
-                .background(ONETokens.oneCream)
+                .background(ONEBrand.bone)
             }
         }
         .overlay {
@@ -249,11 +249,11 @@ private struct SongConfirmMicro: View {
                 VStack(spacing: 8) {
                     Text("\(moodLabel.lowercased()) + bu şarkı.")
                         .displaySM()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .multilineTextAlignment(.center)
                     Text(songName)
                         .monoBase(tracking: 0.5)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .lineLimit(1)
                 }
 
@@ -261,16 +261,16 @@ private struct SongConfirmMicro: View {
                     Button(action: onCancel) {
                         Text(NSLocalizedString("confirm.songMicro.cancel", comment: ""))
                             .monoBase(tracking: 1)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(ONETokens.oneCreamMid)
+                            .background(V3Tokens.surface)
                             .cornerRadius(16)
                     }
                     Button(action: onConfirm) {
                         Text(NSLocalizedString("confirm.songMicro.confirm", comment: ""))
                             .displayXS()
-                            .foregroundColor(moodIsDark ? ONETokens.oneCream : ONETokens.oneInk)
+                            .foregroundColor(moodIsDark ? ONEBrand.bone : V3Tokens.ink)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
                             .background(moodColor)
@@ -281,7 +281,7 @@ private struct SongConfirmMicro: View {
             .padding(28)
             .background(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(ONETokens.oneCream)
+                    .fill(ONEBrand.bone)
                     .shadow(color: Color.black.opacity(0.12), radius: 24, x: 0, y: 8)
             )
             .padding(.horizontal, 22)
@@ -315,7 +315,7 @@ struct PhotoHeroButton: View {
                     ZStack {
                         Image(systemName: "pencil")
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                             .frame(width: 32, height: 32)
                             .liquidGlass(in: Circle())
                     }
@@ -324,22 +324,22 @@ struct PhotoHeroButton: View {
                 } else {
                     // Boş durum — dashed + ikon
                     RoundedRectangle(cornerRadius: 18)
-                        .fill(ONETokens.oneCreamMid)
+                        .fill(V3Tokens.surface)
                         .overlay(
                             RoundedRectangle(cornerRadius: 18)
                                 .strokeBorder(
                                     style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
                                 )
-                                .foregroundColor(ONETokens.oneStone)
+                                .foregroundColor(V3Tokens.faintText)
                         )
 
                     VStack(spacing: 8) {
                         Image(systemName: "camera")
                             .font(.system(size: 22, weight: .light))
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                         Text(NSLocalizedString("confirm.addPhoto", comment: ""))
                             .monoSM(tracking: 0.5)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                 }
             }
@@ -362,11 +362,11 @@ struct InlineNoteField: View {
         HStack(spacing: 12) {
             Image(systemName: "pencil.line")
                 .font(.system(size: 15, weight: .light))
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
 
             TextField(NSLocalizedString("today.notePlaceholder", comment: ""), text: $noteText)
                 .monoBase(tracking: 0.2)
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
                 .focused($isFocused)
                 .submitLabel(.done)
                 .onSubmit { isFocused = false }
@@ -375,7 +375,7 @@ struct InlineNoteField: View {
                 Button(action: { noteText = "" }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 15))
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
                 }
             }
         }
@@ -383,7 +383,7 @@ struct InlineNoteField: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                .fill(isFocused ? ONETokens.onePaper : ONETokens.oneCreamMid)
+                .fill(isFocused ? V3Tokens.surface : V3Tokens.surface)
                 .shadow(
                     color: isFocused ? Color.black.opacity(0.07) : Color.clear,
                     radius: 10, x: 0, y: 3

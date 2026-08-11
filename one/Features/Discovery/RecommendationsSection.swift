@@ -19,13 +19,13 @@ struct RecommendationsSection: View {
             HStack {
                 Text(NSLocalizedString("discover.ourPicks", comment: ""))
                     .monoBase(tracking: 2.0)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
 
                 Spacer()
 
                 if !engine.isLoading && !engine.recommendations.isEmpty {
                     Button(action: {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        ONEHaptics.feelingSelected()
                         isRefreshing = true
                         Task {
                             await engine.refreshRecommendations()
@@ -40,10 +40,10 @@ struct RecommendationsSection: View {
                             Text(NSLocalizedString("discover.refresh", comment: ""))
                                 .monoSM(tracking: 0.8)
                         }
-                        .foregroundColor(ONETokens.oneCharcoal)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(Capsule().fill(ONETokens.oneSilver))
+                        .background(Capsule().fill(V3Tokens.hairline))
                     }
                     .disabled(isRefreshing)
                 }
@@ -76,16 +76,16 @@ struct RecommendationsSection: View {
             ForEach(0..<6, id: \.self) { _ in
                 VStack(alignment: .leading, spacing: 10) {
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(ONETokens.oneSilver)
+                        .fill(V3Tokens.hairline)
                         .aspectRatio(1, contentMode: .fit)
                     
                     VStack(alignment: .leading, spacing: 6) {
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(ONETokens.oneSilver)
+                            .fill(V3Tokens.hairline)
                             .frame(height: 12)
                         
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(ONETokens.oneSilver)
+                            .fill(V3Tokens.hairline)
                             .frame(height: 10)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.trailing, 30)
@@ -128,7 +128,7 @@ struct RecommendationsSection: View {
 
                 Text(errorMessage(for: error))
                     .font(.custom("GeistMono-Regular", size: 11))
-                    .foregroundColor(ONETokens.oneCharcoal)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(3)
             }
             
@@ -136,7 +136,7 @@ struct RecommendationsSection: View {
             if case .spotifyAPIError(let message) = error {
                 Text("Debug: \(message)")
                     .font(.custom("GeistMono-Regular", size: 9))
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .padding(.top, 4)
             }
             #endif
@@ -151,9 +151,9 @@ struct RecommendationsSection: View {
                         }
                     }) {
                         Text("Apple Music")
-                            .font(.custom("GeistMono-Regular", size: 10))
+                            .font(ONETypography.monoLabel)
                             .tracking(0.6)
-                            .foregroundColor(ONETokens.oneCream)
+                            .foregroundColor(ONEBrand.bone)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
                             .background(
@@ -172,12 +172,12 @@ struct RecommendationsSection: View {
                     Text(NSLocalizedString("general.retry", comment: ""))
                         .font(.custom("GeistMono-Regular", size: 10))
                         .tracking(0.6)
-                        .foregroundColor(ONETokens.oneCharcoal)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
                         .background(
                             Capsule()
-                                .stroke(ONETokens.oneCreamMid, lineWidth: 1)
+                                .stroke(V3Tokens.surface, lineWidth: 1)
                         )
                 }
                 .padding(.top, 4)

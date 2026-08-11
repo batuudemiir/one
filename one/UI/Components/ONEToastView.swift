@@ -33,60 +33,56 @@ struct ONEToastOverlay: View {
     }
 }
 
-// MARK: - Toast Kartı
+// MARK: - Toast Kartı (v3 spec)
+// Üstte 18pt radius ink kart, kor nokta + mesaj + Kapat. `toastin` 0.28s
+// giriş animasyonu — overlay wrapper zaten spring transition uyguluyor.
 struct ONEToastView: View {
     let toast: ToastItem
     @ObservedObject private var handler = ErrorHandler.shared
-    
+
     var body: some View {
         HStack(spacing: 12) {
-            // İkon
-            Image(systemName: toast.type.icon)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(toast.type.color)
-            
-            // Mesaj
-            VStack(alignment: .leading, spacing: 2) {
-                Text(toast.title)
-                    .bodySMMedium()
-                    .foregroundColor(ONETokens.oneInk)
+            // v3: kor nokta (7pt) — tek vurgu.
+            Circle()
+                .fill(ONEBrand.kor)
+                .frame(width: 7, height: 7)
 
-                Text(toast.message)
-                    .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
-                    .lineLimit(2)
-            }
+            // Mesaj — tek satır (spec sadece message; title yoksa message'a düş).
+            Text(toast.title.isEmpty ? toast.message : toast.title)
+                .font(V3Typography.sans(14, weight: .medium))
+                .foregroundColor(ONEBrand.bone)
+                .lineLimit(2)
 
             Spacer(minLength: 4)
 
-            // Retry veya Dismiss
             if toast.isRetryable {
                 Button(action: { handler.retry() }) {
                     Text(NSLocalizedString("general.retry", comment: ""))
-                        .monoLabel(tracking: 0.5)
-                        .foregroundColor(ONETokens.oneCream)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule().fill(toast.type.color)
-                        )
+                        .font(V3Typography.mono(11, weight: .semibold))
+                        .tracking(1.2)
+                        .foregroundColor(ONEBrand.ink)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(ONEBrand.bone))
                 }
                 .accessibilityLabel(NSLocalizedString("general.retry", comment: ""))
             } else {
                 Button(action: { handler.dismiss() }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(ONETokens.oneStone)
-                        .frame(width: 44, height: 44)
-                        .background(Circle().fill(ONETokens.oneSilver).frame(width: 24, height: 24))
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(ONEBrand.bone.opacity(0.6))
+                        .frame(width: 32, height: 32)
                 }
                 .accessibilityLabel(NSLocalizedString("general.close", comment: ""))
             }
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .liquidGlass(tint: toast.type.color.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.08), radius: 16, x: 0, y: 6)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(ONEBrand.ink)
+        )
+        .shadow(color: .black.opacity(0.16), radius: 20, x: 0, y: 6)
         .padding(.horizontal, 16)
         .gesture(
             DragGesture(minimumDistance: 10)

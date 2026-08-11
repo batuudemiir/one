@@ -155,7 +155,7 @@ struct ProfileDashboardView: View {
                             Button(action: { showYearlySummary = false }) {
                                 Image(systemName: "xmark")
                                     .bodyXSMedium()
-                                    .foregroundColor(ONETokens.oneAsh)
+                                    .foregroundColor(V3Tokens.mutedText)
                             }
                         }
                     }

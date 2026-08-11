@@ -5,7 +5,7 @@
 //  Prototipin efemer "sessiz cevaplaşma" veri katmanı. `DailyReaction`
 //  (EmojiReaction kayıt tipi) üstünde gönder / getir. Kalıcı Comment
 //  servisinin yerini alıyor — karşılıklar gün bitince istemci tarafında
-//  filtrelenir (isToday), sayaç yok, yalnız sahibe gösterilir.
+//  filtrelenir (isFresh — son 24 saat), sayaç yok, yalnız sahibe gösterilir.
 //
 
 import Foundation
@@ -132,7 +132,7 @@ extension CloudKitManager {
             let reactions = matches
                 .compactMap { try? $0.1.get() }
                 .compactMap { DailyReaction(record: $0) }
-                .filter { $0.isToday }
+                .filter { $0.isFresh }
                 .sorted { $0.createdAt < $1.createdAt }
 
             guard !reactions.isEmpty else { DispatchQueue.main.async { completion([]) }; return }

@@ -432,9 +432,15 @@ extension CloudKitManager {
                     ($0["status"] as? String) == "pending" &&
                     ($0["user2ID"] as? String) == currentUserID
                 }.count
-                DispatchQueue.main.async { completion(count) }
+                DispatchQueue.main.async {
+                    self.pendingFriendRequestCount = count
+                    completion(count)
+                }
             } else {
-                DispatchQueue.main.async { completion(0) }
+                DispatchQueue.main.async {
+                    self.pendingFriendRequestCount = 0
+                    completion(0)
+                }
             }
         }
     }

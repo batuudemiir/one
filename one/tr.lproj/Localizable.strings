@@ -53,12 +53,12 @@
 "confirm.shareCircle" = "Çevre'de paylaş";
 
 /* ── ÇEVRE ── */
-"circle.title" = "frekans";
+"circle.title" = "Çevre";
 "circle.sharedCount" = "%d/%d paylaştı";
 "circle.removeFriend" = "arkadaşlıktan çıkarılsın mı?";
 "circle.setupCTA" = "Çevreni kur";
 "circle.emptyHint" = "Arkadaşlarının bugünkü mood'unu gör...";
-"circle.addFriend" = "Arkadaş Ekle";
+"circle.addFriend" = "Arkadaş ekle";
 
 /* ── KEŞFİF ── */
 "discover.title" = "keşfet";
@@ -407,7 +407,7 @@
 "onboarding.connectDesc" = "Daha iyi bir deneyim için bağlan.";
 "onboarding.spotifySettings" = "Spotify'ı ayarlardan bağlayabilirsin.";
 "onboarding.appleMusicDenied" = "Apple Music erişimi reddedildi. Ayarlar → Gizlilik → Medya ve Apple Music'ten izin verebilirsin.";
-"onboarding.notificationDesc" = "Günde bir bildirim gönderebiliriz...";
+"onboarding.notificationDesc" = "Seçtiğin saatte bir hatırlatma yollayalım mı?";
 
 /* ── REHBER ── */
 "contacts.smsNotAvailable" = "Bu cihazda SMS gönderme özelliği kullanılamıyor.";
@@ -775,7 +775,8 @@
 "nav.discover" = "keşfet";
 "nav.archive" = "arşiv";
 "nav.today" = "bugün";
-"nav.circle" = "frekans";
+"nav.entry" = "an";
+"nav.circle" = "çevre";
 "nav.profile" = "profil";
 "nav.tabAccessibility" = "%@ sekmesi";
 "nav.todayHint" = "Bugünün mood'unu kaydet";
@@ -1009,7 +1010,7 @@
 "discover.emptyCta" = "Bugünkü mood'unu seç";
 
 /* B1 — Streak / freeze (soft streak) */
-"streak.freezeUsed.toast" = "Bir günü atladın, ama serin korundu — haftada 1 freeze ❄️";
+"streak.freezeUsed.toast" = "Bir gün geçti, sorun değil.";
 "badges.streak3.title" = "3 Gün";
 "badges.streak3.desc" = "İlk halka kapandı";
 "badges.streak14.title" = "14 Gün";
@@ -1096,7 +1097,7 @@
 "badges.earlyBird.desc" = "Sabahın ilk ışıklarında";
 
 /* Viral Sharing */
-"share.xTemplate" = "Benim bugünkü ONE mood'um: %@. Senin günün nasıl geçti? 🎧✨\n\n#OneApp #DailyMood";
+"share.xTemplate" = "Bugünkü ONE rengim: %@.\n\n#OneApp";
 "share.tiktok" = "TikTok'ta Paylaş";
 "share.tiktokHint" = "O günü nasıl geçirdiğini göster";
 
@@ -1109,7 +1110,7 @@
 /* Resonance (v2.6) */
 "resonance.title" = "Rezonans";
 "resonance.send" = "Rezonans Gönder";
-"resonance.sent" = "Rezonansın gönderildi ✨";
+"resonance.sent" = "Rezonansın gönderildi.";
 "resonance.sheetTitle" = "Rezonans Gönder";
 "resonance.sheetSubtitle" = "Şu anki ruh halini paylaş, arkadaşına hissettir.";
 "resonance.pickMood" = "Rengini seç";
@@ -1259,8 +1260,8 @@ bir gün.";
 "settings.privacyAccount" = "gizlilik & hesap";
 "settings.exportData" = "veriyi dışa aktar";
 "settings.freeTier" = "ücretsiz";
-"reminder.onceADay" = "günde bir";
-"reminder.promise" = "ONE seni günde yalnızca bir kez dürter. Kaydını zaten yaptıysan o gün hiç dürtmez.";
+"reminder.onceADay" = "hatırlatma";
+"reminder.promise" = "Seçtiğin saatte bir hatırlatma. Kaydın varsa o gün gelmez.";
 "reminder.hour" = "saat";
 "reminder.evening" = "akşam hatırlatması";
 "reminder.eveningSub" = "bugünü işaretlemeyi unutma";
@@ -1418,3 +1419,25 @@ bir gün.";
 
 "subcircle.all" = "Tümü";
 "subcircle.emptyToday" = "Bu grupta bugün paylaşan yok.";
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.v3Subtitle" = "Bugün kimin nasıl olduğunu gör.";
+"circle.peopleCount" = "%d kişi";
+"circle.momentCount" = "%d an";
+"circle.youCard" = "Sen";
+"circle.youNotShared" = "Bugün paylaşmadın";
+"circle.notSharedToday" = "Bugün paylaşmadı";
+"circle.scopeShared" = "paylaşıldı";
+"circle.scopePrivate" = "yalnız sen";
+"circle.v3EmptyTitle" = "Henüz kimse yok.";
+"circle.v3EmptyBody" = "Birini ekle, günlerinizin rengini karşılıklı görün.";
+"circle.scanQR" = "QR kod tara";
+"circle.resonance" = "Uyum";
+"circle.sameColorLabel" = "Aynı renkte olanlar";
+"circle.distributionLabel" = "Çevrendeki dağılım";
+"circle.yourColorToday" = "Bugün senin rengin";
+"circle.noColorToday" = "Bugün renk yok";
+"circle.noColorTodayBody" = "Bir an kaydet, uyum burada belirsin.";
+"circle.sameColorCount" = "%d kişi bugün seninle aynı renkte";
+"circle.requests" = "Arkadaş istekleri";
+"circle.notifications" = "Bildirimler";

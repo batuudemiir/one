@@ -8,8 +8,9 @@
 import CoreData
 import SwiftUI
 import CloudKit
+import Combine
 
-struct PersistenceController {
+final class PersistenceController: ObservableObject {
     static let shared = PersistenceController()
 
     @MainActor
@@ -22,9 +23,24 @@ struct PersistenceController {
 
     let container: NSPersistentCloudKitContainer
 
+    /// Whether `loadPersistentStores` has completed. Consumers that render off
+    /// CoreData at launch should gate their content until this flips true;
+    /// fetches issued before that will silently return empty rows.
+    @Published private(set) var isReady: Bool = false
+
     init(inMemory: Bool = false) {
+        // Launch contract: bu init Tier 0. Bütçe <20ms — loadPersistentStores
+        // async; sadece kurulum senkron. Yeni sync iş buraya değil, Tier 2/3'e.
+        let __initT0 = CFAbsoluteTimeGetCurrent()
+        defer {
+            let elapsed = CFAbsoluteTimeGetCurrent() - __initT0
+            if !inMemory && elapsed >= 0.02 {
+                ONELogger.warning("PersistenceController.init > 20ms (\(Int(elapsed * 1000))ms)", category: .persistence)
+            }
+        }
+
         container = NSPersistentCloudKitContainer(name: "one")
-        
+
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         } else {
@@ -32,22 +48,24 @@ struct PersistenceController {
             guard let description = container.persistentStoreDescriptions.first else {
                 ONELogger.error("CoreData: persistentStoreDescriptions is empty — CloudKit sync disabled", category: .persistence)
                 container.loadPersistentStores(completionHandler: { _, _ in })
+                // No description = no CloudKit but container is still usable.
+                self.isReady = true
                 return
             }
-            
+
             // Enable CloudKit sync
             description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
                 containerIdentifier: "iCloud.com.batu.ones"
             )
-            
+
             // Enable remote change notifications
-            description.setOption(true as NSNumber, 
+            description.setOption(true as NSNumber,
                                 forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-            
+
             // Enable history tracking
             description.setOption(true as NSNumber,
                                 forKey: NSPersistentHistoryTrackingKey)
-            
+
             // Enable automatic migration
             description.setOption(true as NSNumber,
                                 forKey: NSMigratePersistentStoresAutomaticallyOption)
@@ -59,19 +77,51 @@ struct PersistenceController {
                 FileProtectionType.completeUntilFirstUserAuthentication as NSObject,
                 forKey: NSPersistentStoreFileProtectionKey
             )
+
+            // Async load — completion handler fires on a background queue,
+            // publish `isReady` on main so SwiftUI reacts on the right actor.
+            // Tests / previews (`inMemory`) load synchronously below to keep
+            // fixtures deterministic.
+            ONELaunchSignpost.begin("coredata.load")
+            container.loadPersistentStores { [weak self] _, error in
+                if let error = error as NSError? {
+                    // A store that can't open is unrecoverable — pretending
+                    // otherwise means silent data loss on every write.
+                    ONELogger.error("CoreData store failed to load: \(error.code) — \(error.localizedDescription)", category: .persistence)
+                    ErrorHandler.shared.handle(error, context: "CoreDataStoreLoad")
+                    fatalError("CoreData store failed to load: \(error)")
+                }
+                DispatchQueue.main.async {
+                    ONELaunchSignpost.end("coredata.load")
+                    self?.isReady = true
+                    // Register the remote-change observer only after the
+                    // store is loaded — before this point the coordinator
+                    // has no store attached, so the observer would either
+                    // miss events or fire against an unready stack.
+                    // TODO: observer-side reload must still tolerate
+                    // notifications arriving before consumers are subscribed.
+                    self?.setupRemoteChangeNotifications()
+                }
+            }
+
+            container.viewContext.automaticallyMergesChangesFromParent = true
+            container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+            return
         }
-        
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+
+        // In-memory path (tests, previews) — synchronous load is fine and
+        // keeps `pc.fetchDailySong(...)` valid immediately after `init`.
+        ONELaunchSignpost.begin("coredata.load")
+        container.loadPersistentStores { _, error in
+            ONELaunchSignpost.end("coredata.load")
             if let error = error as NSError? {
                 ONELogger.error("CoreData store failed to load: \(error.code) — \(error.localizedDescription)", category: .persistence)
-                ErrorHandler.shared.handle(error, context: "CoreDataStoreLoad")
+                fatalError("CoreData store failed to load: \(error)")
             }
-        })
-        
+        }
         container.viewContext.automaticallyMergesChangesFromParent = true
         container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        
-        // Setup remote change notifications
+        self.isReady = true
         setupRemoteChangeNotifications()
     }
     
@@ -110,16 +160,26 @@ struct PersistenceController {
             let now = Date() // Gerçek timestamp
             
             if let existing = results.first {
-                // Update existing entry
+                // Update existing entry — do NOT overwrite `createdAt`;
+                // the model has no `updatedAt` field so the original
+                // insertion timestamp is the only signal of when the row
+                // first appeared. Overwriting it broke archive sort order
+                // and made "edited" indistinguishable from "just created".
                 dailySong = existing
-                // Güncelleme zamanını kaydet
-                dailySong.createdAt = now
             } else {
                 // Create new entry
                 dailySong = DailySong(context: context)
+                // `id` ZORUNLU: `Moment.init?(from:)` id'siz satırı nil döner
+                // ve satır Profil istatistiklerinden, renk dağılımından,
+                // arşiv gün gruplamasından sessizce düşer. Bu yol (şarkı
+                // akışı) eskiden id yazmıyordu — kayıtların bir kısmı
+                // görünmez oluyordu.
+                dailySong.id = UUID()
                 dailySong.date = normalizedDate
                 dailySong.createdAt = now
             }
+            // Geriye dönük onarım: id'siz eski satır güncelleniyorsa doldur.
+            if dailySong.id == nil { dailySong.id = UUID() }
             
             // Update properties
             dailySong.songName = song.name
@@ -263,8 +323,90 @@ struct PersistenceController {
         }
     }
     
+    // MARK: - v3 multi-moment reads (additive)
+
+    /// v3: bir güne ait TÜM anlar. `entryIndex` sonra `createdAt` sıralı.
+    /// Boş gün için `[]`. Legacy `fetchDailySong(for:)` mostRecent semantiğine
+    /// benziyor; artık en son entryIndex'i döndüren `mostRecentMoment(for:)`
+    /// kullanılmalı.
+    func fetchMoments(for date: Date, context: NSManagedObjectContext) -> [Moment] {
+        let normalizedDate = Calendar.current.startOfDay(for: date)
+        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "date == %@", normalizedDate as NSDate)
+        fetchRequest.sortDescriptors = [
+            NSSortDescriptor(key: "entryIndex", ascending: true),
+            NSSortDescriptor(key: "createdAt", ascending: true)
+        ]
+
+        do {
+            let rows = try context.fetch(fetchRequest)
+            return rows.compactMap { Moment(from: $0) }
+        } catch {
+            ONELogger.debug("Error fetching moments: \(error)", category: .persistence)
+            return []
+        }
+    }
+
+    /// v3: bir aya ait tüm günler (an koleksiyonu ile). Boş günler dahil DEĞİL —
+    /// UI takvim gridini kendi tarafında boşlukla doldurur.
+    func fetchDaysForMonth(year: Int, month: Int, context: NSManagedObjectContext) -> [Day] {
+        let songs = fetchDailySongsForMonth(year: year, month: month, context: context)
+        return songs.compactMap { Moment(from: $0) }.groupedByDay()
+    }
+
+    /// Bir güne yeni an eklerken bir sonraki `entryIndex`. Concurrency yok —
+    /// aynı gün içinde çift ekleme (nadir) CloudKit merge sırasında ele
+    /// alınmalı; UI tek kullanıcı, tek cihazda peş peşe fetch/insert yapıyor.
+    func nextEntryIndex(for date: Date, context: NSManagedObjectContext) -> Int16 {
+        let existing = fetchMoments(for: date, context: context)
+        guard let last = existing.map(\.entryIndex).max() else { return 0 }
+        return Int16(last + 1)
+    }
+
+    /// Legacy helper — bir gündeki en son an. Eski `fetchDailySong(for:)`
+    /// çağrı yerlerinden geçiş sırasında kullanılsın.
+    func mostRecentMoment(for date: Date, context: NSManagedObjectContext) -> Moment? {
+        fetchMoments(for: date, context: context).last
+    }
+
+    /// v3 write path — daima YENİ satır ekle. entryIndex auto. Legacy
+    /// `savePickResults` upsert (overwrite) mantığı v2 tek-an döneminden;
+    /// v3'te An hub'ı bu fonksiyonu çağırır.
+    ///
+    /// Not: caller `context.save()` sorumlu — hata yönetimi tek yerde kalsın.
+    @discardableResult
+    func insertNewMoment(
+        for date: Date,
+        moodColorHex: String,
+        moodWord: String? = nil,
+        note: String? = nil,
+        songName: String? = nil,
+        songArtist: String? = nil,
+        photoData: Data? = nil,
+        scope: MomentScope = .private,
+        context: NSManagedObjectContext
+    ) -> DailySong {
+        let normalizedDate = Calendar.current.startOfDay(for: date)
+        let now = Date()
+
+        let song = DailySong(context: context)
+        song.id = UUID()
+        song.date = normalizedDate
+        song.createdAt = now
+        song.entryIndex = nextEntryIndex(for: normalizedDate, context: context)
+        song.moodColorHex = moodColorHex
+        song.moodWord = moodWord
+        song.dailyNote = note?.trimmingCharacters(in: .whitespacesAndNewlines)
+        song.songName = songName
+        song.artistName = songArtist
+        song.photoData = photoData
+        song.shareWithCircle = (scope == .friends)
+        song.isSharedWithCircle = (scope == .friends)
+        return song
+    }
+
     // MARK: - Pattern Analysis
-    
+
     struct SongPattern: Identifiable {
         let id = UUID()
         let songName: String
@@ -347,6 +489,85 @@ struct PersistenceController {
     
     func getMostFrequentSong(context: NSManagedObjectContext) -> SongPattern? {
         return analyzeSongPatterns(context: context).first
+    }
+
+    /// Off-main variant. `analyzeSongPatterns` yukarıda tüm DailySong'ları
+    /// çekip O(N) grup + hex→Color çevirisi yapıyor; kayıt büyüdükçe main'i
+    /// bloke ediyordu. Bu sürüm ağır kısmı background context'te çalıştırır,
+    /// yalnız `SongPattern` inşasını çağıran actor'da yapar.
+    func analyzeSongPatternsAsync() async -> [SongPattern] {
+        ONELaunchSignpost.begin("songPatterns")
+        defer { ONELaunchSignpost.end("songPatterns") }
+        let bgContext = container.newBackgroundContext()
+        struct RawPattern {
+            let songName: String
+            let artistName: String
+            let count: Int
+            let percentage: Double
+            let colorHex: String
+            let dates: [Date]
+            let emoji: String?
+        }
+        let raw: [RawPattern] = await withCheckedContinuation { continuation in
+            bgContext.perform {
+                let request: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+                request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+                let songs = (try? bgContext.fetch(request)) ?? []
+                guard !songs.isEmpty else {
+                    continuation.resume(returning: [])
+                    return
+                }
+
+                var counts: [String: (count: Int, dates: [Date], color: String?, emoji: String?)] = [:]
+                for song in songs {
+                    guard let name = song.songName, let artist = song.artistName else { continue }
+                    let key = "\(name)|\(artist)"
+                    if var e = counts[key] {
+                        e.count += 1
+                        if let d = song.date { e.dates.append(d) }
+                        counts[key] = e
+                    } else {
+                        counts[key] = (
+                            count: 1,
+                            dates: song.date.map { [$0] } ?? [],
+                            color: song.moodColorHex,
+                            emoji: song.emoji
+                        )
+                    }
+                }
+
+                let total = Double(songs.count)
+                let repeated = counts.filter { $0.value.count > 1 }
+                let out: [RawPattern] = repeated.compactMap { key, value in
+                    let parts = key.components(separatedBy: "|")
+                    guard parts.count >= 2 else { return nil }
+                    return RawPattern(
+                        songName: parts[0],
+                        artistName: parts[1],
+                        count: value.count,
+                        percentage: Double(value.count) / total,
+                        colorHex: value.color ?? "#5B8DEF",
+                        dates: value.dates,
+                        emoji: value.emoji
+                    )
+                }
+                .sorted { $0.count > $1.count }
+
+                continuation.resume(returning: out)
+            }
+        }
+
+        return raw.map {
+            SongPattern(
+                songName: $0.songName,
+                artistName: $0.artistName,
+                count: $0.count,
+                percentage: $0.percentage,
+                color: Color(hex: $0.colorHex),
+                dates: $0.dates,
+                emoji: $0.emoji
+            )
+        }
     }
 }
 

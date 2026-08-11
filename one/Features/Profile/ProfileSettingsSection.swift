@@ -84,6 +84,7 @@ struct ProfileSettingsSection: View {
             // İçerik
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 22) {
+                    v3YankiSection
                     consolidatedMusicSection
                     consolidatedGeneralSection
                     consolidatedNotificationsSection
@@ -335,6 +336,25 @@ struct ProfileSettingsSection: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(palette.cardBorder, lineWidth: 1))
         }
+    }
+
+    /// v3: Yankı (aylık özet) artık sekme değil — Profil > Ayarlar altında.
+    private var v3YankiSection: some View {
+        Button(action: {
+            ONEHaptics.tabSwitch()
+            NotificationCenter.default.post(name: .init("switchToEchoTab"), object: nil)
+        }) {
+            settingsRow(
+                icon: "waveform.path.ecg",
+                iconColor: palette.rowIcon,
+                title: "Aylık özet · Yankı",
+                trailing: { chevronRight },
+                showDivider: false
+            )
+        }
+        .background(palette.cardBG)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(palette.cardBorder, lineWidth: 1))
     }
 
     private var consolidatedDangerSection: some View {

@@ -53,20 +53,20 @@ extension CircleView {
                         .overlay(
                             Circle()
                                 .stroke(
-                                    hasSong ? Color(hex: moodColorHex).opacity(0.5) : ONETokens.oneCreamLow,
+                                    hasSong ? Color(hex: moodColorHex).opacity(0.5) : V3Tokens.wash,
                                     lineWidth: hasSong ? 2 : 1
                                 )
                         )
                     if !hasSong {
                         Circle()
-                            .stroke(ONETokens.oneAsh,
+                            .stroke(V3Tokens.mutedText,
                                     style: StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
                             .frame(width: 52, height: 52)
                             .opacity(selfPulseOpacity)
                     }
                 } else {
                     Circle()
-                        .fill(hasSong ? Color(hex: moodColorHex) : ONETokens.oneCreamLow)
+                        .fill(hasSong ? Color(hex: moodColorHex) : V3Tokens.wash)
                         .frame(width: 52, height: 52)
                     if hasSong {
                         Text(initial)
@@ -74,13 +74,13 @@ extension CircleView {
                             .foregroundColor(.white.opacity(0.9))
                     } else {
                         Circle()
-                            .stroke(ONETokens.oneAsh,
+                            .stroke(V3Tokens.mutedText,
                                     style: StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
                             .frame(width: 52, height: 52)
                             .opacity(selfPulseOpacity)
                         Text(initial)
                             .displayXS()
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                 }
             }
@@ -103,19 +103,19 @@ extension CircleView {
                     if !time.isEmpty {
                         Text(time)
                             .monoLabel(tracking: 0.5)
-                            .foregroundColor(ONETokens.oneStone)
+                            .foregroundColor(V3Tokens.faintText)
                     }
                 }
                 if hasSong {
                     Text("\(songName) — \(artistName)")
-                        .font(.system(size: 12.5))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .font(V3Typography.sans(12.5))
+                        .foregroundColor(V3Tokens.mutedText)
                         .lineLimit(1)
                         .truncationMode(.tail)
                 } else {
                     Text(NSLocalizedString("circle.shareToday", comment: ""))
-                        .font(.system(size: 12.5))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .font(V3Typography.sans(12.5))
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.top, 2)
                 }
             }
@@ -126,12 +126,12 @@ extension CircleView {
         // "sen" satırı arkadaşlardan ayrışsın ama öne çıkmasın.
         .background(
             RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
-                .fill(ONETokens.oneBrand.opacity(0.045))
+                .fill(ONEBrand.kor.opacity(0.045))
         )
         .overlay(
             RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
                 .strokeBorder(
-                    ONETokens.oneBrand.opacity(0.30),
+                    ONEBrand.kor.opacity(0.30),
                     style: StrokeStyle(lineWidth: 1, dash: [5, 4])
                 )
         )
@@ -193,18 +193,18 @@ extension CircleView {
                         .clipShape(Circle())
                 } else {
                     Circle()
-                        .fill(hasSong ? Color(hex: moodColorHex) : ONETokens.oneStone)
+                        .fill(hasSong ? Color(hex: moodColorHex) : V3Tokens.faintText)
                         .frame(width: 46, height: 46)
                         .overlay(
                             Text(initial)
-                                .font(.system(size: 15, weight: .bold))
+                                .font(V3Typography.sans(15, weight: .bold))
                                 .foregroundColor(.white)
                         )
                 }
             }
             .overlay(
                 Circle()
-                    .stroke(hasSong ? Color(hex: moodColorHex) : ONETokens.oneStone, lineWidth: 1.5)
+                    .stroke(hasSong ? Color(hex: moodColorHex) : V3Tokens.faintText, lineWidth: 1.5)
                     .opacity(0.22)
                     .padding(-4)
             )
@@ -225,13 +225,13 @@ extension CircleView {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 7) {
                     Text(name)
-                        .font(.system(size: 14.5, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(14.5, weight: .semibold))
+                        .foregroundColor(V3Tokens.ink)
                         .lineLimit(1)
 
                     if hasSong && !moodWord.isEmpty {
                         Text(moodWord.lowercased())
-                            .font(.system(size: 10.5, weight: .semibold))
+                            .font(V3Typography.sans(10.5, weight: .semibold))
                             .foregroundColor(Color(hex: moodColorHex))
                             .padding(.horizontal, 7)
                             .padding(.vertical, 2)
@@ -246,7 +246,7 @@ extension CircleView {
                     if !time.isEmpty {
                         Text(time)
                             .monoLabel(tracking: 0.5)
-                            .foregroundColor(ONETokens.oneStone)
+                            .foregroundColor(V3Tokens.faintText)
                     }
                 }
 
@@ -254,14 +254,14 @@ extension CircleView {
                     // Tek satır: "şarkı — sanatçı". İki ayrı satır kartı
                     // uzatıyor ve listede ritmi bozuyordu.
                     Text("\(songName) — \(artistName)")
-                        .font(.system(size: 12.5))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .font(V3Typography.sans(12.5))
+                        .foregroundColor(V3Tokens.mutedText)
                         .lineLimit(1)
                         .truncationMode(.tail)
                 } else {
                     Text(NSLocalizedString("circle.notSharedYet", comment: ""))
-                        .font(.system(size: 12.5))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .font(V3Typography.sans(12.5))
+                        .foregroundColor(V3Tokens.mutedText)
                 }
             }
         }
@@ -274,7 +274,7 @@ extension CircleView {
         )
         .overlay(
             RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
-                .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
         )
         .contentShape(Rectangle())
         .onTapGesture {
@@ -307,6 +307,22 @@ extension CircleView {
         }())
         .accessibilityHint(NSLocalizedString("accessibility.circle.friendCardHint", comment: ""))
         .contextMenu {
+            // Detay birinci sırada — yıkıcı olmayan, en sık istenen eylem.
+            if let share = data.share,
+               !((share["songName"] as? String) ?? "").isEmpty {
+                Button {
+                    let profileImg = profilePhotoURL.flatMap { UIImage(contentsOfFile: $0.path) }
+                    selectedShareItem = IdentifiableCKRecord(share, displayName: name, profilePhoto: profileImg)
+                } label: {
+                    Label("Detay", systemImage: "square.split.bottomrightquarter")
+                }
+            }
+            Button {
+                selectedPublicProfileUserID = (data.user["userID"] as? String)
+            } label: {
+                Label("Profil", systemImage: "person.crop.circle")
+            }
+            Divider()
             Button(role: .destructive) {
                 friendToRemove = data
                 showRemoveConfirmation = true
@@ -350,12 +366,12 @@ extension CircleView {
     func skeletonCard(widths: (name: CGFloat, sub: CGFloat)) -> some View {
         HStack(spacing: 12) {
             Circle()
-                .fill(ONETokens.oneCreamMid)
+                .fill(V3Tokens.surface)
                 .frame(width: 44, height: 44)
 
             VStack(alignment: .leading, spacing: 6) {
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(ONETokens.oneCreamMid)
+                    .fill(V3Tokens.surface)
                     .frame(width: widths.name, height: 12)
                 RoundedRectangle(cornerRadius: 4)
                     .fill(ONETokens.oneSilver)
@@ -371,7 +387,7 @@ extension CircleView {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: ONETokens.radiusFriend)
-                .fill(ONETokens.onePaper)
+                .fill(V3Tokens.surface)
         )
         .shimmeringCircle()
     }
@@ -382,23 +398,23 @@ extension CircleView {
                 // İkon
                 ZStack {
                     Circle()
-                        .fill(friendsShares.isEmpty ? ONETokens.oneInk.opacity(0.06) : Color.clear)
+                        .fill(friendsShares.isEmpty ? V3Tokens.ink.opacity(0.06) : Color.clear)
                         .frame(width: 44, height: 44)
                     Circle()
                         .strokeBorder(
-                            friendsShares.isEmpty ? ONETokens.oneInk.opacity(0.18) : ONETokens.oneStone,
+                            friendsShares.isEmpty ? V3Tokens.ink.opacity(0.18) : V3Tokens.faintText,
                             style: StrokeStyle(lineWidth: 1.5, dash: [2, 3])
                         )
                         .frame(width: 44, height: 44)
                     Image(systemName: friendsShares.isEmpty ? "person.badge.plus.fill" : "plus")
                         .font(.system(size: friendsShares.isEmpty ? 15 : 16, weight: .light))
-                        .foregroundColor(friendsShares.isEmpty ? ONETokens.oneInk : ONETokens.oneAsh)
+                        .foregroundColor(friendsShares.isEmpty ? ONETokens.oneInk : V3Tokens.mutedText)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(NSLocalizedString("circle.addFriend", comment: ""))
                         .bodySM()
-                        .foregroundColor(friendsShares.isEmpty ? ONETokens.oneInk : ONETokens.oneAsh)
+                        .foregroundColor(friendsShares.isEmpty ? ONETokens.oneInk : V3Tokens.mutedText)
                     if friendsShares.isEmpty {
                         Text(NSLocalizedString("circle.inviteHint", comment: ""))
                             .monoLabel(tracking: 0.3)
@@ -416,14 +432,14 @@ extension CircleView {
             .background(
                 RoundedRectangle(cornerRadius: 14)
                     .fill(friendsShares.isEmpty
-                          ? ONETokens.onePaper.opacity(0.7)
-                          : ONETokens.onePaper.opacity(0.4))
+                          ? V3Tokens.surface.opacity(0.7)
+                          : V3Tokens.surface.opacity(0.4))
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
                             .stroke(
                                 friendsShares.isEmpty
-                                    ? ONETokens.oneInk.opacity(0.1)
-                                    : ONETokens.oneCreamLow.opacity(0.8),
+                                    ? V3Tokens.ink.opacity(0.1)
+                                    : V3Tokens.wash.opacity(0.8),
                                 lineWidth: friendsShares.isEmpty ? 1.5 : 1
                             )
                     )
@@ -482,7 +498,7 @@ extension CircleView {
         if days >= 2 {
             HStack(spacing: 3) {
                 Text("🔥")
-                    .font(.system(size: 9))
+                    .font(V3Typography.sans(9))
                 Text("\(days)")
                     .monoMicro(tracking: 0.4)
                     .foregroundColor(Color(hex: colorHex))
@@ -522,7 +538,7 @@ struct CircleRhythmStrip: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("ÇEVRENİN RİTMİ")
                 .monoBase(tracking: 1.5)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .bottom, spacing: 12) {
@@ -551,7 +567,7 @@ struct CircleRhythmStrip: View {
         VStack(spacing: 4) {
             Text(String(entry.name.prefix(4)).uppercased())
                 .monoMicro(tracking: 0.3)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .lineLimit(1)
 
             RoundedRectangle(cornerRadius: 4)
@@ -564,7 +580,9 @@ struct CircleRhythmStrip: View {
 
             Text("\(entry.streakDays)g")
                 .monoMicro(tracking: 0.2)
-                .foregroundColor(ONETokens.oneStone)
+                .foregroundColor(V3Tokens.faintText)
+                .contentTransition(.numericText())
+                .animation(.snappy, value: entry.streakDays)
         }
         .frame(width: 28)
     }

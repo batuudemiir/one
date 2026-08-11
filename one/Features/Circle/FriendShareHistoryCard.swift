@@ -34,12 +34,12 @@ struct FriendShareHistoryCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(songName)
                         .font(ONETypography.bodySMMedium)
-                        .foregroundStyle(ONETokens.oneInk)
+                        .foregroundStyle(V3Tokens.ink)
                         .lineLimit(1)
 
                     Text(artistName)
                         .font(ONETypography.bodyXS)
-                        .foregroundStyle(ONETokens.oneAsh)
+                        .foregroundStyle(V3Tokens.mutedText)
                         .lineLimit(1)
                 }
 
@@ -49,13 +49,13 @@ struct FriendShareHistoryCard: View {
                 if let date = dateValue {
                     Text(formatDate(date))
                         .font(ONETypography.monoLabel)
-                        .foregroundStyle(ONETokens.oneStone)
+                        .foregroundStyle(V3Tokens.faintText)
                 }
 
                 // Expand indicator
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                     .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(ONETokens.oneStone)
+                    .foregroundStyle(V3Tokens.faintText)
             }
             .padding(ONETokens.spacingMD)
             .contentShape(Rectangle())
@@ -84,14 +84,14 @@ struct FriendShareHistoryCard: View {
                     if let feeling, !feeling.isEmpty {
                         Text(feeling)
                             .font(ONETypography.bodyXS)
-                            .foregroundStyle(ONETokens.oneAsh)
+                            .foregroundStyle(V3Tokens.mutedText)
                     }
 
                     // Note
                     if let note = dailyNote, !note.isEmpty {
                         Text(note)
                             .font(ONETypography.bodyXS)
-                            .foregroundStyle(ONETokens.oneAsh)
+                            .foregroundStyle(V3Tokens.mutedText)
                             .lineLimit(4)
                     }
                 }
@@ -101,7 +101,7 @@ struct FriendShareHistoryCard: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(ONETokens.onePaper)
+        .background(V3Tokens.surface)
         .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusCard))
     }
 

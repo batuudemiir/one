@@ -53,7 +53,7 @@
 "confirm.shareCircle" = "Compartir en el Círculo";
 
 /* ── CÍRCULO ── */
-"circle.title" = "frecuencia";
+"circle.title" = "Círculo";
 "circle.sharedCount" = "%d/%d compartido";
 "circle.removeFriend" = "¿eliminar de amigos?";
 "circle.setupCTA" = "Crear tu Círculo";
@@ -534,7 +534,8 @@
 "nav.discover" = "descubrir";
 "nav.archive" = "archivo";
 "nav.today" = "hoy";
-"nav.circle" = "frecuencia";
+"nav.entry" = "momento";
+"nav.circle" = "círculo";
 "nav.profile" = "perfil";
 "nav.tabAccessibility" = "pestaña %@";
 
@@ -1275,3 +1276,25 @@ one day.";
 
 "subcircle.all" = "All";
 "subcircle.emptyToday" = "No one in this group shared today.";
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.v3Subtitle" = "Mira cómo está cada uno hoy.";
+"circle.peopleCount" = "%d personas";
+"circle.momentCount" = "%d momentos";
+"circle.youCard" = "Tú";
+"circle.youNotShared" = "Hoy no has compartido";
+"circle.notSharedToday" = "Hoy no ha compartido";
+"circle.scopeShared" = "compartido";
+"circle.scopePrivate" = "solo tú";
+"circle.v3EmptyTitle" = "Aún no hay nadie.";
+"circle.v3EmptyBody" = "Añade a alguien y ved vuestros colores.";
+"circle.scanQR" = "Escanear código QR";
+"circle.resonance" = "Sintonía";
+"circle.sameColorLabel" = "Mismo color hoy";
+"circle.distributionLabel" = "Colores de tu círculo";
+"circle.yourColorToday" = "Tu color de hoy";
+"circle.noColorToday" = "Hoy sin color";
+"circle.noColorTodayBody" = "Guarda un momento y aparecerá la sintonía.";
+"circle.sameColorCount" = "%d personas comparten tu color hoy";
+"circle.requests" = "Solicitudes de amistad";
+"circle.notifications" = "Notificaciones";

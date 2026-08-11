@@ -44,7 +44,7 @@ struct ProfilePalette {
 
     /// Card fill — dark: `white @ 7%`, light: `onePaper @ 55%`.
     var cardBG: Color {
-        isDarkMode ? Color.white.opacity(0.07) : ONETokens.onePaper.opacity(0.55)
+        isDarkMode ? Color.white.opacity(0.07) : V3Tokens.surface.opacity(0.55)
     }
 
     /// Card border — dark: `.clear`, light: `ONETokens.oneSilver`.
@@ -54,7 +54,7 @@ struct ProfilePalette {
 
     /// Stat row fill — dark: `white @ 7%`, light: `onePaper @ 75%`.
     var statRowBG: Color {
-        isDarkMode ? Color.white.opacity(0.07) : ONETokens.onePaper.opacity(0.75)
+        isDarkMode ? Color.white.opacity(0.07) : V3Tokens.surface.opacity(0.75)
     }
 
     /// Stat row divider — dark: `white @ 12%`, light: `ONETokens.oneIvory`.
@@ -93,7 +93,7 @@ struct ProfilePalette {
 
     /// Action bubble fill — dark: `white @ 10%`, light: `onePaper @ 80%`.
     var actionBubble: Color {
-        isDarkMode ? Color.white.opacity(0.10) : ONETokens.onePaper.opacity(0.8)
+        isDarkMode ? Color.white.opacity(0.10) : V3Tokens.surface.opacity(0.8)
     }
 
     /// Action icon tint — dark: `white @ 65%`, light: `ONETokens.oneAsh`.

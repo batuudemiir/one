@@ -72,6 +72,18 @@ class MidnightResetManager {
             context.reset()
         }
 
+        // BGAppRefreshTask sistem tarafından cold-start ile de çağrılabiliyor;
+        // o durumda `loadPersistentStores` henüz uçuşta olabilir ve fetch'ler
+        // boş dönerdi. isReady'yi bekle, sonra normal işi başlat.
+        Task { @MainActor in
+            for await ready in PersistenceController.shared.$isReady.values where ready {
+                break
+            }
+            self.runReset(task: task, context: context)
+        }
+    }
+
+    private func runReset(task: BGAppRefreshTask, context: NSManagedObjectContext) {
         context.perform {
             self.resetExpiredShares(context: context)
             self.scheduleStreakNotificationsIfNeeded()

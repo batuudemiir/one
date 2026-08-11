@@ -57,7 +57,7 @@ struct InviteShareSheet: View {
                 }
             }
         }
-        .background(ONETokens.oneCream.ignoresSafeArea())
+        .background(ONEBrand.bone.ignoresSafeArea())
         .presentationDetents([.fraction(0.9), .large])
         .presentationDragIndicator(.hidden)
         .task { await generateCard() }
@@ -76,7 +76,7 @@ struct InviteShareSheet: View {
     
     private var dragHandle: some View {
         RoundedRectangle(cornerRadius: 3)
-            .fill(ONETokens.oneStone)
+            .fill(V3Tokens.faintText)
             .frame(width: 36, height: 4)
             .padding(.top, 12)
             .padding(.bottom, 14)
@@ -87,7 +87,7 @@ struct InviteShareSheet: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(NSLocalizedString("invite.sendInvite", comment: "Profili Paylaş"))
                     .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                 Text(NSLocalizedString("invite.shareSubtitle", comment: "Davet kodun veya link ile seni ekleyebilirler"))
                     .font(.system(size: 14, weight: .regular))
                     .foregroundColor(ONETokens.oneMist)
@@ -96,7 +96,7 @@ struct InviteShareSheet: View {
             Button(action: { dismiss() }) {
                 Image(systemName: "xmark")
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .frame(width: 32, height: 32)
                     .background(Circle().fill(ONETokens.oneSilver.opacity(0.6)))
             }
@@ -116,7 +116,7 @@ struct InviteShareSheet: View {
     private var loadingView: some View {
         VStack(spacing: 12) {
             Circle()
-                .fill(ONETokens.oneInk)
+                .fill(V3Tokens.ink)
                 .frame(width: 8, height: 8)
                 .scaleEffect(breathe ? 1.4 : 0.8)
                 .opacity(breathe ? 1.0 : 0.4)
@@ -127,7 +127,7 @@ struct InviteShareSheet: View {
                 }
             Text(NSLocalizedString("invite.preparing", comment: "Hazırlanıyor..."))
                 .font(.system(size: 13, weight: .medium, design: .monospaced))
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
         }
         .frame(maxWidth: .infinity)
     }
@@ -159,7 +159,7 @@ struct InviteShareSheet: View {
                 ShareAppIcon(
                     iconName: "square.and.arrow.up",
                     title: "Diğer",
-                    color: ONETokens.oneInk,
+                    color: V3Tokens.ink,
                     isEnabled: generatedImage != nil,
                     action: shareViaSystem
                 )
@@ -167,7 +167,7 @@ struct InviteShareSheet: View {
                 ShareAppIcon(
                     iconName: "arrow.down",
                     title: "Kaydet",
-                    color: ONETokens.oneAsh,
+                    color: V3Tokens.mutedText,
                     isEnabled: generatedImage != nil,
                     action: saveToPhotos
                 )
@@ -175,7 +175,7 @@ struct InviteShareSheet: View {
                 ShareAppIcon(
                     iconName: "link",
                     title: "Kopyala",
-                    color: ONETokens.oneAsh,
+                    color: V3Tokens.mutedText,
                     isEnabled: true,
                     action: copyLink
                 )
@@ -188,7 +188,7 @@ struct InviteShareSheet: View {
         HStack {
             Text(inviteLinkURL?.absoluteString ?? "")
                 .font(.system(size: 14, weight: .medium, design: .monospaced))
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
                 .truncationMode(.middle)
             
@@ -197,7 +197,7 @@ struct InviteShareSheet: View {
             Button(action: copyLink) {
                 Text(isCopied ? NSLocalizedString("general.copied", comment: "Kopyalandı") : NSLocalizedString("general.copy", comment: "Kopyala"))
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(isCopied ? .white : ONETokens.oneInk)
+                    .foregroundColor(isCopied ? .white : V3Tokens.ink)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(RoundedRectangle(cornerRadius: 12).fill(isCopied ? ONETokens.oneGreen : ONETokens.oneSilver.opacity(0.8)))
@@ -311,7 +311,7 @@ private struct ShareAppIcon: View {
                 
                 Text(title)
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
             }
         }
         .disabled(!isEnabled)

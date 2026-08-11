@@ -237,29 +237,30 @@ extension CloudKitManager {
                             switch shareRes {
                             case .success(let (shareMatchResults, _)):
                                 let records = shareMatchResults.compactMap { try? $0.1.get() }
-                                // Premium kaldırıldı — entryIndex=0 tercihli dedup.
-                                // Önce entryIndex artan (0 önce), sonra creationDate azalan sırada sırala.
-                                // Böylece dict her kullanıcı için sadece ilk (0 index) kaydı tutar.
+                                // v3: gün artık N an. Dedup YOK — her kullanıcının
+                                // o güne ait tüm kayıtları kronolojik sırada tutulur
+                                // (entryIndex artan, eşitse creationDate artan).
+                                // Kart ızgarası "N an" ve çok renkli şeridi buradan çiziyor;
+                                // `share` (ilk an) eski okuma yolları için hesaplanıyor.
                                 let sortedRecords = records.sorted { a, b in
                                     let ai = a["entryIndex"] as? Int ?? 0
                                     let bi = b["entryIndex"] as? Int ?? 0
                                     if ai != bi { return ai < bi }
-                                    return (a.creationDate ?? Date.distantPast) > (b.creationDate ?? Date.distantPast)
+                                    return (a.creationDate ?? Date.distantPast) < (b.creationDate ?? Date.distantPast)
                                 }
-                                var friendShares: [String: CKRecord] = [:]
+                                var friendShares: [String: [CKRecord]] = [:]
                                 for record in sortedRecords {
-                                    if let uid = record["userID"] as? String, friendShares[uid] == nil {
-                                        friendShares[uid] = record
-                                    }
+                                    guard let uid = record["userID"] as? String else { continue }
+                                    friendShares[uid, default: []].append(record)
                                 }
-                                
+
                                 DispatchQueue.main.async {
                                     var combined: [FriendCircleData] = []
                                     for user in friendUsers {
                                         let uid = user["userID"] as? String ?? ""
-                                        combined.append(FriendCircleData(user: user, share: friendShares[uid]))
+                                        combined.append(FriendCircleData(user: user, shares: friendShares[uid] ?? []))
                                     }
-                                    
+
                                     // Sort: friends with shares first, then alphabetically
                                     combined.sort { a, b in
                                         if a.share != nil && b.share == nil { return true }

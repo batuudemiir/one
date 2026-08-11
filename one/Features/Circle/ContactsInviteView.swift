@@ -44,7 +44,7 @@ struct ContactsInviteView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                ONETokens.oneCream.ignoresSafeArea()
+                ONEBrand.bone.ignoresSafeArea()
 
                 Group {
                     switch permissionStatus {
@@ -63,7 +63,7 @@ struct ContactsInviteView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(NSLocalizedString("general.close", comment: "")) { dismiss() }
                         .monoSM(tracking: 0)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                 }
             }
             .sheet(isPresented: $showMessageCompose) {
@@ -89,39 +89,39 @@ struct ContactsInviteView: View {
             // Invite info banner
             HStack(spacing: 10) {
                 Image(systemName: "link.circle.fill")
-                    .foregroundColor(ONETokens.oneBrand)
+                    .foregroundColor(ONEBrand.kor)
                     .font(.system(size: 18))
                 VStack(alignment: .leading, spacing: 1) {
                     Text(String(format: NSLocalizedString("contacts.inviteCodeText", comment: ""), myInviteCode))
                         .monoBase(tracking: 0.5)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                     Text(NSLocalizedString("contacts.smsSendHint", comment: ""))
                         .monoLabel(tracking: 0)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 14)
-            .background(ONETokens.oneCreamMid)
+            .background(V3Tokens.surface)
 
             // Search
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .font(.system(size: 15))
                 TextField(NSLocalizedString("contacts.searchPlaceholder", comment: ""), text: $searchText)
                     .monoBase()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                 if !searchText.isEmpty {
                     Button(action: { searchText = "" }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(ONETokens.oneStone)
+                            .foregroundColor(V3Tokens.faintText)
                     }
                 }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .background(ONETokens.onePaper)
+            .background(V3Tokens.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
@@ -135,10 +135,10 @@ struct ContactsInviteView: View {
                 VStack(spacing: 10) {
                     Image(systemName: "person.crop.circle.badge.questionmark")
                         .font(.system(size: 38, weight: .ultraLight))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                     Text(NSLocalizedString(searchText.isEmpty ? "contacts.noContacts" : "contacts.noResults", comment: ""))
                         .displaySM()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                 }
                 Spacer()
             } else {
@@ -146,7 +146,7 @@ struct ContactsInviteView: View {
                     ContactRow(contact: contact) {
                         invite(contact: contact)
                     }
-                    .listRowBackground(ONETokens.onePaper.opacity(0.55))
+                    .listRowBackground(V3Tokens.surface.opacity(0.55))
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
@@ -161,24 +161,24 @@ struct ContactsInviteView: View {
             Spacer()
             Image(systemName: "lock.person.fill")
                 .font(.system(size: 48, weight: .ultraLight))
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
             Text(NSLocalizedString("contacts.contactsRequired", comment: ""))
                 .displayMD()
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
             Text(NSLocalizedString("contacts.contactsPermissionHint", comment: ""))
                 .monoSM(tracking: 0)
                 .multilineTextAlignment(.center)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
             Button(NSLocalizedString("contacts.openSettings", comment: "")) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
             .monoSM(tracking: 0.8)
-            .foregroundStyle(ONETokens.oneCream)
+            .foregroundStyle(ONEBrand.bone)
             .padding(.horizontal, 24)
             .padding(.vertical, 12)
-            .background(RoundedRectangle(cornerRadius: 12).fill(ONETokens.oneInk))
+            .background(RoundedRectangle(cornerRadius: 12).fill(V3Tokens.ink))
             Spacer()
         }
         .padding(.horizontal, 32)
@@ -192,7 +192,7 @@ struct ContactsInviteView: View {
             ProgressView().scaleEffect(1.2)
             Text(NSLocalizedString("contacts.contactsLoading", comment: ""))
                 .monoBase()
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
             Spacer()
         }
     }
@@ -285,24 +285,23 @@ private struct ContactRow: View {
         HStack(spacing: 14) {
             // Avatar
             Circle()
-                .fill(ONETokens.oneCreamMid)
+                .fill(V3Tokens.surface)
                 .frame(width: 44, height: 44)
                 .overlay(
                     Text(initial)
-                        .editorialMD()
-                        .fontWeight(.medium)
-                        .italic()
-                        .foregroundColor(ONETokens.oneAsh)
+                        .font(ONEBrand.display(22))
+                        .tracking(-0.4)
+                        .foregroundColor(V3Tokens.mutedText)
                 )
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(fullName.isEmpty ? NSLocalizedString("contacts.noName", comment: "") : fullName)
                     .displaySM()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(1)
                 Text(phone)
                     .monoSM(tracking: 0)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
             }
 
@@ -311,10 +310,10 @@ private struct ContactRow: View {
             Button(action: onInvite) {
                 Text(NSLocalizedString("contacts.inviteButton", comment: ""))
                     .monoLabel(tracking: 0.6)
-                    .foregroundStyle(ONETokens.oneCream)
+                    .foregroundStyle(ONEBrand.bone)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Capsule().fill(ONETokens.oneInk))
+                    .background(Capsule().fill(V3Tokens.ink))
             }
         }
         .padding(.vertical, 6)

@@ -29,12 +29,12 @@ struct OneMascotView: View {
                 .scaledToFit()
                 .frame(width: size, height: size)
                 // Wabi-sabi hissiyatı için hafif bir gölge ve yumuşaklık
-                .shadow(color: ONETokens.oneInk.opacity(0.05), radius: 10, x: 0, y: 5)
+                .shadow(color: V3Tokens.ink.opacity(0.05), radius: 10, x: 0, y: 5)
             
             if let message = message {
                 Text(message)
                     .displaySM()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, ONETokens.spacingXL)
             }
@@ -45,7 +45,7 @@ struct OneMascotView: View {
 
 #Preview {
     ZStack {
-        ONETokens.oneCream.ignoresSafeArea()
+        ONEBrand.bone.ignoresSafeArea()
         OneMascotView(pose: .hi, size: 150, message: "Merhaba! Ben One.\nSana eşlik etmek için buradayım.")
     }
 }

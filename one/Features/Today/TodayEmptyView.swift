@@ -64,7 +64,7 @@ struct TodayEmptyView: View {
     var body: some View {
         ZStack {
             // Arka plan — mood tint
-            ONETokens.oneCream
+            ONEBrand.bone
                 .overlay(
                     Group {
                         if let mood = selectedMood {
@@ -82,20 +82,22 @@ struct TodayEmptyView: View {
                         ZStack(alignment: .trailing) {
                             Text("ONE")
                                 .font(ONETypography.displayXL)
-                                .foregroundColor(ONETokens.oneInk)
+                                .foregroundColor(V3Tokens.ink)
                                 .frame(maxWidth: .infinity)
 
                             if vm.streakDays >= 1 {
                                 let isMilestone = [3, 7, 14, 30, 50, 100, 200, 365].contains(vm.streakDays)
                                 Text("🔥 \(vm.streakDays)")
                                     .monoSM(tracking: 1)
-                                    .foregroundColor(ONETokens.oneInk)
+                                    .foregroundColor(V3Tokens.ink)
+                                    .contentTransition(.numericText())
+                                    .animation(.snappy, value: vm.streakDays)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 5)
                                     .background(
                                         Capsule()
-                                            .fill(ONETokens.onePaper)
-                                            .overlay(Capsule().stroke(isMilestone ? ONETokens.oneBrand.opacity(0.5) : ONETokens.oneSilver, lineWidth: isMilestone ? 1.5 : 1))
+                                            .fill(V3Tokens.surface)
+                                            .overlay(Capsule().stroke(isMilestone ? ONEBrand.kor.opacity(0.5) : V3Tokens.hairline, lineWidth: isMilestone ? 1.5 : 1))
                                     )
                             }
                         }
@@ -237,6 +239,14 @@ struct TodayEmptyView: View {
         .animation(ONEAnimation.panelSpring, value: showSaveButton)
         .animation(ONEAnimation.panelSpring, value: selectedSong != nil)
         .onChange(of: photoImage) { _, newPhoto in
+            // v3: kamera çekimi de 9:16'ya normalize — galeriden gelenle
+            // aynı çerçeveleme kuralı.
+            if let raw = newPhoto,
+               let cropped = raw.centerCropped(toAspect: 9.0 / 16.0),
+               cropped.size != raw.size {
+                photoImage = cropped
+                return
+            }
             guard newPhoto != nil, !showMoodSection, let proxy = scrollProxy else { return }
             reveal("moodSection", proxy: proxy) { showMoodSection = true }
         }

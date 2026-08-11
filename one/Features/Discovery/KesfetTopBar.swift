@@ -8,8 +8,8 @@ struct KesfetTopBar: View {
     var body: some View {
         HStack(alignment: .center) {
             Text("keşfet")
-                .font(.system(size: 22, weight: .bold, design: .default))
-                .foregroundColor(ONETokens.oneInk)
+                .font(V3Typography.sans(22, weight: .bold))
+                .foregroundColor(V3Tokens.ink)
             Spacer()
             HStack(spacing: 10) {
                 cityPill
@@ -38,14 +38,14 @@ struct KesfetTopBar: View {
                 Image(systemName: "location.fill")
                     .font(.system(size: 10, weight: .semibold))
                 Text(preferredCity)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(V3Typography.sans(13, weight: .semibold))
             }
-            .foregroundColor(ONETokens.oneInk)
+            .foregroundColor(V3Tokens.ink)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(
                 Capsule()
-                    .fill(ONETokens.oneInk.opacity(0.07))
+                    .fill(V3Tokens.ink.opacity(0.07))
             )
         }
     }
@@ -56,7 +56,7 @@ struct KesfetTopBar: View {
         Button(action: { showSaved = true }) {
             Image(systemName: "bookmark")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(ONETokens.oneInk.opacity(0.4))
+                .foregroundColor(V3Tokens.ink.opacity(0.4))
         }
         .fullScreenCover(isPresented: $showSaved) {
             SavedCollectionsView()

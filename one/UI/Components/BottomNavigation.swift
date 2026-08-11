@@ -2,140 +2,305 @@
 //  BottomNavigation.swift
 //  one
 //
-//  Bottom tab navigation bar
+//  v3 alt gezinme — yüzen Liquid Glass kapsül.
+//
+//  - 4 sekme: An · Arşiv · Çevre · Profil (`PrimaryTab.allCases`)
+//  - Aktif: ink metin + 18×5 kor nokta üstte.
+//  - Pasif: faint metin + 5×5 line nokta üstte.
+//  - **Malzeme:** iOS 26'da native `.glassEffect(.clear)`, altında
+//    `.ultraThinMaterial` (`liquidGlassBackground`). `.regular` varyantı kağıt
+//    zeminde ten rengi bir plakaya dönüşüyordu — `.clear` arkayı olduğu gibi
+//    geçiriyor, sadece hafif bir kırınım bırakıyor.
+//  - **Drag-to-select:** parmağını çubuk üzerinde gezdirdikçe seçim takip eder;
+//    her sekme sınırında bir haptic. Kaldırınca parmağın altındaki sekme kalır.
+//    Tek dokunuş yolu (Button) bozulmadan duruyor.
+//  - Kenar payı 14pt (minimize'da 96pt), alt pay 4pt.
+//  - `minimized` — An akışı adım 2 (not yazarken) kısaltır: kenar 14→96,
+//    yükseklik 52→38.
+//  - Reduce Transparency açıkken düz `surface` yüzeyine düşer — cam yok.
 //
 
 import SwiftUI
-import CloudKit
+import Combine
 
-/// Prototipteki `.dock`. Cam kapsül, gösterge çubuğu ve büyük harf etiketler
-/// bilinçli olarak yok — prototip düz bir yüzey: krem gradyanın üstünde
-/// simge + küçük harf etiket, ortada tek kalıcı eylem.
 struct BottomNavigation: View {
     @Binding var currentScreen: ScreenType
-    @StateObject private var cloudKitManager = CloudKitManager.shared
+    @StateObject private var globalUI = GlobalUIState.shared
 
-    /// Bugün kayıt yapıldıysa o günün mood rengi. Doluysa ortadaki buton
-    /// "+" olmaktan çıkıp mood rengine boyanmış bir onaya dönüşür
-    /// (prototipteki `.fab.done`) — günün kapandığının tek işareti.
-    var todayMoodColorHex: String? = nil
+    /// Çevre sekmesindeki kor nokta — bugün görülmemiş paylaşım sayısı.
+    ///
+    /// Eskiden `@StateObject private var cloudKitManager = CloudKitManager.shared`
+    /// vardı. Bu, çubuğu manager'ın **dokuz** `@Published` alanının tamamına
+    /// abone ediyordu; oysa kullanılan tek şey bu sayı. `syncStatus` ya da
+    /// `isFetchingUser` her değiştiğinde — yani her CloudKit turunda — cam
+    /// kapsül, gölge ve dört pill yeniden çiziliyordu. Çubuk her ekranda
+    /// duruyor, yani bu bedel her yerde ödeniyordu.
+    ///
+    /// Tek alana abone olmak aynı sonucu veriyor, gereksiz çizimi kesiyor.
+    @State private var unseenFriendShareCount: Int = CloudKitManager.shared.unseenFriendShareCount
 
-    /// Sekme tanımları `PrimaryTab`'dan gelir — tek kaynak.
-    /// Ortadaki "+" bir sekme değil, kalıcı birincil eylem.
-    private var leadingTabs: [PrimaryTab] { [.circle, .archive] }
-    private var trailingTabs: [PrimaryTab] { [.echo, .profile] }
+    /// v3 spec: An akışı adım 2'de çubuk daralır. `GlobalUIState.tabBarMinimized`
+    /// üzerinden okunur; explicit override için parametre.
+    var minimizedOverride: Bool? = nil
+    private var minimized: Bool { minimizedOverride ?? globalUI.tabBarMinimized }
+
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    /// Çubuğun ölçülen genişliği — sürükleme x'ini sekme index'ine çevirmek için.
+    @State private var barWidth: CGFloat = 0
+    /// Bu jestte sürükleyerek seçim yapıldı mı. Parmak kalkınca altındaki
+    /// `Button` de tetiklenirse "aynı sekmeye tekrar dokunma" davranışı
+    /// (en üste kaydır / yeni an) yanlışlıkla çalışırdı — bayrak onu yutuyor.
+    @State private var didDragSelect = false
+
+    /// Sürükleme x'ini çubuğa bağlayan koordinat uzayı adı.
+    private static let barSpace = "one.tabbar"
+
+    private var tabs: [PrimaryTab] { PrimaryTab.allCases }
+
+    // Geometry — spec: 14pt normal / 96pt minimized kenar payı.
+    // Alt pay 0pt: nav artık `.overlay` ile bindiriliyor (safeAreaInset değil),
+    // Instagram'ın yeni Liquid Glass bar'ı gibi safe-area alt kenarına oturuyor.
+    // Ek dolgu bırakırsak home indicator'la arasında bone şeridi görünüyor.
+    private var sideInset: CGFloat { minimized ? 96 : 14 }
+    private var bottomInset: CGFloat { minimized ? 0 : 0 }
+
+    /// Sekme yüksekliği metinle birlikte ölçekleniyor. Sabit 52pt'de büyük
+    /// metin ayarlarında etiketler kapsülün dışına taşıyordu.
+    @ScaledMetric(relativeTo: .caption) private var baseTabHeight: CGFloat = 52
+    @ScaledMetric(relativeTo: .caption) private var minimizedTabHeight: CGFloat = 38
+    private var tabHeight: CGFloat { minimized ? minimizedTabHeight : baseTabHeight }
 
     var body: some View {
-        HStack(spacing: 12) {
-            tabGroup(leadingTabs)
-            ritualButton
-            tabGroup(trailingTabs)
-        }
-        .padding(.horizontal, ONETokens.spacingXL)
-        .padding(.top, 12)
-        // Prototipte dock ekranın DİBİNE oturuyor; 26pt onu havada
-        // bırakıyordu. Güvenli alan zaten altta boşluk veriyor.
-        .padding(.bottom, 6)
-        .background(
-            LinearGradient(
-                gradient: Gradient(stops: [
-                    .init(color: ONETokens.oneCream.opacity(0),    location: 0.0),
-                    .init(color: ONETokens.oneCream.opacity(0.94), location: 0.32),
-                    .init(color: ONETokens.oneCream.opacity(0.94), location: 1.0)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea(edges: .bottom)
-        )
-    }
-
-    private func tabGroup(_ tabs: [PrimaryTab]) -> some View {
-        HStack(spacing: 2) {
+        HStack(spacing: 4) {
             ForEach(tabs, id: \.self) { tab in
-                NavItem(
-                    title: tab.title,
-                    glyph: tab.glyph,
+                // An sekmesi retap toggle'ı (bugünkü momentlar ↔ bugün
+                // nasılsın) VoiceOver kullanıcısı için custom action olarak
+                // rotor'dan tetiklenebilir hale geliyor. Ternary'ler
+                // type-inference'ı zorluyordu, explicit local'lar.
+                let customTitle: String? = tab == .entry ? "Bugünkü anları göster" : nil
+                let customAction: (() -> Void)? = tab == .entry
+                    ? { NotificationCenter.default.post(name: .startNewMomentRequested, object: nil) }
+                    : nil
+                TabPill(
+                    label: tab.title,
                     isSelected: isSelected(tab.screen),
-                    badge: tab == .circle ? cloudKitManager.unseenFriendShareCount : 0
+                    height: tabHeight,
+                    minimized: minimized,
+                    badge: tab == .circle ? unseenFriendShareCount : 0,
+                    accessibilityCustomActionTitle: customTitle,
+                    onAccessibilityCustomAction: customAction
                 ) {
-                    withAnimation(ONEAnimation.tabSwitch) { currentScreen = tab.screen }
+                    // Sürükleyerek seçim bittiğinde parmağın kalktığı yerdeki
+                    // Button da tetiklenebiliyor. O dokunuş "tekrar dokunma"
+                    // sayılıp en üste kaydırma / yeni an açardı — yut.
+                    if didDragSelect { return }
+
+                    let wasOnTab = isSelected(tab.screen)
+                    // Sekme değişimi haptiği artık kabukta (`ONEColorPickerView`),
+                    // çünkü swipe ile geçişte burası hiç çalışmıyor. Aynı sekmeye
+                    // yeniden dokunmak ise sekme değiştirmiyor — o geri bildirimi
+                    // burada vermeye devam ediyoruz.
+                    if wasOnTab { ONEHaptics.nudge() }
+                    withAnimation(V3Tokens.easingColor) {
+                        currentScreen = tab.screen
+                    }
+                    // Sekmeye tekrar dokunma → o sekmeye özgü akıcı davranış.
+                    // Her view kendi bildirimini dinleyip tepkisini kendisi verir.
+                    if wasOnTab {
+                        switch tab {
+                        case .entry:   NotificationCenter.default.post(name: .startNewMomentRequested, object: nil)
+                        case .archive: NotificationCenter.default.post(name: .archiveTabRetapped, object: nil)
+                        case .circle:  NotificationCenter.default.post(name: .circleTabRetapped, object: nil)
+                        case .profile: NotificationCenter.default.post(name: .profileTabRetapped, object: nil)
+                        }
+                    }
                 }
-                .frame(maxWidth: .infinity)
             }
         }
+        .padding(5)
         .frame(maxWidth: .infinity)
+        .background(barBackground)
+        // Genişliği ölç — sürükleme x'ini sekme index'ine bölmek için gerekli.
+        .background(
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { barWidth = proxy.size.width }
+                    .onChange(of: proxy.size.width) { _, new in barWidth = new }
+            }
+        )
+        .coordinateSpace(name: Self.barSpace)
+        // Tek dokunuş yolu `Button`'larda kalıyor; sürükleme onunla yarışmasın
+        // diye `simultaneousGesture` ve 8pt eşik. 8pt'nin altındaki hareket
+        // dokunuş sayılır, üstü sürükleme.
+        .simultaneousGesture(dragToSelect)
+        .padding(.horizontal, sideInset)
+        .padding(.bottom, bottomInset)
+        .opacity(minimized ? 0.9 : 1)
+        .animation(.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.30), value: minimized)
+        // Manager'ın tamamına değil, yalnız bu alana abone ol.
+        // `receive(on:)` — sayaç CloudKit tamamlama bloklarından set ediliyor
+        // ve hepsi main thread'e geçmiyor.
+        .onReceive(
+            CloudKitManager.shared.$unseenFriendShareCount.receive(on: RunLoop.main)
+        ) { count in
+            unseenFriendShareCount = count
+        }
     }
 
-    /// Bugünkü rengini bırak — her sekmeden tek dokunuş.
-    private var ritualButton: some View {
-        let moodColor = todayMoodColorHex.map { Color(hex: $0) }
-        let isDone = moodColor != nil
+    // MARK: - Drag to select
 
-        return Button {
-            ONEHaptics.tabSwitch()
-            withAnimation(ONEAnimation.cardSpring) { currentScreen = .today }
-        } label: {
-            Image(systemName: isDone ? "checkmark" : "plus")
-                .font(.system(size: isDone ? 19 : 25, weight: isDone ? .semibold : .light))
-                .foregroundColor(ONETokens.oneCream)
-                .frame(width: 58, height: 58)
-                .background(Circle().fill(moodColor ?? ONETokens.oneInk))
-                .shadow(
-                    color: (moodColor ?? ONETokens.oneInk).opacity(0.42),
-                    radius: 11, x: 0, y: 8
-                )
+    /// Parmağı çubuk üzerinde gezdirdikçe seçim takip eder. Her sekme
+    /// sınırında bir haptic; parmak kalkınca altındaki sekme kalır.
+    private var dragToSelect: some Gesture {
+        DragGesture(minimumDistance: 8, coordinateSpace: .named(Self.barSpace))
+            .onChanged { value in
+                guard !minimized, let tab = tab(atX: value.location.x) else { return }
+                didDragSelect = true
+                guard !isSelected(tab.screen) else { return }
+                ONEHaptics.tabSwitch()
+                withAnimation(V3Tokens.easingColor) {
+                    currentScreen = tab.screen
+                }
+            }
+            .onEnded { _ in
+                // Button'ın touch-up'ı jest bitişinden sonra da gelebiliyor;
+                // bayrağı bir tick geç indir ki o dokunuş yutulsun.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    didDragSelect = false
+                }
+            }
+    }
+
+    /// Çubuk içindeki x → sekme. Sekmeler eşit genişlikte, kenarlarda kırpılır.
+    private func tab(atX x: CGFloat) -> PrimaryTab? {
+        guard barWidth > 0, !tabs.isEmpty else { return nil }
+        let slot = barWidth / CGFloat(tabs.count)
+        let index = min(max(Int(floor(x / slot)), 0), tabs.count - 1)
+        return tabs[index]
+    }
+
+    // MARK: - Bar background
+
+    /// iOS 26'da gerçek Liquid Glass, altında `.ultraThinMaterial`.
+    /// Reduce Transparency açıkken düz `surface` — cam yok, kenar hairline.
+    @ViewBuilder
+    private var barBackground: some View {
+        let shape = RoundedRectangle(cornerRadius: 28, style: .continuous)
+        if reduceTransparency {
+            shape
+                .fill(V3Tokens.surface)
+                .overlay(shape.strokeBorder(V3Tokens.hairline, lineWidth: 1))
+        } else {
+            Color.clear.liquidGlassBackground(.clear, in: shape)
         }
-        .buttonStyle(PlainButtonStyle())
-        .animation(ONEAnimation.cardSpring, value: isDone)
-        .accessibilityLabel(NSLocalizedString("nav.todayHint", comment: ""))
     }
 
     private func isSelected(_ screen: ScreenType) -> Bool {
+        // .today, .confirm, .done all belong to the Entry (An) tab.
         switch screen {
-        case .today:
-            return currentScreen == .today || currentScreen == .done
+        case .today, .confirm, .done:
+            return currentScreen == .today
+                || currentScreen == .confirm
+                || currentScreen == .done
         default:
             return currentScreen == screen
         }
     }
 }
 
-/// Prototipteki `.tab`: simge üstte (16pt), etiket altta (9.5pt), 4pt aralık.
-/// Seçili sekme mürekkep + yarı kalın, diğerleri taş rengi. Seçimi gösteren
-/// ayrı bir çubuk/nokta yok — renk ve ağırlık farkı yeterli.
-struct NavItem: View {
-    let title: String
-    let glyph: TabGlyph
+// MARK: - Tab pill (text + dot indicator)
+
+private struct TabPill: View {
+    let label: String
     let isSelected: Bool
+    let height: CGFloat
+    let minimized: Bool
     var badge: Int = 0
+    var accessibilityCustomActionTitle: String? = nil
+    var onAccessibilityCustomAction: (() -> Void)? = nil
     let action: () -> Void
+
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
-                ZStack(alignment: .topTrailing) {
-                    TabGlyphView(glyph: glyph, isSelected: isSelected)
+            VStack(spacing: 6) {
+                // v3 dot indicator: 18×5 kor (active) / 5×5 line (inactive).
+                // Spring animasyonu indicator'a fiziksel bir "yerine oturma"
+                // hissi veriyor; renk geçişleri hâlâ mevcut easing eğrisinde.
+                Capsule()
+                    .fill(isSelected ? ONEBrand.kor : dotInactiveColor)
+                    .frame(width: isSelected ? 18 : 5, height: 5)
+                    .animation(.interpolatingSpring(stiffness: 300, damping: 22),
+                               value: isSelected)
 
-                    if badge > 0 {
-                        Circle()
-                            .fill(ONETokens.oneBrand)
-                            .frame(width: 7, height: 7)
-                            .offset(x: 6, y: -3)
-                            .transition(.scale.combined(with: .opacity))
+                if !minimized {
+                    HStack(spacing: 4) {
+                        Text(label)
+                            .font(V3Typography.sans(12, weight: isSelected ? .semibold : .medium,
+                                                    relativeTo: .caption1))
+                            .tracking(0.3)
+                            // Dört sekme genişliği paylaşıyor; büyük metin
+                            // ayarlarında etiket kesilmesin diye bir miktar
+                            // sıkışabilsin.
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                        if badge > 0 {
+                            Circle()
+                                .fill(ONEBrand.kor)
+                                .frame(width: 6, height: 6)
+                        }
                     }
+                    .transition(.opacity)
                 }
-
-                Text(title)
-                    .font(.system(size: 9.5, weight: isSelected ? .semibold : .regular))
             }
-            .foregroundColor(isSelected ? ONETokens.oneInk : ONETokens.oneStone)
-            .animation(ONEAnimation.tabSwitch, value: isSelected)
-            .frame(minWidth: 44, minHeight: 44)
+            .foregroundColor(isSelected ? textActive : textInactive)
+            .frame(maxWidth: .infinity, minHeight: height)
+            // Aktif sekmenin beyaz plakası kaldırıldı. Çubuğun kendi cam
+            // kapsülü varken bir "kabartma" olarak anlamlıydı; plakasız
+            // zeminde havada duran ikinci bir dikdörtgene dönüşüyordu.
+            // Seçimi kor nokta + ink metin ağırlığı taşıyor.
             .contentShape(Rectangle())
         }
-        .buttonStyle(PlainButtonStyle())
-        .accessibilityLabel(String(format: NSLocalizedString("nav.tabAccessibility", comment: ""), title))
+        .buttonStyle(.onePressable)
+        .accessibilityLabel(String(format: NSLocalizedString("nav.tabAccessibility", comment: ""), label))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .modifier(TabRetapCustomAction(
+            title: accessibilityCustomActionTitle,
+            action: onAccessibilityCustomAction
+        ))
+    }
+
+    private var textActive: Color {
+        colorScheme == .dark ? Color(red: 0.949, green: 0.945, blue: 0.933) : ONEBrand.ink
+    }
+
+    private var textInactive: Color {
+        colorScheme == .dark
+            ? Color(red: 0.604, green: 0.604, blue: 0.651)   // #9A9AA6
+            : Color(red: 0.659, green: 0.647, blue: 0.612)   // #A8A59C faint
+    }
+
+    private var dotInactiveColor: Color {
+        colorScheme == .dark
+            ? Color(red: 0.141, green: 0.141, blue: 0.173)   // #24242C
+            : Color(red: 0.902, green: 0.890, blue: 0.859)   // #E6E3DB line
+    }
+}
+
+/// Optional custom accessibility action modifier — VoiceOver rotor'undan
+/// tetiklenebilir alternatif eylem. Title nil ise hiçbir şey uygulamıyor.
+private struct TabRetapCustomAction: ViewModifier {
+    let title: String?
+    let action: (() -> Void)?
+
+    func body(content: Content) -> some View {
+        if let title, let action {
+            content.accessibilityAction(named: Text(title), action)
+        } else {
+            content
+        }
     }
 }

@@ -36,13 +36,13 @@ struct DoneScreen: View {
     // Variable micro-reward — her girişte rastgele 5 animasyondan biri
     @State private var rewardVariant = Int.random(in: 0..<5)
 
-    private var moodColor: Color { vm.selectedMood?.color ?? ONETokens.oneInk }
-    private var moodPastelColor: Color { vm.selectedMood?.pastelColor ?? ONETokens.oneCreamMid }
+    private var moodColor: Color { vm.selectedMood?.color ?? V3Tokens.ink }
+    private var moodPastelColor: Color { vm.selectedMood?.pastelColor ?? V3Tokens.surface }
 
     var body: some View {
         ZStack {
             // Faz 2: Settling background tint (mood renginin %12 opaklığı)
-            ONETokens.oneCream
+            ONEBrand.bone
                 .overlay(moodPastelColor.opacity(backgroundTinted ? 0.18 : 0))
                 .animation(.easeInOut(duration: ONEAnimation.durationLong), value: backgroundTinted)
                 .ignoresSafeArea()
@@ -101,7 +101,7 @@ struct DoneScreen: View {
                 Spacer()
 
                 Circle()
-                    .fill(ONETokens.oneInk)
+                    .fill(V3Tokens.ink)
                     .frame(width: 80, height: 80)
                     .overlay(
                         Image(systemName: "checkmark")
@@ -118,7 +118,7 @@ struct DoneScreen: View {
 
                 Text(NSLocalizedString("done.saved", comment: ""))
                     .displayXL()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .padding(.bottom, 12)
                     .opacity(showTitle ? 1 : 0)
                     .offset(y: reduceMotion ? 0 : (showTitle ? 0 : 10))
@@ -129,7 +129,7 @@ struct DoneScreen: View {
 
                 Text("\(vm.selectedSong?.name ?? "") · \(vm.selectedMood?.label ?? "")")
                     .monoSM(tracking: 1.5)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .padding(.bottom, 8)
                     .opacity(showMeta ? 1 : 0)
                     .offset(y: reduceMotion ? 0 : (showMeta ? 0 : 8))
@@ -182,12 +182,12 @@ struct DoneScreen: View {
 
                     Text(NSLocalizedString(vm.selectedPhoto != nil ? "done.todaysMemory" : "done.todaysColor", comment: ""))
                         .monoBase(tracking: 2)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.top, 4)
 
                     Text(vm.selectedMood?.label ?? "")
                         .displayMD()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                 }
                 .padding(28)
                 .liquidGlass(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))

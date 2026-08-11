@@ -83,6 +83,23 @@ struct MonthlySummaryView: View {
             if vm.isLoading && data == nil {
                 Color.black.ignoresSafeArea()
                 ProgressView().tint(.white)
+            } else if displayData.daysLogged == 0 {
+                // Boş ay — placeholder grid'i çizmek yerine düz mesaj göster.
+                Color.black.ignoresSafeArea()
+                VStack(spacing: 14) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 34, weight: .light))
+                        .foregroundColor(.white.opacity(0.55))
+                    Text("Bu ay için henüz veri yok")
+                        .bodyLG()
+                        .foregroundColor(.white.opacity(0.85))
+                        .multilineTextAlignment(.center)
+                    Text("Bir gün kaydettiğinde burada aylık özetini görebilirsin.")
+                        .bodySM()
+                        .foregroundColor(.white.opacity(0.5))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                }
             } else {
                 // TabView — selection ile aktif sayfa izleniyor
                 TabView(selection: $currentPage) {
@@ -133,6 +150,8 @@ struct MonthlySummaryView: View {
                         )
                     }
                     .disabled(isSharing)
+                    .opacity(isSharing ? 0.4 : 1.0)
+                    .accessibilityLabel(isSharing ? "Paylaşılıyor" : "Paylaş")
                     .simultaneousGesture(
                         LongPressGesture(minimumDuration: 0.4).onEnded { _ in
                             ONEHaptics.feelingSelected()
@@ -172,6 +191,8 @@ struct MonthlySummaryView: View {
                 .fontWeight(.semibold)
                 .foregroundColor(.white.opacity(0.85))
         }
+        .frame(minWidth: 44, minHeight: 44)
+        .contentShape(Circle())
     }
 
     // MARK: — Kart render + Instagram Story paylaş
@@ -179,7 +200,16 @@ struct MonthlySummaryView: View {
         isSharing = true
         Task {
             let image = await renderCard(page: page)
-            guard let image else { isSharing = false; return }
+            guard let image else {
+                await MainActor.run {
+                    isSharing = false
+                    ErrorHandler.shared.handle(
+                        AppError.unknown(message: "Poster oluşturulamadı. Lütfen tekrar dene."),
+                        retry: { shareCard(page: page) }
+                    )
+                }
+                return
+            }
 
             await MainActor.run {
                 isSharing = false
@@ -224,14 +254,28 @@ struct MonthlySummaryView: View {
         host.view.setNeedsLayout()
         host.view.layoutIfNeeded()
 
-        // Give animations a moment to settle on export pass
-        try? await Task.sleep(nanoseconds: 50_000_000) // 0.05s
+        // Give animations a moment to settle on export pass.
+        // 0.05s was too tight — cards use staggered opacity/offset animations
+        // (TopTracks: 0.5s ease-out, MoodMap: 1.2s bars) so first-frame renders
+        // sometimes captured half-transitioned content. 0.25s covers the initial
+        // opacity/offset window; isExport shortcuts skip long animations after.
+        try? await Task.sleep(nanoseconds: 250_000_000) // 0.25s
+
+        // drawHierarchy + UIGraphicsImageRenderer main actor'da kalmak zorunda
+        // (UIKit hierarchy walk). Ama render öncesi Task.yield() ile bir tur
+        // runloop'a nefes veriyoruz ki spinner ve pending layout update'ler
+        // ekrana yansısın; kullanıcı donmuş sanmasın.
+        await Task.yield()
 
         let format = UIGraphicsImageRendererFormat()
         format.scale = scale
         let cardImage = UIGraphicsImageRenderer(size: cardSize, format: format).image { _ in
             host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true)
         }
+
+        // Kompozisyon safhası cardImage üzerinde çalışıyor — hierarchy walk
+        // gerekmediği için önce bir yield daha, UI update'leri yetişsin.
+        await Task.yield()
 
         // 3. Composite card onto a larger black canvas with top/bottom padding
         let finalImage = UIGraphicsImageRenderer(size: canvasSize, format: format).image { ctx in

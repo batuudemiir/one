@@ -64,14 +64,14 @@ struct YearOverviewView: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(NSLocalizedString("year.title", comment: ""))
                     .displayLG()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
 
                 Text(String(
                     format: NSLocalizedString("year.subtitle", comment: ""),
                     filledDays, emptyDays
                 ))
                 .bodySM()
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 7)
 
@@ -85,7 +85,7 @@ struct YearOverviewView: View {
                 monthGrid
 
                 Rectangle()
-                    .fill(ONETokens.oneInk.opacity(0.09))
+                    .fill(V3Tokens.ink.opacity(0.09))
                     .frame(height: 1)
                     .padding(.vertical, ONETokens.spacingXL)
 
@@ -93,7 +93,7 @@ struct YearOverviewView: View {
                     InsightCard(label: NSLocalizedString("year.shapeLabel", comment: "")) {
                         Text(shape)
                             .bodySM()
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -112,8 +112,8 @@ struct YearOverviewView: View {
             ForEach(months.sorted { $0.month < $1.month }, id: \.month) { month in
                 VStack(alignment: .leading, spacing: 6) {
                         Text(monthName(month.month))
-                            .font(.system(size: 10))
-                            .foregroundColor(ONETokens.oneAsh)
+                            .font(V3Typography.sans(10))
+                            .foregroundColor(V3Tokens.mutedText)
 
                         LazyVGrid(
                             columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 6),
@@ -138,7 +138,7 @@ struct YearOverviewView: View {
     private func dayCell(day: Int, in month: MonthSummary) -> some View {
         let entry = entryFor(day: day, in: month)
         let shape = RoundedRectangle(cornerRadius: 2, style: .continuous)
-            .fill(entry?.moodColor ?? ONETokens.oneInk.opacity(0.06))
+            .fill(entry?.moodColor ?? V3Tokens.ink.opacity(0.06))
             .aspectRatio(1, contentMode: .fit)
 
         if let entry, let onDayTap {

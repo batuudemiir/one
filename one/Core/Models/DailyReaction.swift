@@ -69,10 +69,11 @@ struct DailyReaction: Identifiable {
     static let maxReplyLength = 120
     static let recordType = "EmojiReaction"
 
-    /// Bugüne mi ait? Efemerlik istemci tarafında bununla uygulanıyor —
-    /// gün değişince eski karşılıklar listelenmez.
-    var isToday: Bool {
-        Calendar.current.isDateInToday(createdAt)
+    /// Son 24 saat içinde mi? Efemerlik istemci tarafında bununla uygulanıyor.
+    /// Prototip spec'i "24 saat sonra kaybolur" — takvim günü değil sürüş
+    /// penceresi; 23:59'da gelen tepki ertesi gün 23:58'e kadar görünür.
+    var isFresh: Bool {
+        createdAt.addingTimeInterval(86_400) > Date()
     }
 }
 

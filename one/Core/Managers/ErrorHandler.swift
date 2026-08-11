@@ -33,7 +33,7 @@ enum ToastType {
     
     var color: Color {
         switch self {
-        case .error:   return ONETokens.oneRed
+        case .error:   return ONEBrand.kor
         case .success: return ONETokens.oneGreen
         case .info:    return ONETokens.oneBlue
         case .warning: return ONETokens.moodOrange

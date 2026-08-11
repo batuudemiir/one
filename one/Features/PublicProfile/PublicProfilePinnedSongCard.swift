@@ -19,7 +19,7 @@ struct PublicProfilePinnedSongCard: View {
             artworkStrip
             songInfo
         }
-        .background(ONETokens.onePaper)
+        .background(V3Tokens.surface)
         .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusCardLg))
         .shadow(color: .black.opacity(0.05), radius: 16, y: 6)
         .overlay(
@@ -87,7 +87,7 @@ struct PublicProfilePinnedSongCard: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(song.songName)
                 .displaySM()
-                .foregroundStyle(ONETokens.oneInk)
+                .foregroundStyle(V3Tokens.ink)
                 .lineLimit(1)
             Text(song.artistName)
                 .monoSM(tracking: 0)

@@ -42,7 +42,7 @@ struct DailyReflectionCard: View {
                         } label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                                 .frame(width: 24, height: 24)
                                 .contentShape(Rectangle())
                         }
@@ -81,8 +81,8 @@ struct DailyReflectionCard: View {
     }
 
     private var thursdayDiscoverHint: String {
-        let mood = todayEntry.normalizedMoodLabel
-        return "‘\(mood)’ için Keşfet'te bir şey var."
+        // v3: Keşfet sekmesi yok. Perşembe için nötr yansıma.
+        "Hafta yarılandı — bugünün rengi neydi?"
     }
 
     // MARK: - Layout helpers
@@ -101,10 +101,10 @@ struct DailyReflectionCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(eyebrow)
                     .monoLabel(tracking: 1.2)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                 Text(title)
                     .bodySMMedium()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(3)
                     .lineSpacing(2)
             }
@@ -115,10 +115,10 @@ struct DailyReflectionCard: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(ONETokens.oneCreamMid.opacity(0.45))
+                .fill(V3Tokens.surface.opacity(0.45))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(ONETokens.oneSilver, lineWidth: 1)
+                        .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         )
     }
@@ -133,14 +133,14 @@ struct DailyReflectionCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("ÇARŞAMBA · 7 gün önce")
                     .monoLabel(tracking: 1.0)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                 Text(entry.songName)
                     .bodySMMedium()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .lineLimit(2)
                 Text(entry.artistName)
                     .monoSM(tracking: 0)
-                    .foregroundColor(ONETokens.oneCharcoal)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
             }
 
@@ -157,10 +157,10 @@ struct DailyReflectionCard: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(ONETokens.onePaper)
+                .fill(V3Tokens.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(ONETokens.oneSilver, lineWidth: 1)
+                        .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         )
     }

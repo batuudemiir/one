@@ -41,12 +41,12 @@ struct VenueDetailSheet: View {
                     .padding(.horizontal, 20)
 
                     Text(payload.title)
-                        .font(.system(size: 30, weight: .bold))
+                        .font(V3Typography.sans(30, weight: .bold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 20)
 
                     Text(payload.sub)
-                        .font(.system(size: 15, weight: .regular))
+                        .font(V3Typography.sans(15, weight: .regular))
                         .foregroundColor(.white.opacity(0.75))
                         .padding(.horizontal, 20)
                         .padding(.bottom, 20)
@@ -64,7 +64,7 @@ struct VenueDetailSheet: View {
 
     private var kindPill: some View {
         Text(payload.kindLabel)
-            .font(.system(size: 11, weight: .semibold))
+            .font(V3Typography.sans(11, weight: .semibold))
             .tracking(0.8)
             .foregroundColor(.white)
             .padding(.horizontal, 12)
@@ -125,7 +125,7 @@ struct VenueDetailSheet: View {
             Image(systemName: icon)
                 .font(.system(size: 11))
             Text(text)
-                .font(.system(size: 12, weight: .medium))
+                .font(V3Typography.sans(12, weight: .medium))
         }
         .foregroundColor(Color(hex: "#1A1A1E").opacity(0.75))
         .padding(.horizontal, 12)
@@ -139,11 +139,11 @@ struct VenueDetailSheet: View {
     private var whySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("NEDEN SANA")
-                .font(.system(size: 10.5, weight: .semibold))
+                .font(V3Typography.sans(10.5, weight: .semibold))
                 .tracking(1.89)
                 .foregroundColor(Color(hex: "#1A1A1E").opacity(0.35))
             Text(payload.why)
-                .font(.system(size: 15, weight: .regular))
+                .font(V3Typography.sans(15, weight: .regular))
                 .foregroundColor(Color(hex: "#1A1A1E").opacity(0.75))
                 .lineSpacing(4)
         }
@@ -152,17 +152,17 @@ struct VenueDetailSheet: View {
     private var lineupSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("AKIŞ")
-                .font(.system(size: 10.5, weight: .semibold))
+                .font(V3Typography.sans(10.5, weight: .semibold))
                 .tracking(1.89)
                 .foregroundColor(Color(hex: "#1A1A1E").opacity(0.35))
             ForEach(payload.lineup) { item in
                 HStack {
                     Text(item.name)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(V3Typography.sans(14, weight: .medium))
                         .foregroundColor(Color(hex: "#1A1A1E"))
                     Spacer()
                     Text(item.time)
-                        .font(.system(size: 13, weight: .regular))
+                        .font(V3Typography.sans(13, weight: .regular))
                         .foregroundColor(Color(hex: "#1A1A1E").opacity(0.55))
                 }
                 .padding(.vertical, 10)
@@ -180,7 +180,7 @@ struct VenueDetailSheet: View {
             Button {
             } label: {
                 Text("Kaydet")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(V3Typography.sans(14, weight: .semibold))
                     .foregroundColor(Color(hex: "#1A1A1E"))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
@@ -193,7 +193,7 @@ struct VenueDetailSheet: View {
             Button {
             } label: {
                 Text("Bilet Al")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(V3Typography.sans(14, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)

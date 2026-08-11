@@ -124,7 +124,7 @@ struct FeaturedSongCard: View {
     private var fallbackGradient: some View {
         ZStack {
             LinearGradient(
-                colors: [accent.opacity(0.65), ONETokens.oneShadow],
+                colors: [accent.opacity(0.65), V3Tokens.ink],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

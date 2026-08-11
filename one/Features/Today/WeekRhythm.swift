@@ -139,7 +139,7 @@ struct WeekRhythmView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
-                .stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1)
+                .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
         )
         .accessibilityElement(children: .contain)
     }
@@ -173,18 +173,18 @@ struct WeekRhythmView: View {
         } else if day.isToday {
             // Bugün henüz boş — davet: içi boş ama net bir halka.
             Circle()
-                .strokeBorder(ONETokens.oneInk.opacity(0.14), lineWidth: 1.5)
+                .strokeBorder(V3Tokens.ink.opacity(0.14), lineWidth: 1.5)
                 .overlay { todayRing }
         } else if day.isBackfillable {
             // Kesikli çember dokunulabilirliği işaret eder.
             Circle()
                 .strokeBorder(
-                    ONETokens.oneAsh,
+                    V3Tokens.mutedText,
                     style: StrokeStyle(lineWidth: 1.2, dash: [2.5, 2.5])
                 )
         } else {
             Circle()
-                .strokeBorder(ONETokens.oneInk.opacity(0.14), lineWidth: 1.5)
+                .strokeBorder(V3Tokens.ink.opacity(0.14), lineWidth: 1.5)
                 .opacity(day.isFuture ? 0.5 : 1)
         }
     }
@@ -193,9 +193,9 @@ struct WeekRhythmView: View {
     /// dışında krem bir boşluk, onun dışında ince mürekkep halka.
     private var todayRing: some View {
         Circle()
-            .stroke(ONETokens.oneCream, lineWidth: 2)
+            .stroke(ONEBrand.bone, lineWidth: 2)
             .overlay(
-                Circle().stroke(ONETokens.oneInk, lineWidth: 1.5)
+                Circle().stroke(V3Tokens.ink, lineWidth: 1.5)
                     .padding(-1.75)
             )
             .padding(-1)
@@ -208,10 +208,10 @@ struct WeekRhythmView: View {
         VStack(alignment: .trailing, spacing: 1) {
             Text("bu hafta")
                 .monoLabel(tracking: 0.2)
-                .foregroundColor(ONETokens.oneAsh)
+                .foregroundColor(V3Tokens.mutedText)
             Text(goalText)
                 .monoLabel(tracking: 0.2)
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(summaryText)
@@ -253,5 +253,5 @@ struct WeekRhythmView: View {
     ]
     return WeekRhythmView(days: WeekRhythm.days(filled: filled, today: today))
         .padding(24)
-        .background(ONETokens.oneCream)
+        .background(ONEBrand.bone)
 }

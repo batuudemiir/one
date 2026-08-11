@@ -5,12 +5,12 @@ struct KesfetFooterView: View {
     var body: some View {
         VStack(spacing: 6) {
             Text("ONE")
-                .font(.system(size: 11, weight: .semibold))
+                .font(V3Typography.sans(11, weight: .semibold))
                 .tracking(2.5)
-                .foregroundColor(ONETokens.oneInk.opacity(0.35))
+                .foregroundColor(V3Tokens.ink.opacity(0.35))
             Text("Hisset. Keşfet. Paylaş.")
-                .font(.system(size: 13, weight: .regular))
-                .foregroundColor(ONETokens.oneInk.opacity(0.35))
+                .font(V3Typography.sans(13, weight: .regular))
+                .foregroundColor(V3Tokens.ink.opacity(0.35))
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -25,7 +25,7 @@ struct SectionHeaderView: View {
     var body: some View {
         Text(title)
             .font(ONETypography.displayLgAlt)
-            .foregroundColor(ONETokens.oneInk)
+            .foregroundColor(V3Tokens.ink)
             .padding(.horizontal, 24)
             .padding(.top, 16)
             .padding(.bottom, 4)
@@ -55,7 +55,7 @@ struct DiscoverView: View {
     private var legacyBody: some View {
         ZStack {
             LinearGradient(
-                colors: [kesfetVM.mood?.color.opacity(0.12) ?? ONETokens.oneCream, ONETokens.oneCream],
+                colors: [kesfetVM.mood?.color.opacity(0.12) ?? ONEBrand.bone, ONEBrand.bone],
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -71,10 +71,10 @@ struct DiscoverView: View {
                         VStack(spacing: 8) {
                             Text("Nasıl hissediyorsun?")
                                 .font(ONETypography.displayMD)
-                                .foregroundColor(ONETokens.oneInk)
+                                .foregroundColor(V3Tokens.ink)
                             Text("Bugün hissettiğin bir mood seç. Sana yakın müzik ve etkinlikler seni bekliyor.")
                                 .font(ONETypography.bodySM)
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 32)
                             Button {
@@ -82,10 +82,10 @@ struct DiscoverView: View {
                             } label: {
                                 Text("Bugünü kaydet")
                                     .font(ONETypography.monoBase)
-                                    .foregroundColor(ONETokens.oneCream)
+                                    .foregroundColor(ONEBrand.bone)
                                     .padding(.horizontal, 24)
                                     .padding(.vertical, 12)
-                                    .background(ONETokens.oneInk)
+                                    .background(V3Tokens.ink)
                                     .clipShape(Capsule())
                             }
                             .padding(.top, 8)
@@ -104,13 +104,13 @@ struct DiscoverView: View {
                         VStack(spacing: 10) {
                             Image(systemName: "music.note.list")
                                 .font(.system(size: 36, weight: .ultraLight))
-                                .foregroundStyle(ONETokens.oneAsh)
+                                .foregroundStyle(V3Tokens.mutedText)
                             Text("Bu his için henüz öneri yok.")
                                 .font(ONETypography.bodySMMedium)
-                                .foregroundStyle(ONETokens.oneAsh)
+                                .foregroundStyle(V3Tokens.mutedText)
                             Text("Yakında burada olacak.")
                                 .font(ONETypography.bodyXS)
-                                .foregroundStyle(ONETokens.oneMist)
+                                .foregroundStyle(V3Tokens.faintText)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 48)
@@ -149,7 +149,7 @@ struct DiscoverView: View {
                                 SectionHeaderView(title: section.title)
                                 
                                 ForEach(section.items) { event in
-                                    DiscoverEventCard(event: event, moodColor: kesfetVM.mood?.color ?? ONETokens.oneBrand)
+                                    DiscoverEventCard(event: event, moodColor: kesfetVM.mood?.color ?? ONEBrand.kor)
                                         .padding(.horizontal, 24)
                                 }
                             }

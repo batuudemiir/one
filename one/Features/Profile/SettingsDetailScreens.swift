@@ -33,7 +33,7 @@ struct MusicSourceSettingsView: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(NSLocalizedString("music.intro", comment: ""))
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .fixedSize(horizontal: false, vertical: true)
 
                 SettingsGroup {
@@ -43,7 +43,10 @@ struct MusicSourceSettingsView: View {
                         name: "Apple Music",
                         status: appleMusicStatusText,
                         isActive: preferred == "AppleMusic",
-                        action: { selectAppleMusic() }
+                        action: {
+                            AppAnalytics.shared.track(.platformSelected(platform: "apple"))
+                            selectAppleMusic()
+                        }
                     )
                     serviceRow(
                         logo: "waveform.circle.fill",
@@ -53,22 +56,28 @@ struct MusicSourceSettingsView: View {
                             ? NSLocalizedString("music.connected", comment: "")
                             : NSLocalizedString("music.notConnected", comment: ""),
                         isActive: preferred == "Spotify",
-                        action: { preferred = "Spotify" }
+                        action: {
+                            AppAnalytics.shared.track(.platformSelected(platform: "spotify"))
+                            preferred = "Spotify"
+                        }
                     )
                     serviceRow(
                         logo: "magnifyingglass",
-                        logoColor: ONETokens.oneStone,
+                        logoColor: V3Tokens.faintText,
                         name: NSLocalizedString("music.searchOnly", comment: ""),
                         status: NSLocalizedString("music.searchOnlySub", comment: ""),
                         isActive: preferred == "SearchOnly",
                         isLast: true,
-                        action: { preferred = "SearchOnly" }
+                        action: {
+                            AppAnalytics.shared.track(.platformSelected(platform: "search_only"))
+                            preferred = "SearchOnly"
+                        }
                     )
                 }
                 .padding(.top, ONETokens.spacingLG)
 
                 Rectangle()
-                    .fill(ONETokens.oneInk.opacity(0.09))
+                    .fill(V3Tokens.ink.opacity(0.09))
                     .frame(height: 1)
                     .padding(.vertical, ONETokens.spacingXL)
 
@@ -119,11 +128,11 @@ struct MusicSourceSettingsView: View {
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(name)
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(ONETokens.oneInk)
+                            .font(V3Typography.sans(14, weight: .semibold))
+                            .foregroundColor(V3Tokens.ink)
                         Text(status)
-                            .font(.system(size: 11.5))
-                            .foregroundColor(ONETokens.oneAsh)
+                            .font(V3Typography.sans(11.5))
+                            .foregroundColor(V3Tokens.mutedText)
                     }
 
                     Spacer()
@@ -135,7 +144,7 @@ struct MusicSourceSettingsView: View {
                     if isActive {
                         Image(systemName: "checkmark")
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                     }
                 }
                 .padding(.horizontal, 15)
@@ -143,7 +152,7 @@ struct MusicSourceSettingsView: View {
 
                 if !isLast {
                     Rectangle()
-                        .fill(ONETokens.oneInk.opacity(0.09))
+                        .fill(V3Tokens.ink.opacity(0.09))
                         .frame(height: 1)
                         .padding(.leading, 15)
                 }
@@ -177,7 +186,7 @@ struct PrivacySettingsView: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(NSLocalizedString("privacy.whoCanSee", comment: ""))
                     .monoLabel(tracking: 1.3)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                     .padding(.bottom, ONETokens.spacingSM)
 
                 SettingsGroup {
@@ -210,13 +219,13 @@ struct PrivacySettingsView: View {
 
                 Text(NSLocalizedString("privacy.neverShared", comment: ""))
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, ONETokens.spacingMD)
 
                 Text(NSLocalizedString("privacy.discoverability", comment: ""))
                     .monoLabel(tracking: 1.3)
-                    .foregroundColor(ONETokens.oneStone)
+                    .foregroundColor(V3Tokens.faintText)
                     .padding(.top, ONETokens.spacingXL)
                     .padding(.bottom, ONETokens.spacingSM)
 

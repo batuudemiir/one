@@ -30,6 +30,8 @@
 	<string>Günlük müziğini kaydetmek için Apple Music&apos;e erişim gereklidir.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Günlük anlarını fotoğraflamak ve QR kod taramak için kamera erişimi gereklidir.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Uygulama kilidi açıkken anlarını yalnızca sen açabilesin diye Face ID kullanılır.</string>
 	<key>NSCalendarUsageDescription</key>
 	<string>Günlük müzik anlarını takvimine eklemek için takvim erişimi gereklidir.</string>
 	<key>NSContactsUsageDescription</key>
@@ -49,6 +51,7 @@
 		<string>DMSans_24pt-SemiBold.ttf</string>
 		<string>DMSans-Bold.ttf</string>
 		<string>DMSans_18pt-LightItalic.ttf</string>
+		<string>Archivo_ExtraBold_Expanded.ttf</string>
 	</array>
 	<key>SpotifyClientID</key>
 	<string>$(SPOTIFY_CLIENT_ID)</string>

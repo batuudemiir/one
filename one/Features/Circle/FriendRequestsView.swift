@@ -67,7 +67,7 @@ struct FriendRequestsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                ONETokens.oneCream.ignoresSafeArea()
+                ONEBrand.bone.ignoresSafeArea()
 
                 if isLoading && items.isEmpty && notificationStore.notifications.isEmpty {
                     skeletonList
@@ -87,14 +87,14 @@ struct FriendRequestsView: View {
                         } label: {
                             Text(NSLocalizedString("friendRequests.markAllRead", comment: ""))
                                 .monoSM(tracking: 0)
-                                .foregroundColor(ONETokens.oneAsh)
+                                .foregroundColor(V3Tokens.mutedText)
                         }
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(NSLocalizedString("general.close", comment: "")) { dismiss() }
                         .monoSM(tracking: 0)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                 }
             }
             .onAppear {
@@ -193,7 +193,7 @@ struct FriendRequestsView: View {
                         .frame(width: 44, height: 44)
                     if let emoji = notif.emoji {
                         Text(emoji)
-                            .font(.system(size: 20))
+                            .font(V3Typography.sans(20))
                     } else {
                         Image(systemName: activityIcon(notif))
                             .bodyMD().fontWeight(.medium)
@@ -207,7 +207,7 @@ struct FriendRequestsView: View {
                     Text(notif.title)
                         .bodySM()
                         .fontWeight(notif.isRead ? .medium : .semibold)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .lineLimit(2)
 
                     // Type-specific body
@@ -240,7 +240,7 @@ struct FriendRequestsView: View {
             .padding(.trailing, 20)
             .padding(.leading, 12)
         }
-        .background(notif.isRead ? Color.clear : ONETokens.oneCreamLow.opacity(0.45))
+        .background(notif.isRead ? Color.clear : V3Tokens.wash.opacity(0.45))
         .contentShape(Rectangle())
         .onTapGesture { handleActivityTap(notif) }
         .accessibilityElement(children: .combine)
@@ -262,12 +262,12 @@ struct FriendRequestsView: View {
 
             Text(text)
                 .bodyXS()
-                .foregroundColor(ONETokens.oneInk.opacity(0.65))
+                .foregroundColor(V3Tokens.ink.opacity(0.65))
                 .lineLimit(2)
                 .padding(.horizontal, 9)
                 .padding(.vertical, 6)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(ONETokens.oneCreamLow.opacity(0.7))
+                .background(V3Tokens.wash.opacity(0.7))
         }
         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
@@ -354,10 +354,10 @@ struct FriendRequestsView: View {
             avatarCircle(initial: initial, colorHex: color, size: 50)
                 .overlay(alignment: .bottomTrailing) {
                     ZStack {
-                        Circle().fill(ONETokens.oneCream)
+                        Circle().fill(ONEBrand.bone)
                         Image(systemName: "arrow.down.circle.fill")
                             .bodyLG()
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                     }
                     .frame(width: 22, height: 22)
                     .offset(x: 2, y: 2)
@@ -368,7 +368,7 @@ struct FriendRequestsView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(name)
                         .bodyMD().fontWeight(.semibold)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                     Text(String(format: NSLocalizedString("friendRequests.sentYouRequest", comment: ""), name))
                         .bodyXS()
                         .foregroundColor(ONETokens.oneMist)
@@ -388,7 +388,7 @@ struct FriendRequestsView: View {
                                 .frame(height: 44)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .fill(ONETokens.oneInk)
+                                        .fill(V3Tokens.ink)
                                 )
                         }
                         .accessibilityLabel(NSLocalizedString("friendRequests.accept", comment: "") + " " + name)
@@ -396,7 +396,7 @@ struct FriendRequestsView: View {
                         Button(action: { decline(recName: recName) }) {
                             Text(NSLocalizedString("friendRequests.decline", comment: "Reddet"))
                                 .bodySM().fontWeight(.medium)
-                                .foregroundColor(ONETokens.oneInk.opacity(0.7))
+                                .foregroundColor(V3Tokens.ink.opacity(0.7))
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 40)
                                 .background(
@@ -411,7 +411,7 @@ struct FriendRequestsView: View {
         }
         .padding(.vertical, 18)
         .padding(.horizontal, 20)
-        .background(ONETokens.oneCreamLow.opacity(0.4))
+        .background(V3Tokens.wash.opacity(0.4))
     }
 
     // MARK: - Outgoing Request Card
@@ -427,10 +427,10 @@ struct FriendRequestsView: View {
             avatarCircle(initial: initial, colorHex: color, size: 50)
                 .overlay(alignment: .bottomTrailing) {
                     ZStack {
-                        Circle().fill(ONETokens.oneCream)
+                        Circle().fill(ONEBrand.bone)
                         Image(systemName: "paperplane.fill")
                             .monoBase().fontWeight(.medium)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                     .frame(width: 22, height: 22)
                     .offset(x: 2, y: 2)
@@ -439,7 +439,7 @@ struct FriendRequestsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(name)
                     .bodyMD().fontWeight(.semibold)
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                 Text(NSLocalizedString("friendRequests.pending", comment: "Bekliyor"))
                     .bodyXS()
                     .foregroundColor(ONETokens.oneMist)
@@ -455,7 +455,7 @@ struct FriendRequestsView: View {
                 } label: {
                     Text(NSLocalizedString("friendRequests.withdraw", comment: "Geri Çek"))
                         .bodyXS().fontWeight(.medium)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.horizontal, 14)
                         .frame(height: 36)
                         .background(
@@ -492,11 +492,11 @@ struct FriendRequestsView: View {
     private func skeletonCard(index: Int) -> some View {
         HStack(spacing: 14) {
             Circle()
-                .fill(ONETokens.oneCreamMid)
+                .fill(V3Tokens.surface)
                 .frame(width: 44, height: 44)
             VStack(alignment: .leading, spacing: 8) {
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(ONETokens.oneCreamMid)
+                    .fill(V3Tokens.surface)
                     .frame(width: Self.skeletonWidths[index % 5], height: 12)
                 RoundedRectangle(cornerRadius: 3)
                     .fill(ONETokens.oneSilver)
@@ -535,11 +535,11 @@ struct FriendRequestsView: View {
                     // Center bell
                     ZStack {
                         Circle()
-                            .fill(ONETokens.oneCreamLow)
+                            .fill(V3Tokens.wash)
                             .frame(width: 72, height: 72)
                         Image(systemName: "bell")
                             .font(.system(size: 28, weight: .light))
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
 
                     // Small accent dot
@@ -553,12 +553,12 @@ struct FriendRequestsView: View {
                 VStack(spacing: 8) {
                     Text(NSLocalizedString("friendRequests.noNotifications", comment: ""))
                         .bodyLG().fontWeight(.semibold)
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
 
                     Text(NSLocalizedString("friendRequests.noNotificationsHint", comment: ""))
                         .bodySM()
                         .multilineTextAlignment(.center)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .lineSpacing(4)
                         .padding(.horizontal, 32)
                 }
@@ -632,7 +632,7 @@ struct FriendRequestsView: View {
         group.notify(queue: .main) {
             isLoading = false
             let combined = (incomingItems + outgoingItems).sorted { $0.date > $1.date }
-            withAnimation(.easeInOut(duration: 0.2)) { self.items = combined }
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.86)) { self.items = combined }
         }
     }
 

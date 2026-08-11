@@ -8,34 +8,93 @@ struct ContentView: View {
     @State private var hasCompletedOnboarding = KeychainHelper.bool(forKey: "hasCompletedOnboarding")
     @State private var showProfileSetup = false
     @StateObject private var cloudKitManager = CloudKitManager.shared
+    @StateObject private var persistence = PersistenceController.shared
+    @StateObject private var appleSignIn = AppleSignInService.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Shared namespace so the splash wordmark can hand off to a top-of-shell
+    /// anchor in a single motion instead of "fade out, then slide in".
+    @Namespace private var splashHandoffNS
     /// Number of times we've retried loading the user with no result and no error.
     /// Profile setup is only shown after exhausting all retries.
     @State private var userCheckRetryCount = 0
     private let maxUserCheckRetries = 3
     @State private var showWhatsNew = false
+    /// Kicked to true once the launch-critical work overlapping the splash is
+    /// done (CloudKit user resolved, or we've decided it's a fresh install).
+    /// SplashScreen reads this to dismiss the moment it's safe — it won't
+    /// dismiss before its own minimum animation hold.
+    @State private var launchReady = false
+    /// Guards `ONELaunchSignpost.begin/end("cloudkit.userFetch")` pairing so
+    /// end fires exactly once (and only if begin fired) across all callsites.
+    @State private var cloudKitFetchSignpostActive = false
+
+    /// Splash only needs the user to exist (or be known-missing) *if* onboarding
+    /// is complete. For first-run flows we bypass CloudKit gating entirely.
+    /// CoreData readiness gates BOTH branches — the tab renders empty fetches
+    /// otherwise, and the 1.2s fallback in `.onAppear` still caps total wait.
+    private var effectiveAppReady: Bool {
+        guard persistence.isReady else { return false }
+        // Onboarding branch doesn't render the splash — this only matters when
+        // hasCompletedOnboarding is true and we're about to enter the app.
+        guard hasCompletedOnboarding else { return true }
+        return launchReady
+    }
     
     var body: some View {
         ZStack {
             if !hasCompletedOnboarding {
-                // First time user - show onboarding
-                OnboardingView(isCompleted: $hasCompletedOnboarding)
-            } else if isActive {
-                // Main app — aşağıdan yukarı gelir, splash'in üzerine oturur
-                ONEColorPickerView()
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .bottom).combined(with: .opacity),
-                        removal: .opacity
-                    ))
+                // v3 onboarding — 7 adımlı (intent · auth · mood · song ·
+                // reward · frekans · notif). Apple sign-in adım 2 olarak
+                // akışın içinde.
+                V3OnboardingView(isCompleted: $hasCompletedOnboarding)
+            } else if appleSignIn.status != .signedIn {
+                // Onboarding tamamlanmış ama Apple kimliği artık geçersiz
+                // (revoked / notFound). Gate yalnız bu durumda çıkar.
+                AppleSignInGateView()
+                    .transition(.opacity)
             } else {
-                // Splash screen — kapanırken scale küçülür ve solar
-                SplashScreen(isActive: $isActive)
-                    .transition(.asymmetric(
-                        insertion: .opacity,
-                        removal: .scale(scale: 0.94).combined(with: .opacity)
-                    ))
+                // Kabuk artık CoreData hazır olur olmaz mount ediliyor —
+                // `effectiveAppReady`'i (CloudKit dahil) beklemiyor.
+                //
+                // Eskiden ikisi aynı ana denk geliyordu: splash sönmeye
+                // başladığı kare, kabuk ilk kez kuruluyor ve `.task`'ları
+                // ateşliyordu. Crossfade'in en pahalı iş ile çakışması
+                // "kasarak giriyor" hissinin ana kaynağıydı. Şimdi kurulum
+                // splash'in altında, görünmeden oluyor; geçiş anında sahnede
+                // yalnızca iki opaklık kalıyor.
+                //
+                // Splash'in kapanma kararı hâlâ `effectiveAppReady`'de —
+                // erken mount, erken kapanma demek değil.
+                if persistence.isReady {
+                    ONEColorPickerView(splashHandoffNS: splashHandoffNS)
+                        .opacity(isActive ? 1 : 0)
+                        // Kabuk 0.99'dan açılıyor: splash kalkarken uygulama
+                        // "yerine oturuyor" hissi. 0.985 fazla yumuşaktı ve
+                        // spring ile birleşince salınım gibi okunuyordu.
+                        .scaleEffect(isActive ? 1 : (reduceMotion ? 1 : 0.99))
+                }
+
+                if !isActive {
+                    // Splash screen — hands off the wordmark to the main-shell
+                    // anchor via `matchedGeometryEffect`. `appReady` gates the
+                    // dismiss so CloudKit user fetch overlaps the animation.
+                    SplashScreen(
+                        isActive: $isActive,
+                        appReady: effectiveAppReady,
+                        handoffNamespace: splashHandoffNS
+                    )
+                    .transition(.opacity)
+                    .zIndex(1)
+                }
             }
         }
-        .animation(ONEAnimation.screenTransition, value: isActive)
+        // Geçişin tek sahibi burası. Splash artık kendi outro'sunu yapmıyor —
+        // spring yerine v3'ün tek easing eğrisi kullanılıyor; yay sönümü
+        // opaklıkta "sünme" yaratıyordu.
+        .animation(reduceMotion
+                   ? .easeInOut(duration: 0.18)
+                   : .timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.34),
+                   value: isActive)
         .overlay {
             if hasCompletedOnboarding && cloudKitManager.userLoadFailed && !cloudKitManager.isFetchingUser && cloudKitManager.currentUser == nil {
                 CloudKitRetryOverlay {
@@ -45,6 +104,9 @@ struct ContentView: View {
         }
         .overlay { ONEToastOverlay() }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("resetToOnboarding"))) { _ in
+            // Hesap silme / sıfırlama: Apple kimliğini de düş, kullanıcı
+            // yeniden Apple ile giriş yaparak sisteme dönsün.
+            appleSignIn.signOut()
             withAnimation(ONEAnimation.screenTransition) {
                 isActive = false
                 hasCompletedOnboarding = false
@@ -57,6 +119,19 @@ struct ContentView: View {
         .onChange(of: hasCompletedOnboarding) { _, completed in
             if completed {
                 ONELogger.debug("Onboarding completed, checking profile status", category: .general)
+                // Kabuk hemen mount olsun — CloudKit currentUser henüz yoksa da
+                // splash aç, kalan iş arka planda tamamlansın.
+                if !launchReady { launchReady = true }
+                checkProfileStatus()
+            }
+        }
+        // Cold start'ta `.onAppear`'daki checkProfileStatus, isReady=false iken
+        // `hasAnyEntry` false döndüğü için sessizce çıkabiliyor. Store hazır
+        // olur olmaz yeniden tetikle — aksi halde ilk yavaş cold start'ta
+        // profil formu (hasCreatedProfile=false + kayıt var senaryosu) asla
+        // açılmaz.
+        .onChange(of: persistence.isReady) { _, ready in
+            if ready && hasCompletedOnboarding {
                 checkProfileStatus()
             }
         }
@@ -89,14 +164,34 @@ struct ContentView: View {
             .presentationDragIndicator(.hidden)
         }
         .onChange(of: cloudKitManager.currentUser) { _, newUser in
-            if newUser != nil && !KeychainHelper.bool(forKey: "hasCreatedProfile") {
-                ONELogger.success("currentUser appeared, setting hasCreatedProfile flag", category: .general)
-                KeychainHelper.set(true, forKey: "hasCreatedProfile")
-                userCheckRetryCount = 0
-                showProfileSetup = false
+            if newUser != nil {
+                // Fastest release of the splash gate: the user record landed.
+                if !launchReady {
+                    if cloudKitFetchSignpostActive {
+                        ONELaunchSignpost.end("cloudkit.userFetch")
+                        cloudKitFetchSignpostActive = false
+                    }
+                    launchReady = true
+                }
+                if !KeychainHelper.bool(forKey: "hasCreatedProfile") {
+                    ONELogger.success("currentUser appeared, setting hasCreatedProfile flag", category: .general)
+                    KeychainHelper.set(true, forKey: "hasCreatedProfile")
+                    userCheckRetryCount = 0
+                    showProfileSetup = false
+                }
             }
         }
         .onChange(of: cloudKitManager.isFetchingUser) { _, isFetching in
+            // Definitive outcome — either succeeded, hit an error, or truly no
+            // user — is enough to release the splash gate. Don't block launch
+            // on retry loops; those can run behind the tab.
+            if !isFetching && !launchReady {
+                if cloudKitFetchSignpostActive {
+                    ONELaunchSignpost.end("cloudkit.userFetch")
+                    cloudKitFetchSignpostActive = false
+                }
+                launchReady = true
+            }
             if !isFetching && !KeychainHelper.bool(forKey: "hasCreatedProfile") {
                 if cloudKitManager.userLoadFailed {
                     ONELogger.warning("finished fetching with error, not showing profile setup", category: .general)
@@ -120,6 +215,46 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            // Apple ID credential state doğrulaması — Keychain'de userID varsa
+            // status init'te `.signedIn`, burada async olarak revoked/notFound
+            // kontrolü yapıp gerekirse gate'i geri aç.
+            appleSignIn.bootstrap()
+
+            // Launch-critical overlap window: kick off CloudKit user resolution
+            // DURING the splash instead of after. The splash's `appReady` gate
+            // waits on this, so the animation and the fetch race — whichever
+            // takes longer wins, and TTI = max(anim, fetch) instead of sum.
+            //
+            // Skip when onboarding hasn't been completed (no user to fetch yet)
+            // or when the flag says we've never created a profile — in those
+            // cases we mark ready immediately.
+            if hasCompletedOnboarding {
+                if KeychainHelper.bool(forKey: "hasCreatedProfile") {
+                    ONELaunchSignpost.begin("cloudkit.userFetch")
+                    cloudKitFetchSignpostActive = true
+                    if cloudKitManager.currentUser != nil {
+                        // Already cached from a warm start — nothing to wait on.
+                        ONELaunchSignpost.end("cloudkit.userFetch")
+                        cloudKitFetchSignpostActive = false
+                        launchReady = true
+                    } else if !cloudKitManager.isFetchingUser {
+                        cloudKitManager.loadCurrentUser()
+                    }
+                    // Fallback: never let the splash wait more than 1.2s on the
+                    // network. Better to show the tab and let it hydrate than
+                    // hold a white screen on flaky connectivity.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                        if !launchReady {
+                            ONELaunchSignpost.event("cloudkit.userFetch.timeout")
+                            launchReady = true
+                        }
+                    }
+                } else {
+                    // Existing user without a profile row (rare) — don't gate.
+                    launchReady = true
+                }
+            }
+
             // Live Activity — süresi dolmuş activity'leri temizle
             if #available(iOS 16.1, *) {
                 Task { await LiveActivityManager.shared.cleanupExpiredActivities() }
@@ -158,6 +293,10 @@ struct ContentView: View {
     /// uygulamanın ne işe yaradığını görmemişken. Form silinemez (CloudKit
     /// profili olmadan Çevre çalışmaz), ama ilk kayda kadar bekleyebilir.
     private var hasAnyEntry: Bool {
+        // Store yüklenmeden count 0 döner. Guard `hasCreatedProfile || hasAnyEntry`
+        // false ile early-return alır — kontrol isActive true olduğunda
+        // (effectiveAppReady, isReady'yi bekliyor) yeniden tetikleniyor.
+        guard persistence.isReady else { return false }
         let request = DailySong.fetchRequest()
         request.fetchLimit = 1
         let count = (try? PersistenceController.shared.container.viewContext.count(for: request)) ?? 0

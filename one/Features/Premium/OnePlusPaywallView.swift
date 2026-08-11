@@ -52,24 +52,24 @@ struct OnePlusPaywallView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("one+")
                         .monoLabel(tracking: 1.3)
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
 
                     Text(NSLocalizedString("plus.headline", comment: ""))
                         .displayLG()
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 10)
 
                     // Ürünün sözleşmesi. Perk listesinden ÖNCE geliyor.
                     Text(NSLocalizedString("plus.promise", comment: ""))
                         .bodySM()
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 11)
 
@@ -101,9 +101,9 @@ struct OnePlusPaywallView: View {
                     } label: {
                         Text(NSLocalizedString("plus.comingSoon", comment: ""))
                             .bodySMMedium()
-                            .foregroundColor(ONETokens.oneCream)
+                            .foregroundColor(ONEBrand.bone)
                             .frame(maxWidth: .infinity, minHeight: 44)
-                            .background(Capsule(style: .continuous).fill(ONETokens.oneInk))
+                            .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                     }
                     .buttonStyle(.plain)
                     .disabled(true)
@@ -111,9 +111,9 @@ struct OnePlusPaywallView: View {
                     .padding(.top, ONETokens.spacingLG)
 
                     Text(NSLocalizedString("plus.legal", comment: ""))
-                        .font(.system(size: 10.5))
+                        .font(V3Typography.sans(10.5))
                         .multilineTextAlignment(.center)
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity)
                         .padding(.top, ONETokens.spacingLG)
@@ -130,10 +130,10 @@ struct OnePlusPaywallView: View {
                 Button(action: onClose) {
                     Image(systemName: "xmark")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .foregroundColor(V3Tokens.ink)
                         .frame(width: 32, height: 32)
                         .background(Circle().fill(Color.white.opacity(0.7)))
-                        .overlay(Circle().stroke(ONETokens.oneInk.opacity(0.09), lineWidth: 1))
+                        .overlay(Circle().stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(NSLocalizedString("general.close", comment: ""))
@@ -144,8 +144,8 @@ struct OnePlusPaywallView: View {
                     Task { await PremiumManager.shared.restorePurchases() }
                 } label: {
                     Text(NSLocalizedString("plus.restore", comment: ""))
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .font(V3Typography.sans(13, weight: .semibold))
+                        .foregroundColor(V3Tokens.mutedText)
                 }
                 .buttonStyle(.plain)
             }
@@ -161,16 +161,16 @@ struct OnePlusPaywallView: View {
         HStack(alignment: .top, spacing: 11) {
             Image(systemName: perk.icon)
                 .font(.system(size: 14))
-                .foregroundColor(ONETokens.oneBrand)
+                .foregroundColor(ONEBrand.kor)
                 .frame(width: 22)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(perk.title)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(ONETokens.oneInk)
+                    .font(V3Typography.sans(14, weight: .semibold))
+                    .foregroundColor(V3Tokens.ink)
                 Text(perk.detail)
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -194,36 +194,36 @@ struct OnePlusPaywallView: View {
             HStack(spacing: 12) {
                 Circle()
                     .strokeBorder(
-                        isSelected ? ONETokens.oneInk : ONETokens.oneInk.opacity(0.22),
+                        isSelected ? ONETokens.oneInk : V3Tokens.ink.opacity(0.22),
                         lineWidth: 1.5
                     )
                     .frame(width: 19, height: 19)
                     .overlay {
                         if isSelected {
-                            Circle().fill(ONETokens.oneInk).frame(width: 10, height: 10)
+                            Circle().fill(V3Tokens.ink).frame(width: 10, height: 10)
                         }
                     }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(name)
-                        .font(.system(size: 14.5, weight: .semibold))
-                        .foregroundColor(ONETokens.oneInk)
+                        .font(V3Typography.sans(14.5, weight: .semibold))
+                        .foregroundColor(V3Tokens.ink)
                     Text(price)
-                        .font(.system(size: 12))
-                        .foregroundColor(ONETokens.oneAsh)
+                        .font(V3Typography.sans(12))
+                        .foregroundColor(V3Tokens.mutedText)
                 }
 
                 Spacer()
 
                 if let badge {
                     Text(badge)
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(V3Typography.sans(10, weight: .semibold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(
                             RoundedRectangle(cornerRadius: 5, style: .continuous)
-                                .fill(ONETokens.oneBrand)
+                                .fill(ONEBrand.kor)
                         )
                 }
             }
@@ -236,7 +236,7 @@ struct OnePlusPaywallView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
                     .stroke(
-                        isSelected ? ONETokens.oneInk : ONETokens.oneInk.opacity(0.09),
+                        isSelected ? ONETokens.oneInk : V3Tokens.ink.opacity(0.09),
                         lineWidth: 1.5
                     )
             )

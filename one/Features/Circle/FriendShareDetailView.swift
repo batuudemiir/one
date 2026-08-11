@@ -87,7 +87,7 @@ struct FriendShareDetailView: View {
     var body: some View {
         ZStack {
             // Background
-            ONETokens.oneCream.ignoresSafeArea()
+            ONEBrand.bone.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
@@ -131,12 +131,12 @@ struct FriendShareDetailView: View {
         .overlay {
             if isLoading {
                 ZStack {
-                    ONETokens.oneCream.opacity(0.7).ignoresSafeArea()
+                    ONEBrand.bone.opacity(0.7).ignoresSafeArea()
                     ProgressView()
                         .padding(16)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(ONETokens.onePaper)
+                                .fill(V3Tokens.surface)
                                 .shadow(color: .black.opacity(0.06), radius: 12, y: 4)
                         )
                 }
@@ -216,7 +216,7 @@ struct FriendShareDetailView: View {
 
                         Text(getUserDisplayName().uppercased())
                             .monoSM(tracking: 1.6)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                 }
                 .buttonStyle(.plain)
@@ -227,7 +227,7 @@ struct FriendShareDetailView: View {
                 HStack(spacing: 12) {
                     Text(getRelativeTime())
                         .monoLabel(tracking: 0.6)
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
                     
                     Menu {
                         Button(role: .destructive, action: { showRemoveAlert = true }) {
@@ -240,7 +240,7 @@ struct FriendShareDetailView: View {
                         Image(systemName: "ellipsis")
                             .bodySM()
                             .fontWeight(.semibold)
-                            .foregroundColor(ONETokens.oneStone)
+                            .foregroundColor(V3Tokens.faintText)
                             .frame(width: 44, height: 44)
                             .contentShape(Rectangle())
                     }
@@ -249,7 +249,7 @@ struct FriendShareDetailView: View {
             
             Text(NSLocalizedString("circle.todayFeeling", comment: ""))
                 .displayLG()
-                .foregroundColor(ONETokens.oneInk)
+                .foregroundColor(V3Tokens.ink)
                 .lineSpacing(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -427,7 +427,7 @@ struct FriendShareDetailView: View {
                 // Song name
                 Text(songName)
                     .displayMD()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .tracking(-0.8)
                     .lineLimit(2)
                 
@@ -438,7 +438,7 @@ struct FriendShareDetailView: View {
                 
                 // Divider
                 Rectangle()
-                    .fill(ONETokens.oneCreamLow)
+                    .fill(V3Tokens.wash)
                     .frame(height: 1)
                     .padding(.vertical, 4)
                 
@@ -469,7 +469,7 @@ struct FriendShareDetailView: View {
                     if !weatherDesc.isEmpty {
                         HStack(spacing: 5) {
                             Text(weatherIcon)
-                                .font(.system(size: 11))
+                                .font(V3Typography.sans(11))
                             Text(weatherDesc)
                                 .monoLabel()
                                 .foregroundColor(ONETokens.oneCharcoal)
@@ -478,7 +478,7 @@ struct FriendShareDetailView: View {
                     
                     HStack(spacing: 5) {
                         Text("🎵")
-                            .font(.system(size: 11))
+                            .font(V3Typography.sans(11))
                         Text(platform)
                             .monoLabel()
                             .foregroundColor(ONETokens.oneCharcoal)
@@ -491,11 +491,11 @@ struct FriendShareDetailView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(NSLocalizedString("circle.note", comment: ""))
                             .monoLabel(tracking: 1.5)
-                            .foregroundColor(ONETokens.oneAsh)
+                            .foregroundColor(V3Tokens.mutedText)
                         
                         Text(note)
                             .bodySM()
-                            .foregroundColor(ONETokens.oneInk)
+                            .foregroundColor(V3Tokens.ink)
                             .lineSpacing(2)
                             .tracking(-0.2)
                     }
@@ -511,7 +511,7 @@ struct FriendShareDetailView: View {
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(ONETokens.onePaper)
+        .background(V3Tokens.surface)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
         .padding(.horizontal, 20)
@@ -550,7 +550,7 @@ struct FriendShareDetailView: View {
             .padding(.vertical, ONETokens.spacingMD)
             .background(
                 Capsule()
-                    .stroke(ONETokens.oneStone, lineWidth: 1.5)
+                    .stroke(V3Tokens.faintText, lineWidth: 1.5)
             )
         }
         .padding(.top, 24)

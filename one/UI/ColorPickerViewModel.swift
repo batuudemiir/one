@@ -171,8 +171,13 @@ class ColorPickerViewModel: ObservableObject {
     }
     
     func loadPatternData(context: NSManagedObjectContext) {
-        songPatterns = PersistenceController.shared.analyzeSongPatterns(context: context)
-        mostFrequentSong = PersistenceController.shared.getMostFrequentSong(context: context)
+        // Heavy grouping'i background context'e taşıdık; main'i bloke etmez.
+        // Data büyüdükçe (kullanıcı ~100+ entry) fark hissedilir hale geliyordu.
+        Task { @MainActor in
+            let patterns = await PersistenceController.shared.analyzeSongPatternsAsync()
+            self.songPatterns = patterns
+            self.mostFrequentSong = patterns.first
+        }
     }
     
     var filteredSongs: [Song] {

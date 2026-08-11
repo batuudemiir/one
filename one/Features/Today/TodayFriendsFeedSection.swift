@@ -19,13 +19,13 @@ struct TodayFriendsFeedSection: View {
             HStack {
                 Text("Çevrende Bugün")
                     .monoSM(tracking: 1.0)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                 Spacer()
                 if !friendShares.isEmpty {
                     Button(action: onSeeAll) {
                         Text("Tümünü gör")
                             .monoLabel(tracking: 0.5)
-                            .foregroundColor(ONETokens.oneBrand)
+                            .foregroundColor(ONEBrand.kor)
                     }
                 }
             }
@@ -33,10 +33,10 @@ struct TodayFriendsFeedSection: View {
             if friendShares.isEmpty {
                 HStack(spacing: 8) {
                     Text("💭")
-                        .font(.system(size: 13))
+                        .font(V3Typography.sans(13))
                     Text("Arkadaşların henüz bugün paylaşmadı")
                         .bodySM()
-                        .foregroundColor(ONETokens.oneStone)
+                        .foregroundColor(V3Tokens.faintText)
                 }
                 .padding(.vertical, 6)
             } else {
@@ -50,18 +50,18 @@ struct TodayFriendsFeedSection: View {
                                 VStack(spacing: 6) {
                                     Image(systemName: "arrow.right.circle")
                                         .bodyLG()
-                                        .foregroundColor(ONETokens.oneBrand)
+                                        .foregroundColor(ONEBrand.kor)
                                     Text("+\(overflow)")
                                         .monoSM(tracking: 0.5)
-                                        .foregroundColor(ONETokens.oneAsh)
+                                        .foregroundColor(V3Tokens.mutedText)
                                 }
                                 .frame(width: 80, height: 78)
                                 .background(
                                     RoundedRectangle(cornerRadius: 14)
-                                        .fill(ONETokens.onePaper)
+                                        .fill(V3Tokens.surface)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 14)
-                                                .stroke(ONETokens.oneSilver, lineWidth: 1)
+                                                .stroke(V3Tokens.hairline, lineWidth: 1)
                                         )
                                 )
                             }

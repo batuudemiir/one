@@ -18,17 +18,15 @@ struct MonthlyPosterShareCard: View {
     var body: some View {
         ZStack {
             // Arka plan rengi (Wabi-Sabi cream)
-            ONETokens.onePaper.ignoresSafeArea()
+            V3Tokens.surface.ignoresSafeArea()
             
             VStack {
                 // MARK: Top Section (Title)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(monthName.uppercased())
-                        .editorialXXL()
-                        .italic()
-                        .fontWeight(.ultraLight)
-                        .foregroundColor(ONETokens.oneShadow)
+                        .font(ONEBrand.display(52))
                         .tracking(-1.5)
+                        .foregroundColor(ONETokens.oneShadow)
                         
                     Text(year)
                         .font(.custom("GeistMono-Regular", size: 16))
