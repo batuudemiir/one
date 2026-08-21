@@ -85,7 +85,10 @@ struct InviteShareSheet: View {
         HStack {
             VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                 Text(NSLocalizedString("invite.sendInvite", comment: "Profili Paylaş"))
-                    .font(V3Typography.sans(24, weight: .bold))
+                    // Sheet başlığı — Archivo. Kardeş sheet (`V3StoryComposer`)
+                    // zaten display çiziyordu; bu ikisi aynı registerda iki
+                    // farklı yüzle duruyordu.
+                    .displayMD()
                     .foregroundColor(V3Tokens.ink)
                 Text(NSLocalizedString("invite.shareSubtitle", comment: "Davet kodun veya link ile seni ekleyebilirler"))
                     .bodySM()

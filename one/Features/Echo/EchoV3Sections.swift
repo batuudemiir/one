@@ -44,8 +44,12 @@ struct EchoCoverSection: View {
             VStack(alignment: .leading, spacing: 14) {
                 if let top {
                     Text(top.label.lowercased())
-                        .font(V3Typography.display(52, weight: .semibold))
-                        .tracking(-1.6)
+                        // 56 — An akışının kahraman mood etiketiyle aynı
+                        // kademe (`V3DetailsStepView`). Aynı öğe iki ekranda
+                        // 52 ve 56 olarak çiziliyordu; gerekçesi yazılı olan
+                        // 56, o yüzden ortak kademe o.
+                        .font(V3Typography.display(56, weight: .semibold))
+                        .tracking(-1.8)
                         .foregroundColor(ink)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)

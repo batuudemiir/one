@@ -60,6 +60,7 @@ RULE_NAMES=(
   plain_button
   raw_hex
   adhoc_card
+  raw_type_scale
 )
 
 RULE_DESC=(
@@ -71,6 +72,7 @@ RULE_DESC=(
   ".buttonStyle(.plain) — .onePressable kullan"
   "Ham hex rengi — V3Tokens / V3Mood kullan"
   "Ad-hoc kart zemini — .oneCardBackground(radius:) kullan"
+  "Ham punto — ONETypography rolü kullan (bodyLG/bodySM/displayMD…)"
 )
 
 RULE_REGEX=(
@@ -82,6 +84,7 @@ RULE_REGEX=(
   '\.buttonStyle\(\.plain\)'
   'Color\(hex: "#'
   '\.fill\(V3Tokens\.surface\)'
+  '\.font\(V3Typography\.(sans|display|mono)\('
 )
 
 declare -a CURRENT

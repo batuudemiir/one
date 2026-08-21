@@ -330,7 +330,9 @@ struct AddFriendScreen: View {
                 )
 
             Text(myHandle)
-                .font(V3Typography.sans(19, weight: .bold))
+                // Kendi kullanıcı adın — QR'ın altındaki kahraman öğe.
+                // Gövde yüzüyle değil marka yüzüyle çiziliyor.
+                .displaySM()
                 .foregroundColor(V3Tokens.ink)
                 .padding(.top, V3Tokens.spacingLG)
 
