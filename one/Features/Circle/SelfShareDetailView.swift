@@ -107,14 +107,7 @@ struct SelfShareDetailView: View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
             HStack {
                 HStack(spacing: 10) {
-                    Circle()
-                        .fill(moodColor)
-                        .frame(width: 28, height: 28)
-                        .overlay(
-                            Text(String(displayName.prefix(1)).uppercased())
-                                .monoSM(tracking: 0)
-                                .foregroundColor(.white.opacity(0.9))
-                        )
+                    V3PersonAvatar(name: displayName, colorHex: moodColorHex, size: .small)
                     Text(NSLocalizedString("circle.you", comment: "").uppercased())
                         .monoSM(tracking: 1.6)
                         .foregroundColor(V3Tokens.mutedText)

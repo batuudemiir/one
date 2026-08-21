@@ -154,14 +154,11 @@ struct IncomingReactionsView: View {
 
             ForEach(reactors, id: \.id) { r in
                 HStack(spacing: 11) {
-                    ZStack {
-                        Circle()
-                            .fill(Color(hex: r.senderColorHex ?? "#888888"))
-                            .frame(width: 38, height: 38)
-                        Text(String((r.senderName ?? "?").prefix(1)).uppercased())
-                            .bodySMSemibold()
-                            .foregroundColor(.white)
-                    }
+                    V3PersonAvatar(
+                        name: r.senderName ?? "?",
+                        colorHex: r.senderColorHex,
+                        size: .small
+                    )
                     Text(r.senderName ?? NSLocalizedString("echoes.someone", comment: ""))
                         .bodyXSSemibold()
                         .foregroundColor(V3Tokens.ink)

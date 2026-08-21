@@ -23,8 +23,15 @@ struct PublicProfileHeroSection: View {
         Color(hex: profile?.avatarColorHex ?? "#8888CC")
     }
 
+    /// Hero zemininin kaynak hex'i. Avatar baş harfinin mürekkebi bundan
+    /// türetiliyor — `.white` sabitlemek, kullanıcının rengi açık çıktığında
+    /// harfi zemine gömüyordu.
+    private var moodHex: String {
+        profile?.dominantMoodColor ?? "#9B7FD4"
+    }
+
     private var moodColor: Color {
-        Color(hex: profile?.dominantMoodColor ?? "#9B7FD4")
+        Color(hex: moodHex)
     }
 
     private var initial: String {
@@ -151,10 +158,12 @@ struct PublicProfileHeroSection: View {
                 .blur(radius: 60)
                 .offset(x: 100, y: 60)
 
+            // Serif + italik idi — ONE'ın dört yüzünün (Archivo / DM Sans /
+            // SF Mono / Caveat Brush) hiçbiri değil, üstelik yabancıların
+            // gördüğü ilk ekranda. Display yüzüne ve mood'un ink eşine geçti.
             Text(initial)
-                .font(.system(size: avatarInitialSize, weight: .semibold, design: .serif))
-                .italic()
-                .foregroundColor(.white.opacity(0.92))
+                .font(V3Typography.display(avatarInitialSize))
+                .foregroundColor(V3PersonAvatar.readableInk(onHex: moodHex))
                 .shadow(color: .black.opacity(0.18), radius: 16, x: 0, y: 6)
         }
     }

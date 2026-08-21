@@ -12,18 +12,10 @@ struct SuggestedUserRow: View {
     let user: SuggestedUser
     var onAdd: () -> Void
 
-    private var initial: String { String(user.displayName.prefix(1)).uppercased() }
 
     var body: some View {
         HStack(spacing: V3Tokens.spacingMD) {
-            ZStack {
-                Circle()
-                    .fill(Color(hex: user.avatarColorHex))
-                    .frame(width: 40, height: 40)
-                Text(initial)
-                    .bodyMDMedium()
-                    .foregroundColor(.white)
-            }
+            V3PersonAvatar(name: user.displayName, colorHex: user.avatarColorHex, size: .medium)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.displayName)
@@ -65,18 +57,10 @@ struct QuickSuggestCard: View {
     let sent: Bool
     var onAdd: () -> Void
 
-    private var initial: String { String(user.displayName.prefix(1)).uppercased() }
 
     var body: some View {
         VStack(spacing: 7) {
-            ZStack {
-                Circle()
-                    .fill(Color(hex: user.avatarColorHex))
-                    .frame(width: 40, height: 40)
-                Text(initial)
-                    .bodySMSemibold()
-                    .foregroundColor(.white)
-            }
+            V3PersonAvatar(name: user.displayName, colorHex: user.avatarColorHex, size: .medium)
 
             Text(user.displayName)
                 .bodyMicroSemibold()

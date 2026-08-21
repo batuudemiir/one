@@ -168,13 +168,11 @@ struct FriendProfileScreen: View {
                         .resizable()
                         .scaledToFill()
                 } else {
-                    Circle()
-                        .fill(accent)
-                        .overlay(
-                            Text(String(profile.displayName.prefix(1)).uppercased())
-                                .font(V3Typography.sans(21, weight: .bold))
-                                .foregroundColor(.white)
-                        )
+                    V3PersonAvatar(
+                        name: profile.displayName,
+                        colorHex: profile.avatarColorHex,
+                        size: .large
+                    )
                 }
             }
             .frame(width: 64, height: 64)

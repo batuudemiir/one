@@ -87,11 +87,7 @@ struct V3ResonanceView: View {
         VStack(spacing: 0) {
             ForEach(Array(matches.enumerated()), id: \.offset) { index, item in
                 HStack(spacing: 13) {
-                    Text(String(item.name.prefix(1)).uppercased())
-                        .font(ONEBrand.display(16))
-                        .foregroundColor(item.mood.ink)
-                        .frame(width: 40, height: 40)
-                        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(item.mood.color))
+                    V3PersonAvatar(name: item.name, colorHex: item.mood.hex, size: .medium)
 
                     Text(item.name)
                         .bodyLG()

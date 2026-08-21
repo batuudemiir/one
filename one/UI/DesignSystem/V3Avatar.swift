@@ -236,3 +236,125 @@ struct V3AvatarPicker: View {
         }
     }
 }
+
+// MARK: - Kişi avatarı (baş harf)
+
+/// Bir **başkasının** avatarı — ad + renk. `V3AvatarView` kullanıcının kendi
+/// avatarı için (mozaik / fotoğraf / işaret); bu, arkadaş listelerinde,
+/// isteklerde, tepkilerde ve paylaşım detaylarında görünen baş harf kabuğu.
+///
+/// Neden var: bu kalıp on üç dosyada elle yazılmıştı — 32, 40, 44, 50, 56 ve
+/// 64pt; kimi `Circle`, kimi `RoundedRectangle`; yazı kimi yerde
+/// `V3Typography.sans(15, .bold)`, kimi yerde `ONEBrand.display(16)`, bir
+/// yerde de **serif** (ONE'ın dört yüzünün hiçbiri değil). Aynı arkadaş iki
+/// ekranda iki farklı nesne olarak çiziliyordu.
+///
+/// **Biçim rounded-square**, daire değil: kullanıcının kendi avatarı
+/// (`V3AvatarView`) ve logomark zaten bu köşede. Çevre listesinde "sen"
+/// kartı kare, arkadaş kartları daireydi — yan yana duran iki avatar iki
+/// ayrı dile aitti.
+///
+/// **Metin rengi renkten türetilir, `.white` değil.** Renk bir mood'a
+/// oturuyorsa o mood'un `ink` eşi; oturmuyorsa (kullanıcı seçimi eski bir
+/// palet olabilir) parlaklıktan hesaplanır. `.white` rastgele bir hex'in
+/// üstünde kontrast garantisi vermiyordu.
+struct V3PersonAvatar: View {
+
+    /// Üç ölçü. Ara boyut gerekiyorsa önce buraya kademe ekle — çağrı
+    /// yerinde ham sayı yazmak ölçeği yeniden dağıtır.
+    enum Size {
+        /// 32pt — yoğun liste satırı, tepki gönderen.
+        case small
+        /// 44pt — standart liste satırı. Dokunma hedefiyle aynı.
+        case medium
+        /// 56pt — istek kartı, paylaşım detayı başlığı.
+        case large
+
+        var side: CGFloat {
+            switch self {
+            case .small:  return 32
+            case .medium: return 44
+            case .large:  return 56
+            }
+        }
+
+        /// Baş harf puntosu — kenarın %38'i. Üç kademede de aynı optik ağırlık.
+        var glyph: CGFloat { side * 0.38 }
+    }
+
+    let name: String
+    /// Kişinin rengi. `nil` ya da çözülemeyen hex → nötr `wash` zemin.
+    var colorHex: String? = nil
+    var size: Size = .medium
+
+    private var initial: String {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let first = trimmed.first else { return "?" }
+        return String(first).uppercased()
+    }
+
+    /// Zemin ve üstündeki mürekkep birlikte seçilir — biri diğerinden
+    /// bağımsız değişemez.
+    private var palette: (ground: Color, ink: Color) {
+        guard let colorHex, !colorHex.isEmpty else {
+            return (V3Tokens.wash, V3Tokens.mutedText)
+        }
+        if let mood = V3Mood.closest(toHex: colorHex) {
+            return (mood.color, mood.ink)
+        }
+        let ground = Color(hex: colorHex)
+        return (ground, Self.readableInk(onHex: colorHex))
+    }
+
+    var body: some View {
+        Text(initial)
+            .font(V3Typography.display(size.glyph))
+            .foregroundColor(palette.ink)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .frame(width: size.side, height: size.side)
+            .background(
+                RoundedRectangle(cornerRadius: size.side * 0.28, style: .continuous)
+                    .fill(palette.ground)
+            )
+            // Ad zaten satırın kendisinde yazılı; avatar onu tekrar
+            // okutmasın diye VoiceOver'dan gizli.
+            .accessibilityHidden(true)
+    }
+
+    /// Zemin parlaklığından okunur mürekkep. WCAG'ın relative luminance
+    /// formülü (sRGB → lineer), eşik 0.45: bunun üstü koyu metin ister.
+    ///
+    /// Yalnız mood paletine oturmayan hex'ler için — mood'u olan renkte
+    /// tasarımın verdiği `ink` eşi kullanılır, hesap değil.
+    static func readableInk(onHex hex: String) -> Color {
+        let clean = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
+        guard clean.count >= 6, let value = UInt64(clean.prefix(6), radix: 16) else {
+            return V3Tokens.darkText
+        }
+        func channel(_ raw: UInt64) -> Double {
+            let c = Double(raw) / 255.0
+            return c <= 0.03928 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4)
+        }
+        let r = channel((value >> 16) & 0xFF)
+        let g = channel((value >> 8) & 0xFF)
+        let b = channel(value & 0xFF)
+        let luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+        return luminance > 0.45 ? V3Tokens.darkGround : V3Tokens.darkText
+    }
+}
+
+#Preview("Kişi avatarı") {
+    VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
+        ForEach([V3PersonAvatar.Size.small, .medium, .large], id: \.side) { size in
+            HStack(spacing: V3Tokens.spacingMD) {
+                V3PersonAvatar(name: "Batu", colorHex: V3Mood.huzurlu.hex, size: size)
+                V3PersonAvatar(name: "elif", colorHex: V3Mood.mutlu.hex, size: size)
+                V3PersonAvatar(name: "Deniz", colorHex: "#7A3FF2", size: size)
+                V3PersonAvatar(name: "", colorHex: nil, size: size)
+            }
+        }
+    }
+    .padding()
+    .background(V3Tokens.paper)
+}

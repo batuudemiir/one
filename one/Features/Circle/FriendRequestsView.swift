@@ -355,12 +355,11 @@ struct FriendRequestsView: View {
     private func incomingCard(req: CKRecord, sender: CKRecord) -> some View {
         let name       = sender["displayName"] as? String ?? NSLocalizedString("friendRequests.unknown", comment: "")
         let color      = sender["avatarColor"] as? String ?? "#888888"
-        let initial    = String(name.prefix(1)).uppercased()
         let recName    = req.recordID.recordName
         let processing = processingIDs.contains(recName)
 
         return HStack(alignment: .top, spacing: 14) {
-            avatarCircle(initial: initial, colorHex: color, size: 50)
+            avatarCircle(name: name, colorHex: color, size: .large)
                 .overlay(alignment: .bottomTrailing) {
                     ZStack {
                         Circle().fill(V3Tokens.surface)
@@ -428,12 +427,11 @@ struct FriendRequestsView: View {
     private func outgoingCard(req: CKRecord, receiver: CKRecord) -> some View {
         let name       = receiver["displayName"] as? String ?? NSLocalizedString("friendRequests.unknown", comment: "")
         let color      = receiver["avatarColor"] as? String ?? "#888888"
-        let initial    = String(name.prefix(1)).uppercased()
         let recName    = req.recordID.recordName
         let processing = processingIDs.contains(recName)
 
         return HStack(spacing: 14) {
-            avatarCircle(initial: initial, colorHex: color, size: 50)
+            avatarCircle(name: name, colorHex: color, size: .large)
                 .overlay(alignment: .bottomTrailing) {
                     ZStack {
                         Circle().fill(V3Tokens.surface)
@@ -582,15 +580,10 @@ struct FriendRequestsView: View {
     // MARK: - Avatar Helper
 
     @ViewBuilder
-    private func avatarCircle(initial: String, colorHex: String, size: CGFloat) -> some View {
-        Circle()
-            .fill(Color(hex: colorHex))
-            .frame(width: size, height: size)
-            .overlay(
-                Text(initial)
-                    .font(.system(size: size * 0.38, weight: .bold))
-                    .foregroundColor(.white.opacity(0.95))
-            )
+    /// Yerel sarmalayıcı — gövdeyi `V3PersonAvatar` çiziyor. Çağrı yerleri
+    /// baş harfi kendisi hesaplıyordu; bileşen adı alıp kendisi türetiyor.
+    private func avatarCircle(name: String, colorHex: String, size: V3PersonAvatar.Size) -> some View {
+        V3PersonAvatar(name: name, colorHex: colorHex, size: size)
     }
 
     private func relativeTime(_ date: Date?) -> String {

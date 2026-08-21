@@ -278,14 +278,7 @@ struct AddFriendScreen: View {
         let colorHex = user["avatarColor"] as? String ?? "#5B8DEF"
 
         return HStack(spacing: V3Tokens.spacingMD) {
-            Circle()
-                .fill(Color(hex: colorHex))
-                .frame(width: 36, height: 36)
-                .overlay(
-                    Text(String(name.prefix(1)).uppercased())
-                        .bodyXSSemibold()
-                        .foregroundColor(.white)
-                )
+            V3PersonAvatar(name: name, colorHex: colorHex, size: .small)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(name)

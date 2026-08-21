@@ -235,15 +235,11 @@ struct FriendDetailView: View {
                                         .stroke(Color(hex: avatarColorHex).opacity(0.4), lineWidth: 1.5)
                                 )
                         } else {
-                            Circle()
-                                .fill(Color(hex: avatarColorHex))
-                                .frame(width: 46, height: 46)
-                                .overlay(
-                                    Text(initial)
-                                        .font(ONEBrand.display(22))
-                                        .tracking(-0.4)
-                                        .foregroundColor(.white.opacity(0.9))
-                                )
+                            V3PersonAvatar(
+                                name: displayName,
+                                colorHex: avatarColorHex,
+                                size: .large
+                            )
                         }
                     }
                     .onLongPressGesture(minimumDuration: 0.2, pressing: { isPressing in
@@ -325,17 +321,21 @@ struct FriendDetailView: View {
                         .frame(width: 100 * pulseScale, height: 100 * pulseScale)
                     // Dış halka 1
                     Circle()
-                        .stroke(Color.gray.opacity(0.12 * pulseOpacity * 3), lineWidth: 1)
+                        .stroke(V3Tokens.dashed.opacity(0.12 * pulseOpacity * 3), lineWidth: 1)
                         .frame(width: 84 * pulseScale, height: 84 * pulseScale)
                     // Ana daire
+                    // Bekleyen paylaşım — kesikli çerçeve, `dashed` token'ı
+                    // tam bu iş için var. Önceden `Color.gray` idi: sistem
+                    // grisi ONE'ın nötrlerinden biri değil ve iki temada da
+                    // aynı kalıyordu.
                     Circle()
-                        .stroke(Color.gray.opacity(0.25),
+                        .stroke(V3Tokens.dashed,
                                 style: StrokeStyle(lineWidth: 1.5, dash: [4, 5]))
                         .frame(width: 72, height: 72)
                     Text(initial)
                         .font(ONEBrand.display(22))
                         .tracking(-0.4)
-                        .foregroundColor(Color.gray.opacity(0.4))
+                        .foregroundColor(V3Tokens.ghostText)
                 }
                 .onAppear {
                     withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {

@@ -300,23 +300,11 @@ struct MyFriendsListView: View {
             }
         } label: {
             HStack(spacing: 13) {
-                Circle()
-                    .fill(hasSong ? Color(hex: moodHex) : V3Tokens.faintText)
-                    .frame(width: 46, height: 46)
-                    .overlay(
-                        Text(String(name.prefix(1)).uppercased())
-                            .font(V3Typography.sans(15, weight: .bold))
-                            .foregroundColor(.white)
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(
-                                hasSong ? Color(hex: moodHex) : V3Tokens.faintText,
-                                lineWidth: 1.5
-                            )
-                            .opacity(0.22)
-                            .padding(-4)
-                    )
+                V3PersonAvatar(
+                    name: name,
+                    colorHex: hasSong ? moodHex : nil,
+                    size: .medium
+                )
 
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 7) {
@@ -362,14 +350,7 @@ struct MyFriendsListView: View {
         let isWorking = workingRequestID == recordName
 
         return HStack(spacing: V3Tokens.spacingMD) {
-            Circle()
-                .fill(V3Tokens.wash)
-                .frame(width: 36, height: 36)
-                .overlay(
-                    Text(String(name.prefix(1)).uppercased())
-                        .bodyXSSemibold()
-                        .foregroundColor(V3Tokens.mutedText)
-                )
+            V3PersonAvatar(name: name, size: .small)
 
             Text(name)
                 .bodySMSemibold()
@@ -406,14 +387,7 @@ struct MyFriendsListView: View {
         let name = pair.receiver["displayName"] as? String ?? "?"
 
         return HStack(spacing: V3Tokens.spacingMD) {
-            Circle()
-                .fill(V3Tokens.wash)
-                .frame(width: 36, height: 36)
-                .overlay(
-                    Text(String(name.prefix(1)).uppercased())
-                        .bodyXSSemibold()
-                        .foregroundColor(V3Tokens.mutedText)
-                )
+            V3PersonAvatar(name: name, size: .small)
 
             Text(name)
                 .bodySMSemibold()
