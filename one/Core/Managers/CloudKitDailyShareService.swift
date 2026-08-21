@@ -70,12 +70,12 @@ extension CloudKitManager {
             return
         }
         
-        // Önce bugüne ait bir kayıt var mı kontrol edelim (premium ek entry için her zaman yeni kayıt)
+        // Önce bugüne ait bir kayıt var mı kontrol edelim (çoklu an: her zaman yeni kayıt)
         fetchUserDailyShare(for: date) { [weak self] fetchResult in
             let shareRecord: CKRecord
 
             if entryIndex > 0 {
-                // Premium ek entry: mevcut kaydı güncelleme, her zaman yeni kayıt
+                // Çoklu an: mevcut kaydı güncelleme, her zaman yeni kayıt
                 shareRecord = CKRecord(recordType: "DailyShare")
                 shareRecord["shareID"] = UUID().uuidString as CKRecordValue
                 shareRecord["userID"] = currentUserID as CKRecordValue
@@ -431,7 +431,7 @@ extension CloudKitManager {
                                     userID, startOfDay as NSDate, endOfDay as NSDate)
         let query = CKQuery(recordType: "DailyShare", predicate: predicate)
 
-        // Birden fazla kayıt olabilir (eski premium data) — entryIndex=0 tercih et
+        // Birden fazla kayıt olabilir (günün diğer anları) — entryIndex=0 tercih et
         publicDatabase.fetch(withQuery: query, inZoneWith: nil,
                              desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { result in
             switch result {
@@ -767,47 +767,4 @@ extension CloudKitManager {
         }
     }
 
-    // MARK: - Friend Share History (ONE+ Premium)
-
-    /// Fetches historical daily shares for a specific friend, sorted by date descending.
-    func fetchFriendShareHistory(
-        friendUserID: String,
-        limit: Int = 30,
-        completion: @escaping (Result<[CKRecord], Error>) -> Void
-    ) {
-        let predicate = NSPredicate(format: "userID == %@", friendUserID)
-        let query = CKQuery(recordType: "DailyShare", predicate: predicate)
-        query.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
-
-        let operation = CKQueryOperation(query: query)
-        operation.resultsLimit = limit
-        operation.desiredKeys = [
-            "songName", "artistName", "genre", "moodWord", "moodColor",
-            "date", "createdAt", "feeling", "feelingLabel", "platform",
-            "dailyNote", "photoAsset"
-        ]
-
-        var records: [CKRecord] = []
-
-        operation.recordMatchedBlock = { _, result in
-            if case .success(let record) = result {
-                records.append(record)
-            }
-        }
-
-        operation.queryResultBlock = { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .failure(let error):
-                    ONELogger.error("fetchFriendShareHistory failed", error: error, category: .cloudkit)
-                    completion(.failure(error))
-                case .success:
-                    ONELogger.debug("Fetched \(records.count) historical shares for friend", category: .cloudkit)
-                    completion(.success(records))
-                }
-            }
-        }
-
-        publicDatabase.add(operation)
-    }
 }

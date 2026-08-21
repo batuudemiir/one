@@ -8,6 +8,7 @@
 
 import SwiftUI
 import CloudKit
+import UIKit
 
 // MARK: - Feed Grouping
 
@@ -67,7 +68,7 @@ struct FriendRequestsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                ONEBrand.bone.ignoresSafeArea()
+                V3Tokens.paper.ignoresSafeArea()
 
                 if isLoading && items.isEmpty && notificationStore.notifications.isEmpty {
                     skeletonList
@@ -89,6 +90,7 @@ struct FriendRequestsView: View {
                                 .monoSM(tracking: 0)
                                 .foregroundColor(V3Tokens.mutedText)
                         }
+                        .contentShape(Rectangle())
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -103,8 +105,7 @@ struct FriendRequestsView: View {
             }
             .sheet(item: $fetchedFriendShare) { item in
                 FriendShareDetailView(share: item.record, friendDisplayName: item.friendDisplayName)
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+                    .v3Sheet(detents: [.large])
             }
         }
     }
@@ -133,7 +134,7 @@ struct FriendRequestsView: View {
                         }
                         .transition(.opacity.combined(with: .move(edge: .top)))
                         .animation(
-                            .spring(response: 0.35, dampingFraction: 0.8)
+                            ONEAnimation.cardSpring
                                 .delay(Double(index) * 0.04),
                             value: unifiedFeed.count
                         )
@@ -157,9 +158,9 @@ struct FriendRequestsView: View {
         HStack(spacing: 10) {
             Text(section.rawValue.uppercased())
                 .monoSM(tracking: 1.5)
-                .foregroundColor(ONETokens.oneMist)
+                .foregroundColor(V3Tokens.mutedText)
             Rectangle()
-                .fill(ONETokens.oneSilver)
+                .fill(V3Tokens.hairline)
                 .frame(height: 1)
         }
         .padding(.horizontal, 20)
@@ -216,13 +217,13 @@ struct FriendRequestsView: View {
                     } else if !notif.body.isEmpty {
                         Text(notif.body)
                             .bodyXS()
-                            .foregroundColor(ONETokens.oneMist)
+                            .foregroundColor(V3Tokens.mutedText)
                             .lineLimit(2)
                     }
 
                     Text(relativeTime(notif.date))
                         .monoBase()
-                        .foregroundColor(ONETokens.oneMist.opacity(0.65))
+                        .foregroundColor(V3Tokens.mutedText.opacity(0.65))
                         .padding(.top, 1)
                 }
 
@@ -242,10 +243,18 @@ struct FriendRequestsView: View {
         }
         .background(notif.isRead ? Color.clear : V3Tokens.wash.opacity(0.45))
         .contentShape(Rectangle())
-        .onTapGesture { handleActivityTap(notif) }
+        // `onTapGesture` yerine `Button`: satır dokunulabilir ama basıldığında
+        // hiçbir şey olmuyordu. Basma anındaki geri bildirim, dokunuşun kayda
+        // geçtiğini söyleyen tek işaret.
+        .modifier(ActivityRowButton { handleActivityTap(notif) })
         .accessibilityElement(children: .combine)
         .accessibilityLabel(notif.title + (notif.body.isEmpty ? "" : ", " + notif.body))
         .accessibilityHint(notif.isRead ? "" : NSLocalizedString("accessibility.unread", comment: ""))
+        // `accessibilityElement(children: .combine)` yeni bir öğe üretiyor;
+        // `Button`'ın kendi özelliğinin o öğeye taşındığına güvenmek yerine
+        // açıkça ekleniyor. Satır dokunulabilir olduğunu VoiceOver'a da
+        // söylemeli.
+        .accessibilityAddTraits(.isButton)
     }
 
     // MARK: - Comment Excerpt View
@@ -256,7 +265,7 @@ struct FriendRequestsView: View {
             RoundedRectangle(cornerRadius: 2)
                 .fill(
                     moodHex.flatMap { h in h.isValidHexColor ? Color(hex: h) : nil }
-                    ?? ONETokens.oneMist.opacity(0.5)
+                    ?? V3Tokens.mutedText.opacity(0.5)
                 )
                 .frame(width: 3)
 
@@ -292,12 +301,12 @@ struct FriendRequestsView: View {
         case .friendAccepted:  return Color(hex: "#4CAF82")
         case .friendShare:     return Color(hex: "#5B8DEF")
         case .emojiReaction:   return Color(hex: "#FF8C42")
-        case .friendRequest:   return ONETokens.oneInk
+        case .friendRequest:   return V3Tokens.ink
         case .comment:         return Color(hex: "#9B7FD4")
         case .moodResonance, .resonance:
             if let hex = notif.moodColorHex, hex.isValidHexColor { return Color(hex: hex) }
-            return ONETokens.oneMist
-        case .outgoingRequest: return ONETokens.oneAsh
+            return V3Tokens.mutedText
+        case .outgoingRequest: return V3Tokens.mutedText
         }
     }
 
@@ -354,7 +363,7 @@ struct FriendRequestsView: View {
             avatarCircle(initial: initial, colorHex: color, size: 50)
                 .overlay(alignment: .bottomTrailing) {
                     ZStack {
-                        Circle().fill(ONEBrand.bone)
+                        Circle().fill(V3Tokens.surface)
                         Image(systemName: "arrow.down.circle.fill")
                             .bodyLG()
                             .foregroundColor(V3Tokens.ink)
@@ -371,7 +380,7 @@ struct FriendRequestsView: View {
                         .foregroundColor(V3Tokens.ink)
                     Text(String(format: NSLocalizedString("friendRequests.sentYouRequest", comment: ""), name))
                         .bodyXS()
-                        .foregroundColor(ONETokens.oneMist)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
 
                 if processing {
@@ -401,7 +410,7 @@ struct FriendRequestsView: View {
                                 .frame(height: 40)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .stroke(ONETokens.oneSilver, lineWidth: 1)
+                                        .stroke(V3Tokens.hairline, lineWidth: 1)
                                 )
                         }
                         .accessibilityLabel(NSLocalizedString("friendRequests.decline", comment: "") + " " + name)
@@ -427,7 +436,7 @@ struct FriendRequestsView: View {
             avatarCircle(initial: initial, colorHex: color, size: 50)
                 .overlay(alignment: .bottomTrailing) {
                     ZStack {
-                        Circle().fill(ONEBrand.bone)
+                        Circle().fill(V3Tokens.surface)
                         Image(systemName: "paperplane.fill")
                             .monoBase().fontWeight(.medium)
                             .foregroundColor(V3Tokens.mutedText)
@@ -442,7 +451,7 @@ struct FriendRequestsView: View {
                     .foregroundColor(V3Tokens.ink)
                 Text(NSLocalizedString("friendRequests.pending", comment: "Bekliyor"))
                     .bodyXS()
-                    .foregroundColor(ONETokens.oneMist)
+                    .foregroundColor(V3Tokens.mutedText)
             }
 
             Spacer()
@@ -460,7 +469,7 @@ struct FriendRequestsView: View {
                         .frame(height: 36)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .stroke(ONETokens.oneSilver, lineWidth: 1)
+                                .stroke(V3Tokens.hairline, lineWidth: 1)
                         )
                 }
             }
@@ -499,7 +508,7 @@ struct FriendRequestsView: View {
                     .fill(V3Tokens.surface)
                     .frame(width: Self.skeletonWidths[index % 5], height: 12)
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(ONETokens.oneSilver)
+                    .fill(V3Tokens.hairline)
                     .frame(width: 80, height: 9)
             }
             Spacer()
@@ -632,7 +641,7 @@ struct FriendRequestsView: View {
         group.notify(queue: .main) {
             isLoading = false
             let combined = (incomingItems + outgoingItems).sorted { $0.date > $1.date }
-            withAnimation(.spring(response: 0.34, dampingFraction: 0.86)) { self.items = combined }
+            withAnimation(ONEAnimation.cardSpring) { self.items = combined }
         }
     }
 
@@ -732,4 +741,40 @@ struct IdentifiableString: Identifiable {
     let id = UUID()
     let value: String
     init(_ value: String) { self.value = value }
+}
+
+// MARK: - IdentifiableCKRecord
+
+/// `CKRecord`'u `.sheet(item:)` ile kullanılabilir kılan sarmalayıcı.
+///
+/// Eskiden `CircleView.swift`'in tepesinde duruyordu. O ekran (v2 bubble-cloud
+/// Çevre) `V3CircleView` ile değiştirilip kabuktan çıkarıldı; dosya silinirken
+/// bu tip tek canlı tüketicisi olan buraya taşındı.
+struct IdentifiableCKRecord: Identifiable {
+    let id: String
+    let record: CKRecord
+    let friendDisplayName: String
+    let friendProfilePhoto: UIImage?
+
+    init(_ record: CKRecord, displayName: String = "", profilePhoto: UIImage? = nil) {
+        self.id = record.recordID.recordName
+        self.record = record
+        self.friendDisplayName = displayName
+        self.friendProfilePhoto = profilePhoto
+    }
+}
+
+// MARK: - Etkinlik satırı basma geri bildirimi
+
+/// Satırı `Button`'a sarar. Ayrı bir `ViewModifier` olmasının nedeni,
+/// çağrı yerindeki erişilebilirlik zincirinin (`accessibilityElement` →
+/// `Label` → `Hint`) sarmalayıcının *dışında* kalması gerekmesi: içeride
+/// kalsaydı `children: .combine` butonun kendi birleştirmesiyle çakışırdı.
+private struct ActivityRowButton: ViewModifier {
+    let action: () -> Void
+
+    func body(content: Content) -> some View {
+        Button(action: action) { content }
+            .buttonStyle(.onePressable)
+    }
 }

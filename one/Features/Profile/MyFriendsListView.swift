@@ -65,7 +65,7 @@ struct MyFriendsListView: View {
                     ],
                     selection: $segment
                 )
-                .padding(.bottom, ONETokens.spacingLG)
+                .padding(.bottom, V3Tokens.spacingLG)
 
                 if segment == 0 {
                     allTab
@@ -86,15 +86,18 @@ struct MyFriendsListView: View {
                 )
             }
         }
+        .v3Sheet()
         .sheet(item: $selectedFriend) { data in
             FriendDetailView(friendData: data, onRefresh: { loadAll() })
         }
+        .v3Sheet()
         .sheet(item: Binding(
             get: { profileUserID.map { ProfileSheetID(id: $0) } },
             set: { profileUserID = $0?.id }
         )) { wrap in
             FriendProfileScreen(userID: wrap.id, onBack: { profileUserID = nil })
         }
+        .v3Sheet()
     }
 
     // MARK: - Hepsi
@@ -104,7 +107,7 @@ struct MyFriendsListView: View {
             sectionLabel(NSLocalizedString("friends.quickAdd", comment: ""))
 
             // Prototip `.qadd`: üç kesikli karo.
-            HStack(spacing: 8) {
+            HStack(spacing: V3Tokens.spacingSM) {
                 quickTile(
                     glyph: "arrow.up.right",
                     label: NSLocalizedString("friends.shareLink", comment: "")
@@ -122,7 +125,7 @@ struct MyFriendsListView: View {
             Rectangle()
                 .fill(V3Tokens.ink.opacity(0.09))
                 .frame(height: 1)
-                .padding(.vertical, ONETokens.spacingXL)
+                .padding(.vertical, V3Tokens.spacingXL)
 
             sectionLabel(String(
                 format: NSLocalizedString("friends.circleCount", comment: ""),
@@ -130,12 +133,10 @@ struct MyFriendsListView: View {
             ))
 
             searchField
-                .padding(.bottom, ONETokens.spacingLG)
+                .padding(.bottom, V3Tokens.spacingLG)
 
             if isLoading && friends.isEmpty {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, ONETokens.spacingXL3)
+                V3Loading(.region)
             } else if filteredFriends.isEmpty {
                 Text(NSLocalizedString(
                     query.isEmpty ? "friends.emptyList" : "friends.noMatch",
@@ -144,7 +145,7 @@ struct MyFriendsListView: View {
                 .bodySM()
                 .foregroundColor(V3Tokens.mutedText)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, ONETokens.spacingXL)
+                .padding(.vertical, V3Tokens.spacingXL)
             } else {
                 VStack(spacing: 9) {
                     ForEach(filteredFriends, id: \.user.recordID.recordName) { data in
@@ -156,7 +157,7 @@ struct MyFriendsListView: View {
             Rectangle()
                 .fill(V3Tokens.ink.opacity(0.09))
                 .frame(height: 1)
-                .padding(.vertical, ONETokens.spacingXL)
+                .padding(.vertical, V3Tokens.spacingXL)
 
             // Ekranın kapanış sözü: geçmiş herkesin kendinde kalır.
             Text(NSLocalizedString("friends.footer", comment: ""))
@@ -177,7 +178,7 @@ struct MyFriendsListView: View {
                 Text(NSLocalizedString("friends.noIncoming", comment: ""))
                     .bodySM()
                     .foregroundColor(V3Tokens.mutedText)
-                    .padding(.vertical, ONETokens.spacingMD)
+                    .padding(.vertical, V3Tokens.spacingMD)
             } else {
                 VStack(spacing: 7) {
                     ForEach(incoming, id: \.request.recordID.recordName) { pair in
@@ -189,7 +190,7 @@ struct MyFriendsListView: View {
             Rectangle()
                 .fill(V3Tokens.ink.opacity(0.09))
                 .frame(height: 1)
-                .padding(.vertical, ONETokens.spacingXL)
+                .padding(.vertical, V3Tokens.spacingXL)
 
             sectionLabel(NSLocalizedString("friends.sentByYou", comment: ""))
 
@@ -197,7 +198,7 @@ struct MyFriendsListView: View {
                 Text(NSLocalizedString("friends.noOutgoing", comment: ""))
                     .bodySM()
                     .foregroundColor(V3Tokens.mutedText)
-                    .padding(.vertical, ONETokens.spacingMD)
+                    .padding(.vertical, V3Tokens.spacingMD)
             } else {
                 VStack(spacing: 7) {
                     ForEach(outgoing, id: \.request.recordID.recordName) { pair in
@@ -214,7 +215,7 @@ struct MyFriendsListView: View {
         Text(text)
             .monoLabel(tracking: 1.3)
             .foregroundColor(V3Tokens.faintText)
-            .padding(.bottom, ONETokens.spacingSM)
+            .padding(.bottom, V3Tokens.spacingSM)
     }
 
     /// Prototip `.qtile`: kesikli çerçeve, üstte mürekkep yuvarlakta glif.
@@ -234,7 +235,7 @@ struct MyFriendsListView: View {
                             .foregroundColor(ONEBrand.bone)
                     )
                 Text(label)
-                    .font(V3Typography.sans(11, weight: .semibold))
+                    .bodyMicroSemibold()
                     .multilineTextAlignment(.center)
                     .foregroundColor(V3Tokens.ink)
                     .lineLimit(2)
@@ -242,18 +243,18 @@ struct MyFriendsListView: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .background(
-                RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                     .fill(Color.white.opacity(0.6))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                     .strokeBorder(
                         V3Tokens.ink.opacity(0.16),
                         style: StrokeStyle(lineWidth: 1, dash: [4, 3])
                     )
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
     }
 
     private var searchField: some View {
@@ -268,18 +269,18 @@ struct MyFriendsListView: View {
             .textFieldStyle(.plain)
         }
         .padding(.horizontal, 15)
-        .padding(.vertical, 12)
+        .padding(.vertical, V3Tokens.spacingMD)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                 .fill(Color.white.opacity(0.8))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                 .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
         )
     }
 
-    /// Frekans'taki kartla aynı dil: 46pt halka + %22 dış çember,
+    /// Çevre'deki kartla aynı dil: 46pt halka + %22 dış çember,
     /// isim + renkli mood etiketi, tek satır şarkı.
     private func friendCard(_ data: CloudKitManager.FriendCircleData) -> some View {
         let name = data.user["displayName"] as? String ?? "?"
@@ -320,18 +321,18 @@ struct MyFriendsListView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 7) {
                         Text(name)
-                            .font(V3Typography.sans(14.5, weight: .semibold))
+                            .bodySMSemibold()
                             .foregroundColor(V3Tokens.ink)
                             .lineLimit(1)
 
                         if hasSong && !moodWord.isEmpty {
                             Text(moodWord)
-                                .font(V3Typography.sans(10.5, weight: .semibold))
+                                .bodyMicroSemibold()
                                 .foregroundColor(Color(hex: moodHex))
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 2)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                    RoundedRectangle(cornerRadius: V3Tokens.radiusSwatch, style: .continuous)
                                         .fill(Color(hex: moodHex).opacity(0.14))
                                 )
                         }
@@ -349,9 +350,9 @@ struct MyFriendsListView: View {
             .padding(.horizontal, 15)
             .padding(.vertical, 13)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .oneCardBackground(radius: ONETokens.radiusFriend, opacity: 0.78)
+            .oneCardBackground(radius: V3Tokens.radiusPanel)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
     }
 
     /// Prototip `.inv`: avatar + isim + kabul/yoksay.
@@ -360,74 +361,74 @@ struct MyFriendsListView: View {
         let recordName = pair.request.recordID.recordName
         let isWorking = workingRequestID == recordName
 
-        return HStack(spacing: 12) {
+        return HStack(spacing: V3Tokens.spacingMD) {
             Circle()
                 .fill(V3Tokens.wash)
                 .frame(width: 36, height: 36)
                 .overlay(
                     Text(String(name.prefix(1)).uppercased())
-                        .font(V3Typography.sans(13, weight: .semibold))
+                        .bodyXSSemibold()
                         .foregroundColor(V3Tokens.mutedText)
                 )
 
             Text(name)
-                .font(V3Typography.sans(14, weight: .semibold))
+                .bodySMSemibold()
                 .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
 
             Spacer()
 
             if isWorking {
-                ProgressView().controlSize(.small)
+                V3Loading(.inline)
             } else {
                 Button(NSLocalizedString("friends.accept", comment: "")) {
                     accept(recordName: recordName)
                 }
                 .font(.system(size: 12.5, weight: .semibold))
                 .foregroundColor(ONEBrand.kor)
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
 
                 Button(NSLocalizedString("friends.ignore", comment: "")) {
                     decline(recordName: recordName)
                 }
                 .font(.system(size: 12.5, weight: .semibold))
                 .foregroundColor(V3Tokens.faintText)
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
                 .padding(.leading, 6)
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
-        .oneCardBackground(radius: 14, opacity: 0.75)
+        .oneCardBackground(radius: 14)
     }
 
     private func outgoingRow(_ pair: (request: CKRecord, receiver: CKRecord)) -> some View {
         let name = pair.receiver["displayName"] as? String ?? "?"
 
-        return HStack(spacing: 12) {
+        return HStack(spacing: V3Tokens.spacingMD) {
             Circle()
                 .fill(V3Tokens.wash)
                 .frame(width: 36, height: 36)
                 .overlay(
                     Text(String(name.prefix(1)).uppercased())
-                        .font(V3Typography.sans(13, weight: .semibold))
+                        .bodyXSSemibold()
                         .foregroundColor(V3Tokens.mutedText)
                 )
 
             Text(name)
-                .font(V3Typography.sans(14, weight: .semibold))
+                .bodySMSemibold()
                 .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
 
             Spacer()
 
             Text(NSLocalizedString("friends.waiting", comment: ""))
-                .font(V3Typography.sans(12.5, weight: .semibold))
+                .bodyMicroSemibold()
                 .foregroundColor(V3Tokens.faintText)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
-        .oneCardBackground(radius: 14, opacity: 0.75)
+        .oneCardBackground(radius: 14)
     }
 
     // MARK: - Loaders

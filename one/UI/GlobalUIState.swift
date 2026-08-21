@@ -19,6 +19,29 @@ final class GlobalUIState: ObservableObject {
     /// V3EntryContainer set eder, BottomNavigation okur.
     @Published var tabBarMinimized: Bool = false
 
+    /// Scroll-driven minimize: aşağı kaydırılınca true, yukarı kaydırılınca
+    /// veya en üste dönünce false. `.hidesTabBarOnScroll(...)` modifier
+    /// yazar, `BottomNavigation` `tabBarMinimized` ile OR'lar.
+    /// Instagram/Threads gibi ambient bir davranış — chrome içeriğe yer açar.
+    @Published var scrollMinimizesBar: Bool = false
+
+    /// Odaklı-içerik minimize kaynakları (gün detayı, Echo poster vb.). Bir
+    /// bool yerine ID seti — birden fazla yer aynı anda minimize isteyebilir,
+    /// biri bittiğinde diğerini yanlışlıkla restore etmesin. `BottomNavigation`
+    /// `focusedContentMinimizes` üzerinden OR'a katılır.
+    @Published private(set) var minimizeSources: Set<String> = []
+    var focusedContentMinimizes: Bool { !minimizeSources.isEmpty }
+
+    func addMinimizeSource(_ id: String) {
+        guard !minimizeSources.contains(id) else { return }
+        minimizeSources.insert(id)
+    }
+
+    func removeMinimizeSource(_ id: String) {
+        guard minimizeSources.contains(id) else { return }
+        minimizeSources.remove(id)
+    }
+
     // MARK: - Sekme swipe kilidi
     //
     // Kabuk `TabView(.page)` kullandığı için yatay swipe her yerde aktif.
@@ -59,6 +82,14 @@ private struct ArchiveDayNamespaceKey: EnvironmentKey {
     static let defaultValue: Namespace.ID? = nil
 }
 
+/// Kabuk her sekmenin altına o an aktif sekmeyi env olarak bırakır. Sekme içi
+/// view'lar (özellikle scroll-driven modifier'lar) `TabView(.page)` neden komşu
+/// sekmeleri canlı tuttuğunu bilmeden pasif sekmedeki scroll olaylarıyla global
+/// state'i bozmasınlar diye buradan okurlar.
+private struct CurrentPrimaryTabKey: EnvironmentKey {
+    static let defaultValue: PrimaryTab? = nil
+}
+
 extension EnvironmentValues {
     var todayPhotoNamespace: Namespace.ID? {
         get { self[TodayPhotoNamespaceKey.self] }
@@ -73,6 +104,12 @@ extension EnvironmentValues {
     var archiveDayNamespace: Namespace.ID? {
         get { self[ArchiveDayNamespaceKey.self] }
         set { self[ArchiveDayNamespaceKey.self] = newValue }
+    }
+    /// Kabuğun o an gösterdiği primary sekme. `TabView(.page)` komşuları da
+    /// canlı tuttuğu için scroll-driven state yazarları buradan doğrular.
+    var currentPrimaryTab: PrimaryTab? {
+        get { self[CurrentPrimaryTabKey.self] }
+        set { self[CurrentPrimaryTabKey.self] = newValue }
     }
 }
 

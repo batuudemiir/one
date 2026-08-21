@@ -22,8 +22,7 @@ struct BadgeUnlockToast: ViewModifier {
             }
             .onChange(of: manager.pendingToast) { _, newValue in
                 guard newValue != nil else { return }
-                let generator = UINotificationFeedbackGenerator()
-                generator.notificationOccurred(.success)
+                ONEHaptics.badgeUnlocked()
                 withAnimation(.easeOut(duration: 0.3)) { visible = true }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.6) {
                     withAnimation(.easeIn(duration: 0.3)) { visible = false }
@@ -44,11 +43,11 @@ struct BadgeUnlockToast: ViewModifier {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(NSLocalizedString("badges.unlocked", comment: ""))
-                    .font(.custom("GeistMono-Regular", size: 9))
+                    .font(V3Typography.mono(9))
                     .tracking(1.2)
                     .foregroundColor(V3Tokens.mutedText)
                 Text(badge.title)
-                    .font(.custom("GeistMono-Regular", size: 13))
+                    .font(V3Typography.mono(13))
                     .foregroundColor(V3Tokens.ink)
             }
             Spacer(minLength: 0)
@@ -57,7 +56,7 @@ struct BadgeUnlockToast: ViewModifier {
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 2)
-                .fill(ONEBrand.bone)
+                .fill(V3Tokens.surface)
                 .shadow(color: .black.opacity(0.1), radius: 12, y: 4)
         )
         .overlay(

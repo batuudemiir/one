@@ -16,9 +16,25 @@ struct ReportSheet: View {
 
         var displayTitle: String {
             switch self {
-            case .comment:                  return "Yorumu rapor et"
-            case .user(_, let name):        return "\(name ?? "Kullanıcıyı") rapor et"
-            case .share:                    return "Paylaşımı rapor et"
+            case .comment:
+                return NSLocalizedString("report.target.comment", comment: "")
+            case .user(_, let name):
+                return String(
+                    format: NSLocalizedString("report.target.user", comment: ""),
+                    name ?? NSLocalizedString("report.target.userFallback", comment: "")
+                )
+            case .share:
+                return NSLocalizedString("report.target.share", comment: "")
+            }
+        }
+
+        /// Üst çubuğun mono bağlam etiketi — hangi yüzeyden gelindiği.
+        /// Başlık neyi rapor ettiğini söylüyor, bu satır nereden geldiğini.
+        var contextLabel: String {
+            switch self {
+            case .comment: return NSLocalizedString("report.context.comment", comment: "")
+            case .user:    return NSLocalizedString("report.context.user", comment: "")
+            case .share:   return NSLocalizedString("report.context.share", comment: "")
             }
         }
 
@@ -50,61 +66,104 @@ struct ReportSheet: View {
     @State private var didSubmit = false
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    Text(target.displayTitle)
-                        .font(ONETypography.displayXS)
-                    Text("Bildirimler 24 saat içinde değerlendirilir. Yinelenen şikâyetler içeriği otomatik gizleyebilir.")
-                        .font(ONETypography.bodyXS)
-                        .foregroundStyle(.secondary)
-                }
-
-                Section("Sebep") {
-                    Picker("", selection: $selectedReason) {
-                        ForEach(ReportReason.allCases) { reason in
-                            Text(reason.localized).tag(reason)
-                        }
-                    }
-                    .pickerStyle(.inline)
-                    .labelsHidden()
-                }
-
-                Section("Not (opsiyonel)") {
-                    TextField("Daha fazla detay ekle…", text: $note, axis: .vertical)
-                        .lineLimit(3...6)
-                }
-
-                if let errorMessage {
-                    Section {
-                        Text(errorMessage).foregroundStyle(.red).font(ONETypography.bodyXS)
-                    }
-                }
-
-                Section {
-                    Button {
-                        submit()
-                    } label: {
-                        HStack {
-                            if isSubmitting { ProgressView() }
-                            Text(didSubmit ? "Gönderildi ✓" : "Raporu gönder")
-                                .frame(maxWidth: .infinity)
-                                .fontWeight(.semibold)
-                        }
-                    }
-                    .disabled(isSubmitting || didSubmit)
-                    .buttonStyle(.borderedProminent)
-                    .tint(.red)
-                }
+        // `Form` kalktı: sistem formu kendi zeminini, kendi satır yüksekliğini
+        // ve kendi bölüm başlığı tipografisini getiriyordu — uygulamanın geri
+        // kalanında olmayan bir dil. Bölümler artık ONE'ın kart yüzeyi.
+        V3SheetScreen(
+            title: NSLocalizedString("report.title", comment: ""),
+            context: target.contextLabel,
+            onClose: { dismiss() }
+        ) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
+                header
+                reasonSection
+                noteSection
+                if let errorMessage { errorRow(errorMessage) }
+                submitButton
             }
-            .navigationTitle("Rapor et")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Vazgeç") { dismiss() }
+        }
+    }
+
+    // MARK: - Bölümler
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
+            Text(target.displayTitle)
+                .onePageTitle()
+            Text(NSLocalizedString("report.notice", comment: ""))
+                .bodyXS()
+                .foregroundColor(V3Tokens.mutedText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var reasonSection: some View {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {
+            Text(NSLocalizedString("report.reason", comment: ""))
+                .oneEyebrow()
+
+            SettingsGroup {
+                ForEach(Array(ReportReason.allCases.enumerated()), id: \.element.id) { index, reason in
+                    ReasonRow(
+                        reason: reason,
+                        isSelected: selectedReason == reason,
+                        isLast: index == ReportReason.allCases.count - 1
+                    ) {
+                        ONEHaptics.pick()
+                        selectedReason = reason
+                    }
                 }
             }
         }
+    }
+
+    private var noteSection: some View {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {
+            Text(NSLocalizedString("report.noteOptional", comment: ""))
+                .oneEyebrow()
+
+            TextField(
+                NSLocalizedString("report.notePlaceholder", comment: ""),
+                text: $note,
+                axis: .vertical
+            )
+            .font(V3Typography.sans(15, relativeTo: .callout))
+            .foregroundColor(V3Tokens.ink)
+            .lineLimit(3...6)
+            .padding(V3Tokens.spacingLG)
+            .oneCardBackground()
+        }
+    }
+
+    private func errorRow(_ message: String) -> some View {
+        Text(message)
+            .bodyXS()
+            .foregroundColor(V3Tokens.danger)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(V3Tokens.spacingLG)
+            .oneCardBackground()
+    }
+
+    private var submitButton: some View {
+        // v3 birincil buton. Eskiden `.borderedProminent` + `.tint(.red)`
+        // idi — uygulamadaki tek sistem-görünümlü buton, hem kapsül
+        // biçimi hem rengi kendi dilinden geliyordu.
+        ZStack {
+            V3PrimaryButton(
+                title: didSubmit
+                    ? NSLocalizedString("report.submitted", comment: "")
+                    : NSLocalizedString("report.submit", comment: ""),
+                isEnabled: !(isSubmitting || didSubmit),
+                isFullWidth: true,
+                action: submit
+            )
+            if isSubmitting {
+                ProgressView()
+                    .tint(V3Tokens.paper)
+            }
+        }
+        .padding(.top, V3Tokens.spacingXS)
     }
 
     private func submit() {
@@ -128,5 +187,51 @@ struct ReportSheet: View {
                 errorMessage = err.localizedDescription
             }
         }
+    }
+}
+
+// MARK: - Sebep satırı
+
+/// Rapor sebebi seçimi. `SettingsRow` bir hedefe götürür, bu satır bir
+/// seçim yapar — o yüzden chevron yok, sağda işaret var.
+///
+/// Seçim işareti tek başına renk değil bir glif: "renk tek başına anlam
+/// taşıyamaz" kuralı, VoiceOver `isSelected` özelliğiyle birlikte.
+private struct ReasonRow: View {
+    let reason: ReportReason
+    let isSelected: Bool
+    let isLast: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 0) {
+                HStack(spacing: V3Tokens.spacingMD) {
+                    Text(reason.localized)
+                        .bodySM()
+                        .foregroundColor(V3Tokens.ink)
+                        .multilineTextAlignment(.leading)
+
+                    Spacer(minLength: V3Tokens.spacingSM)
+
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 17))
+                        .foregroundColor(isSelected ? ONEBrand.kor : V3Tokens.hairline)
+                }
+                .padding(.horizontal, 15)
+                .padding(.vertical, 14)
+                .frame(minHeight: V3Tokens.minTouchTarget)
+                .contentShape(Rectangle())
+
+                if !isLast {
+                    Rectangle()
+                        .fill(V3Tokens.hairline)
+                        .frame(height: 1)
+                        .padding(.leading, 15)
+                }
+            }
+        }
+        .buttonStyle(.onePressable)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

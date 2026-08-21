@@ -31,8 +31,8 @@ extension Color {
     /// Returns a 3-stop gradient: [moodColor, intermediate blend, dark base]
     static func moodToGradient(hex: String) -> [Color] {
         // Use default color if hex is invalid
-        let moodColor = hex.isEmpty ? ONETokens.oneBlue : Color(hex: hex)
-        let darkBase = ONETokens.oneVoid
+        let moodColor = hex.isEmpty ? V3Tokens.info : Color(hex: hex)
+        let darkBase = V3Tokens.darkGround
         
         // 3-stop gradient formula:
         // Stop 1 (0%): Pure mood color

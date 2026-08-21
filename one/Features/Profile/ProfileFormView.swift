@@ -12,7 +12,6 @@ import PhotosUI
 
 struct ProfileFormView: View {
     @ObservedObject var vm: ProfileViewModel
-    var isFromTab: Bool
     var onDismiss: () -> Void
 
     @FocusState private var focusedField: ProfileField?
@@ -22,14 +21,22 @@ struct ProfileFormView: View {
     }
 
     private var profileColor: Color { Color(hex: vm.selectedAvatarColor) }
+    /// Bu ekran eskiden kendi karanlık mod paletini elle kuruyordu
+    /// (`vm.isDarkMode ? Color.black : ONEBrand.bone` gibi altı ayrı satır).
+    /// Token sisteminin yanında ikinci bir renk sistemiydi ve ondan bağımsız
+    /// kayıyordu: `V3Tokens` zaten `UITraitCollection` üzerinden adaptif,
+    /// yani doğru cevap her koşulda "token'ı kullan".
+    ///
+    /// `isDark` yalnız iki yerde kaldı, oralarda token değil **opaklık**
+    /// seçiliyor — onun adaptif karşılığı yok.
     private var isDark: Bool { vm.isDarkMode }
 
-    private var screenBG: Color { isDark ? Color.black : ONEBrand.bone }
-    private var cardBG: Color { isDark ? Color.white.opacity(0.07) : V3Tokens.surface.opacity(0.65) }
-    private var cardBorder: Color { isDark ? Color.clear : ONETokens.oneSilver }
-    private var primaryText: Color { isDark ? Color.white : ONETokens.oneInk }
-    private var secondaryText: Color { isDark ? Color.white.opacity(0.55) : ONETokens.oneAsh }
-    private var sectionHeader: Color { isDark ? Color.white.opacity(0.40) : ONETokens.oneCharcoal }
+    private var screenBG: Color { V3Tokens.paper }
+    private var cardBG: Color { V3Tokens.surface.opacity(0.65) }
+    private var cardBorder: Color { V3Tokens.hairline }
+    private var primaryText: Color { V3Tokens.ink }
+    private var secondaryText: Color { V3Tokens.mutedText }
+    private var sectionHeader: Color { V3Tokens.faintText }
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -37,8 +44,8 @@ struct ProfileFormView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     formHero
                     formFields
-                        .padding(.horizontal, 20)
-                        .padding(.top, 22)
+                        .padding(.horizontal, V3Tokens.spacingXL)
+                        .padding(.top, V3Tokens.spacingXL)
                     Spacer().frame(height: 120)
                 }
             }
@@ -46,31 +53,6 @@ struct ProfileFormView: View {
             .ignoresSafeArea(edges: .top)
             .onTapGesture { focusedField = nil }
 
-            // Top bar: kapat (sol), başlık (orta — implicit)
-            if isFromTab {
-                HStack {
-                    Button(action: {
-                        ONEHaptics.moodSelected()
-                        withAnimation(ONEAnimation.cardSpring) {
-                            vm.isEditingFromTab = false
-                        }
-                    }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(width: 36, height: 36)
-                            .liquidGlass(
-                                tint: Color.black.opacity(0.30),
-                                interactive: true,
-                                in: Circle()
-                            )
-                    }
-                    .accessibilityLabel(NSLocalizedString("general.close", comment: ""))
-                    Spacer()
-                }
-                .padding(.horizontal, 18)
-                .padding(.top, 56)
-            }
         }
     }
 
@@ -110,7 +92,7 @@ struct ProfileFormView: View {
 
                 // İsim/başlık + foto değiştirme CTA
                 HStack(alignment: .bottom) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                         Text(vm.isEditMode
                              ? NSLocalizedString("profile.editProfile", comment: "")
                              : NSLocalizedString("profile.createProfile", comment: ""))
@@ -138,7 +120,7 @@ struct ProfileFormView: View {
                                 .monoLabel(tracking: 0.6)
                         }
                         .foregroundColor(.white)
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, V3Tokens.spacingMD)
                         .padding(.vertical, 9)
                         .liquidGlass(
                             tint: Color.black.opacity(0.30),
@@ -151,8 +133,8 @@ struct ProfileFormView: View {
                         Task { await vm.loadAndSaveProfilePhoto(from: newItem) }
                     }
                 }
-                .padding(.horizontal, 22)
-                .padding(.bottom, 20)
+                .padding(.horizontal, V3Tokens.spacingXL)
+                .padding(.bottom, V3Tokens.spacingXL)
             }
             .frame(width: proxy.size.width, height: height)
             .clipped()
@@ -215,9 +197,9 @@ struct ProfileFormView: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 13)
                 .background(cardBG)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
                         .stroke(
                             focusedField == .displayName
                                 ? profileColor.opacity(0.5)
@@ -230,7 +212,7 @@ struct ProfileFormView: View {
             // Username
             fieldGroup(title: NSLocalizedString("profile.username", comment: "")) {
                 VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: V3Tokens.spacingXS) {
                         Text("@")
                             .bodyLG()
                             .fontWeight(.medium)
@@ -249,24 +231,24 @@ struct ProfileFormView: View {
                                 vm.checkUsernameAvailability(newValue)
                             }
                         if vm.isCheckingUsername {
-                            ProgressView().scaleEffect(0.7)
+                            V3Loading(.inline)
                         } else if let isAvailable = vm.isUsernameAvailable {
                             Image(systemName: isAvailable ? "checkmark.circle.fill" : "xmark.circle.fill")
                                 .font(.system(size: 16))
-                                .foregroundColor(isAvailable ? ONETokens.oneGreen : ONETokens.oneRed)
+                                .foregroundColor(isAvailable ? V3Tokens.success : V3Tokens.danger)
                                 .transition(.scale.combined(with: .opacity))
                         }
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 13)
                     .background(cardBG)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
                             .stroke(
                                 focusedField == .username ? profileColor.opacity(0.5) :
-                                vm.isUsernameAvailable == true ? ONETokens.oneGreen.opacity(0.3) :
-                                vm.isUsernameAvailable == false ? ONETokens.oneRed.opacity(0.3) :
+                                vm.isUsernameAvailable == true ? V3Tokens.success.opacity(0.3) :
+                                vm.isUsernameAvailable == false ? V3Tokens.danger.opacity(0.3) :
                                 cardBorder,
                                 lineWidth: 1
                             )
@@ -275,8 +257,8 @@ struct ProfileFormView: View {
                     if let message = vm.usernameValidationMessage {
                         Text(message)
                             .monoLabel()
-                            .foregroundColor(vm.isUsernameAvailable == true ? ONETokens.oneGreen : ONETokens.oneRed)
-                            .padding(.leading, 4)
+                            .foregroundColor(vm.isUsernameAvailable == true ? V3Tokens.success : V3Tokens.danger)
+                            .padding(.leading, V3Tokens.spacingXS)
                     }
                 }
             }
@@ -311,8 +293,8 @@ struct ProfileFormView: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 13)
                 .background(cardBG)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(cardBorder, lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard))
+                .overlay(RoundedRectangle(cornerRadius: V3Tokens.radiusCard).stroke(cardBorder, lineWidth: 1))
             }
 
             // Kaydet
@@ -322,21 +304,21 @@ struct ProfileFormView: View {
             if let error = vm.errorMessage {
                 Text(error)
                     .monoSM()
-                    .foregroundColor(ONETokens.oneRed)
+                    .foregroundColor(V3Tokens.danger)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 4)
+                    .padding(.top, V3Tokens.spacingXS)
             }
         }
     }
 
     @ViewBuilder
     private func fieldGroup<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
             Text(title)
                 .monoBase(tracking: 1.5)
                 .foregroundColor(sectionHeader)
-                .padding(.leading, 4)
+                .padding(.leading, V3Tokens.spacingXS)
             content()
         }
     }
@@ -346,22 +328,14 @@ struct ProfileFormView: View {
             vm.saveProfile { success in
                 if success {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        if isFromTab {
-                            withAnimation(ONEAnimation.cardSpring) {
-                                vm.isEditingFromTab = false
-                                vm.showSuccess = false
-                            }
-                        } else {
-                            onDismiss()
-                        }
+                        onDismiss()
                     }
                 }
             }
         }) {
             ZStack {
                 if vm.isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    V3Loading(.media)
                 } else if vm.showSuccess {
                     HStack(spacing: 6) {
                         Image(systemName: "checkmark")
@@ -376,17 +350,17 @@ struct ProfileFormView: View {
             }
             .bodySMMedium()
             .foregroundColor(
-                vm.showSuccess ? ONETokens.oneGreen :
+                vm.showSuccess ? V3Tokens.success :
                 vm.canSaveProfile ? .white :
-                ONETokens.oneAsh
+                V3Tokens.mutedText
             )
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
+            .padding(.vertical, V3Tokens.spacingLG)
             .background(
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
                     .fill(
                         vm.showSuccess
-                            ? ONETokens.oneGreen.opacity(0.12)
+                            ? V3Tokens.success.opacity(0.12)
                             : vm.canSaveProfile
                                 ? profileColor
                                 : (isDark ? Color.white.opacity(0.08) : V3Tokens.wash)

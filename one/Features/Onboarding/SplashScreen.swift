@@ -45,7 +45,11 @@ struct SplashScreen: View {
 
     /// Kelime işaretinin ekranda kalacağı en kısa süre. Markayı okumaya yeter,
     /// beklemeye dönüşmez.
-    private var minimumShowTime: TimeInterval { reduceMotion ? 0.20 : 0.42 }
+    ///
+    /// Koreografi ile hizalı: alt satır 0.10s'de başlayıp 0.22s sürüyor,
+    /// yani 0.32s'de duruyor. Alt sınır onun hemen ardında — animasyon
+    /// yarıda kesilmiyor ama bir kare bile fazla beklenmiyor.
+    private var minimumShowTime: TimeInterval { reduceMotion ? 0.16 : 0.34 }
 
     // Choreography state — üçü de tek seferde hedefe gider, retarget yok.
     @State private var markOpacity: Double = 0
@@ -53,8 +57,6 @@ struct SplashScreen: View {
     @State private var captionOpacity: Double = 0
     @State private var captionOffset: CGFloat = 5
 
-    // Haptic — prepared during splash so first-fire is latency-free.
-    @State private var dismissHaptic = UIImpactFeedbackGenerator(style: .soft)
 
     // Timing bookkeeping
     @State private var minimumTimeElapsed = false
@@ -69,16 +71,22 @@ struct SplashScreen: View {
             ONEBrand.kor
                 .ignoresSafeArea()
 
-            VStack(spacing: 16) {
+            VStack(spacing: V3Tokens.spacingLG) {
                 splashMark
                     .modifier(HandoffSource(namespace: handoffNamespace))
                     .opacity(markOpacity)
                     .scaleEffect(markScale)
 
-                Text("DUYGU VE ŞARKI GÜNLÜĞÜ")
+                // Alt satır okunacak metin — ölçeklenmeye devam ediyor, ama
+                // tek satırlık tracking'li bir şerit olduğu için taşmak
+                // yerine sıkışsın.
+                Text(NSLocalizedString("splash.tagline", comment: ""))
                     .font(V3Typography.mono(11, weight: .regular))
                     .tracking(1.6)
                     .foregroundColor(ONEBrand.bone)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .padding(.horizontal, V3Tokens.spacingXL2)
                     .opacity(captionOpacity)
                     .offset(y: captionOffset)
             }
@@ -89,7 +97,7 @@ struct SplashScreen: View {
             guard !didStart else { return }
             didStart = true
             ONELaunchSignpost.begin("splash")
-            dismissHaptic.prepare()
+            ONEHaptics.warmUp()
             start()
         }
         .onChange(of: minimumTimeElapsed) { _, _ in maybeDismiss() }
@@ -103,7 +111,11 @@ struct SplashScreen: View {
     /// metne taşıyor: devir tek ve doğal bir hareket oluyor.
     private var splashMark: some View {
         Text("ONE")
-            .font(ONEBrand.display(46))
+            // `displayFixed` — marka işareti Dynamic Type ile büyümüyor.
+            // Hem marka oranları sabit kalsın diye, hem de bu metin
+            // `matchedGeometryEffect`'in kaynağı: boyutu kullanıcı ayarına
+            // göre oynarsa kabuğa devir de oynardı.
+            .font(V3Typography.displayFixed(46))
             .tracking(-1.6)
             .foregroundColor(ONEBrand.bone)
             .lineLimit(1)
@@ -121,18 +133,18 @@ struct SplashScreen: View {
         if reduceMotion {
             markScale = 1
             captionOffset = 0
-            withAnimation(.easeOut(duration: 0.18)) {
+            withAnimation(.easeOut(duration: 0.14)) {
                 markOpacity = 1
                 captionOpacity = 0.72
             }
         } else {
             // Tek withAnimation, tek hedef — ortada yeniden hedeflenen
             // (retarget) bir özellik yok, dolayısıyla snap de yok.
-            withAnimation(Self.v3(0.30)) {
+            withAnimation(Self.v3(0.26)) {
                 markOpacity = 1
                 markScale = 1
             }
-            withAnimation(Self.v3(0.26, delay: 0.14)) {
+            withAnimation(Self.v3(0.22, delay: 0.10)) {
                 captionOpacity = 0.72
                 captionOffset = 0
             }
@@ -153,7 +165,7 @@ struct SplashScreen: View {
 
         if !didFireHaptic && !reduceMotion {
             didFireHaptic = true
-            dismissHaptic.impactOccurred(intensity: 0.6)
+            ONEHaptics.appReady()
         }
 
         // Kendi outro'muz yok. `ContentView` bu bayrağı izleyip splash'i

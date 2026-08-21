@@ -37,6 +37,16 @@ struct V3DetailsStepView: View {
     @State private var showPhotoSourceSheet: Bool = false
     @State private var showScopeSheet: Bool = false
 
+    /// Kaynak sayfası kapanınca ne açılacak.
+    ///
+    /// Kapanmakta olan bir sheet'in üstüne yenisini sunmak SwiftUI'de sessizce
+    /// düşüyor; eskiden bu `asyncAfter(0.32)` ile aşılıyordu — yani kullanıcı
+    /// "galeri"ye basıyor ve üçte bir saniye hiçbir şey olmuyordu. Niyeti
+    /// burada tutup `onDismiss`'te açmak aynı sorunu zamanlayıcı tahmini
+    /// yerine gerçek kapanma olayına bağlıyor.
+    private enum PendingPhotoSource { case gallery, camera }
+    @State private var pendingPhotoSource: PendingPhotoSource? = nil
+
     @FocusState private var noteFocused: Bool
 
     private let maxNoteLength = 140
@@ -96,17 +106,27 @@ struct V3DetailsStepView: View {
                 showSongSearch = false
             }
         }
-        .sheet(isPresented: $showPhotoSourceSheet) {
+        .v3Sheet()
+        .sheet(isPresented: $showPhotoSourceSheet, onDismiss: {
+            // Kapanma bitti — sıradakini şimdi aç. Kullanıcı sayfayı aşağı
+            // sürükleyerek kapatırsa niyet nil kalır ve hiçbir şey açılmaz.
+            switch pendingPhotoSource {
+            case .gallery: showPhotoPicker = true
+            case .camera:  showCamera = true
+            case nil:      break
+            }
+            pendingPhotoSource = nil
+        }) {
             V3DetailsPhotoSourceSheet(
                 accent: mood.color,
                 hasPhoto: pickedPhoto != nil,
                 onGallery: {
+                    pendingPhotoSource = .gallery
                     showPhotoSourceSheet = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) { showPhotoPicker = true }
                 },
                 onCamera: {
+                    pendingPhotoSource = .camera
                     showPhotoSourceSheet = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) { showCamera = true }
                 },
                 onRemove: {
                     showPhotoSourceSheet = false
@@ -115,18 +135,12 @@ struct V3DetailsStepView: View {
                     photoPickerItem = nil
                 }
             )
-            .presentationDetents([.height(pickedPhoto == nil ? 260 : 320)])
-            .presentationDragIndicator(.visible)
-            .presentationCornerRadius(28)
-            .presentationBackground(V3Tokens.paper)
+            .v3Sheet(detents: [.height(pickedPhoto == nil ? 260 : 320)])
         }
         .sheet(isPresented: $showScopeSheet) {
             V3ScopeSheet(scope: $scope, moodColor: mood.color)
                 // Sabit yükseklik yerine .medium — Dynamic Type Large'ta içerik büyür.
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
-                .presentationCornerRadius(28)
-                .presentationBackground(V3Tokens.paper)
+                .v3Sheet(detents: [.medium])
         }
     }
 
@@ -153,8 +167,8 @@ struct V3DetailsStepView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 13, weight: .semibold))
-                            Text("Rengi değiştir")
-                                .font(V3Typography.sans(13, weight: .semibold))
+                            Text(NSLocalizedString("entry.changeColour", comment: ""))
+                                .bodyXSSemibold()
                         }
                         .foregroundColor(mood.ink)
                         .padding(.horizontal, 14)
@@ -164,7 +178,7 @@ struct V3DetailsStepView: View {
                                 .overlay(Capsule().stroke(mood.ink.opacity(0.18), lineWidth: 1))
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.onePressable)
                     .accessibilityLabel("Renk seçim ekranına dön")
                     Spacer()
                     Text(dateLabel)
@@ -174,26 +188,27 @@ struct V3DetailsStepView: View {
                         .foregroundColor(mood.ink.opacity(0.7))
                         .accessibilityLabel("Tarih: \(dateLabelSpoken)")
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, V3Tokens.spacingXL2)
                 .padding(.top, 18)
                 Spacer()
             }
 
-            // Bottom-left: mood label. bridgedMood.meaning v2 semantiği taşıdığı
-            // için subtitle satırı kaldırıldı; label kendi başına yeter.
+            // Bottom-left: mood label. Alt başlık yok — bu ölçekte (56pt display)
+            // ikinci bir satır kartın dengesini bozuyor; anlam VoiceOver
+            // değerinde (`mood.meaning`) taşınıyor.
             Text(mood.label.lowercased())
                 .font(V3Typography.display(56, weight: .heavy))
                 .tracking(-1.8)
                 .foregroundColor(mood.ink)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, V3Tokens.spacingXL2)
                 .padding(.bottom, 44)   // Kart bindirmesi için ekstra boşluk
                 .accessibilityLabel("Bugünün rengi: \(mood.label)")
                 .accessibilityAddTraits(.isHeader)
         }
         .frame(height: height)
-        .animation(V3Tokens.easingColor, value: mood)
+        .animation(ONEAnimation.easingColor, value: mood)
     }
 
     // MARK: - Bottom card (paper)
@@ -201,17 +216,17 @@ struct V3DetailsStepView: View {
     private var bottomCard: some View {
         VStack(spacing: 0) {
             noteBlock
-                .padding(.horizontal, 22)
-                .padding(.top, 22)
+                .padding(.horizontal, V3Tokens.spacingXL)
+                .padding(.top, V3Tokens.spacingXL)
 
             extrasRow
-                .padding(.horizontal, 22)
-                .padding(.top, 16)
+                .padding(.horizontal, V3Tokens.spacingXL)
+                .padding(.top, V3Tokens.spacingLG)
 
             Spacer(minLength: 12)
 
             footer
-                .padding(.horizontal, 22)
+                .padding(.horizontal, V3Tokens.spacingXL)
                 .padding(.bottom, 18)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -233,7 +248,7 @@ struct V3DetailsStepView: View {
     // MARK: - Note block
 
     private var noteBlock: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Ne oldu?")
                     .font(V3Typography.display(22, weight: .semibold))
@@ -252,21 +267,21 @@ struct V3DetailsStepView: View {
             // maxHeight cap küçük ekran (iPhone SE) taşmasını önler.
             TextField("İki satır yeter. İstersen boş bırak.", text: $note, axis: .vertical)
                 .lineLimit(3...4)
-                .font(V3Typography.sans(16))
+                .bodyLG()
                 .foregroundColor(V3Tokens.ink)
                 .tint(mood.color)
                 .padding(14)
                 .frame(maxHeight: 140)
                 .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                         .fill(V3Tokens.wash)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                                 .stroke(noteFocused ? mood.color.opacity(0.5) : V3Tokens.hairline, lineWidth: 1)
                         )
                 )
                 .focused($noteFocused)
-                .animation(V3Tokens.easing, value: noteFocused)
+                .animation(ONEAnimation.easing, value: noteFocused)
                 .accessibilityLabel("Not, isteğe bağlı, en fazla \(maxNoteLength) karakter")
         }
     }
@@ -274,7 +289,7 @@ struct V3DetailsStepView: View {
     // MARK: - Extras row (3 chips)
 
     private var extrasRow: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: V3Tokens.spacingSM) {
             actionChip(
                 systemImage: "camera",
                 label: "Foto",
@@ -282,7 +297,18 @@ struct V3DetailsStepView: View {
                 a11yState: pickedPhoto != nil ? "seçili" : "boş",
                 accent: mood.color
             ) {
-                showPhotoSourceSheet = true
+                // Foto yoksa doğrudan vizör açılıyor — araya "Kamera mı,
+                // galeri mi" sorusu girmiyor. Galeri zaten vizörün kendi alt
+                // barında duruyor, yani seçenek kaybolmuyor, bir dokunuş
+                // öteye gidiyor. Kamera-öncelikli his, kamera-zorunlu değil.
+                //
+                // Foto varsa sayfa kalıyor: orada asıl iş değiştirmek ya da
+                // kaldırmak, ikisi de vizörün içinde yaşamıyor.
+                if pickedPhoto == nil {
+                    showCamera = true
+                } else {
+                    showPhotoSourceSheet = true
+                }
             }
 
             actionChip(
@@ -316,13 +342,13 @@ struct V3DetailsStepView: View {
                 Image(systemName: systemImage)
                     .font(.system(size: 12, weight: .semibold))
                 Text(label)
-                    .font(V3Typography.sans(13, weight: .semibold))
+                    .bodyXSSemibold()
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
             }
             .foregroundColor(filled ? accent.readableInk() : V3Tokens.ink)
             .frame(maxWidth: .infinity, minHeight: 24)
-            .padding(.vertical, 12)
+            .padding(.vertical, V3Tokens.spacingMD)
             .background(
                 Capsule(style: .continuous)
                     .fill(filled ? accent : Color.clear)
@@ -332,7 +358,7 @@ struct V3DetailsStepView: View {
                     )
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
         .animation(.timingCurve(0.2, 0.9, 0.25, 1, duration: 0.22), value: filled)
         .accessibilityLabel("\(label). \(a11yState). Değiştirmek için dokun.")
     }
@@ -345,13 +371,13 @@ struct V3DetailsStepView: View {
     private var footer: some View {
         Button(action: onSave) {
             Text("Kaydet")
-                .font(V3Typography.sans(17, weight: .semibold))
+                .displayXS()
                 .foregroundColor(V3Tokens.paper)
                 .frame(maxWidth: .infinity, minHeight: 24)
-                .padding(.vertical, 16)
+                .padding(.vertical, V3Tokens.spacingLG)
                 .background(Capsule().fill(V3Tokens.ink))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
         .accessibilityLabel("Anı kaydet")
     }
 
@@ -360,9 +386,7 @@ struct V3DetailsStepView: View {
     /// Ekranda gösterilecek tarih. Past-day akışında container'dan gelen
     /// `entryDate` kullanılır; yoksa bugün.
     private var dateLabel: String {
-        let f = DateFormatter()
-        f.dateFormat = "d MMMM · EEEE"
-        f.locale = Locale(identifier: "tr_TR")
+        let f = ONEFormatters.dayMonthWeekday
         return f.string(from: entryDate ?? Date())
     }
 
@@ -384,14 +408,14 @@ private struct V3DetailsPhotoSourceSheet: View {
     let onRemove: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
             Text(hasPhoto ? "Fotoğrafı değiştir" : "Fotoğraf ekle")
                 .font(V3Typography.display(22, weight: .semibold))
                 .tracking(-0.5)
                 .foregroundColor(V3Tokens.ink)
-                .padding(.top, 22)
+                .padding(.top, V3Tokens.spacingXL)
 
-            HStack(spacing: 12) {
+            HStack(spacing: V3Tokens.spacingMD) {
                 sourceCard(title: "Galeri", subtitle: "Var olan bir kareyi seç",
                            systemImage: "photo.on.rectangle.angled", action: onGallery)
                 sourceCard(title: "Kamera", subtitle: "Şimdi bir kare çek",
@@ -400,24 +424,24 @@ private struct V3DetailsPhotoSourceSheet: View {
 
             if hasPhoto {
                 Button(action: onRemove) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: V3Tokens.spacingSM) {
                         Image(systemName: "trash")
                             .font(.system(size: 13, weight: .semibold))
-                        Text("Fotoğrafı kaldır")
-                            .font(V3Typography.sans(15, weight: .semibold))
+                        Text(NSLocalizedString("entry.removePhoto", comment: ""))
+                            .bodyMDSemibold()
                     }
                     .foregroundColor(Color(hex: "#FF3B1F"))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(Capsule().stroke(Color(hex: "#FF3B1F").opacity(0.5), lineWidth: 1.5))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
             }
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 22)
-        .padding(.bottom, 22)
+        .padding(.horizontal, V3Tokens.spacingXL)
+        .padding(.bottom, V3Tokens.spacingXL)
     }
 
     private func sourceCard(title: String, subtitle: String, systemImage: String, action: @escaping () -> Void) -> some View {
@@ -427,7 +451,7 @@ private struct V3DetailsPhotoSourceSheet: View {
         } label: {
             VStack(alignment: .leading, spacing: 10) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                         .fill(accent.opacity(0.14))
                     Image(systemName: systemImage)
                         .font(.system(size: 22, weight: .medium))
@@ -436,24 +460,24 @@ private struct V3DetailsPhotoSourceSheet: View {
                 .frame(width: 46, height: 46)
                 Spacer(minLength: 6)
                 Text(title)
-                    .font(V3Typography.sans(16, weight: .semibold))
+                    .bodyLGSemibold()
                     .foregroundColor(V3Tokens.ink)
                 Text(subtitle)
-                    .font(V3Typography.sans(12))
+                    .bodyMicro()
                     .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
+            .padding(V3Tokens.spacingLG)
             .frame(height: 152)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                     .fill(V3Tokens.surface)
-                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(V3Tokens.hairline, lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous).stroke(V3Tokens.hairline, lineWidth: 1))
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
     }
 }
 
@@ -466,19 +490,19 @@ private struct V3ScopeSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Bu an kimde kalsın?")
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
+                Text(NSLocalizedString("entry.scopeTitle", comment: ""))
                     .font(V3Typography.display(22, weight: .semibold))
                     .tracking(-0.5)
                     .foregroundColor(V3Tokens.ink)
-                Text("Her an için ayrı seçebilirsin.")
-                    .font(V3Typography.sans(13))
+                Text(NSLocalizedString("entry.scopeSubtitle", comment: ""))
+                    .bodyXS()
                     .foregroundColor(V3Tokens.mutedText)
             }
-            .padding(.top, 22)
+            .padding(.top, V3Tokens.spacingXL)
 
-            VStack(spacing: 12) {
+            VStack(spacing: V3Tokens.spacingMD) {
                 choiceCard(
                     title: "Arşivimde kalsın",
                     subtitle: "Kimse görmez, sadece senin.",
@@ -504,15 +528,15 @@ private struct V3ScopeSheet: View {
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 22)
-        .padding(.bottom, 22)
+        .padding(.horizontal, V3Tokens.spacingXL)
+        .padding(.bottom, V3Tokens.spacingXL)
     }
 
     private func choiceCard(title: String, subtitle: String, systemImage: String, isOn: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 14) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                         .fill(isOn ? moodColor : moodColor.opacity(0.14))
                     Image(systemName: systemImage)
                         .font(.system(size: 16, weight: .semibold))
@@ -522,10 +546,10 @@ private struct V3ScopeSheet: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(V3Typography.sans(15, weight: .semibold))
+                        .bodyMDSemibold()
                         .foregroundColor(V3Tokens.ink)
                     Text(subtitle)
-                        .font(V3Typography.sans(12))
+                        .bodyMicro()
                         .foregroundColor(V3Tokens.mutedText)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -536,15 +560,15 @@ private struct V3ScopeSheet: View {
             }
             .padding(14)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                     .fill(V3Tokens.surface)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                             .stroke(isOn ? moodColor.opacity(0.4) : V3Tokens.hairline, lineWidth: isOn ? 1.5 : 1)
                     )
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
     }
 }
 

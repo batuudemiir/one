@@ -1,0 +1,14 @@
+/* App Store + system display name — ja */
+"CFBundleDisplayName" = "ONE+ Mood Tracker";
+"CFBundleName" = "ONE+ Mood Tracker";
+
+/* Izin uyarilari — Info.plist'teki her NS*UsageDescription burada olmali;
+   eksik olan anahtar sistem uyarisinda gelistirme dilinde (TR) cikiyor. */
+"NSAppleMusicUsageDescription" = "その瞬間に曲を添えるために使用します。サブスクリプションがなくても動作します。";
+"NSCameraUsageDescription" = "瞬間に写真を追加し、招待QRコードを読み取るために使用します。";
+"NSFaceIDUsageDescription" = "App ロックが有効なとき、Face ID でロックを解除するために使用します。";
+"NSCalendarUsageDescription" = "瞬間をカレンダーに追加するために使用します。";
+"NSContactsUsageDescription" = "連絡先から相手を選んで ONE に招待するために使用します。";
+"NSMicrophoneUsageDescription" = "ビデオ撮影中に音声を録音するために使用します。";
+"NSPhotoLibraryUsageDescription" = "瞬間に写真を追加し、プロフィール写真を選ぶために使用します。";
+"NSPhotoLibraryAddUsageDescription" = "共有カードや月間ポスターを写真ライブラリに保存するために使用します。";

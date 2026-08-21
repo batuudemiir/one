@@ -46,7 +46,10 @@ enum V3ReminderTone: String, CaseIterable, Identifiable {
             return ("Bugün nasılsın?", "On saniye sürer.")
         case .curious:
             if let y = yesterdayMood {
-                return ("Dün \(y.accusativePastTense).", "Bugün hangi renk?")
+                // Tam cümle katalogdan geliyor — "Dün " + çekimli kelime
+                // birleştirmesi yalnız Türkçe'de çalışıyordu.
+                return (y.yesterdayRecallSentence,
+                        NSLocalizedString("reminder.curious.body", comment: ""))
             }
             return V3ReminderTone.short.notification(yesterdayMood: nil)
         }

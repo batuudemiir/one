@@ -25,7 +25,7 @@ import SwiftUI
 // MARK: - Scope
 
 /// Bu an kimde kalsın? — v3'ün "her an için kapsam" davranışı.
-/// `.private` anlar Frekans'ta, arkadaş kartlarında ve uyum hesabında
+/// `.private` anlar Çevre'de, arkadaş kartlarında ve uyum hesabında
 /// **hiç görünmez**. Filtreleme veri katmanında yapılır, UI'da değil.
 enum MomentScope: String, Codable, Sendable {
     case friends
@@ -110,7 +110,7 @@ struct Day: Identifiable, Hashable, Sendable {
         moments.map(\.moodColorHex)
     }
 
-    /// Filtered view — `.private` anlar dışarıda. Frekans, arkadaş kartları
+    /// Filtered view — `.private` anlar dışarıda. Çevre, arkadaş kartları
     /// ve uyum hesabı bunu okumalı.
     var publicDay: Day {
         Day(date: date, moments: moments.filter { $0.scope == .friends })

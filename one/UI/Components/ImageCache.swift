@@ -46,6 +46,10 @@ actor ImageCache {
     /// olduğu için en çok kazanan çağrılar.
     static let thumbnailMaxPixelSize: CGFloat = 240
 
+    /// Devam eden indirmeler. Aynı anahtara gelen ikinci çağrı yeni bir iş
+    /// başlatmak yerine buradaki `Task`'a bağlanıyor.
+    private var inFlight: [NSString: Task<UIImage?, Never>] = [:]
+
     private let store: NSCache<NSString, UIImage> = {
         let c = NSCache<NSString, UIImage>()
         c.countLimit = 150          // ~150 images in RAM is plenty for feeds
@@ -65,16 +69,42 @@ actor ImageCache {
             return cached
         }
 
+        // Aynı görsel için hâlihazırda inen bir iş varsa ona bağlan.
+        //
+        // Actor olmak bu yarışı tek başına engellemiyor: `await` noktasında
+        // izolasyon bırakılıyor, yani cache'e bakıp miss gören ikinci çağrı
+        // birincinin yazmasını beklemeden kendi indirmesini başlatıyordu.
+        // Çevre feed'inde aynı avatar sekiz hücrede görününce sekiz paralel
+        // indirme demekti. Devam eden `Task`'ı paylaşmak bunu teke indiriyor.
+        if let existing = inFlight[key] {
+            return await existing.value
+        }
+
+        let task = Task<UIImage?, Never> {
+            await Self.load(url: url, maxPixelSize: maxPixelSize)
+        }
+        // Askıya alınmadan önce kaydediliyor — araya başka çağrı giremez.
+        inFlight[key] = task
+
+        let image = await task.value
+        // Store yazımı ile in-flight temizliği arasında suspension yok,
+        // yani bir sonraki çağrı ya cache'i ya da devam eden işi görüyor.
+        if let image {
+            store.setObject(image, forKey: key, cost: Self.cacheCost(for: image))
+        }
+        inFlight[key] = nil
+        return image
+    }
+
+    /// Asıl yükleme. Actor state'ine dokunmadığı için `static` — devam eden
+    /// `Task` içinden izolasyon çakışması olmadan çağrılabiliyor.
+    private static func load(url: URL, maxPixelSize: CGFloat) async -> UIImage? {
         // file:// — local disk: read directly. URLSession ile cast `HTTPURLResponse`
         // başarısız olur (file response'u HTTPURLResponse değildir) ve fotoğraflar
         // önizlemede hiç görünmez. Local URL'leri ayrı ele alıyoruz.
         if url.isFileURL {
-            guard let data = try? Data(contentsOf: url),
-                  let image = Self.decode(data: data, maxPixelSize: maxPixelSize) else {
-                return nil
-            }
-            store.setObject(image, forKey: key, cost: Self.cacheCost(for: image))
-            return image
+            guard let data = try? Data(contentsOf: url) else { return nil }
+            return decode(data: data, maxPixelSize: maxPixelSize)
         }
 
         do {
@@ -84,16 +114,19 @@ actor ImageCache {
                !(200..<300).contains(httpResponse.statusCode) {
                 return nil
             }
-            guard let image = Self.decode(data: data, maxPixelSize: maxPixelSize) else { return nil }
-            store.setObject(image, forKey: key, cost: Self.cacheCost(for: image))
-            return image
+            return decode(data: data, maxPixelSize: maxPixelSize)
         } catch {
             return nil
         }
     }
 
     /// Manual eviction (e.g. on logout / low memory warning).
+    ///
+    /// Devam eden işler de iptal ediliyor — çıkış yapılmışsa inen avatarın
+    /// cache'e yazılmasının anlamı yok.
     func clear() {
+        for (_, task) in inFlight { task.cancel() }
+        inFlight.removeAll()
         store.removeAllObjects()
     }
 

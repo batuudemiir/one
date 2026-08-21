@@ -37,8 +37,8 @@ struct PhotoViewerSheet: View {
     }
 
     private func dismiss() {
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+        ONEHaptics.nudge()
+        withAnimation(ONEAnimation.screenTransition) {
             isPresented = false
         }
     }
@@ -94,7 +94,11 @@ struct PhotoViewerSheet: View {
                                     .onChanged { value in
                                         guard scale <= 1.01 else { return }
                                         let dy = value.translation.height
-                                        if dy > 0 { dragOffset = dy }
+                                        // Aşağı: 1:1 takip. Yukarı: sert duvar yerine
+                                        // ilerledikçe artan direnç.
+                                        dragOffset = dy > 0
+                                            ? dy
+                                            : dy.rubberbanded(over: UIScreen.main.bounds.height)
                                     }
                                     .onEnded { value in
                                         if scale > 1.01 {
@@ -102,13 +106,20 @@ struct PhotoViewerSheet: View {
                                             panOffset.height += value.translation.height
                                             return
                                         }
-                                        let vel = value.velocity.height
-                                        let dy  = value.translation.height
-                                        let shouldDismiss = dy > 90 || (dy > 20 && vel > 600)
-                                        if shouldDismiss {
+                                        // Bırakma noktasına değil, jestin gittiği yere bak.
+                                        // `predictedEndTranslation` sistemin momentum
+                                        // projeksiyonu — sabit bir hız eşiğinden ("vel > 600")
+                                        // daha dürüst, çünkü kısa ama sert bir fiskeyi de,
+                                        // uzun ama yavaşlayan bir çekişi de doğru okuyor.
+                                        let dy = value.translation.height
+                                        let projected = value.predictedEndTranslation.height
+                                        if dy > 90 || projected > 220 {
                                             dismiss()
                                         } else {
-                                            withAnimation(.spring(response: 0.38, dampingFraction: 0.72)) {
+                                            // interactiveSpring + blendDuration: kullanıcı
+                                            // geri dönen fotoğrafı tekrar yakalarsa hareket
+                                            // kesilmeden devralınıyor.
+                                            withAnimation(ONEAnimation.dragSnapBack) {
                                                 dragOffset = 0
                                             }
                                         }
@@ -117,7 +128,7 @@ struct PhotoViewerSheet: View {
                         )
                         .onTapGesture(count: 2) {
                             ONEHaptics.nudge()
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                            withAnimation(ONEAnimation.screenTransition) {
                                 if isZoomed {
                                     scale = 1.0
                                     panOffset = .zero
@@ -129,13 +140,11 @@ struct PhotoViewerSheet: View {
                         .accessibilityLabel(NSLocalizedString("accessibility.today.photoViewer", comment: "Fotoğraf görüntüleyici"))
                         .accessibilityHint(NSLocalizedString("accessibility.today.photoViewerHint", comment: "Yakınlaştırmak için çift dokunun, kapatmak için aşağı kaydırın"))
                 } else {
-                    ProgressView()
-                        .tint(.white)
-                        .accessibilityLabel(NSLocalizedString("accessibility.loading", comment: "Yükleniyor"))
+                    V3Loading(.media)
                 }
             }
             .padding(.horizontal, 0)
-            .padding(.vertical, 12)
+            .padding(.vertical, V3Tokens.spacingMD)
         }
         .overlay(alignment: .top) {
             // Kapatma butonu safe area İÇİNDE — Dynamic Island'a değmez.
@@ -147,26 +156,32 @@ struct PhotoViewerSheet: View {
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
-                                .fill(.ultraThinMaterial)
+                                .glassFill(opaque: Color(red: 0.047, green: 0.047, blue: 0.063))
                                 .environment(\.colorScheme, .dark)
                         )
                         .overlay(
                             Circle().stroke(Color.white.opacity(0.18), lineWidth: 1)
                         )
+                        // Görünen daire 36pt kalıyor; dokunma hedefi HIG'in
+                        // 44pt asgarisine genişliyor. Fotoğraf görüntüleyicide
+                        // düğme tek çıkış yolu — 36pt'de ıskalanıyordu.
+                        .frame(width: V3Tokens.minTouchTarget,
+                               height: V3Tokens.minTouchTarget)
+                        .contentShape(Circle())
                 }
                 .accessibilityLabel(NSLocalizedString("general.close", comment: ""))
                 .accessibilityHint(NSLocalizedString("accessibility.today.closeViewer", comment: "Fotoğraf görüntüleyiciyi kapat"))
                 Spacer()
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
+            .padding(.horizontal, V3Tokens.spacingLG)
+            .padding(.top, V3Tokens.spacingSM)
             .opacity(chromeOpacity)
         }
         .overlay(alignment: .bottom) {
             Image(systemName: "chevron.compact.down")
                 .font(.system(size: 34, weight: .light))
                 .foregroundColor(.white.opacity(isZoomed ? 0 : 0.32))
-                .padding(.bottom, 8)
+                .padding(.bottom, V3Tokens.spacingSM)
                 .opacity(chromeOpacity)
                 .accessibilityHidden(true)
         }

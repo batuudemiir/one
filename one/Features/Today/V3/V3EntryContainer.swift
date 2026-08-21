@@ -76,9 +76,9 @@ struct V3EntryContainer: View {
                         showReminder = false
                     }
                 )
-                .padding(.horizontal, 24)
-                .padding(.top, 26)
-                .padding(.bottom, 24)
+                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.top, V3Tokens.spacingXL2)
+                .padding(.bottom, V3Tokens.spacingXL2)
                 .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .trailing)).combined(with: .opacity))
             } else {
                 VStack(alignment: .leading, spacing: 0) {
@@ -88,18 +88,18 @@ struct V3EntryContainer: View {
                         .padding(.top, 14)
 
                     contentForStep
-                        .padding(.top, 8)
+                        .padding(.top, V3Tokens.spacingSM)
 
                     Spacer(minLength: 0)
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 26)
-                .padding(.bottom, 24)
+                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.top, V3Tokens.spacingXL2)
+                .padding(.bottom, V3Tokens.spacingXL2)
                 .transition(.opacity)
             }
         }
-        .animation(reduceMotion ? .none : V3Tokens.easing, value: step)
-        .animation(reduceMotion ? .none : V3Tokens.easing, value: showReminder)
+        .animation(reduceMotion ? .none : ONEAnimation.easing, value: step)
+        .animation(reduceMotion ? .none : ONEAnimation.easing, value: showReminder)
         .fullScreenCover(isPresented: $showStoryComposer) {
             if let mood = selectedMood {
                 V3StoryComposerView(
@@ -119,7 +119,18 @@ struct V3EntryContainer: View {
                 reminderSettings = V3ReminderSettings.defaults
             }
             hydrateExistingEntryIfNeeded()
-            V3ReminderScheduler.reschedule(yesterdayMood: yesterdayMoodForCurious())
+            // Hatırlatıcı planlaması BİLEREK burada değil.
+            //
+            // `V3ReminderScheduler.reschedule` içinde `requestAuthorization`
+            // var; burada çağrılınca sistem izin prompt'u An sekmesinin ilk
+            // karesinde çıkıyordu. `oneApp.setupPushNotifications`'daki yazılı
+            // politika bunu yasaklıyor: izin `.notDetermined` olmaktan çıkarsa
+            // onboarding'in soft-ask adımı ve tamamlandı banner'ı sessizce
+            // ölüyor. Aynı iş zaten Tier 3'te (`oneApp`) yapılıyor.
+            //
+            // Ayar değişimi yolu (`V3ReminderView.onSave`) kendi reschedule'ını
+            // çağırmaya devam ediyor — orada izin istemek doğru, kullanıcı
+            // hatırlatıcıyı bilerek açıyor.
             syncTabBarMinimize()
         }
         .onChange(of: vm.todayEntry?.id) { _, _ in
@@ -174,6 +185,11 @@ struct V3EntryContainer: View {
                 target = .hub
                 nextAddNew = false
             } else {
+                // Gidilecek başka yer yok — zaten `.pick`'teyiz. Aşağıdaki
+                // `resetFormState()` burada çalışırsa kullanıcının seçtiği
+                // rengi sessizce siler; sekmeye refleksle ikinci kez dokunmak
+                // veri kaybı gibi hissettirmemeli.
+                if step == .pick { return }
                 target = .pick
                 nextAddNew = true
             }
@@ -186,7 +202,7 @@ struct V3EntryContainer: View {
 
         // Retap toggle için yumuşak crossfade — step değişimi ayrıca
         // `stepTransition()` çalıştırıyor; iki animasyon tek eğri altında.
-        withAnimation(reduceMotion ? .none : V3Tokens.easingColor) {
+        withAnimation(reduceMotion ? .none : ONEAnimation.easingColor) {
             step = target
         }
     }
@@ -237,9 +253,12 @@ struct V3EntryContainer: View {
                 onAddNew: {
                     addNew = true
                     transitionDirection = .forward
-                    withAnimation(reduceMotion ? .none : V3Tokens.easing) { step = .pick }
+                    withAnimation(reduceMotion ? .none : ONEAnimation.easing) { step = .pick }
                 },
-                onEditMoment: { _ in /* Phase 4/6'ta bağlanacak */ }
+                // Bilerek `nil`: boş bir closure geçmek satırı "bağlı düğme"
+                // gösteriyor ve VoiceOver'da kırık bir eylem yaratıyordu.
+                // Düzenleme akışı bağlanınca burası doldurulacak.
+                onEditMoment: nil
             )
             .transition(stepTransition())
         case .pick:
@@ -317,18 +336,14 @@ struct V3EntryContainer: View {
     /// "12 TEMMUZ" formatında micro-label.
     private var savedMomentDateLabel: String {
         let date = entryDate ?? Date()
-        let f = DateFormatter()
-        f.dateFormat = "d MMMM"
-        f.locale = Locale(identifier: "tr_TR")
+        let f = ONEFormatters.dayMonth
         return f.string(from: date).uppercased()
     }
 
     /// Story kart üst köşesindeki tarih — "12 TEMMUZ · CUMA".
     private var storyDateLabel: String {
         let date = entryDate ?? Date()
-        let f = DateFormatter()
-        f.dateFormat = "d MMMM · EEEE"
-        f.locale = Locale(identifier: "tr_TR")
+        let f = ONEFormatters.dayMonthWeekday
         return f.string(from: date).uppercased()
     }
 
@@ -343,32 +358,23 @@ struct V3EntryContainer: View {
             scope: scope,
             entryDate: entryDate
         )
-        // Kayıt anı bir duygusal yay: mood-tuned intro (0), peak beat (0.38),
-        // sert bir onay darbesi (0.55), başarı finali (0.75).
-        //  t=0        → moodun kendi taktil dili (CoreHaptics, mood'a özgü)
-        //  t=0.38s    → hafif peak "tık" (nefes tutulan an)
-        //  t=0.55s    → net "yerine oturdu" darbe (rigid impact)
-        //  t=0.75s    → kutlama notification success
-        // Bu sıra iki şey yapıyor: bekleme değil bir olay hissi kurar,
-        // ve mood ne olursa olsun sonda "kaydedildi" sinyalini aynı tonda
-        // kapatır — ritüel + garantili teyit.
-        ONEHaptics.saveRitual(mood: mood.bridgedMood)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.38) {
-            ONEHaptics.saveRitualPeak()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
-            let gen = UIImpactFeedbackGenerator(style: .rigid)
-            gen.prepare()
-            gen.impactOccurred(intensity: 0.85)
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
-            ONEHaptics.songSaved()
-        }
+        // Kayıt haptiği BURADA DEĞİL.
+        //
+        // Bu blok eskiden dört vuruşluk duygusal yayı kendisi çalıyordu.
+        // Ama `SaveRitualMoment` de aynı yayı çalıyor: kayıt `vm.todayEntry`
+        // değişimini tetikliyor, `TodayView` ritüeli mount ediyor, o da
+        // `ONEHaptics.saveRitual(...)` diyor. Yani uygulamanın imza anı her
+        // kayıtta **iki kez** titriyordu — üstelik iki farklı mood eşlemesiyle
+        // (`mood.bridgedMood` burada, `ONEMood(hex:)` orada), dolayısıyla iki
+        // desen birbirini tutmuyordu bile.
+        //
+        // Ritüelin tek sahibi `SaveRitualMoment`: görsel ve taktil aynı yerden,
+        // aynı zaman çizgisinde çıkıyor.
         // v3: yeni an eklendi — todayMoments'i tazele ki ordinal doğru olsun.
         let refDate = entryDate ?? Calendar.current.startOfDay(for: Date())
         todayMoments = PersistenceController.shared.fetchMoments(for: refDate, context: vm.context)
         transitionDirection = .forward
-        withAnimation(reduceMotion ? .none : V3Tokens.easingSaved) {
+        withAnimation(reduceMotion ? .none : ONEAnimation.easingSaved) {
             step = .saved
         }
     }
@@ -384,7 +390,7 @@ struct V3EntryContainer: View {
         pickedSong = nil
         scope = .private
         addNew = false
-        withAnimation(reduceMotion ? .none : V3Tokens.easing) {
+        withAnimation(reduceMotion ? .none : ONEAnimation.easing) {
             hydrateExistingEntryIfNeeded()
         }
         onRestart?()
@@ -436,9 +442,7 @@ struct V3EntryContainer: View {
     private var pickTitle: String {
         if let date = entryDate {
             // Past-day: "12 Temmuz\nnasıldı?"
-            let f = DateFormatter()
-            f.dateFormat = "d MMMM"
-            f.locale = Locale(identifier: "tr_TR")
+            let f = ONEFormatters.dayMonth
             return "\(f.string(from: date))\nnasıldı?"
         }
         if todayMoments.isEmpty { return "Bugün\nnasılsın?" }

@@ -39,10 +39,19 @@ struct BottomNavigation: View {
     /// Tek alana abone olmak aynı sonucu veriyor, gereksiz çizimi kesiyor.
     @State private var unseenFriendShareCount: Int = CloudKitManager.shared.unseenFriendShareCount
 
-    /// v3 spec: An akışı adım 2'de çubuk daralır. `GlobalUIState.tabBarMinimized`
-    /// üzerinden okunur; explicit override için parametre.
+    /// v3 spec: çubuk üç kaynaktan biri isteyince daralır:
+    ///  - `tabBarMinimized` — An akışı (V3EntryContainer, kabuğun currentScreen reset'i)
+    ///  - `scrollMinimizesBar` — Arşiv/Çevre/Profil scroll'unda ambient küçülme
+    ///  - `focusedContentMinimizes` — gün detayı, Echo poster gibi odaklı içerik
+    /// Üçü OR'lanır. Explicit override (preview/test) hepsini ezer.
     var minimizedOverride: Bool? = nil
-    private var minimized: Bool { minimizedOverride ?? globalUI.tabBarMinimized }
+    private var minimized: Bool {
+        minimizedOverride ?? (
+            globalUI.tabBarMinimized
+            || globalUI.scrollMinimizesBar
+            || globalUI.focusedContentMinimizes
+        )
+    }
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -60,11 +69,11 @@ struct BottomNavigation: View {
     private var tabs: [PrimaryTab] { PrimaryTab.allCases }
 
     // Geometry — spec: 14pt normal / 96pt minimized kenar payı.
-    // Alt pay 0pt: nav artık `.overlay` ile bindiriliyor (safeAreaInset değil),
-    // Instagram'ın yeni Liquid Glass bar'ı gibi safe-area alt kenarına oturuyor.
-    // Ek dolgu bırakırsak home indicator'la arasında bone şeridi görünüyor.
+    // Alt pay 10pt: Instagram'ın yeni Liquid Glass bar'ı gibi home indicator
+    // ile arasında hafif bir boşluk bırakıyor — bar "yüzer" görünüyor,
+    // safe-area alt kenarına yapışmıyor.
     private var sideInset: CGFloat { minimized ? 96 : 14 }
-    private var bottomInset: CGFloat { minimized ? 0 : 0 }
+    private var bottomInset: CGFloat { minimized ? 6 : 10 }
 
     /// Sekme yüksekliği metinle birlikte ölçekleniyor. Sabit 52pt'de büyük
     /// metin ayarlarında etiketler kapsülün dışına taşıyordu.
@@ -73,7 +82,7 @@ struct BottomNavigation: View {
     private var tabHeight: CGFloat { minimized ? minimizedTabHeight : baseTabHeight }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: V3Tokens.spacingXS) {
             ForEach(tabs, id: \.self) { tab in
                 // An sekmesi retap toggle'ı (bugünkü momentlar ↔ bugün
                 // nasılsın) VoiceOver kullanıcısı için custom action olarak
@@ -103,7 +112,7 @@ struct BottomNavigation: View {
                     // yeniden dokunmak ise sekme değiştirmiyor — o geri bildirimi
                     // burada vermeye devam ediyoruz.
                     if wasOnTab { ONEHaptics.nudge() }
-                    withAnimation(V3Tokens.easingColor) {
+                    withAnimation(ONEAnimation.easingColor) {
                         currentScreen = tab.screen
                     }
                     // Sekmeye tekrar dokunma → o sekmeye özgü akıcı davranış.
@@ -160,7 +169,7 @@ struct BottomNavigation: View {
                 didDragSelect = true
                 guard !isSelected(tab.screen) else { return }
                 ONEHaptics.tabSwitch()
-                withAnimation(V3Tokens.easingColor) {
+                withAnimation(ONEAnimation.easingColor) {
                     currentScreen = tab.screen
                 }
             }
@@ -185,28 +194,44 @@ struct BottomNavigation: View {
 
     /// iOS 26'da gerçek Liquid Glass, altında `.ultraThinMaterial`.
     /// Reduce Transparency açıkken düz `surface` — cam yok, kenar hairline.
+    ///
+    /// Kenar + gölge neden var: `.clear` cam arkasını olduğu gibi geçiriyor,
+    /// yani kağıt zeminin üstünde çubuğun **hiçbir sınırı** kalmıyordu. Sonuç
+    /// ters okunuyordu — cam gibi değil, düz bir şerit gibi. Hairline kenar
+    /// kapsülün nerede başladığını söylüyor, gölge onu içerikten koparıyor:
+    /// altından geçen mozaik artık çubuğun *arkasında* olduğu belli oluyor.
+    /// v3 spec zaten yüzen çubuğa gölge veriyor (0.14 · r15 · y10).
     @ViewBuilder
     private var barBackground: some View {
-        let shape = RoundedRectangle(cornerRadius: 28, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
         if reduceTransparency {
             shape
                 .fill(V3Tokens.surface)
                 .overlay(shape.strokeBorder(V3Tokens.hairline, lineWidth: 1))
         } else {
-            Color.clear.liquidGlassBackground(.clear, in: shape)
+            Color.clear
+                .liquidGlassBackground(.clear, in: shape)
+                .overlay(
+                    shape.strokeBorder(
+                        colorScheme == .dark
+                            ? Color.white.opacity(0.10)
+                            : Color.black.opacity(0.06),
+                        lineWidth: 0.75
+                    )
+                )
+                .shadow(
+                    color: Color.black.opacity(colorScheme == .dark ? 0.34 : 0.14),
+                    radius: 15,
+                    y: 10
+                )
         }
     }
 
     private func isSelected(_ screen: ScreenType) -> Bool {
-        // .today, .confirm, .done all belong to the Entry (An) tab.
-        switch screen {
-        case .today, .confirm, .done:
-            return currentScreen == .today
-                || currentScreen == .confirm
-                || currentScreen == .done
-        default:
-            return currentScreen == screen
-        }
+        // Eskiden `.today`, `.confirm` ve `.done` birlikte An sekmesine aitti.
+        // `.confirm` / `.done` v2 ritüelinin adımlarıydı ve `ScreenType`'tan
+        // kalktılar — akış artık `V3EntryContainer` içinde tek ekran.
+        currentScreen == screen
     }
 }
 
@@ -237,7 +262,7 @@ private struct TabPill: View {
                                value: isSelected)
 
                 if !minimized {
-                    HStack(spacing: 4) {
+                    HStack(spacing: V3Tokens.spacingXS) {
                         Text(label)
                             .font(V3Typography.sans(12, weight: isSelected ? .semibold : .medium,
                                                     relativeTo: .caption1))
@@ -273,21 +298,19 @@ private struct TabPill: View {
         ))
     }
 
-    private var textActive: Color {
-        colorScheme == .dark ? Color(red: 0.949, green: 0.945, blue: 0.933) : ONEBrand.ink
-    }
+    // Bu üçü elle `colorScheme == .dark ? ... : ...` yazıyordu ve değerleri
+    // token ölçeğinin birebir kopyasıydı — yani token'lar değişse sekme çubuğu
+    // geride kalırdı.
+    //
+    // Kopyalardan biri hatalıydı: `textInactive`'in açık tema değeri #A8A59C,
+    // `V3Tokens` içinde "2.36:1 — AA'yı geçmiyor" diye **reddedilmiş** olan
+    // eski `ghostText`. Seçili olmayan sekme etiketi hâlâ o kontrasttaydı.
+    // Token'a bağlanınca AA'yı geçen değere (4.55:1) çıkıyor.
+    private var textActive: Color { V3Tokens.ink }
 
-    private var textInactive: Color {
-        colorScheme == .dark
-            ? Color(red: 0.604, green: 0.604, blue: 0.651)   // #9A9AA6
-            : Color(red: 0.659, green: 0.647, blue: 0.612)   // #A8A59C faint
-    }
+    private var textInactive: Color { V3Tokens.ghostText }
 
-    private var dotInactiveColor: Color {
-        colorScheme == .dark
-            ? Color(red: 0.141, green: 0.141, blue: 0.173)   // #24242C
-            : Color(red: 0.902, green: 0.890, blue: 0.859)   // #E6E3DB line
-    }
+    private var dotInactiveColor: Color { V3Tokens.hairline }
 }
 
 /// Optional custom accessibility action modifier — VoiceOver rotor'undan

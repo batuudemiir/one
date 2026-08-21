@@ -68,10 +68,10 @@ struct WhatsNewView: View {
                     Capsule()
                         .fill(i <= currentPage ? V3Tokens.ink : V3Tokens.wash)
                         .frame(width: i == currentPage ? 20 : 6, height: 6)
-                        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: currentPage)
+                        .animation(ONEAnimation.micro, value: currentPage)
                 }
             }
-            .padding(.top, 20)
+            .padding(.top, V3Tokens.spacingXL)
             .padding(.bottom, 0)
 
             Spacer()
@@ -95,28 +95,28 @@ struct WhatsNewView: View {
                     .monoBase()
                     .foregroundStyle(isLastPage ? ONEBrand.bone : .white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
+                    .padding(.vertical, V3Tokens.spacingLG)
                     .background(
                         isLastPage
                             ? AnyShapeStyle(LinearGradient(
-                                colors: [ONEBrand.kor, ONETokens.oneBrandLight],
+                                colors: [ONEBrand.kor, ONEBrand.korLight],
                                 startPoint: .leading, endPoint: .trailing))
                             : AnyShapeStyle(V3Tokens.ink),
                         in: Capsule()
                     )
                     .animation(.easeInOut(duration: 0.2), value: isLastPage)
             }
-            .padding(.horizontal, 32)
-            .padding(.bottom, 52)
+            .padding(.horizontal, V3Tokens.spacingXL3)
+            .padding(.bottom, V3Tokens.spacingXL5)
             .opacity(contentVisible ? 1 : 0)
             .offset(y: contentVisible ? 0 : 20)
             .animation(
                 reduceMotion ? .easeOut(duration: 0.15) :
-                    .spring(response: 0.5, dampingFraction: 0.78).delay(0.35),
+                    ONEAnimation.panelSpring.delay(0.35),
                 value: contentVisible
             )
         }
-        .background(ONEBrand.bone.ignoresSafeArea())
+        .background(V3Tokens.paper.ignoresSafeArea())
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 withAnimation { contentVisible = true }
@@ -133,7 +133,7 @@ struct WhatsNewView: View {
             ONEHaptics.feelingSelected()
             withAnimation(
                 reduceMotion ? .easeInOut(duration: 0.2) :
-                    .spring(response: 0.48, dampingFraction: 0.82)
+                    ONEAnimation.cardSpring
             ) {
                 currentPage += 1
             }
@@ -171,10 +171,10 @@ private struct FeaturePage: View {
             }
             .scaleEffect(iconScale)
             .opacity(iconOpacity)
-            .padding(.bottom, 36)
+            .padding(.bottom, V3Tokens.spacingXL3)
 
             // Text
-            VStack(spacing: 12) {
+            VStack(spacing: V3Tokens.spacingMD) {
                 Text(feature.title)
                     .displayMD()
                     .foregroundStyle(V3Tokens.ink)
@@ -189,7 +189,7 @@ private struct FeaturePage: View {
             .opacity(textOpacity)
             .offset(y: textOffset)
         }
-        .padding(.horizontal, 40)
+        .padding(.horizontal, V3Tokens.spacingXL4)
         .onAppear { animateIn() }
     }
 
@@ -202,7 +202,7 @@ private struct FeaturePage: View {
             iconScale = 1
             iconOpacity = 1
         }
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.18)) {
+        withAnimation(ONEAnimation.panelSpring.delay(0.18)) {
             textOpacity = 1
             textOffset = 0
         }

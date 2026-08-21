@@ -12,7 +12,6 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     @Published var shouldNavigateToCircle   = false
     @Published var shouldNavigateToToday    = false
     @Published var shouldNavigateToEcho     = false
-    @Published var shouldNavigateToDiscovery = false
     
     override init() {
         super.init()
@@ -68,9 +67,9 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     private static let reminderMessages: [(title: String, body: String)] = [
         ("Bugünün rengi seni bekliyor.", "Bir an bırak."),
         ("Çevren senden haber bekliyor.", "Bugünkü şarkını paylaş ve arkadaşlarının mood'unu gör."),
-        ("Bugün nasıl hissediyorsun?", "Şarkını seç, etkinlikleri keşfet, çevrene katıl."),
+        ("Bugün nasıl hissediyorsun?", "Bir renk seç, çevrene katıl."),
         ("Bugünün ritmi hazır mı?", "Bir şarkı seç ve bugünü görünür yap."),
-        ("Mood'unu aç.", "Yakınındaki önerileri görmek için bugünkü seçimini kaydet."),
+        ("Mood'unu aç.", "Bugünkü seçimini kaydet, günü görünür yap."),
         ("Bir paylaşım uzaklıkta.", "Bugünün şarkısını seçmeden günü kapatma."),
         ("Bugünü bırakma.", "Şarkın, mood'un ve çevren burada buluşuyor."),
         // Duolingo-style kişisel mesajlar
@@ -335,78 +334,6 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         }
     }
 
-    // MARK: - Discovery Reminder (kayıt sonrası 4 saat)
-
-    /// Şarkı kaydedildikten 4 saat sonra mood'a özel keşfet hatırlatıcısı gönderir.
-    /// Yalnızca Salı ve Cuma günleri tetiklenir.
-    func scheduleDiscoveryReminder(moodLabel: String) {
-        // v3: Keşfet sekmesi yok — feature-flag ile bildirim de sessiz.
-        guard Features.discoveryEnabled else { return }
-        guard UserDefaults.standard.bool(forKey: "discoveryNotificationsEnabled") else { return }
-        let weekday = Calendar.current.component(.weekday, from: Date())
-        guard weekday == 3 || weekday == 6 else { return }  // Salı=3, Cuma=6
-
-        let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: ["discovery_reminder"])
-
-        let content = UNMutableNotificationContent()
-        content.title = "Bugünkü ruh haline göre 🧭"
-        content.body  = "\(moodLabel) hissine özel aktiviteler seni bekliyor."
-        content.sound = .default
-        content.categoryIdentifier = "DISCOVERY_REMINDER"
-        content.userInfo = ["type": "discovery_reminder"]
-
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 4 * 3600, repeats: false)
-        let request = UNNotificationRequest(identifier: "discovery_reminder", content: content, trigger: trigger)
-
-        center.add(request) { error in
-            if let error {
-                ONELogger.error("Failed to schedule discovery reminder", error: error, category: .notification)
-            } else {
-                ONELogger.success("Discovery reminder scheduled (+4h)", category: .notification)
-            }
-        }
-    }
-    
-    // MARK: - Event Reminder
-    
-    func scheduleEventReminder(for event: MoodEvent) {
-        let center = UNUserNotificationCenter.current()
-        let content = UNMutableNotificationContent()
-        content.title = "Yaklaşan Etkinlik: \(event.title)"
-        content.body  = "\(event.venue) mekanındaki etkinliği kaçırma!"
-        content.sound = .default
-        content.userInfo = ["type": "event_reminder", "eventId": event.id]
-        
-        let trigger: UNNotificationTrigger
-        
-        if let eventDate = event.eventDate, eventDate > Date() {
-            let timeInterval = eventDate.timeIntervalSince(Date())
-            let notifyDate: Date
-            if timeInterval > 24 * 3600 {
-                notifyDate = eventDate.addingTimeInterval(-24 * 3600) // 1 day before
-            } else if timeInterval > 2 * 3600 {
-                notifyDate = eventDate.addingTimeInterval(-2 * 3600) // 2 hours before
-            } else {
-                notifyDate = Date().addingTimeInterval(10) // Demo
-            }
-            let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: notifyDate)
-            trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
-            ONELogger.success("Event reminder scheduled for \(notifyDate)", category: .notification)
-        } else {
-            // Demo fallback if no precise date
-            trigger = UNTimeIntervalNotificationTrigger(timeInterval: 60, repeats: false)
-            ONELogger.success("Demo event reminder scheduled (+60s)", category: .notification)
-        }
-        
-        let request = UNNotificationRequest(identifier: "event_reminder_\(event.id)", content: content, trigger: trigger)
-        center.add(request) { error in
-            if let error = error {
-                ONELogger.error("Failed to schedule event reminder", error: error, category: .notification)
-            }
-        }
-    }
-    
     // Show notifications as banner even if app is open
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
@@ -439,12 +366,10 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
                 }
 
             case "FRIEND_SHARED":
-                switch actionID {
-                case "OPEN_DISCOVER":
-                    self.shouldNavigateToDiscovery = true
-                default:
-                    self.shouldNavigateToCircle = true
-                }
+                // Arkadaş paylaşımının tek hedefi Çevre. Kategorinin aksiyonu
+                // da (`OPEN_CIRCLE`) buraya düşüyor — düğme ve gövde dokunuşu
+                // aynı yere gidiyor.
+                self.shouldNavigateToCircle = true
 
             case "FRIEND_ACCEPTED", "EMOJI_REACTION":
                 self.shouldNavigateToCircle = true
@@ -454,9 +379,6 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
 
             case "WEEKLY_SUMMARY":
                 self.shouldNavigateToEcho = true
-
-            case "DISCOVERY_REMINDER":
-                self.shouldNavigateToDiscovery = true
 
             case "APP_UPDATE":
                 AppUpdateChecker.shared.openAppStore()

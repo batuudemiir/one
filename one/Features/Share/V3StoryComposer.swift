@@ -119,9 +119,9 @@ struct V3StoryComposerView: View {
 
                     storyCard
                         .frame(width: cardSize.width, height: cardSize.height)
-                        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                                 .stroke(V3Tokens.hairline, lineWidth: 1)
                         )
                         .shadow(color: Color.black.opacity(0.10), radius: 22, x: 0, y: 10)
@@ -132,10 +132,10 @@ struct V3StoryComposerView: View {
                     Spacer(minLength: 8)
 
                     togglesGroup
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, V3Tokens.spacingXL)
 
                     actionBar
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, V3Tokens.spacingXL)
                         .padding(.top, 14)
                         .padding(.bottom, max(safeBottom, 10) + 4)
                 }
@@ -160,23 +160,19 @@ struct V3StoryComposerView: View {
                     .font(V3Typography.display(22, weight: .semibold))
                     .tracking(-0.5)
                     .foregroundColor(V3Tokens.ink)
-                Text("Paylaş ya da kaydet.")
-                    .font(.system(size: 12))
+                Text(NSLocalizedString("share.orSave", comment: ""))
+                    .bodyMicro()
                     .foregroundColor(V3Tokens.mutedText)
             }
             Spacer()
-            Button(action: onClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(V3Tokens.ink)
-                    .frame(width: 34, height: 34)
-                    .background(Circle().fill(V3Tokens.surface).overlay(Circle().stroke(V3Tokens.hairline, lineWidth: 1)))
-            }
-            .buttonStyle(.plain)
+            V3TopBarIconButton(
+                systemName: "xmark",
+                label: NSLocalizedString("general.close", comment: "")
+            ) { onClose() }
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
         .padding(.top, 10)
-        .padding(.bottom, 4)
+        .padding(.bottom, V3Tokens.spacingXS)
         .frame(height: 62, alignment: .center)
     }
 
@@ -196,7 +192,10 @@ struct V3StoryComposerView: View {
         case .color:
             Rectangle().fill(mood.color)
         case .paper:
-            Rectangle().fill(V3Tokens.paper)
+            // `V3Tokens.paper` adaptive: koyu temadaki kullanıcı "kağıt"
+            // zeminli story'yi koyu export ediyordu. Kart sabit tuvale
+            // çizilip dışarı gidiyor — zemin de sabit olmalı.
+            Rectangle().fill(V3Tokens.Export.paper)
         case .photo:
             if let photo {
                 Image(uiImage: photo)
@@ -226,17 +225,14 @@ struct V3StoryComposerView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(dateLabel.uppercased())
-                    .font(.system(size: 10, weight: .regular, design: .monospaced))
+                    .font(V3Typography.monoFixed(10))
                     .tracking(1.5)
                     .foregroundColor(topInk.opacity(0.72))
                 Spacer()
-                Text("ONE")
-                    .font(.system(size: 14, weight: .black))
-                    .tracking(-0.4)
-                    .foregroundColor(brandInk)
+                ONEWordmark(size: 14, tone: brandTone)
             }
-            .padding(.horizontal, 22)
-            .padding(.top, 22)
+            .padding(.horizontal, V3Tokens.spacingXL)
+            .padding(.top, V3Tokens.spacingXL)
 
             Spacer(minLength: 0)
 
@@ -251,7 +247,7 @@ struct V3StoryComposerView: View {
                     )
 
                 Text(mood.label.lowercased())
-                    .font(V3Typography.display(30, weight: .semibold))
+                    .font(V3Typography.displayFixed(30))
                     .tracking(-0.8)
                     .foregroundColor(bodyInk)
                     .lineLimit(1)
@@ -259,8 +255,8 @@ struct V3StoryComposerView: View {
 
                 contentBlock
             }
-            .padding(.horizontal, 22)
-            .padding(.bottom, 22)
+            .padding(.horizontal, V3Tokens.spacingXL)
+            .padding(.bottom, V3Tokens.spacingXL)
         }
     }
 
@@ -270,33 +266,33 @@ struct V3StoryComposerView: View {
         case .note:
             if let n = note, !n.isEmpty {
                 Text(n)
-                    .font(.system(size: 14))
+                    .font(V3Typography.sansFixed(14))
                     .foregroundColor(bodyInk.opacity(0.86))
                     .lineSpacing(3)
                     .lineLimit(4)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
-                Text("Not bırakmadın.")
-                    .font(.system(size: 12))
+                Text(NSLocalizedString("share.noNote", comment: ""))
+                    .font(V3Typography.sansFixed(12))
                     .foregroundColor(bodyInk.opacity(0.55))
             }
         case .song:
             if let s = songName, !s.isEmpty {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(s)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(V3Typography.sansFixed(14, weight: .semibold))
                         .foregroundColor(bodyInk)
                         .lineLimit(1)
                     if let a = songArtist, !a.isEmpty {
                         Text(a)
-                            .font(.system(size: 12))
+                            .font(V3Typography.sansFixed(12))
                             .foregroundColor(bodyInk.opacity(0.72))
                             .lineLimit(1)
                     }
                 }
             } else {
-                Text("Şarkı eklemedin.")
-                    .font(.system(size: 12))
+                Text(NSLocalizedString("share.noSong", comment: ""))
+                    .font(V3Typography.sansFixed(12))
                     .foregroundColor(bodyInk.opacity(0.55))
             }
         }
@@ -308,24 +304,27 @@ struct V3StoryComposerView: View {
     private var topInk: Color {
         switch background {
         case .color: return mood.ink
-        case .paper: return V3Tokens.ink
-        case .photo: return .white
+        // Sabit: zemin de sabit (`Export.paper`). Adaptive `V3Tokens.ink`
+        // koyu temada açık mürekkep döner ve açık kağıt üstünde kaybolur.
+        case .paper: return V3Tokens.Export.ink
+        case .photo: return ONEBrand.bone
         }
     }
-    /// ONE wordmark: paper'da kor; renk zeminde mood.ink; foto zeminde bone.
-    private var brandInk: Color {
+    /// ONE kelime işareti tonu: paper'da kor; renk zeminde mood'un kendi
+    /// mürekkebi; foto zeminde bone.
+    private var brandTone: ONEWordmark.Tone {
         switch background {
-        case .color: return mood.ink
-        case .paper: return Color(hex: "#FF3B1F")
-        case .photo: return .white
+        case .color: return .custom(mood.ink)
+        case .paper: return .kor
+        case .photo: return .bone
         }
     }
     /// Ana içerik (duygu / not / şarkı) ink'i.
     private var bodyInk: Color {
         switch background {
         case .color: return mood.ink
-        case .paper: return V3Tokens.ink
-        case .photo: return .white
+        case .paper: return V3Tokens.Export.ink
+        case .photo: return ONEBrand.bone
         }
     }
     /// Renk noktasının dolgusu — renk zeminde soluk ink; paper/foto'da mood rengi.
@@ -336,7 +335,7 @@ struct V3StoryComposerView: View {
     // MARK: - Toggles
 
     private var togglesGroup: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: V3Tokens.spacingMD) {
             toggleRow(title: "ORAN") {
                 segmented(V3StoryRatio.allCases, selection: $ratio) { $0.label }
             }
@@ -350,9 +349,9 @@ struct V3StoryComposerView: View {
     }
 
     private func toggleRow<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: V3Tokens.spacingMD) {
             Text(title)
-                .font(.system(size: 10, weight: .regular, design: .monospaced))
+                .font(V3Typography.mono(10))
                 .tracking(1.5)
                 .foregroundColor(V3Tokens.faintText)
                 .frame(width: 60, alignment: .leading)
@@ -365,7 +364,7 @@ struct V3StoryComposerView: View {
         selection: Binding<T>,
         label: @escaping (T) -> String
     ) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: V3Tokens.spacingXS) {
             ForEach(items) { item in
                 let isOn = selection.wrappedValue == item
                 Button {
@@ -386,10 +385,10 @@ struct V3StoryComposerView: View {
                             }
                         )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
             }
         }
-        .padding(4)
+        .padding(V3Tokens.spacingXS)
         .background(Capsule().fill(V3Tokens.wash))
     }
 
@@ -400,34 +399,34 @@ struct V3StoryComposerView: View {
             Button {
                 saveToPhotos()
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: V3Tokens.spacingSM) {
                     Image(systemName: "arrow.down.to.line")
                         .font(.system(size: 14, weight: .semibold))
                     Text("Kaydet")
-                        .font(.system(size: 16, weight: .semibold))
+                        .bodyLGSemibold()
                 }
                 .foregroundColor(V3Tokens.ink)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
                 .background(Capsule().stroke(V3Tokens.ink, lineWidth: 1.5))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
 
             Button {
                 sharePhoto()
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: V3Tokens.spacingSM) {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 14, weight: .semibold))
-                    Text("Paylaş")
-                        .font(.system(size: 16, weight: .semibold))
+                    Text(NSLocalizedString("general.share", comment: ""))
+                        .bodyLGSemibold()
                 }
                 .foregroundColor(V3Tokens.paper)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
                 .background(Capsule().fill(V3Tokens.ink))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
             .disabled(isSharing)
         }
     }
@@ -436,7 +435,7 @@ struct V3StoryComposerView: View {
 
     private func toastView(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 11, weight: .regular, design: .monospaced))
+            .font(V3Typography.mono(11))
             .tracking(1.2)
             .foregroundColor(V3Tokens.paper)
             .padding(.horizontal, 14)

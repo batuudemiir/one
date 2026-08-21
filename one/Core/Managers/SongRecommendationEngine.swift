@@ -233,6 +233,9 @@ final class SongRecommendationEngine: ObservableObject {
 
     private func fetchLoggedKeys(context: NSManagedObjectContext) -> Set<String> {
         let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        // Sinirsiz tarama: kayit sayisi buyudukce bellek dogrusal artiyordu.
+        // Batch faulting ile tepe bellek sabit kaliyor.
+        req.fetchBatchSize = 100
         guard let items = try? context.fetch(req) else { return [] }
         return Set(items.compactMap { item -> String? in
             guard let t = item.songName, let a = item.artistName else { return nil }

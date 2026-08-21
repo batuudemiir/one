@@ -58,8 +58,8 @@ struct V3SavedStepView: View {
                 // Kazanılan sayı: "3. AN" → count-up ile açılır, kayıtın
                 // ekstra ordinal artışı hissedilir hale gelir.
                 .contentTransition(.numericText())
-                .animation(V3Tokens.easingSaved, value: momentOrdinal ?? totalMomentsToday)
-                .padding(.top, 26)
+                .animation(ONEAnimation.easingSaved, value: momentOrdinal ?? totalMomentsToday)
+                .padding(.top, V3Tokens.spacingXL2)
 
             Text("Kaydedildi.")
                 .font(V3Typography.display(34, weight: .heavy))
@@ -69,7 +69,7 @@ struct V3SavedStepView: View {
                 .padding(.bottom, 10)
 
             Text(descriptionText)
-                .font(V3Typography.sans(16))
+                .bodyLG()
                 .foregroundColor(V3Tokens.mutedText)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -79,9 +79,9 @@ struct V3SavedStepView: View {
                 .tracking(1.2)
                 .textCase(.uppercase)
                 .foregroundColor(V3Tokens.faintText)
-                .padding(.top, 8)
+                .padding(.top, V3Tokens.spacingSM)
                 // Kaydırılan içeriğin sonu ile sabit footer arasında nefes payı.
-                .padding(.bottom, 22)
+                .padding(.bottom, V3Tokens.spacingXL)
         }
     }
 
@@ -112,8 +112,8 @@ struct V3SavedStepView: View {
                     .font(V3Typography.display(40, weight: .heavy))
                     .tracking(-1.1)
                     .foregroundColor(V3Tokens.paper)
-                    .padding(.leading, 24)
-                    .padding(.bottom, 26)
+                    .padding(.leading, V3Tokens.spacingXL2)
+                    .padding(.bottom, V3Tokens.spacingXL2)
 
                 // 7pt mood bar at bottom.
                 VStack {
@@ -123,7 +123,7 @@ struct V3SavedStepView: View {
                 .allowsHitTesting(false)
             }
             .frame(height: 290)
-            .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusHero, style: .continuous))
             .padding(.top, 30)
         } else {
             // doneBlock — 190pt mood-color card, mood name in mood.ink at bottom-left.
@@ -136,9 +136,9 @@ struct V3SavedStepView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: 190)
-            .padding(24)
+            .padding(V3Tokens.spacingXL2)
             .background(
-                RoundedRectangle(cornerRadius: 32, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusHero, style: .continuous)
                     .fill(mood.color)
             )
             .padding(.top, 34)
@@ -154,9 +154,7 @@ struct V3SavedStepView: View {
     }
 
     private func currentDateLabel() -> String {
-        let f = DateFormatter()
-        f.dateFormat = "d MMMM"
-        f.locale = Locale(identifier: "tr_TR")
+        let f = ONEFormatters.dayMonth
         return f.string(from: Date()).uppercased()
     }
 
@@ -185,40 +183,40 @@ struct V3SavedStepView: View {
             Button {
                 onCreateStoryCard?()
             } label: {
-                Text("Story kart oluştur")
-                    .font(V3Typography.sans(17, weight: .semibold))
+                Text(NSLocalizedString("share.createStoryCard", comment: ""))
+                    .displayXS()
                     .foregroundColor(V3Tokens.paper)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 18)
                     .background(Capsule().fill(V3Tokens.ink))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
 
             HStack(spacing: 10) {
                 Button(action: onArchive) {
-                    Text("Arşive git")
-                        .font(V3Typography.sans(17, weight: .semibold))
+                    Text(NSLocalizedString("saved.goToArchive", comment: ""))
+                        .displayXS()
                         .foregroundColor(V3Tokens.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
                         .background(Capsule().stroke(V3Tokens.ink, lineWidth: 1.5))
                         .contentShape(Capsule())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
 
                 Button(action: onRestart) {
-                    Text("Güne dön")
-                        .font(V3Typography.sans(17, weight: .semibold))
+                    Text(NSLocalizedString("saved.backToDay", comment: ""))
+                        .displayXS()
                         .foregroundColor(V3Tokens.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
                         .background(Capsule().stroke(V3Tokens.ink, lineWidth: 1.5))
                         .contentShape(Capsule())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
             }
         }
-        .padding(.top, 12)
+        .padding(.top, V3Tokens.spacingMD)
         // Kaydırılan içerik footer'ın altından geçiyor; üstteki yumuşak
         // geçiş kesik bir kenar yerine erime hissi veriyor (V3ColorStepView
         // ile aynı desen).

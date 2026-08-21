@@ -5,7 +5,7 @@ import CoreData
 
 struct ContentView: View {
     @State private var isActive = false
-    @State private var hasCompletedOnboarding = KeychainHelper.bool(forKey: "hasCompletedOnboarding")
+    @State private var hasCompletedOnboarding = KeychainHelper.completionFlag(forKey: "hasCompletedOnboarding")
     @State private var showProfileSetup = false
     @StateObject private var cloudKitManager = CloudKitManager.shared
     @StateObject private var persistence = PersistenceController.shared
@@ -28,23 +28,40 @@ struct ContentView: View {
     /// end fires exactly once (and only if begin fired) across all callsites.
     @State private var cloudKitFetchSignpostActive = false
 
-    /// Splash only needs the user to exist (or be known-missing) *if* onboarding
-    /// is complete. For first-run flows we bypass CloudKit gating entirely.
-    /// CoreData readiness gates BOTH branches — the tab renders empty fetches
-    /// otherwise, and the 1.2s fallback in `.onAppear` still caps total wait.
+    /// Splash yalnız **CoreData** hazır olana kadar duruyor.
+    ///
+    /// Eskiden `launchReady`'i de bekliyordu, yani CloudKit'ten kullanıcı
+    /// kaydı gelene kadar (ya da 1.2s'lik emniyet süresi dolana kadar).
+    /// Bu bekleme görsel olarak hiçbir şey kazandırmıyordu: kabuk zaten
+    /// `persistence.isReady` ile splash'in altında kurulmuş ve çizilmiş
+    /// oluyor. Kullanıcı kor ekrana bakarken beklenen şey ağdı.
+    ///
+    /// CloudKit kaydı gelmeden kabuğa girmek güvenli, çünkü ona ihtiyaç
+    /// duyan tek yüzey Çevre ve orası kendi durumlarını yönetiyor: elde
+    /// bugüne ait önbellek varsa anında çiziyor, yoksa skeleton gösteriyor.
+    /// Profil kurulum sayfası da zaten `isFetchingUser` üzerinden bağımsız
+    /// karar veriyor — splash'i beklemesi hiç gerekmiyordu.
+    ///
+    /// `launchReady` duruyor: hâlâ set ediliyor ve launch signpost'larını
+    /// besliyor, sadece artık splash'i geciktirmiyor.
+    ///
+    /// Koşul `persistence.isReady` değil `shellDidMount`: ikisi aynı kareye
+    /// denk gelirse kabuğun kurulumu ile splash'in sönmesi çakışır ve geçiş
+    /// tam da en pahalı işin üstüne biner. Kabuk kendi `onAppear`'ını
+    /// bildirdiğinde ilk layout bitmiş oluyor — sahnede yalnızca iki opaklık
+    /// kalıyor.
     private var effectiveAppReady: Bool {
-        guard persistence.isReady else { return false }
-        // Onboarding branch doesn't render the splash — this only matters when
-        // hasCompletedOnboarding is true and we're about to enter the app.
-        guard hasCompletedOnboarding else { return true }
-        return launchReady
+        shellDidMount
     }
+
+    /// Kabuk en az bir kez çizildi mi.
+    @State private var shellDidMount = false
     
     var body: some View {
         ZStack {
             if !hasCompletedOnboarding {
                 // v3 onboarding — 7 adımlı (intent · auth · mood · song ·
-                // reward · frekans · notif). Apple sign-in adım 2 olarak
+                // reward · çevre · notif). Apple sign-in adım 2 olarak
                 // akışın içinde.
                 V3OnboardingView(isCompleted: $hasCompletedOnboarding)
             } else if appleSignIn.status != .signedIn {
@@ -72,6 +89,9 @@ struct ContentView: View {
                         // "yerine oturuyor" hissi. 0.985 fazla yumuşaktı ve
                         // spring ile birleşince salınım gibi okunuyordu.
                         .scaleEffect(isActive ? 1 : (reduceMotion ? 1 : 0.99))
+                        // Splash'in kapanma izni buradan geliyor: ilk layout
+                        // bittikten sonra.
+                        .onAppear { shellDidMount = true }
                 }
 
                 if !isActive {
@@ -173,7 +193,7 @@ struct ContentView: View {
                     }
                     launchReady = true
                 }
-                if !KeychainHelper.bool(forKey: "hasCreatedProfile") {
+                if !KeychainHelper.completionFlag(forKey: "hasCreatedProfile") {
                     ONELogger.success("currentUser appeared, setting hasCreatedProfile flag", category: .general)
                     KeychainHelper.set(true, forKey: "hasCreatedProfile")
                     userCheckRetryCount = 0
@@ -192,7 +212,7 @@ struct ContentView: View {
                 }
                 launchReady = true
             }
-            if !isFetching && !KeychainHelper.bool(forKey: "hasCreatedProfile") {
+            if !isFetching && !KeychainHelper.completionFlag(forKey: "hasCreatedProfile") {
                 if cloudKitManager.userLoadFailed {
                     ONELogger.warning("finished fetching with error, not showing profile setup", category: .general)
                 } else if let user = cloudKitManager.currentUser {
@@ -229,7 +249,7 @@ struct ContentView: View {
             // or when the flag says we've never created a profile — in those
             // cases we mark ready immediately.
             if hasCompletedOnboarding {
-                if KeychainHelper.bool(forKey: "hasCreatedProfile") {
+                if KeychainHelper.completionFlag(forKey: "hasCreatedProfile") {
                     ONELaunchSignpost.begin("cloudkit.userFetch")
                     cloudKitFetchSignpostActive = true
                     if cloudKitManager.currentUser != nil {
@@ -260,19 +280,15 @@ struct ContentView: View {
                 Task { await LiveActivityManager.shared.cleanupExpiredActivities() }
             }
 
-            // One-time migration: move hasCompletedOnboarding from UserDefaults → Keychain
-            if UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") && !KeychainHelper.bool(forKey: "hasCompletedOnboarding") {
-                KeychainHelper.set(true, forKey: "hasCompletedOnboarding")
-                UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
-                hasCompletedOnboarding = true
-                ONELogger.info("Migrated hasCompletedOnboarding to Keychain", category: .general)
-            }
-            // One-time migration: move hasCreatedProfile from UserDefaults → Keychain
-            if UserDefaults.standard.bool(forKey: "hasCreatedProfile") && !KeychainHelper.bool(forKey: "hasCreatedProfile") {
-                KeychainHelper.set(true, forKey: "hasCreatedProfile")
-                UserDefaults.standard.removeObject(forKey: "hasCreatedProfile")
-                ONELogger.info("Migrated hasCreatedProfile to Keychain", category: .general)
-            }
+            // One-time migration: UserDefaults → Keychain.
+            //
+            // Yalnız Keychain'de kaydın **kesinlikle olmadığı** durumda taşı.
+            // Eskiden `!KeychainHelper.bool(...)` kontrol ediliyordu; kilitli
+            // cihazda okuma başarısız olunca bu da `true` oluyor, migration
+            // koşuyor, Keychain yazımı da başarısız olabiliyor ve UserDefaults
+            // kaydı yine de siliniyordu — bayrak iki depodan da kayboluyordu.
+            migrateFlagToKeychain("hasCompletedOnboarding") { hasCompletedOnboarding = true }
+            migrateFlagToKeychain("hasCreatedProfile")
 
             ONELogger.debug("ContentView appeared", category: .general)
             ONELogger.debug("hasCompletedOnboarding: \(hasCompletedOnboarding)", category: .general)
@@ -303,9 +319,32 @@ struct ContentView: View {
         return count > 0
     }
 
+    /// UserDefaults'taki eski bayrağı Keychain'e taşır.
+    ///
+    /// Taşıma yalnız üç koşul birden sağlanınca yapılır: eski kayıt var,
+    /// Keychain'de kayıt **kesinlikle** yok (okunamıyor değil), ve yazma
+    /// başarılı. Aksi halde eski kayda dokunulmuyor — bir sonraki açılışta
+    /// yeniden denenir.
+    private func migrateFlagToKeychain(_ key: String, onMigrated: () -> Void = {}) {
+        guard UserDefaults.standard.bool(forKey: key) else { return }
+        guard case .notFound = KeychainHelper.read(forKey: key) else { return }
+
+        KeychainHelper.set(true, forKey: key)
+
+        // Yazmanın gerçekten tuttuğunu doğrulamadan eski kaydı silme.
+        guard case .found = KeychainHelper.read(forKey: key) else {
+            ONELogger.warning("Keychain'e taşınamadı, UserDefaults kaydı korunuyor: '\(key)'", category: .general)
+            return
+        }
+
+        UserDefaults.standard.removeObject(forKey: key)
+        onMigrated()
+        ONELogger.info("Migrated \(key) to Keychain", category: .general)
+    }
+
     private func checkProfileStatus() {
         // Keychain is the source of truth — survives app deletion and reinstall
-        let hasCreatedProfile = KeychainHelper.bool(forKey: "hasCreatedProfile")
+        let hasCreatedProfile = KeychainHelper.completionFlag(forKey: "hasCreatedProfile")
 
         // Değeri gördükten sonra sor. `todaySongSaved` bildirimi ilk kayıttan
         // sonra bu kontrolü yeniden tetikliyor.

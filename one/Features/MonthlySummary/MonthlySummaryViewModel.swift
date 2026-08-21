@@ -121,44 +121,36 @@ class MonthlySummaryViewModel: ObservableObject {
         let dominantMood     = dominantEntry?.key ?? "—"
         let dominantColor    = Color(hex: dominantEntry?.value.hex ?? "#C97840")
 
-        // Duygu dağılımı — 12 yeni mood etiketleri + eski uyum
-        let moodPalette: [String: Color] = [
-            "Ateşli"     : ONETokens.oneRed,
-            "Coşkulu"    : ONETokens.moodOrange,
-            "Mutlu"      : ONETokens.moodYellow,
-            "Doğal"      : ONETokens.moodLime,
-            "Huzurlu"    : ONETokens.oneGreen,
-            "Özgür"      : ONETokens.moodTeal,
-            "Derin"      : ONETokens.oneBlue,
-            "Nostaljik"  : ONETokens.moodIndigo,
-            "Gizemli"    : ONETokens.moodPurple,
-            "Hassas"     : ONETokens.moodRose,
-            "Sessiz"     : ONETokens.moodDark,
-            "Nötr"       : ONETokens.oneIvory,
-            // Legacy labels
-            "Enerjik"    : ONETokens.moodOrange,
-            "Neşeli"     : ONETokens.moodYellow,
-            "Sakin"      : ONETokens.oneGreen,
-            "Melankolik" : ONETokens.moodPurple,
-            "Gergin"     : ONETokens.oneRed,
-            "Üzgün"      : ONETokens.moodIndigo,
-        ]
+        // Duygu dağılımı.
+        //
+        // Burada ada göre anahtarlanmış bir renk sözlüğü vardı ("Gizemli",
+        // "Hassas", "Sessiz", "Melankolik"…) — uygulamanın **dördüncü** mood
+        // kelime dağarcığı. Ne `V3Mood`'un dokuzuyla ne `ONEMood`'un on
+        // ikisiyle örtüşüyordu, dolayısıyla listede olmayan her etiket
+        // sessizce ham hex'e düşüyordu.
+        //
+        // Kayıt zaten kendi `moodColorHex`'ini taşıyor: renk oradan
+        // çözülüyor, `V3Mood.closest(toHex:)` ile v3 paletine hizalanıyor.
+        // Ada göre eşleme yok — yeni bir etiket eklendiğinde burada
+        // güncellenecek bir tablo da yok.
         let total = Double(max(1, daysLogged))
         let emotionBreakdown: [(name: String, percentage: Double, color: Color)] = moodCount
             .sorted { $0.value.count > $1.value.count }
             .prefix(5)
             .map { word, val in
-                let c = moodPalette[word] ?? Color(hex: val.hex)
+                let c = V3Mood.closest(toHex: val.hex)?.color ?? Color(hex: val.hex)
                 return (name: word, percentage: min(1.0, Double(val.count) / total), color: c)
             }
 
         // Top parçalar (en fazla tekrar eden, max 5) — eşitlikte en yakın tarihe göre
+        // Top parça kartlarının dekoratif gradyanları. Mood paletiyle ilgisi
+        // yok — sıraya göre dönüyorlar; o yüzden token değil, yerel sabit.
         let gradientPairs: [[Color]] = [
-            [ONETokens.summaryFireStart,  ONETokens.summaryFireEnd],     // #D85A1A → #E6A61A
-            [ONETokens.summaryMockBlue,   ONETokens.summaryMockTeal],    // #4070C9 → #40A89C
-            [ONETokens.summaryMockPurple, ONETokens.summaryMockRed],     // #7840C9 → #C94040
-            [ONETokens.summaryMockRed,    ONETokens.summaryEmberAmber],  // #C94040 → #D8801A
-            [ONETokens.summaryMockTeal,   ONETokens.summaryMockBlue],    // #40A89C → #4070C9
+            [Color(hex: "#D85A1A"), Color(hex: "#E6A61A")],
+            [Color(hex: "#4070C9"), Color(hex: "#40A89C")],
+            [Color(hex: "#7840C9"), Color(hex: "#C94040")],
+            [Color(hex: "#C94040"), Color(hex: "#D8801A")],
+            [Color(hex: "#40A89C"), Color(hex: "#4070C9")],
         ]
         // Build recency map for tie-breaking
         var recencyMap: [String: Date] = [:]

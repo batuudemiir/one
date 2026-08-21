@@ -25,7 +25,7 @@ private struct CircleShimmerModifier: ViewModifier {
                     startPoint: .init(x: phase - 0.5, y: 0.5),
                     endPoint: .init(x: phase + 0.5, y: 0.5)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusFriend))
+                .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel))
             )
             .onAppear {
                 // Reduce Motion: shimmer atlanır

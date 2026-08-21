@@ -11,7 +11,7 @@ import SwiftUI
 /// Custom toggle style using ONE design tokens
 /// Purpose: Provides consistent toggle appearance across the app
 /// Usage: Apply with .toggleStyle(.one) modifier
-/// Components used: ONETokens.oneBlue (active), ONETokens.oneStone (inactive), ONEAnimation.micro
+/// Components used: V3Tokens.info (active), V3Tokens.faintText (inactive), ONEAnimation.micro
 struct ONEToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack {
@@ -19,7 +19,7 @@ struct ONEToggleStyle: ToggleStyle {
             Spacer()
             ZStack {
                 Capsule()
-                    .fill(configuration.isOn ? ONETokens.oneBlue : ONETokens.oneStone)
+                    .fill(configuration.isOn ? V3Tokens.info : V3Tokens.faintText)
                     .frame(width: 44, height: 26)
 
                 Circle()
@@ -28,7 +28,7 @@ struct ONEToggleStyle: ToggleStyle {
                     .offset(x: configuration.isOn ? 9 : -9)
             }
             // Minimum 44×44pt hit target per Apple HIG
-            .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
+            .frame(minWidth: V3Tokens.minTouchTarget, minHeight: V3Tokens.minTouchTarget)
             .contentShape(Rectangle())
             .onTapGesture {
                 withAnimation(ONEAnimation.micro) {

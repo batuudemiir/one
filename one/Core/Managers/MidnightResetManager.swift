@@ -134,7 +134,7 @@ class MidnightResetManager {
         }
     }
 
-    // MARK: - Streak & Discovery Notifications
+    // MARK: - Streak Notifications
 
     private func scheduleStreakNotificationsIfNeeded() {
         let context  = PersistenceController.shared.container.viewContext

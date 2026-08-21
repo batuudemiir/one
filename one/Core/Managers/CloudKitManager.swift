@@ -844,24 +844,6 @@ class CloudKitManager: ObservableObject {
         await MainActor.run { currentUser = nil }
     }
 
-    // MARK: - Premium Status Sync
-
-    /// Writes the user's ONE+ premium status to their public AppUser record in CloudKit
-    /// so that friends can display the premium badge when viewing their profile/today card.
-    func updatePremiumStatus(_ isPremium: Bool) async {
-        guard PremiumManager.premiumEnabled else { return }
-        guard let record = currentUser else { return }
-        record["isPremium"] = Int64(isPremium ? 1 : 0) as CKRecordValue
-        do {
-            let updated = try await publicDatabase.save(record)
-            await MainActor.run { self.currentUser = updated }
-            ONELogger.success("CloudKit premium status synced: \(isPremium)", category: .cloudkit)
-        } catch {
-            ONELogger.error("Failed to sync premium status to CloudKit", error: error, category: .cloudkit)
-            CrashReporter.shared.capture(error: error, context: ["operation": "syncPremiumStatus"])
-        }
-    }
-
     // MARK: - Helper Functions
     // Friendship management: see CloudKitFriendshipService.swift
     // Daily share management: see CloudKitDailyShareService.swift

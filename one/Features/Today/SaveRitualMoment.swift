@@ -27,7 +27,7 @@ import SwiftUI
 /// Reduce Motion'da hiç çizilmez — bu efekt vestibüler rahatsızlık
 /// yaratabilecek türden.
 struct SaveRippleField: View {
-    let mood: ONEMood
+    let mood: V3Mood
     /// Dalganın başladığı an.
     let start: Date
 
@@ -105,7 +105,7 @@ struct SaveRippleField: View {
 /// nefes alan bir alan. 17'de radyal gradyana düşüyor; ikisi de aynı
 /// koreografiyi izlediği için sürüm farkı bir eksiklik gibi durmuyor.
 struct SaveRitualMoment: View {
-    let mood: ONEMood
+    let mood: V3Mood
     let onFinished: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -215,7 +215,36 @@ struct SaveRitualMoment: View {
 
     // MARK: Choreography
 
+    /// Kaydın dört vuruşluk duygusal yayı. Ritüelin **tek** sahibi burası;
+    /// `V3EntryContainer` aynı yayı ayrıca çalıyordu ve her kayıt iki kez
+    /// titriyordu (üstelik iki farklı mood eşlemesiyle).
+    ///
+    ///  t=0      → moodun kendi taktil dili (CoreHaptics, mood'a özgü)
+    ///  t=0.28s  → hafif peak "tık" — görsel `sealed` fazıyla aynı an
+    ///  t=0.45s  → net "yerine oturdu" darbesi (rigid impact)
+    ///  t=0.65s  → kutlama, notification success
+    ///
+    /// Sıra iki iş yapıyor: bekleme değil bir *olay* hissi kurar, ve mood ne
+    /// olursa olsun sonda "kaydedildi" sinyalini hep aynı tonda kapatır.
+    private func playHapticArc() {
+        ONEHaptics.saveRitual(mood: mood)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
+            ONEHaptics.saveRitualPeak()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+            ONEHaptics.saveRitualSeal()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.65) {
+            ONEHaptics.songSaved()
+        }
+    }
+
     private func run() {
+        // Haptic yay her koşulda çalıyor — Reduce Motion **hareketi** kapatır,
+        // dokunsal geri bildirimi değil. Eskiden erken `return` yüzünden
+        // Reduce Motion açık kullanıcılar kayıtta hiçbir şey hissetmiyordu.
+        playHapticArc()
+
         guard !reduceMotion else {
             // Sade yol: tek bir soluşma, hareket yok.
             phase = .sealed
@@ -225,8 +254,6 @@ struct SaveRitualMoment: View {
             }
             return
         }
-
-        ONEHaptics.saveRitual(mood: mood)
 
         // Faz değişimi bir tick ERTELENİYOR: `onAppear` içinde senkron
         // değiştirilirse SwiftUI ilk kareyi zaten hedef değerle çiziyor
@@ -239,7 +266,6 @@ struct SaveRitualMoment: View {
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
-            ONEHaptics.saveRitualPeak()
             withAnimation(.spring(response: 0.42, dampingFraction: 0.58)) {
                 phase = .sealed
             }

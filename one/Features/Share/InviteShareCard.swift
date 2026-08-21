@@ -21,13 +21,15 @@ struct InviteShareCard: View {
     let userName: String
     var format: ShareFormat = .story
 
-    /// v3 nötr paletiyle uyumlu paper zemin — koyu değil.
-    private let paper: Color = Color(hex: "#FBFAF7")
-    private let ink: Color = Color(hex: "#14141A")
-    private let muted: Color = Color(hex: "#6B6B78")
-    private let faint: Color = Color(hex: "#A8A59C")
-    private let hairline: Color = Color(hex: "#E6E3DB")
-    private let kor: Color = Color(hex: "#FF3B1F")
+    // Palet `V3Tokens.Export`'tan geliyor. Burada altı ayrı `private let`
+    // olarak duruyordu; değerler zamanla kaydı (`faint` hâlâ erişilebilirlik
+    // düzeltmesi öncesi #A8A59C idi — 2.36:1) ve kart uygulamanın geri
+    // kalanından ayrı bir palete demirlemişti.
+    private let paper    = V3Tokens.Export.paper
+    private let ink      = V3Tokens.Export.ink
+    private let muted    = V3Tokens.Export.muted
+    private let faint    = V3Tokens.Export.faint
+    private let hairline = V3Tokens.Export.hairline
 
     var body: some View {
         ZStack {
@@ -49,37 +51,34 @@ struct InviteShareCard: View {
         VStack(spacing: 0) {
             // Top: kor wordmark + hairline (spec — kare rozet değil, kor metin).
             VStack(spacing: 10) {
-                Text("ONE")
-                    .font(.system(size: 22, weight: .black))
-                    .tracking(-0.6)
-                    .foregroundColor(kor)
+                ONEWordmark(size: 22, tone: .kor)
                 Rectangle().fill(hairline).frame(height: 1)
             }
-            .padding(.horizontal, 40)
+            .padding(.horizontal, V3Tokens.spacingXL4)
             .padding(.top, 44)
 
             Spacer(minLength: 0)
 
             // QR bloğu — spec: 110pt.
-            VStack(spacing: 22) {
+            VStack(spacing: V3Tokens.spacingXL) {
                 qrBlock(size: 132)
-                    .padding(20)
+                    .padding(V3Tokens.spacingXL)
                     .background(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .fill(Color.white)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
+                            .fill(V3Tokens.Export.surface)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                                     .stroke(hairline, lineWidth: 1)
                             )
                     )
 
                 VStack(spacing: 6) {
                     Text(userName)
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(V3Typography.sansFixed(20, weight: .semibold))
                         .foregroundColor(ink)
                         .lineLimit(1)
                     Text(shortLink)
-                        .font(.system(size: 13, weight: .medium, design: .monospaced))
+                        .font(V3Typography.monoFixed(13, weight: .medium))
                         .tracking(0.4)
                         .foregroundColor(muted)
                 }
@@ -88,9 +87,10 @@ struct InviteShareCard: View {
             Spacer(minLength: 0)
 
             // Footer: "7 gün geçerli" microtext.
-            Text("7 GÜN GEÇERLİ")
-                .font(.system(size: 10, weight: .regular, design: .monospaced))
+            Text(NSLocalizedString("invite.validSevenDays", comment: ""))
+                .font(V3Typography.monoFixed(10))
                 .tracking(1.5)
+                .textCase(.uppercase)
                 .foregroundColor(faint)
                 .padding(.bottom, 44)
         }
@@ -101,52 +101,50 @@ struct InviteShareCard: View {
     private var postLayout: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                Text("ONE")
-                    .font(.system(size: 18, weight: .black))
-                    .tracking(-0.4)
-                    .foregroundColor(kor)
+                ONEWordmark(size: 18, tone: .kor)
                 Spacer()
                 Text(shortLink)
-                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    .font(V3Typography.monoFixed(12, weight: .medium))
                     .tracking(0.4)
                     .foregroundColor(muted)
             }
-            .padding(.horizontal, 32)
-            .padding(.top, 32)
+            .padding(.horizontal, V3Tokens.spacingXL3)
+            .padding(.top, V3Tokens.spacingXL3)
 
-            Rectangle().fill(hairline).frame(height: 1).padding(.horizontal, 32).padding(.top, 12)
+            Rectangle().fill(hairline).frame(height: 1).padding(.horizontal, V3Tokens.spacingXL3).padding(.top, V3Tokens.spacingMD)
 
             Spacer(minLength: 0)
 
-            HStack(spacing: 32) {
+            HStack(spacing: V3Tokens.spacingXL3) {
                 qrBlock(size: 132)
                     .padding(18)
                     .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(Color.white)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusPanel - 2, style: .continuous)
+                            .fill(V3Tokens.Export.surface)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                RoundedRectangle(cornerRadius: V3Tokens.radiusPanel - 2, style: .continuous)
                                     .stroke(hairline, lineWidth: 1)
                             )
                     )
 
                 VStack(alignment: .leading, spacing: 10) {
                     Text(userName)
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(V3Typography.sansFixed(24, weight: .semibold))
                         .tracking(-0.4)
                         .foregroundColor(ink)
                         .lineLimit(1)
-                    Text("Beni ONE'da ekle")
-                        .font(.system(size: 13))
+                    Text(NSLocalizedString("invite.addMeOnONE", comment: "Beni ONE'da ekle"))
+                        .font(V3Typography.sansFixed(13))
                         .foregroundColor(muted)
-                    Text("7 GÜN GEÇERLİ")
-                        .font(.system(size: 10, weight: .regular, design: .monospaced))
+                    Text(NSLocalizedString("invite.validSevenDays", comment: ""))
+                        .font(V3Typography.monoFixed(10))
                         .tracking(1.5)
+                        .textCase(.uppercase)
                         .foregroundColor(faint)
-                        .padding(.top, 4)
+                        .padding(.top, V3Tokens.spacingXS)
                 }
             }
-            .padding(.horizontal, 40)
+            .padding(.horizontal, V3Tokens.spacingXL4)
 
             Spacer(minLength: 0)
         }
@@ -165,12 +163,12 @@ struct InviteShareCard: View {
                     .scaledToFit()
                     .frame(width: size, height: size)
             } else {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusChip, style: .continuous)
                     .strokeBorder(hairline, style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
                     .frame(width: size, height: size)
                     .overlay(
                         Text(inviteCode.uppercased())
-                            .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                            .font(V3Typography.monoFixed(14, weight: .semibold))
                             .foregroundColor(ink)
                     )
             }

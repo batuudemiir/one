@@ -175,7 +175,7 @@ struct EchoDataTests {
             days: 14,
             startDate: "3 Oca",
             endDate: "16 Oca",
-            colors: [ONETokens.oneRed, ONETokens.oneBlue]
+            colors: [V3Tokens.danger, V3Tokens.info]
         )
 
         #expect(streak.days == 14)

@@ -15,13 +15,13 @@ struct SuggestedUserRow: View {
     private var initial: String { String(user.displayName.prefix(1)).uppercased() }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: V3Tokens.spacingMD) {
             ZStack {
                 Circle()
                     .fill(Color(hex: user.avatarColorHex))
                     .frame(width: 40, height: 40)
                 Text(initial)
-                    .font(V3Typography.sans(15, weight: .medium))
+                    .bodyMDMedium()
                     .foregroundColor(.white)
             }
 
@@ -37,7 +37,7 @@ struct SuggestedUserRow: View {
                 if user.mutualFriendCount > 0 {
                     Text("• \(user.mutualFriendCount) ortak")
                         .monoLabel(tracking: 0.3)
-                        .foregroundColor(ONETokens.oneMist)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
             }
 
@@ -51,7 +51,7 @@ struct SuggestedUserRow: View {
                     .padding(.vertical, 7)
                     .background(Capsule().fill(V3Tokens.ink))
             }
-            .buttonStyle(ScaleButtonStyle())
+            .buttonStyle(.onePressable)
         }
         .padding(.vertical, 6)
     }
@@ -74,12 +74,12 @@ struct QuickSuggestCard: View {
                     .fill(Color(hex: user.avatarColorHex))
                     .frame(width: 40, height: 40)
                 Text(initial)
-                    .font(V3Typography.sans(14, weight: .semibold))
+                    .bodySMSemibold()
                     .foregroundColor(.white)
             }
 
             Text(user.displayName)
-                .font(V3Typography.sans(12.5, weight: .semibold))
+                .bodyMicroSemibold()
                 .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
 
@@ -92,22 +92,22 @@ struct QuickSuggestCard: View {
 
             Button(action: onAdd) {
                 Text(NSLocalizedString(sent ? "addFriend.sent" : "addFriend.addAction", comment: ""))
-                    .font(V3Typography.sans(11, weight: .semibold))
-                    .foregroundColor(sent ? ONETokens.oneAsh : ONEBrand.bone)
+                    .bodyMicroSemibold()
+                    .foregroundColor(sent ? V3Tokens.mutedText : ONEBrand.bone)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
                     .background(
-                        RoundedRectangle(cornerRadius: 13, style: .continuous)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                             .fill(sent ? V3Tokens.ink.opacity(0.10) : V3Tokens.ink)
                     )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
             .disabled(sent)
         }
         .frame(width: 104)
         .padding(.horizontal, 10)
         .padding(.top, 14)
         .padding(.bottom, 11)
-        .oneCardBackground(radius: ONETokens.radiusCardLg, opacity: 0.78)
+        .oneCardBackground(radius: V3Tokens.radiusCard)
     }
 }

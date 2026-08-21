@@ -21,7 +21,14 @@ struct DailySongActivityAttributes: ActivityAttributes {
         var streakCount: Int
         /// true → kutlama fazı (ilk 5 sn), false → normal compact
         var isCelebrating: Bool
-        /// "energetic" | "calm" | "deep" — symbolEffect seçimi için
+        /// "energetic" | "calm" | "deep" — ikonun görsel stilini seçer
+        /// (ağırlık, ölçek, opaklık).
+        ///
+        /// Adı "animation" ama artık animasyon değil: eskiden üç ayrı
+        /// `symbolEffect` seçmek için vardı, o efektler Live Activity'de hiç
+        /// çalışmıyordu. Stil ayrımı statik olarak korundu, alan da yerinde
+        /// kaldı — `ContentState` CloudKit üzerinden değil push ile gittiği
+        /// için adını değiştirmek çalışan aktiviteleri bozardı.
         var moodAnimationStyle: String
     }
     var savedAt: Date

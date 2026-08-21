@@ -69,8 +69,8 @@ struct EchoData {
     static func mock() -> EchoData {
         EchoData(
             weekColors: [
-                ONEBrand.kor, ONETokens.oneBlue, nil,
-                ONETokens.oneGreen, ONETokens.moodYellow, ONETokens.moodPurple, nil
+                ONEBrand.kor, V3Tokens.info, nil,
+                V3Tokens.success, V3Mood.mutlu.color, V3Mood.gergin.color, nil
             ],
             dominantFeeling: .calm,
             repeatedSongs: [
@@ -87,11 +87,11 @@ struct EchoData {
                 startDate: "3 Oca",
                 endDate: "16 Oca",
                 colors: [
-                    ONEBrand.kor, ONETokens.moodOrange, ONETokens.moodYellow,
-                    ONETokens.oneGreen, ONETokens.oneBlue, ONETokens.moodPurple,
-                    ONEBrand.kor, ONETokens.oneGreen, ONETokens.oneBlue,
-                    ONETokens.moodOrange, ONETokens.moodYellow, ONETokens.moodPurple,
-                    ONEBrand.kor, ONETokens.oneBlue
+                    ONEBrand.kor, V3Mood.coskulu.color, V3Mood.mutlu.color,
+                    V3Tokens.success, V3Tokens.info, V3Mood.gergin.color,
+                    ONEBrand.kor, V3Tokens.success, V3Tokens.info,
+                    V3Mood.coskulu.color, V3Mood.mutlu.color, V3Mood.gergin.color,
+                    ONEBrand.kor, V3Tokens.info
                 ]
             ),
             currentStreak: 5,
@@ -107,7 +107,7 @@ struct EchoData {
                                 songName: "Last Last", artistName: "Burna Boy",
                                 friendDisplayName: "Mehmet", moodColorHex: "#E84040"),
             ],
-            last30DaysColors: Array(repeating: ONETokens.oneBlue, count: 30),
+            last30DaysColors: Array(repeating: V3Tokens.info, count: 30),
             totalSongs: 47,
             thisMonthSongs: 12,
             mostActiveDayOfWeek: "Salı",

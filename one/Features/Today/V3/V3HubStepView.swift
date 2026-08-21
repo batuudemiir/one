@@ -31,7 +31,7 @@ struct V3HubStepView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
-                .padding(.top, 24)
+                .padding(.top, V3Tokens.spacingSM)
 
             ScrollView(showsIndicators: false) {
                 ZStack(alignment: .topLeading) {
@@ -41,25 +41,25 @@ struct V3HubStepView: View {
                         .fill(V3Tokens.hairline)
                         .frame(width: 2)
                         .scaleEffect(y: appeared || reduceMotion ? 1 : 0, anchor: .top)
-                        .animation(reduceMotion ? nil : V3Tokens.easingSaved,
+                        .animation(reduceMotion ? nil : ONEAnimation.easingSaved,
                                    value: appeared)
                         .offset(x: 19, y: 8)
 
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
                         ForEach(Array(day.moments.enumerated()), id: \.element.id) { idx, moment in
                             momentRow(moment)
                                 .opacity(appeared || reduceMotion ? 1 : 0)
                                 .offset(y: appeared || reduceMotion ? 0 : 6)
                                 .animation(
                                     reduceMotion ? nil :
-                                        V3Tokens.easing.delay(Double(idx) * 0.05),
+                                        ONEAnimation.easing.delay(Double(idx) * 0.05),
                                     value: appeared
                                 )
                         }
                     }
                     .padding(.leading, 0)
                 }
-                .padding(.top, 22)
+                .padding(.top, V3Tokens.spacingXL)
             }
             .onAppear { appeared = true }
 
@@ -69,7 +69,7 @@ struct V3HubStepView: View {
             // görünsün, ink dolgu butonu ekranı ezmesin.
             Button(action: onAddNew) {
                 Text("Yeni an ekle")
-                    .font(V3Typography.sans(17, weight: .semibold))
+                    .displayXS()
                     .foregroundColor(V3Tokens.ink)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 18)
@@ -78,7 +78,14 @@ struct V3HubStepView: View {
                             .stroke(V3Tokens.ink, lineWidth: 1.5)
                     )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
+        }
+        // Sekme kökünün marka işareti. Hub kaydırılmıyor (iç ScrollView
+        // başlığın altında), o yüzden çubuk hep durağan halinde: şeffaf
+        // zemin, yalnız işaret. An akışının adımlarında çubuk yok —
+        // renk seçerken tuval boş kalmalı.
+        .safeAreaInset(edge: .top, spacing: 0) {
+            V3TopBar(leading: .mark)
         }
     }
 
@@ -86,7 +93,7 @@ struct V3HubStepView: View {
 
     private var header: some View {
         HStack(alignment: .center, spacing: 14) {
-            DayFill(day: day, cornerRadius: 12)
+            DayFill(day: day, cornerRadius: V3Tokens.radiusInner)
                 .frame(width: 46, height: 46)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -107,20 +114,20 @@ struct V3HubStepView: View {
     // MARK: - Moment row
 
     private func momentRow(_ moment: Moment) -> some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: V3Tokens.spacingMD) {
             // Rail üstündeki 40x40 renk kutucuğu — dış boşluk 0, saatle hizalı.
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                 .fill((V3Mood.fromHex(moment.moodColorHex)?.color ?? Color(hex: moment.moodColorHex)))
                 .frame(width: 40, height: 40)
 
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
+                HStack(spacing: V3Tokens.spacingSM) {
                     Text(timeString(moment.time))
                         .font(V3Typography.mono(11, weight: .regular))
                         .tracking(1.2)
                         .foregroundColor(V3Tokens.faintText)
                     if moment.scope == .private {
-                        Text("· ARŞİV")
+                        Text(NSLocalizedString("moment.archiveTag", comment: ""))
                             .font(V3Typography.mono(11, weight: .regular))
                             .tracking(1.2)
                             .foregroundColor(V3Tokens.ghostText)
@@ -129,28 +136,59 @@ struct V3HubStepView: View {
 
                 if let note = moment.note, !note.isEmpty {
                     Text(note)
-                        .font(V3Typography.sans(15))
+                        .bodyMD()
                         .foregroundColor(V3Tokens.ink)
                         .lineLimit(3)
                 } else if moment.hasSong {
                     Text("Şarkı: \(moment.songName ?? "—")")
-                        .font(V3Typography.sans(13))
+                        .bodyXS()
                         .foregroundColor(V3Tokens.mutedText)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.top, 4)
+            .padding(.top, V3Tokens.spacingXS)
         }
-        .contentShape(Rectangle())
-        .onTapGesture { onEditMoment?(moment) }
+        // Buton gibi davranmayı `onEditMoment` bağlıysa yapıyoruz.
+        //
+        // Eskiden koşulsuzdu: satır hem `contentShape` + `onTapGesture` ile
+        // dokunulabilir görünüyor, hem VoiceOver'a `.isButton` diyordu — ama
+        // container `onEditMoment`'i boş bir closure olarak geçiyor
+        // ("Phase 4/6'ta bağlanacak"). Dokunan hiçbir şey olmuyordu; VoiceOver
+        // kullanıcısı için ise düpedüz kırıktı: "düğme" duyup çift dokunuyor,
+        // hiçbir tepki alamıyordu. Bağlanmamış bir düğme, düğme olmayan bir
+        // satırdan kötüdür. `onEditMoment` bağlandığı gün burası kendiliğinden
+        // çalışmaya başlar.
         .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(.isButton)
-        .accessibilityAction { onEditMoment?(moment) }
+        .modifier(HubRowTapAffordance(moment: moment, action: onEditMoment))
     }
 
     private func timeString(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "HH:mm"
-        return f.string(from: date)
+        ONEFormatters.time.string(from: date)
+    }
+}
+
+// MARK: - Row tap affordance
+
+/// Satırı yalnızca gerçekten bir eylem varsa dokunulabilir yapar.
+///
+/// `onTapGesture` değil `Button`: eskisi satıra `.isButton` özelliğini
+/// veriyordu ama butonun *davranışını* vermiyordu — basıldığında hiçbir şey
+/// olmuyor, sonuç ancak parmak kalkınca görünüyordu. Dokunma geri bildirimi
+/// basma anında gelmeli; gecikince doğrudanlık hissi bir anda kayboluyor.
+/// `Button` ayrıca kaydırma başlayınca basılı durumu kendisi iptal ediyor,
+/// `onTapGesture`'ın kendi başına yapamadığı şey.
+private struct HubRowTapAffordance: ViewModifier {
+    let moment: Moment
+    let action: ((Moment) -> Void)?
+
+    func body(content: Content) -> some View {
+        if let action {
+            Button { action(moment) } label: {
+                content.contentShape(Rectangle())
+            }
+            .buttonStyle(.onePressable)
+        } else {
+            content
+        }
     }
 }

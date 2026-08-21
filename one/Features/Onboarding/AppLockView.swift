@@ -32,10 +32,10 @@ struct AppLockView: View {
 
                 if let error = lock.lastError {
                     Text(error)
-                        .font(V3Typography.sans(14))
+                        .bodySM()
                         .foregroundColor(V3Tokens.mutedText)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
+                        .padding(.horizontal, V3Tokens.spacingXL4)
                         .padding(.top, 2)
                 }
 
@@ -43,16 +43,16 @@ struct AppLockView: View {
                     lock.authenticate()
                 } label: {
                     Text(unlockTitle)
-                        .font(V3Typography.sans(16, weight: .semibold))
+                        .bodyLGSemibold()
                         .foregroundColor(V3Tokens.paper)
                         .padding(.horizontal, 30)
                         .padding(.vertical, 15)
                         .background(Capsule().fill(V3Tokens.ink))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
                 .disabled(lock.isAuthenticating)
                 .opacity(lock.isAuthenticating ? 0.5 : 1)
-                .padding(.top, 8)
+                .padding(.top, V3Tokens.spacingSM)
             }
         }
         .accessibilityElement(children: .contain)

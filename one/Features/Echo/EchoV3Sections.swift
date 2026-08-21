@@ -29,15 +29,15 @@ struct EchoCoverSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 8) {
-                Text("\(monthName.uppercased()) · AYIN RENGİ")
+            HStack(spacing: V3Tokens.spacingSM) {
+                Text(String(format: NSLocalizedString("echo.monthColour", comment: ""), monthName.uppercased()))
                     .font(V3Typography.mono(10, weight: .regular))
                     .tracking(1.5)
                     .foregroundColor(ink.opacity(0.68))
                 Spacer()
             }
-            .padding(.top, 24)
-            .padding(.horizontal, 24)
+            .padding(.top, V3Tokens.spacingXL2)
+            .padding(.horizontal, V3Tokens.spacingXL2)
 
             Spacer(minLength: 0)
 
@@ -51,7 +51,7 @@ struct EchoCoverSection: View {
                         .minimumScaleFactor(0.6)
                 }
                 Text(factualLine)
-                    .font(V3Typography.sans(14))
+                    .bodySM()
                     .foregroundColor(ink.opacity(0.72))
                     .lineSpacing(2)
 
@@ -59,30 +59,30 @@ struct EchoCoverSection: View {
                     ONEHaptics.feelingSelected()
                     onStory()
                 }) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: V3Tokens.spacingSM) {
                         Text("Ay hikayesini izle")
-                            .font(V3Typography.sans(14, weight: .semibold))
+                            .bodySMSemibold()
                         Image(systemName: "arrow.right")
                             .font(.system(size: 12, weight: .semibold))
                     }
                     .foregroundColor(accent)
                     .padding(.horizontal, 18)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, V3Tokens.spacingMD)
                     .background(Capsule().fill(ink.opacity(0.94)))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
                 .padding(.top, 6)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
+            .padding(.horizontal, V3Tokens.spacingXL2)
+            .padding(.bottom, V3Tokens.spacingXL2)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 340)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                 .fill(accent)
         )
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
     }
 
     private var factualLine: String {
@@ -109,37 +109,37 @@ struct EchoMoodMapSection: View {
             EchoSectionHeader(eyebrow: "MOOD HARİTASI", title: "Son 30 gün")
 
             heatmap
-                .padding(.top, 4)
+                .padding(.top, V3Tokens.spacingXS)
 
             if !chartMoods.isEmpty {
-                Rectangle().fill(V3Tokens.hairline).frame(height: 1).padding(.vertical, 4)
+                Rectangle().fill(V3Tokens.hairline).frame(height: 1).padding(.vertical, V3Tokens.spacingXS)
                 distributionBar
             }
         }
-        .padding(22)
+        .padding(V3Tokens.spacingXL)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                 .fill(V3Tokens.surface)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                         .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         )
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
     }
 
     private var heatmap: some View {
         let colors = paddedLast30
         return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 7), spacing: 6) {
             ForEach(0..<colors.count, id: \.self) { i in
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusSwatch, style: .continuous)
                     .fill(colors[i] ?? V3Tokens.hairline)
                     .frame(height: 28)
                     .overlay(
                         Group {
                             if colors[i] == nil {
-                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                RoundedRectangle(cornerRadius: V3Tokens.radiusSwatch, style: .continuous)
                                     .strokeBorder(V3Tokens.hairline, style: StrokeStyle(lineWidth: 1, dash: [2, 3]))
                             }
                         }
@@ -166,6 +166,7 @@ struct EchoMoodMapSection: View {
                     ForEach(chartMoods) { m in
                         Rectangle()
                             .fill(Color(hex: m.colorHex))
+                            .moodPattern(V3Mood.fromHex(m.colorHex), lineWidth: 0.8)
                             .frame(width: geo.size.width * CGFloat(m.count) / CGFloat(total))
                     }
                 }
@@ -175,10 +176,13 @@ struct EchoMoodMapSection: View {
 
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], alignment: .leading, spacing: 6) {
                 ForEach(chartMoods) { m in
-                    HStack(spacing: 8) {
-                        Circle().fill(Color(hex: m.colorHex)).frame(width: 8, height: 8)
+                    HStack(spacing: V3Tokens.spacingSM) {
+                        Circle()
+                            .fill(Color(hex: m.colorHex))
+                            .frame(width: 8, height: 8)
+                            .moodPattern(V3Mood.fromHex(m.colorHex), lineWidth: 0.6)
                         Text(m.label.lowercased())
-                            .font(V3Typography.sans(12, weight: .medium))
+                            .bodyMicroMedium()
                             .foregroundColor(V3Tokens.ink)
                         Spacer(minLength: 0)
                         Text("\(m.count)")
@@ -205,10 +209,10 @@ struct EchoTopTracksSection: View {
             EchoSectionHeader(eyebrow: "EN ÇOK DİNLENENLER", title: "Bu ayın tekrarları")
 
             if tracks.isEmpty {
-                Text("Aynı şarkı iki kez geçmedi.")
-                    .font(V3Typography.sans(14))
+                Text(NSLocalizedString("echo.noRepeatSong", comment: ""))
+                    .bodySM()
                     .foregroundColor(V3Tokens.mutedText)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, V3Tokens.spacingSM)
             } else {
                 VStack(spacing: 10) {
                     ForEach(Array(tracks.enumerated()), id: \.element.id) { idx, t in
@@ -217,17 +221,17 @@ struct EchoTopTracksSection: View {
                 }
             }
         }
-        .padding(22)
+        .padding(V3Tokens.spacingXL)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                 .fill(V3Tokens.surface)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                         .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         )
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
     }
 
     private func trackRow(index: Int, track: RepeatedSong) -> some View {
@@ -238,7 +242,7 @@ struct EchoTopTracksSection: View {
                 .foregroundColor(V3Tokens.faintText)
                 .frame(width: 26, alignment: .leading)
 
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusChip, style: .continuous)
                 .fill(Color(hex: track.moodColorHex))
                 .frame(width: 44, height: 44)
                 .overlay(
@@ -249,11 +253,11 @@ struct EchoTopTracksSection: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(track.songName)
-                    .font(V3Typography.sans(14, weight: .semibold))
+                    .bodySMSemibold()
                     .foregroundColor(V3Tokens.ink)
                     .lineLimit(1)
                 Text(track.artistName)
-                    .font(V3Typography.sans(12))
+                    .bodyMicro()
                     .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
             }
@@ -292,23 +296,23 @@ struct EchoStatsBreakdownSection: View {
                 }
             }
         }
-        .padding(22)
+        .padding(V3Tokens.spacingXL)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                 .fill(V3Tokens.surface)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                         .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         )
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
     }
 
     private func statRow(label: String, value: String) -> some View {
         HStack(alignment: .firstTextBaseline) {
             Text(label)
-                .font(V3Typography.sans(14))
+                .bodySM()
                 .foregroundColor(V3Tokens.mutedText)
             Spacer()
             Text(value)
@@ -316,7 +320,7 @@ struct EchoStatsBreakdownSection: View {
                 .tracking(-0.4)
                 .foregroundColor(V3Tokens.ink)
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, V3Tokens.spacingMD)
     }
 
     private var divider: some View {
@@ -331,7 +335,7 @@ struct EchoSectionHeader: View {
     let title: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
             Text(eyebrow)
                 .font(V3Typography.mono(10, weight: .regular))
                 .tracking(1.5)
@@ -369,12 +373,12 @@ struct EchoMonthStoryView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea(edges: .bottom)
 
-            VStack(spacing: 12) {
+            VStack(spacing: V3Tokens.spacingMD) {
                 progressBars
                 topBar
             }
-            .padding(.top, 12)
-            .padding(.horizontal, 20)
+            .padding(.top, V3Tokens.spacingMD)
+            .padding(.horizontal, V3Tokens.spacingXL)
         }
     }
 
@@ -392,19 +396,15 @@ struct EchoMonthStoryView: View {
 
     private var topBar: some View {
         HStack {
-            Text("\(monthName.uppercased()) · AY HİKAYESİ")
+            Text(String(format: NSLocalizedString("echo.monthStory", comment: ""), monthName.uppercased()))
                 .font(V3Typography.mono(10, weight: .regular))
                 .tracking(1.4)
                 .foregroundColor(V3Tokens.faintText)
             Spacer()
-            Button(action: onClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(V3Tokens.ink)
-                    .frame(width: 34, height: 34)
-                    .background(Circle().fill(V3Tokens.surface).overlay(Circle().stroke(V3Tokens.hairline, lineWidth: 1)))
-            }
-            .buttonStyle(.plain)
+            V3TopBarIconButton(
+                systemName: "xmark",
+                label: NSLocalizedString("general.close", comment: "")
+            ) { onClose() }
         }
     }
 
@@ -412,8 +412,8 @@ struct EchoMonthStoryView: View {
     private func storyPage<Content: View>(index: Int, @ViewBuilder content: () -> Content) -> some View {
         content()
             .padding(.top, 72)
-            .padding(.horizontal, 8)
-            .padding(.bottom, 32)
+            .padding(.horizontal, V3Tokens.spacingSM)
+            .padding(.bottom, V3Tokens.spacingXL3)
             .tag(index)
     }
 
@@ -421,7 +421,7 @@ struct EchoMonthStoryView: View {
 
     private var coverPage: some View {
         EchoCoverSection(data: data, monthName: monthName, onStory: {})
-            .padding(.top, 8)
+            .padding(.top, V3Tokens.spacingSM)
     }
 
     private var mapPage: some View {

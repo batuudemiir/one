@@ -142,6 +142,8 @@
 "general.done" = "Done";
 "general.back" = "Back";
 "general.close" = "Close";
+"general.more" = "More";
+"general.new" = "New";
 "general.loading" = "Loading...";
 "general.error" = "An error occurred";
 "general.retry" = "Try Again";
@@ -1424,3 +1426,176 @@ one day.";
 "circle.sameColorCount" = "%d people share your color today";
 "circle.requests" = "Friend requests";
 "circle.notifications" = "Notifications";
+
+/* v3 mood adlari - uygulamanin semantik yuku, koda gomulu olamaz */
+"mood.v3.atesli.label" = "Fiery";
+"mood.v3.coskulu.label" = "Joyful";
+"mood.v3.gergin.label" = "Tense";
+"mood.v3.mutlu.label" = "Happy";
+"mood.v3.enerjik.label" = "Energetic";
+"mood.v3.odakli.label" = "Focused";
+"mood.v3.huzurlu.label" = "Calm";
+"mood.v3.huzunlu.label" = "Wistful";
+"mood.v3.yorgun.label" = "Tired";
+
+/* v3 mood anlamları — VoiceOver değeri ve alt başlık.
+   Eskiden `bridgedMood.meaning` üzerinden legacy 12-mood tablosundan
+   okunuyordu; köprü kayıplı olduğu için ekran okuyucu yanlış anlamı
+   söylüyordu (ör. "odaklı" → "dengede, sabit" derin'in anlamıydı). */
+"mood.v3.atesli.meaning" = "burning inside";
+"mood.v3.coskulu.meaning" = "overflowing";
+"mood.v3.gergin.meaning" = "under pressure";
+"mood.v3.mutlu.meaning" = "glowing from within";
+"mood.v3.enerjik.meaning" = "alive and fast";
+"mood.v3.odakli.meaning" = "steady, centred";
+"mood.v3.huzurlu.meaning" = "all is well";
+"mood.v3.huzunlu.meaning" = "a tightness inside";
+"mood.v3.yorgun.meaning" = "spent, running empty";
+
+/* Merakli hatirlatma tonu - tam cumle, kelime birlestirme yok */
+"reminder.curious.yesterday.atesli" = "You were fiery yesterday.";
+"reminder.curious.yesterday.coskulu" = "You were joyful yesterday.";
+"reminder.curious.yesterday.gergin" = "You were tense yesterday.";
+"reminder.curious.yesterday.mutlu" = "You were happy yesterday.";
+"reminder.curious.yesterday.enerjik" = "You were energetic yesterday.";
+"reminder.curious.yesterday.odakli" = "You were focused yesterday.";
+"reminder.curious.yesterday.huzurlu" = "You were calm yesterday.";
+"reminder.curious.yesterday.huzunlu" = "You were wistful yesterday.";
+"reminder.curious.yesterday.yorgun" = "You were tired yesterday.";
+
+/* Legacy 12-mood (ONEMood) - arsiv/echo okuma yollari kullaniyor */
+"mood.legacy.atesli.label" = "passionate";
+"mood.legacy.isikli.label" = "happy";
+"mood.legacy.enerjik.label" = "energetic";
+"mood.legacy.taze.label" = "natural";
+"mood.legacy.sakin.label" = "peaceful";
+"mood.legacy.nostaljik.label" = "excited";
+"mood.legacy.ozgur.label" = "calm";
+"mood.legacy.derin.label" = "steady";
+"mood.legacy.uzgun.label" = "sad";
+"mood.legacy.stresli.label" = "stressed";
+"mood.legacy.yorgun.label" = "tired";
+"mood.legacy.sinirli.label" = "angry";
+"mood.legacy.atesli.meaning" = "burning inside";
+"mood.legacy.isikli.meaning" = "glowing from within";
+"mood.legacy.enerjik.meaning" = "overflowing";
+"mood.legacy.taze.meaning" = "just beginning";
+"mood.legacy.sakin.meaning" = "all is well";
+"mood.legacy.nostaljik.meaning" = "full of joy";
+"mood.legacy.ozgur.meaning" = "light, still";
+"mood.legacy.derin.meaning" = "balanced, steady";
+"mood.legacy.uzgun.meaning" = "tight inside";
+"mood.legacy.stresli.meaning" = "crushed under it";
+"mood.legacy.yorgun.meaning" = "spent, worn out";
+"mood.legacy.sinirli.meaning" = "a storm inside";
+"reminder.curious.body" = "What colour today?";
+"archive.previousMonth" = "Previous month";
+"archive.nextMonth" = "Next month";
+
+/* ── v3 ekranlarından kataloğa taşınan metinler ──────────────────────
+   Bu 69 anahtar koda gömülü Türkçe olarak duruyordu: katalog tamdı
+   ama bu ekranlar ona hiç bakmıyordu, dolayısıyla Almanca bir
+   kullanıcı Profil sekmesinde Türkçe görüyordu.
+   TR ve EN gerçek; diğer diller çeviri gelene kadar TR'ye düşüyor. */
+"applock.noPasscode" = "No passcode or biometrics set on this device.";
+"archive.addMomentToDay" = "Add a moment to this day";
+"archive.addNow" = "Add now";
+"archive.dayCount" = "%@ days";
+"archive.empty.body" = "Pick your first colour — the mosaic starts here.";
+"archive.empty.title" = "Your archive is empty.";
+"archive.momentsOnDay" = "%d moments saved on this day.";
+"archive.mostFrequent" = "mostly %@";
+"archive.todayWaiting" = "Today is waiting for you";
+"block.confirmBody" = "Their replies and shares will no longer be visible.";
+"camera.noAccess" = "No camera access";
+"camera.useThisMoment" = "Use this moment";
+"circle.shareFailed" = "Couldn't share to your circle — check your connection.";
+"echo.monthColour" = "%@ · COLOUR OF THE MONTH";
+"echo.monthStory" = "%@ · STORY OF THE MONTH";
+"echo.noRepeatSong" = "No song came up twice.";
+"echo.posterFailed" = "Couldn't load the poster";
+"entry.changeColour" = "Change colour";
+"entry.pastDay" = "PAST DAY";
+"entry.pickColour" = "Pick a colour. That's all.";
+"entry.removePhoto" = "Remove photo";
+"entry.scopeSubtitle" = "You can choose separately for each moment.";
+"entry.scopeTitle" = "Who is this moment for?";
+"general.a11y.toggle" = "Toggle";
+"general.change" = "Retake";
+"general.now" = "now";
+"general.openSettings" = "Open Settings";
+"invite.validSevenDays" = "VALID FOR 7 DAYS";
+"invite.addMeOnONE" = "Add me on ONE";
+"liveActivity.enableHint" = "To see your mood in the Dynamic Island, enable Settings > ONE > Live Activities.";
+"moment.a11y.openPhoto" = "Open photo";
+"moment.archiveTag" = "· ARCHIVE";
+"offline.banner" = "NO CONNECTION · YOUR MOMENTS ARE WAITING ON THIS DEVICE";
+"privacy.hiddenField" = "%@ is hidden by this person's privacy settings";
+"profile.colourBreakdown" = "Colour breakdown";
+"profile.monthColour" = "%@ · colour of the month";
+"profile.monthCounts" = "%1$d days · %2$d moments";
+"profile.monthlySummary" = "MONTHLY SUMMARY";
+"profile.photoVisibility" = "Your photo is visible to friends in your circle.";
+"profile.pickAvatar" = "Pick an avatar";
+"profile.pinned" = "pinned";
+"profile.pinnedSong" = "PINNED SONG";
+"profile.sevenSteps" = "7 steps";
+"profile.signInOptional" = "ONE works fully without signing in.";
+"profile.signOut" = "SIGN OUT";
+"profile.signedInWithApple" = "Signed in with Apple";
+"profile.syncPitch" = "Carry your archive\nbetween devices.";
+"profile.versionLine" = "Version %1$@ · %2$d moments";
+"publicProfile.inYourCircle" = "In your circle";
+"publicProfile.mutualFriends" = "%d mutual friends";
+"publicProfile.unavailable" = "This profile can't be shown.";
+"reminder.daily" = "Daily reminder";
+"reminder.days" = "DAYS";
+"reminder.lockPreview" = "LOCK SCREEN PREVIEW";
+"reminder.subtitle" = "One reminder, at the time you choose.";
+"reminder.title" = "Reminder";
+"reminder.tone" = "WHAT SHOULD IT SAY?";
+"report.notice" = "Reports are reviewed within 24 hours. Repeated reports may hide the content automatically.";
+"saved.backToDay" = "Back to today";
+"saved.goToArchive" = "Go to archive";
+"settings.appearance" = "Appearance";
+"share.createStoryCard" = "Create a story card";
+"share.noNote" = "You didn't leave a note.";
+"share.noSong" = "You didn't add a song.";
+"share.orSave" = "Share it or save it.";
+"song.pick" = "Pick a song";
+"song.preparingSuggestions" = "Preparing suggestions for you";
+"splash.tagline" = "A DIARY OF MOODS AND SONGS";
+"today.howDidItFeel" = "How did today feel?";
+
+/* ── Kodda kullanılıyordu ama katalogda yoktu ────────────────────────
+   Bu anahtarlar `NSLocalizedString` ile çağrılıyor ama hiçbir dilde
+   tanımlı değildi; iOS bu durumda anahtarın kendisini döndürür,
+   yani kullanıcı ekranda "general.copy" yazısını görüyordu. */
+"accessibility.loading" = "Loading";
+"accessibility.today.closeViewer" = "Close the photo viewer";
+"accessibility.today.photoViewerHint" = "Double-tap to zoom, swipe down to close";
+"accessibility.unread" = "Unread";
+"general.copied" = "Copied";
+"general.copy" = "Copy";
+"invite.shareSubtitle" = "They can add you with your invite code or link";
+"profile.usernameCurrent" = "That's already your username";
+"profile.usernameInvalidFormat" = "Use only letters, numbers and underscores";
+"profile.usernameTooShort" = "Must be at least 3 characters";
+
+
+/* Rapor sheet'i — v3 kabuk geçişi */
+"report.title" = "Report";
+"report.reason" = "REASON";
+"report.noteOptional" = "NOTE — OPTIONAL";
+"report.notePlaceholder" = "Add more detail";
+"report.submit" = "Send report";
+"report.submitted" = "Sent";
+"report.target.comment" = "Report comment";
+"report.target.user" = "Report %@";
+"report.target.userFallback" = "this person";
+"report.target.share" = "Report post";
+"report.context.comment" = "COMMENT";
+"report.context.user" = "PERSON";
+"report.context.share" = "POST";
+
+"circle.resonanceTitle" = "Resonance";

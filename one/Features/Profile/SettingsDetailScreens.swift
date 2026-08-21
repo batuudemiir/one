@@ -74,12 +74,12 @@ struct MusicSourceSettingsView: View {
                         }
                     )
                 }
-                .padding(.top, ONETokens.spacingLG)
+                .padding(.top, V3Tokens.spacingLG)
 
                 Rectangle()
                     .fill(V3Tokens.ink.opacity(0.09))
                     .frame(height: 1)
-                    .padding(.vertical, ONETokens.spacingXL)
+                    .padding(.vertical, V3Tokens.spacingXL)
 
                 SettingsGroup {
                     SettingsToggleRow(
@@ -116,8 +116,8 @@ struct MusicSourceSettingsView: View {
     ) -> some View {
         Button(action: action) {
             VStack(spacing: 0) {
-                HStack(spacing: 12) {
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                HStack(spacing: V3Tokens.spacingMD) {
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusMosaic, style: .continuous)
                         .fill(logoColor)
                         .frame(width: 34, height: 34)
                         .overlay(
@@ -128,10 +128,10 @@ struct MusicSourceSettingsView: View {
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(name)
-                            .font(V3Typography.sans(14, weight: .semibold))
+                            .bodySMSemibold()
                             .foregroundColor(V3Tokens.ink)
                         Text(status)
-                            .font(V3Typography.sans(11.5))
+                            .bodyMicro()
                             .foregroundColor(V3Tokens.mutedText)
                     }
 
@@ -158,7 +158,7 @@ struct MusicSourceSettingsView: View {
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
         .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 }
@@ -187,7 +187,7 @@ struct PrivacySettingsView: View {
                 Text(NSLocalizedString("privacy.whoCanSee", comment: ""))
                     .monoLabel(tracking: 1.3)
                     .foregroundColor(V3Tokens.faintText)
-                    .padding(.bottom, ONETokens.spacingSM)
+                    .padding(.bottom, V3Tokens.spacingSM)
 
                 SettingsGroup {
                     SettingsRow(
@@ -221,13 +221,13 @@ struct PrivacySettingsView: View {
                     .bodyXS()
                     .foregroundColor(V3Tokens.mutedText)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, ONETokens.spacingMD)
+                    .padding(.top, V3Tokens.spacingMD)
 
                 Text(NSLocalizedString("privacy.discoverability", comment: ""))
                     .monoLabel(tracking: 1.3)
                     .foregroundColor(V3Tokens.faintText)
-                    .padding(.top, ONETokens.spacingXL)
-                    .padding(.bottom, ONETokens.spacingSM)
+                    .padding(.top, V3Tokens.spacingXL)
+                    .padding(.bottom, V3Tokens.spacingSM)
 
                 SettingsGroup {
                     SettingsToggleRow(

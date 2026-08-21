@@ -39,7 +39,8 @@ struct MonthSummaryTests {
             weatherDesc: "20°C",
             spotifyURL: nil,
             platform: "Spotify",
-            note: nil
+            note: nil,
+            passed: false
         )
     }
 

@@ -18,8 +18,8 @@ import SwiftUI
 /// üründe bir tercih değil, kalmanın ön koşulu.
 struct CircleEmptyState: View {
     @Binding var showAddFriend: Bool
-    /// Frekans'ın açılması için gereken arkadaş sayısı ve mevcut sayı.
-    /// Çevre tek kişiyle çalışmıyor — bir "frekans" ancak birkaç kişiyle
+    /// Çevre'nin açılması için gereken arkadaş sayısı ve mevcut sayı.
+    /// Çevre tek kişiyle çalışmıyor — karşılaştırma ancak birkaç kişiyle
     /// oluşuyor. İlerleme göstermek, kapıyı ceza olmaktan çıkarıyor.
     var friendCount: Int = 0
     var requiredFriends: Int = 3
@@ -27,11 +27,11 @@ struct CircleEmptyState: View {
     var onStartAlone: (() -> Void)? = nil
 
     /// Önizleme kartlarının renkleri — gerçek mood paletinden, sabit hex yok.
-    private let previewMoods: [ONEMood] = [.sakin, .enerjik, .uzgun, .nostaljik, .derin]
+    private let previewMoods: [V3Mood] = [.huzurlu, .enerjik, .huzunlu, .coskulu, .odakli]
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: ONETokens.spacingXL) {
+            VStack(spacing: V3Tokens.spacingXL) {
                 ZStack {
                     previewStack
                         .blur(radius: 3.6)
@@ -43,14 +43,14 @@ struct CircleEmptyState: View {
                     // kartlarla karışıp okunmaz hale geliyordu.
                     LinearGradient(
                         colors: [
-                            ONEBrand.bone.opacity(0.35),
-                            ONEBrand.bone.opacity(0.90)
+                            V3Tokens.paper.opacity(0.35),
+                            V3Tokens.paper.opacity(0.90)
                         ],
                         startPoint: .top,
                         endPoint: .bottom
                     )
 
-                    VStack(spacing: ONETokens.spacingSM) {
+                    VStack(spacing: V3Tokens.spacingSM) {
                         Text(NSLocalizedString("circle.empty.previewTitle", comment: ""))
                             .displayMD()
                             .multilineTextAlignment(.center)
@@ -60,17 +60,17 @@ struct CircleEmptyState: View {
                             .multilineTextAlignment(.center)
                             .foregroundColor(V3Tokens.mutedText)
                     }
-                    .padding(.horizontal, ONETokens.spacingXL)
+                    .padding(.horizontal, V3Tokens.spacingXL)
                 }
                 .fixedSize(horizontal: false, vertical: true)
 
                 if requiredFriends > 0 {
                     progressRow
-                        .padding(.horizontal, ONETokens.spacingXL2)
-                        .padding(.bottom, ONETokens.spacingSM)
+                        .padding(.horizontal, V3Tokens.spacingXL2)
+                        .padding(.bottom, V3Tokens.spacingSM)
                 }
 
-                VStack(spacing: ONETokens.spacingSM) {
+                VStack(spacing: V3Tokens.spacingSM) {
                     // Prototip: düz marka rengi, 26pt yarıçap, 44pt min yükseklik.
                     // Gradyan yoktu — tek düz renk daha net bir çağrı.
                     Button(action: { showAddFriend = true }) {
@@ -91,12 +91,13 @@ struct CircleEmptyState: View {
                                 .foregroundColor(V3Tokens.mutedText)
                                 .frame(maxWidth: .infinity, minHeight: 44)
                         }
+                        .contentShape(Rectangle())
                     }
                 }
-                .padding(.horizontal, ONETokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.spacingXL2)
 
                 // Kapanış: davetin neden işe yaradığını söyleyen tek cümle.
-                VStack(spacing: ONETokens.spacingXL) {
+                VStack(spacing: V3Tokens.spacingXL) {
                     Rectangle()
                         .fill(V3Tokens.ink.opacity(0.09))
                         .frame(height: 1)
@@ -105,11 +106,11 @@ struct CircleEmptyState: View {
                         .bodySM()
                         .multilineTextAlignment(.center)
                         .foregroundColor(V3Tokens.mutedText)
-                        .padding(.horizontal, ONETokens.spacingXL)
+                        .padding(.horizontal, V3Tokens.spacingXL)
                 }
-                .padding(.horizontal, ONETokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.spacingXL2)
             }
-            .padding(.top, ONETokens.spacingLG)
+            .padding(.top, V3Tokens.spacingLG)
             // Sekme çubuğu içeriği kesmesin — ekran görüntüsünde "şimdilik tek
             // başıma başla" dock'un altında kalıyordu.
             .padding(.bottom, 116)
@@ -125,7 +126,7 @@ struct CircleEmptyState: View {
                 ForEach(0..<requiredFriends, id: \.self) { index in
                     Circle()
                         .fill(index < friendCount
-                              ? ONETokens.oneBrand
+                              ? ONEBrand.kor
                               : V3Tokens.ink.opacity(0.12))
                         .frame(width: 9, height: 9)
                 }
@@ -144,31 +145,31 @@ struct CircleEmptyState: View {
 
     /// Gerçek arkadaş kartlarının silüeti — içerik uydurmadan biçimi gösterir.
     private var previewStack: some View {
-        VStack(spacing: ONETokens.spacingSM) {
+        VStack(spacing: V3Tokens.spacingSM) {
             ForEach(previewMoods, id: \.self) { mood in
-                HStack(spacing: ONETokens.spacingMD) {
+                HStack(spacing: V3Tokens.spacingMD) {
                     Circle()
                         .fill(mood.color)
                         .frame(width: 46, height: 46)
 
                     VStack(alignment: .leading, spacing: 6) {
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusSwatch, style: .continuous)
                             .fill(V3Tokens.ink.opacity(0.18))
                             .frame(width: 76, height: 11)
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusSwatch, style: .continuous)
                             .fill(V3Tokens.ink.opacity(0.10))
                             .frame(width: 132, height: 9)
                     }
                     Spacer()
                 }
-                .padding(ONETokens.spacingMD)
+                .padding(V3Tokens.spacingMD)
                 .background(
-                    RoundedRectangle(cornerRadius: ONETokens.radiusFriend, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                         .fill(V3Tokens.surface)
                 )
             }
         }
-        .padding(.horizontal, ONETokens.spacingXL)
+        .padding(.horizontal, V3Tokens.spacingXL)
     }
 }
 
@@ -180,15 +181,15 @@ struct CircleCloudKitUnavailableState: View {
     let onOpenSettings: () -> Void
 
     var body: some View {
-        VStack(spacing: ONETokens.spacingXL) {
+        VStack(spacing: V3Tokens.spacingXL) {
             Spacer()
 
-            VStack(spacing: ONETokens.spacingLG) {
+            VStack(spacing: V3Tokens.spacingLG) {
                 Image(systemName: "icloud.slash")
                     .font(.system(size: 56, weight: .ultraLight))
                     .foregroundColor(V3Tokens.mutedText)
 
-                VStack(spacing: ONETokens.spacingSM) {
+                VStack(spacing: V3Tokens.spacingSM) {
                     Text(NSLocalizedString("circle.iCloudRequired", comment: ""))
                         .displayMD()
                         .foregroundColor(V3Tokens.ink)
@@ -196,29 +197,29 @@ struct CircleCloudKitUnavailableState: View {
                     Text(NSLocalizedString("circle.iCloudMessage", comment: ""))
                         .monoSM(tracking: 0)
                         .multilineTextAlignment(.center)
-                        .foregroundColor(ONETokens.oneCharcoal)
-                        .padding(.horizontal, 40)
+                        .foregroundColor(V3Tokens.mutedText)
+                        .padding(.horizontal, V3Tokens.spacingXL4)
 
 #if DEBUG
                     Text("Debug: CloudKit durumu kontrol ediliyor...")
                         .monoMicro(tracking: 0)
                         .foregroundColor(V3Tokens.faintText)
-                        .padding(.top, ONETokens.spacingSM)
+                        .padding(.top, V3Tokens.spacingSM)
 #endif
                 }
             }
 
             Spacer()
 
-            VStack(spacing: ONETokens.spacingMD) {
+            VStack(spacing: V3Tokens.spacingMD) {
                 Button(action: onRetry) {
                     Text(NSLocalizedString("circle.tryAgain", comment: ""))
                         .monoBase(tracking: 1.0)
                         .foregroundColor(V3Tokens.ink)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, ONETokens.spacingMD)
+                        .padding(.vertical, V3Tokens.spacingMD)
                         .background(
-                            RoundedRectangle(cornerRadius: 12)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusInner)
                                 .stroke(V3Tokens.mutedText, lineWidth: 1)
                         )
                 }
@@ -228,15 +229,15 @@ struct CircleCloudKitUnavailableState: View {
                         .monoBase(tracking: 1.0)
                         .foregroundColor(ONEBrand.bone)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, ONETokens.spacingMD)
+                        .padding(.vertical, V3Tokens.spacingMD)
                         .background(
-                            RoundedRectangle(cornerRadius: 12)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusInner)
                                 .fill(V3Tokens.ink)
                         )
                 }
             }
-            .padding(.horizontal, ONETokens.spacingXL)
-            .padding(.bottom, ONETokens.spacingXL4)
+            .padding(.horizontal, V3Tokens.spacingXL)
+            .padding(.bottom, V3Tokens.spacingXL5)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

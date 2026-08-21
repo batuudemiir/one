@@ -34,7 +34,7 @@ final class LaunchIntent: ObservableObject {
     /// `.launchIntentUpdated` (warm/splash-visible).
     @Published private(set) var pendingTab: PrimaryTab?
 
-    /// Target non-tab screen (e.g. `.discover`) requested by a URL. Used
+    /// Target non-tab screen (e.g. `.echo`) requested by a URL. Used
     /// when the destination is a `ScreenType` case that isn't part of the
     /// dock (`PrimaryTab`) — routed by setting `vm.currentScreen` directly.
     /// Mutually exclusive with `pendingTab` in practice; consumers should
@@ -59,7 +59,7 @@ final class LaunchIntent: ObservableObject {
     }
 
     /// Set a pending non-tab screen destination. Used for deep links that
-    /// resolve to a `ScreenType` outside the dock (e.g. `ones://discover`).
+    /// resolve to a `ScreenType` outside the dock (e.g. `ones://echo`).
     func setPendingScreen(_ screen: ScreenType) {
         pendingScreen = screen
         pendingTab = nil

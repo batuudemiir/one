@@ -40,12 +40,16 @@ struct MonthlySummaryData {
 // MARK: - Mock Data
 extension MonthlySummaryData {
     static var mock: MonthlySummaryData {
-        let orange  = ONETokens.moodAmber           // #C97840
-        let red     = ONETokens.summaryMockRed      // #C94040
-        let yellow  = ONETokens.summaryMockYellow   // #C9A840
-        let teal    = ONETokens.summaryMockTeal     // #40A89C
-        let blue    = ONETokens.summaryMockBlue     // #4070C9
-        let purple  = ONETokens.summaryMockPurple   // #7840C9
+        // Önizleme paleti — bunlar ürün rengi değil, SwiftUI preview için
+        // sahte veri. `ONETokens` içinde `summaryMock*` adıyla duruyorlardı;
+        // token dosyasında mock renk tutmak "hangi renk gerçek" sorusunu
+        // bulanıklaştırıyordu.
+        let orange  = Color(hex: "#C97840")
+        let red     = Color(hex: "#C94040")
+        let yellow  = Color(hex: "#C9A840")
+        let teal    = Color(hex: "#40A89C")
+        let blue    = Color(hex: "#4070C9")
+        let purple  = Color(hex: "#7840C9")
 
         let moodPattern: [Color] = [
             orange, orange, yellow, teal,   blue,   orange,

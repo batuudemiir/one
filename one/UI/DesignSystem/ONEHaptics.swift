@@ -94,8 +94,19 @@ enum ONEHaptics {
     ///
     /// intensity: 0.0–1.0 (güç)
     /// sharpness: 0.0 yumuşak/küt, 1.0 keskin/mekanik
-    static func saveRitual(mood: ONEMood?) {
+    static func saveRitual(mood: V3Mood?) {
         guard isEnabled else { return }
+        // Dokuz v3 mood'unun dokuzunun da kendi imzası var.
+        //
+        // Bu switch eskiden `ONEMood` (12 case) üzerindeydi ve iki yönde birden
+        // kayıyordu: `sinirli` için desen tanımlıydı ama o mood v3 seçicisinden
+        // **üretilemiyordu**; buna karşılık `coşkulu` hiç case'i olmadığı için
+        // `default`'un nötr tıkına düşüyordu. Yani var olmayan bir duygunun
+        // imzası varken, gerçek bir duygunun yoktu.
+        //
+        // `sinirli`nin ağır tek darbesi `coskulu`ya değil `gergin`e yakın
+        // olduğu için ona verilmedi; `coskulu` taşan enerjiyi anlatan üç
+        // vuruşluk kendi desenini aldı.
         switch mood {
 
         case .atesli:
@@ -105,6 +116,14 @@ enum ONEHaptics {
                 (time: 0.12, intensity: 0.65, sharpness: 0.70),  // ikinci darbe
             ])
 
+        case .coskulu:
+            // Taşma — üç hızlanan vuruş, yukarı doğru
+            playPattern([
+                (time: 0.00, intensity: 0.55, sharpness: 0.45),
+                (time: 0.10, intensity: 0.75, sharpness: 0.55),
+                (time: 0.18, intensity: 0.95, sharpness: 0.65),
+            ])
+
         case .enerjik:
             // Bounce çift — ana + echo, orta keskinlik
             playPattern([
@@ -112,29 +131,36 @@ enum ONEHaptics {
                 (time: 0.14, intensity: 0.45, sharpness: 0.40),
             ])
 
-        case .isikli:
+        case .mutlu:
             // Tek, yumuşak ışık — düşük sharpness
             playPattern([
                 (time: 0.00, intensity: 0.65, sharpness: 0.20),
             ])
 
-        case .sakin:
+        case .huzurlu:
             // Nefes gibi — çok hafif, küt
             playPattern([
                 (time: 0.00, intensity: 0.30, sharpness: 0.10),
             ])
 
-        case .derin:
+        case .odakli:
             // Su damlası — iki dalga, aralarında duraklama
             playPattern([
                 (time: 0.00, intensity: 0.60, sharpness: 0.40),
                 (time: 0.30, intensity: 0.30, sharpness: 0.20),
             ])
 
-        case .sinirli:
-            // Ağır tek darbe — orta güç, yüksek sharpness
+        case .gergin:
+            // Hızlı çift darbe — gergin hissi
             playPattern([
-                (time: 0.00, intensity: 0.55, sharpness: 0.85),
+                (time: 0.00, intensity: 0.70, sharpness: 0.75),
+                (time: 0.15, intensity: 0.50, sharpness: 0.60),
+            ])
+
+        case .huzunlu:
+            // Sade, hafif tık
+            playPattern([
+                (time: 0.00, intensity: 0.40, sharpness: 0.50),
             ])
 
         case .yorgun:
@@ -143,20 +169,7 @@ enum ONEHaptics {
                 (time: 0.00, intensity: 0.22, sharpness: 0.15),
             ])
 
-        case .uzgun:
-            // Sade, hafif tık
-            playPattern([
-                (time: 0.00, intensity: 0.40, sharpness: 0.50),
-            ])
-
-        case .stresli:
-            // Hızlı çift darbe — gergin hissi
-            playPattern([
-                (time: 0.00, intensity: 0.70, sharpness: 0.75),
-                (time: 0.15, intensity: 0.50, sharpness: 0.60),
-            ])
-
-        default:
+        case .none:
             playPattern([
                 (time: 0.00, intensity: 0.60, sharpness: 0.50),
             ])
@@ -252,6 +265,66 @@ enum ONEHaptics {
         let gen = UIImpactFeedbackGenerator(style: .rigid)
         gen.prepare()
         gen.impactOccurred(intensity: 0.45)
+    }
+
+    /// Birincil eylemin onayı — kaydet, kullan, gönder.
+    ///
+    /// `pick`'ten ağır, `saveRitual`'dan hafif: dokunuşun kendisini
+    /// onaylıyor, kaydın tamamlandığını değil. Ritüel kendi sesini
+    /// sonra çıkarıyor.
+    static func commit() {
+        guard isEnabled else { return }
+        let gen = UIImpactFeedbackGenerator(style: .medium)
+        gen.prepare()
+        gen.impactOccurred()
+    }
+
+    /// Kayıt ritüelinin mühür vuruşu (~0.45s).
+    ///
+    /// `saveRitual` → `saveRitualPeak` → **seal** → `songSaved` dizisinin
+    /// üçüncü adımı. Sert ve kısa: mührün bastığı an.
+    static func saveRitualSeal() {
+        guard isEnabled else { return }
+        let gen = UIImpactFeedbackGenerator(style: .rigid)
+        gen.prepare()
+        gen.impactOccurred(intensity: 0.85)
+    }
+
+    /// Rozet açıldı — başarı bildirimi.
+    static func badgeUnlocked() {
+        guard isEnabled else { return }
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+    }
+
+    /// Streak sayacının ara tık'ı — her basamakta bir kez.
+    ///
+    /// Kasıtlı olarak çok hafif: sayaç 20 basamak sayabiliyor, tam güçte
+    /// olsaydı kutlama değil rahatsızlık olurdu. Final vuruş
+    /// `streakRevealed`.
+    static func streakTick() {
+        guard isEnabled else { return }
+        let gen = UIImpactFeedbackGenerator(style: .light)
+        gen.prepare()
+        gen.impactOccurred(intensity: 0.4)
+    }
+
+    /// Splash kapanıp uygulama açıldığında — yumuşak bir "hazır".
+    static func appReady() {
+        guard isEnabled else { return }
+        let gen = UIImpactFeedbackGenerator(style: .soft)
+        gen.prepare()
+        gen.impactOccurred(intensity: 0.6)
+    }
+
+    /// Motoru ve üreteci önceden ısıtır — ateşlemez.
+    ///
+    /// Uygulama açılışındaki ilk haptik ölçülebilir biçimde geç geliyor.
+    /// Splash bunu bekleme süresini kullanarak çözüyordu; o optimizasyon
+    /// burada korunuyor (§1: girdi yolundaki her gecikmeyi denetle).
+    static func warmUp() {
+        guard isEnabled else { return }
+        ensureEngine()
+        UIImpactFeedbackGenerator(style: .soft).prepare()
     }
 
     /// Yakınlaştırma, sayfalama, chevron nav gibi geçici geçişler.

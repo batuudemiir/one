@@ -87,7 +87,7 @@ struct FriendShareDetailView: View {
     var body: some View {
         ZStack {
             // Background
-            ONEBrand.bone.ignoresSafeArea()
+            V3Tokens.paper.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
@@ -116,6 +116,7 @@ struct FriendShareDetailView: View {
             // v2.6 — Arkadaşın aggregate profili
             PublicProfileView(userID: targetUserID())
         }
+        .v3Sheet()
         .alert(NSLocalizedString("circle.removeFriend", comment: ""), isPresented: $showRemoveAlert) {
             Button(NSLocalizedString("circle.removeAction", comment: ""), role: .destructive) { removeFriend() }
             Button(NSLocalizedString("general.cancel", comment: ""), role: .cancel) { }
@@ -131,11 +132,11 @@ struct FriendShareDetailView: View {
         .overlay {
             if isLoading {
                 ZStack {
-                    ONEBrand.bone.opacity(0.7).ignoresSafeArea()
-                    ProgressView()
-                        .padding(16)
+                    V3Tokens.paper.opacity(0.7).ignoresSafeArea()
+                    V3Loading(.inline)
+                        .padding(V3Tokens.spacingLG)
                         .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                                 .fill(V3Tokens.surface)
                                 .shadow(color: .black.opacity(0.06), radius: 12, y: 4)
                         )
@@ -184,7 +185,7 @@ struct FriendShareDetailView: View {
     // MARK: - Header
     
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
             HStack {
                 // Friend info — v2.6: tap → public profile
                 Button {
@@ -219,12 +220,12 @@ struct FriendShareDetailView: View {
                             .foregroundColor(V3Tokens.mutedText)
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
                 
                 Spacer()
                 
                 // Relative time & Menu
-                HStack(spacing: 12) {
+                HStack(spacing: V3Tokens.spacingMD) {
                     Text(getRelativeTime())
                         .monoLabel(tracking: 0.6)
                         .foregroundColor(V3Tokens.faintText)
@@ -253,9 +254,9 @@ struct FriendShareDetailView: View {
                 .lineSpacing(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, ONETokens.spacingXL2)
-        .padding(.top, ONETokens.spacingXL4)
-        .padding(.bottom, 24)
+        .padding(.horizontal, V3Tokens.spacingXL2)
+        .padding(.top, V3Tokens.spacingXL5)
+        .padding(.bottom, V3Tokens.spacingXL2)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : -10)
         .animation(ONEAnimation.screenTransition.delay(0.1), value: appeared)
@@ -289,7 +290,8 @@ struct FriendShareDetailView: View {
                                 }
                             )
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .contentShape(Rectangle())
+                    .buttonStyle(.onePressable)
                 } else {
                     // Gradient background with wabi-sabi design
                     ZStack {
@@ -376,7 +378,7 @@ struct FriendShareDetailView: View {
                             .monoLabel(tracking: 1.0)
                             .foregroundColor(.white.opacity(0.85))
                     }
-                    .padding(.horizontal, ONETokens.spacingMD)
+                    .padding(.horizontal, V3Tokens.spacingMD)
                     .padding(.vertical, 6)
                     .background(
                         Capsule()
@@ -386,7 +388,7 @@ struct FriendShareDetailView: View {
                                     .stroke(Color.white.opacity(0.2), lineWidth: 1)
                             )
                     )
-                    .padding(20)
+                    .padding(V3Tokens.spacingXL)
                 }
 
                 // Play / pause button — top trailing
@@ -400,7 +402,7 @@ struct FriendShareDetailView: View {
                                         .padding(10)
                                         .background(Circle().fill(Color.black.opacity(0.35)))
                                 } else if previewer.loadingID == song.id {
-                                    ProgressView().scaleEffect(0.7).tint(.white)
+                                    V3Loading(.media)
                                         .frame(width: 36, height: 36)
                                         .background(Circle().fill(Color.black.opacity(0.35)))
                                 } else {
@@ -412,7 +414,7 @@ struct FriendShareDetailView: View {
                                 }
                             }
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.onePressable)
                         .padding(14)
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -423,7 +425,7 @@ struct FriendShareDetailView: View {
             .frame(maxWidth: .infinity)
             
             // Song info section
-            VStack(alignment: .leading, spacing: ONETokens.spacingLG) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
                 // Song name
                 Text(songName)
                     .displayMD()
@@ -434,16 +436,16 @@ struct FriendShareDetailView: View {
                 // Artist & platform
                 Text("\(artistName) · \(genre.isEmpty ? platform : genre)")
                     .monoBase(tracking: 0.5)
-                    .foregroundColor(ONETokens.oneCharcoal)
+                    .foregroundColor(V3Tokens.mutedText)
                 
                 // Divider
                 Rectangle()
                     .fill(V3Tokens.wash)
                     .frame(height: 1)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, V3Tokens.spacingXS)
                 
                 // Mood & Feeling tags (matching TodayCompletedView)
-                HStack(spacing: ONETokens.spacingMD) {
+                HStack(spacing: V3Tokens.spacingMD) {
                     // Mood
                     if !moodWord.isEmpty {
                         HStack(spacing: 6) {
@@ -452,9 +454,9 @@ struct FriendShareDetailView: View {
                                 .frame(width: 7, height: 7)
                             Text(moodWord.uppercased())
                                 .monoLabel(tracking: 1.2)
-                                .foregroundColor(ONETokens.oneCharcoal)
+                                .foregroundColor(V3Tokens.mutedText)
                         }
-                        .padding(.horizontal, ONETokens.spacingMD)
+                        .padding(.horizontal, V3Tokens.spacingMD)
                         .padding(.vertical, 6)
                         .background(
                             Capsule()
@@ -465,30 +467,30 @@ struct FriendShareDetailView: View {
                 }
                 
                 // Weather & Platform info (matching TodayCompletedView)
-                HStack(spacing: ONETokens.spacingMD) {
+                HStack(spacing: V3Tokens.spacingMD) {
                     if !weatherDesc.isEmpty {
                         HStack(spacing: 5) {
                             Text(weatherIcon)
-                                .font(V3Typography.sans(11))
+                                .bodyMicro()
                             Text(weatherDesc)
                                 .monoLabel()
-                                .foregroundColor(ONETokens.oneCharcoal)
+                                .foregroundColor(V3Tokens.mutedText)
                         }
                     }
                     
                     HStack(spacing: 5) {
                         Text("🎵")
-                            .font(V3Typography.sans(11))
+                            .bodyMicro()
                         Text(platform)
                             .monoLabel()
-                            .foregroundColor(ONETokens.oneCharcoal)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                 }
-                .padding(.top, 4)
+                .padding(.top, V3Tokens.spacingXS)
                 
                 // Note section (if exists)
                 if let note = dailyNote {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
                         Text(NSLocalizedString("circle.note", comment: ""))
                             .monoLabel(tracking: 1.5)
                             .foregroundColor(V3Tokens.mutedText)
@@ -500,21 +502,21 @@ struct FriendShareDetailView: View {
                             .tracking(-0.2)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(ONETokens.spacingLG)
+                    .padding(V3Tokens.spacingLG)
                     .background(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusInner)
                             .fill(moodColor.opacity(0.08))
                     )
-                    .padding(.top, ONETokens.spacingLG)
+                    .padding(.top, V3Tokens.spacingLG)
                 }
             }
-            .padding(20)
+            .padding(V3Tokens.spacingXL)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(V3Tokens.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel))
         .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
         .scaleEffect(appeared ? 1 : 0.94)
         .opacity(appeared ? 1 : 0)
         .animation(ONEAnimation.panelSpring.delay(0.2), value: appeared)
@@ -528,9 +530,9 @@ struct FriendShareDetailView: View {
             shareOwnerID: targetUserID(),
             friendDisplayName: getUserDisplayName()
         )
-        .padding(.horizontal, 20)
-        .padding(.top, 20)
-        .padding(.bottom, 8)
+        .padding(.horizontal, V3Tokens.spacingXL)
+        .padding(.top, V3Tokens.spacingXL)
+        .padding(.bottom, V3Tokens.spacingSM)
         .opacity(appeared ? 1 : 0)
         .animation(.easeOut(duration: 0.3).delay(0.3), value: appeared)
     }
@@ -539,22 +541,22 @@ struct FriendShareDetailView: View {
     
     private var closeButton: some View {
         Button(action: { dismiss() }) {
-            HStack(spacing: 8) {
+            HStack(spacing: V3Tokens.spacingSM) {
                 Image(systemName: "chevron.down")
                     .monoMicro()
                 Text(NSLocalizedString("general.close", comment: ""))
                     .monoBase(tracking: 1.0)
             }
-            .foregroundColor(ONETokens.oneCharcoal)
-            .padding(.horizontal, 20)
-            .padding(.vertical, ONETokens.spacingMD)
+            .foregroundColor(V3Tokens.mutedText)
+            .padding(.horizontal, V3Tokens.spacingXL)
+            .padding(.vertical, V3Tokens.spacingMD)
             .background(
                 Capsule()
                     .stroke(V3Tokens.faintText, lineWidth: 1.5)
             )
         }
-        .padding(.top, 24)
-        .padding(.bottom, 40)
+        .padding(.top, V3Tokens.spacingXL2)
+        .padding(.bottom, V3Tokens.spacingXL4)
         .opacity(appeared ? 1 : 0)
         .animation(.easeOut(duration: ONEAnimation.durationLong).delay(0.4), value: appeared)
     }
@@ -659,24 +661,30 @@ struct PhotoDataViewerSheet: View {
                                 .onChanged { value in
                                     guard scale <= 1.01 else { return }
                                     let dy = value.translation.height
-                                    if dy > 0 { dragOffset = dy }
+                                    // Aşağı: 1:1 takip. Yukarı: sert duvar yerine
+                                    // ilerledikçe artan direnç.
+                                    dragOffset = dy > 0
+                                        ? dy
+                                        : dy.rubberbanded(over: UIScreen.main.bounds.height)
                                 }
                                 .onEnded { value in
                                     guard scale <= 1.01 else { return }
-                                    let vel = value.velocity.height
-                                    let dy  = value.translation.height
-                                    let shouldDismiss = dy > 90 || (dy > 20 && vel > 600)
-                                    if shouldDismiss {
-                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                        withAnimation(.easeOut(duration: 0.28)) {
+                                    // Bırakma noktasına değil, jestin gittiği yere bak.
+                                    let dy = value.translation.height
+                                    let projected = value.predictedEndTranslation.height
+                                    if dy > 90 || projected > 220 {
+                                        ONEHaptics.nudge()
+                                        // Sabit süreli animasyon + zamanlayıcı yerine
+                                        // kesintiye uğratılabilir spring; kapanış
+                                        // animasyonun gerçek bitişine bağlı.
+                                        withAnimation(ONEAnimation.dragDismiss) {
                                             dragOffset = UIScreen.main.bounds.height
                                             isDismissing = true
-                                        }
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                        } completion: {
                                             isPresented = false
                                         }
                                     } else {
-                                        withAnimation(.spring(response: 0.38, dampingFraction: 0.72)) {
+                                        withAnimation(ONEAnimation.dragSnapBack) {
                                             dragOffset = 0
                                         }
                                     }
@@ -688,7 +696,7 @@ struct PhotoDataViewerSheet: View {
                     HStack {
                         Spacer()
                         Button(action: {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            ONEHaptics.nudge()
                             withAnimation(.easeOut(duration: 0.22)) {
                                 dragOffset = UIScreen.main.bounds.height
                                 isDismissing = true
@@ -706,14 +714,14 @@ struct PhotoDataViewerSheet: View {
                                         .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
                                 )
                         }
-                        .padding(20)
+                        .padding(V3Tokens.spacingXL)
                     }
                     Spacer()
                     Image(systemName: "chevron.compact.down")
                         .displayMD()
                         .fontWeight(.light)
                         .foregroundColor(.white.opacity(0.3))
-                        .padding(.bottom, 24)
+                        .padding(.bottom, V3Tokens.spacingXL2)
                         .opacity(dragOffset < 5 ? 1 : 0)
                 }
             }

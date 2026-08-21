@@ -25,48 +25,22 @@ extension View {
         _ glass: LiquidGlassVariant = .regular,
         in shape: S
     ) -> some View {
-        Group {
-            if #available(iOS 26, *) {
-                self.glassEffect(glass.toNativeGlass(), in: shape)
-            } else {
-                self.modifier(LiquidGlassFallbackModifier(variant: glass, shape: _ONEAnyShape(shape)))
-            }
-        }
+        modifier(LiquidGlassModifier(variant: glass, shape: _ONEAnyShape(shape)))
     }
 
     func liquidGlassBackground<S: Shape>(
         _ glass: LiquidGlassVariant = .regular,
         in shape: S
     ) -> some View {
-        self.background {
-            if #available(iOS 26, *) {
-                shape.fill(.clear).glassEffect(glass.toNativeGlass(), in: shape)
-            } else {
-                shape.fill(.ultraThinMaterial)
-            }
-        }
+        self.background { shape.fill(.clear).liquidGlass(glass, in: shape) }
     }
 
     func liquidGlassSheetBackground() -> some View {
-        Group {
-            if #available(iOS 26, *) {
-                self.presentationBackground(.clear)
-            } else {
-                self.presentationBackground(.ultraThinMaterial)
-            }
-        }
+        modifier(LiquidGlassSheetBackgroundModifier())
     }
 
     func liquidGlassToolbar() -> some View {
-        Group {
-            if #available(iOS 26, *) {
-                self
-            } else {
-                self
-                    .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-                    .toolbarBackground(.visible, for: .navigationBar)
-            }
-        }
+        modifier(LiquidGlassToolbarModifier())
     }
     
     /// Default shape variant (Capsule)
@@ -172,44 +146,100 @@ struct LiquidGlassContainer<Content: View>: View {
     }
 }
 
-// MARK: - Glass Button Styles
-
-@available(iOS 26, *)
-extension ButtonStyle where Self == GlassButtonStyle {
-    static var glass: GlassButtonStyle {
-        GlassButtonStyle(isProminent: false)
-    }
-    
-    static var glassProminent: GlassButtonStyle {
-        GlassButtonStyle(isProminent: true)
-    }
-}
-
-@available(iOS 26, *)
-struct GlassButtonStyle: ButtonStyle {
-    let isProminent: Bool
-    
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .glassEffect(
-                isProminent 
-                    ? SwiftUICore.Glass.regular.tint(.accentColor).interactive()
-                    : SwiftUICore.Glass.regular.interactive(),
-                in: Capsule()
-            )
-            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
-    }
-}
-
 // MARK: - Fallback Implementation (iOS 17-25)
+
+/// iOS 26 native cam ile iOS 17–25 fallback'i arasında seçim yapan tek nokta —
+/// **ve** `Şeffaflığı Azalt` kontrolünün yaşadığı yer.
+///
+/// Eskiden `liquidGlass(_:in:)` doğrudan `glassEffect`/fallback'e dallanıyordu
+/// ve ayarı hiç sormuyordu; uygulamadaki 36 saydam yüzeyin 35'i sistem ayarı
+/// açıkken de bulanık kalıyordu. Ayar açıkken cam tamamen devre dışı:
+/// opak yüzey + belirgin kenar (§14 `prefers-reduced-transparency`).
+private struct LiquidGlassModifier: ViewModifier {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    let variant: LiquidGlassVariant
+    let shape: _ONEAnyShape
+
+    func body(content: Content) -> some View {
+        if reduceTransparency {
+            content
+                .background(shape.fill(V3Tokens.surface))
+                .overlay(shape.stroke(V3Tokens.hairline, lineWidth: 1))
+        } else if #available(iOS 26, *) {
+            content.glassEffect(variant.toNativeGlass(), in: shape)
+        } else {
+            content.modifier(LiquidGlassFallbackModifier(variant: variant, shape: shape))
+        }
+    }
+}
+
+// MARK: - Raw material fill
+
+/// `.fill(.ultraThinMaterial)` yerine kullanılan cam dolgu.
+///
+/// `liquidGlass` ailesinin dışında kalan, elle kurulmuş cam çipler için —
+/// kamera rayı, görüntüleyici kromu. Onlar da artık
+/// `Şeffaflığı Azalt`'a uyuyor.
+///
+/// Opak karşılık **parametre**, çünkü yalnız çağıran hangi zeminde
+/// durduğunu biliyor: kamera çipi vizörün üstünde koyu, kart rozeti
+/// fotoğrafın üstünde koyu, ama krem bir yüzeyde ikisi de yanlış olurdu.
+struct ONEGlassFill<S: Shape>: View {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    let shape: S
+    let opaque: Color
+
+    var body: some View {
+        if reduceTransparency {
+            shape.fill(opaque)
+        } else {
+            shape.fill(.ultraThinMaterial)
+        }
+    }
+}
+
+extension Shape {
+    func glassFill(opaque: Color) -> some View {
+        ONEGlassFill(shape: self, opaque: opaque)
+    }
+}
+
+private struct LiquidGlassSheetBackgroundModifier: ViewModifier {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    func body(content: Content) -> some View {
+        if reduceTransparency {
+            content.presentationBackground(V3Tokens.paper)
+        } else if #available(iOS 26, *) {
+            content.presentationBackground(.clear)
+        } else {
+            content.presentationBackground(.ultraThinMaterial)
+        }
+    }
+}
+
+private struct LiquidGlassToolbarModifier: ViewModifier {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    func body(content: Content) -> some View {
+        if reduceTransparency {
+            content
+                .toolbarBackground(V3Tokens.paper, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+        } else if #available(iOS 26, *) {
+            content
+        } else {
+            content
+                .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+        }
+    }
+}
 
 private struct LiquidGlassFallbackModifier: ViewModifier {
     let variant: LiquidGlassVariant
     let shape: _ONEAnyShape
-    
+
     func body(content: Content) -> some View {
         content
             .background(backgroundMaterial)

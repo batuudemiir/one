@@ -23,7 +23,7 @@ struct OneMascotView: View {
     var message: String? = nil
     
     var body: some View {
-        VStack(spacing: ONETokens.spacingMD) {
+        VStack(spacing: V3Tokens.spacingMD) {
             Image(pose.rawValue)
                 .resizable()
                 .scaledToFit()
@@ -36,7 +36,7 @@ struct OneMascotView: View {
                     .displaySM()
                     .foregroundColor(V3Tokens.mutedText)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, ONETokens.spacingXL)
+                    .padding(.horizontal, V3Tokens.spacingXL)
             }
         }
         .animation(.easeInOut(duration: 0.8), value: pose) // Pozlar arası geçişler şık olsun
@@ -45,7 +45,7 @@ struct OneMascotView: View {
 
 #Preview {
     ZStack {
-        ONEBrand.bone.ignoresSafeArea()
+        V3Tokens.paper.ignoresSafeArea()
         OneMascotView(pose: .hi, size: 150, message: "Merhaba! Ben One.\nSana eşlik etmek için buradayım.")
     }
 }

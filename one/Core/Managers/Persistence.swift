@@ -83,13 +83,20 @@ final class PersistenceController: ObservableObject {
             // Tests / previews (`inMemory`) load synchronously below to keep
             // fixtures deterministic.
             ONELaunchSignpost.begin("coredata.load")
-            container.loadPersistentStores { [weak self] _, error in
+            container.loadPersistentStores { [weak self] storeDescription, error in
                 if let error = error as NSError? {
-                    // A store that can't open is unrecoverable — pretending
-                    // otherwise means silent data loss on every write.
+                    // Açılamayan store'da sessizce devam etmek her yazımda veri
+                    // kaybı demek — ama doğrudan `fatalError` de yanlış: bozuk
+                    // store ya da yarım kalmış migration kullanıcıyı *her
+                    // açılışta çöken* bir uygulamayla baş başa bırakıyor ve tek
+                    // çıkışı silip yeniden kurmak oluyor.
+                    //
+                    // Anlar CloudKit'te duruyor. Yerel store'u atıp yeniden
+                    // kurmak veriyi kaybettirmiyor, yalnızca yeniden indirtiyor.
                     ONELogger.error("CoreData store failed to load: \(error.code) — \(error.localizedDescription)", category: .persistence)
                     ErrorHandler.shared.handle(error, context: "CoreDataStoreLoad")
-                    fatalError("CoreData store failed to load: \(error)")
+                    self?.recoverFromUnopenableStore(storeDescription, originalError: error)
+                    return
                 }
                 DispatchQueue.main.async {
                     ONELaunchSignpost.end("coredata.load")
@@ -98,8 +105,11 @@ final class PersistenceController: ObservableObject {
                     // store is loaded — before this point the coordinator
                     // has no store attached, so the observer would either
                     // miss events or fire against an unready stack.
-                    // TODO: observer-side reload must still tolerate
-                    // notifications arriving before consumers are subscribed.
+                    //
+                    // Tüketicilerin abone olmasından önce gelen bildirimler
+                    // sorun değil: uzlaştırma store üzerinde çalışıyor, yayın
+                    // ise yalnızca tazeleme tetikleyicisi. Geç abone olan
+                    // tüketici zaten uzlaşmış veriyi okuyor.
                     self?.setupRemoteChangeNotifications()
                 }
             }
@@ -125,128 +135,102 @@ final class PersistenceController: ObservableObject {
         setupRemoteChangeNotifications()
     }
     
+    /// Store kurtarma yalnızca bir kez denenir — ikinci kez başarısız olması
+    /// diskin kendisinde bir sorun olduğunu gösterir ve döngüye girmenin
+    /// kullanıcıya faydası yok.
+    private var didAttemptStoreRecovery = false
+
+    /// Açılamayan store'u atıp sıfırdan kurar. Veri CloudKit'ten geri iner.
+    private func recoverFromUnopenableStore(
+        _ description: NSPersistentStoreDescription,
+        originalError: NSError
+    ) {
+        guard !didAttemptStoreRecovery, let url = description.url else {
+            ONELogger.error("CoreData kurtarma mümkün değil — store açılamıyor", category: .persistence)
+            fatalError("CoreData store failed to load and could not be recovered: \(originalError)")
+        }
+        didAttemptStoreRecovery = true
+
+        ONELogger.warning("CoreData store açılamadı, yerel kopya atılıp yeniden kuruluyor", category: .persistence)
+
+        do {
+            try container.persistentStoreCoordinator.destroyPersistentStore(
+                at: url, ofType: NSSQLiteStoreType, options: description.options
+            )
+        } catch {
+            // `destroy` başarısızsa dosyaları elle temizlemeyi dene — sqlite
+            // yan dosyaları (-wal, -shm) geride kalırsa yeni store da açılmaz.
+            let fm = FileManager.default
+            for suffix in ["", "-wal", "-shm"] {
+                let sidecar = URL(fileURLWithPath: url.path + suffix)
+                try? fm.removeItem(at: sidecar)
+            }
+            ONELogger.error("destroyPersistentStore başarısız, dosyalar elle silindi: \(error.localizedDescription)", category: .persistence)
+        }
+
+        container.loadPersistentStores { [weak self] _, retryError in
+            if let retryError = retryError as NSError? {
+                ONELogger.error("CoreData kurtarma da başarısız: \(retryError.localizedDescription)", category: .persistence)
+                ErrorHandler.shared.handle(retryError, context: "CoreDataStoreRecovery")
+                fatalError("CoreData store could not be recovered: \(retryError)")
+            }
+            DispatchQueue.main.async {
+                ONELaunchSignpost.end("coredata.load")
+                self?.isReady = true
+                self?.setupRemoteChangeNotifications()
+                ONELogger.warning("CoreData store yeniden kuruldu — veri CloudKit'ten inecek", category: .persistence)
+            }
+        }
+    }
+
+    /// Uzak değişiklik uzlaştırması için debounce penceresi.
+    ///
+    /// CloudKit ilk sync'te tek tek değil, salvo hâlinde bildirim yolluyor.
+    /// Her biri için dedupe koşturmak hem boşuna iş hem de yarı-uzlaşmış
+    /// durumlar üretiyor; salvonun dinmesini bekliyoruz.
+    private var remoteChangeDebounce: DispatchWorkItem?
+    private var remoteChangeObserver: NSObjectProtocol?
+
     private func setupRemoteChangeNotifications() {
-        NotificationCenter.default.addObserver(
+        remoteChangeObserver = NotificationCenter.default.addObserver(
             forName: .NSPersistentStoreRemoteChange,
             object: container.persistentStoreCoordinator,
             queue: .main
-        ) { notification in
-            ONELogger.debug("CloudKit: Remote change detected", category: .persistence)
+        ) { [weak self] _ in
+            self?.scheduleRemoteChangeReconcile()
         }
     }
-    
-    // MARK: - Daily Song Management
-    
-    func saveDailySong(
-        date: Date,
-        song: Song,
-        mood: Mood,
-        note: String,
-        platform: String,
-        photo: UIImage? = nil,
-        shareWithCircle: Bool = false,
-        context: NSManagedObjectContext
-    ) {
-        // Normalize date to start of day
-        let normalizedDate = Calendar.current.startOfDay(for: date)
-        
-        // Check if entry already exists for this date
-        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "date == %@", normalizedDate as NSDate)
-        
-        do {
-            let results = try context.fetch(fetchRequest)
-            let dailySong: DailySong
-            let now = Date() // Gerçek timestamp
-            
-            if let existing = results.first {
-                // Update existing entry — do NOT overwrite `createdAt`;
-                // the model has no `updatedAt` field so the original
-                // insertion timestamp is the only signal of when the row
-                // first appeared. Overwriting it broke archive sort order
-                // and made "edited" indistinguishable from "just created".
-                dailySong = existing
-            } else {
-                // Create new entry
-                dailySong = DailySong(context: context)
-                // `id` ZORUNLU: `Moment.init?(from:)` id'siz satırı nil döner
-                // ve satır Profil istatistiklerinden, renk dağılımından,
-                // arşiv gün gruplamasından sessizce düşer. Bu yol (şarkı
-                // akışı) eskiden id yazmıyordu — kayıtların bir kısmı
-                // görünmez oluyordu.
-                dailySong.id = UUID()
-                dailySong.date = normalizedDate
-                dailySong.createdAt = now
-            }
-            // Geriye dönük onarım: id'siz eski satır güncelleniyorsa doldur.
-            if dailySong.id == nil { dailySong.id = UUID() }
-            
-            // Update properties
-            dailySong.songName = song.name
-            dailySong.artistName = song.artist
-            dailySong.genre = song.genre
-            dailySong.emoji = song.emoji
-            dailySong.artworkURL = song.artworkURL?.absoluteString
-            dailySong.moodWord = mood.word
-            dailySong.moodColorHex = mood.color.toHex()
-            dailySong.moodIsDark = mood.isDark
-            dailySong.dailyNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
-            dailySong.platform = platform
-            
-            // Save photo if provided
-            if let photo = photo {
-                // Compress image to JPEG with 0.7 quality
-                if let imageData = photo.jpegData(compressionQuality: 0.7) {
-                    dailySong.photoData = imageData
+
+    private func scheduleRemoteChangeReconcile() {
+        remoteChangeDebounce?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            self?.reconcileAfterRemoteChange()
+        }
+        remoteChangeDebounce = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
+    }
+
+    /// Uzak değişiklik indikten sonra: çakışmaları uzlaştır, sonra ekranlara
+    /// haber ver.
+    ///
+    /// Sıra önemli — `ArchiveStore` gibi tüketiciler tazelendiğinde veri zaten
+    /// uzlaşmış olmalı, yoksa kullanıcı bir an için çift satır görür.
+    private func reconcileAfterRemoteChange() {
+        let bg = container.newBackgroundContext()
+        // Uzak değişiklik zaten kazanmış durumda; uzlaştırma yalnızca fazlalığı
+        // temizliyor, bu yüzden çakışmada store'daki hâli tercih ediyoruz.
+        bg.mergePolicy = NSMergeByPropertyStoreTrumpMergePolicy
+        bg.perform { [weak self] in
+            let result = MomentDeduplicator.reconcile(in: bg)
+            DispatchQueue.main.async {
+                guard let self else { return }
+                if result.didChange {
+                    // Uzlaştırma viewContext'in elindeki nesneleri bayatlattı.
+                    self.container.viewContext.refreshAllObjects()
                 }
-            } else if dailySong.photoData == nil {
-                // If no photo provided and no existing photo, try to download artwork
-                if let artworkURL = song.artworkURL {
-                    Task.detached(priority: .utility) {
-                        do {
-                            let (data, _) = try await URLSession.shared.data(from: artworkURL)
-                            try Task.checkCancellation()
-                            if let image = UIImage(data: data),
-                               let compressedData = image.jpegData(compressionQuality: 0.7) {
-                                await MainActor.run {
-                                    guard !dailySong.isDeleted, dailySong.managedObjectContext != nil else { return }
-                                    dailySong.photoData = compressedData
-                                    do {
-                                        try context.save()
-                                    } catch {
-                                        ErrorHandler.shared.handle(error, context: "artworkDownload")
-                                    }
-                                }
-                            }
-                        } catch {
-                            await MainActor.run {
-                                ONELogger.debug("Failed to download artwork: \(error)", category: .persistence)
-                            }
-                        }
-                    }
-                }
+                NotificationCenter.default.post(name: .momentsDidChangeRemotely, object: nil)
+                ONELogger.debug("CloudKit: uzak değişiklik uzlaştırıldı", category: .persistence)
             }
-            
-            // Circle sharing
-            if shareWithCircle {
-                dailySong.isSharedWithCircle = true
-                dailySong.sharedAt = Date()
-                
-                // Set expiration to midnight (00:00) of next day
-                var calendar = Calendar.current
-                calendar.timeZone = TimeZone.current
-                if let tomorrow = calendar.date(byAdding: .day, value: 1, to: Date()),
-                   let midnight = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: tomorrow) {
-                    dailySong.shareExpiresAt = midnight
-                }
-            } else {
-                dailySong.isSharedWithCircle = false
-                dailySong.shareExpiresAt = nil
-            }
-            
-            try context.save()
-        } catch {
-            ONELogger.debug("Error saving daily song: \(error)", category: .persistence)
         }
     }
     
@@ -290,6 +274,9 @@ final class PersistenceController: ObservableObject {
     
     func fetchAllDailySongs(context: NSManagedObjectContext) -> [DailySong] {
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        // Sinirsiz tarama: kayit sayisi buyudukce bellek dogrusal artiyordu.
+        // Batch faulting ile tepe bellek sabit kaliyor.
+        fetchRequest.fetchBatchSize = 100
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
         
         do {
@@ -585,4 +572,16 @@ extension Color {
                      Int(g * 255),
                      Int(b * 255))
     }
+}
+
+// MARK: - Bildirimler
+
+extension Notification.Name {
+    /// CloudKit'ten gelen değişiklik indi ve uzlaştırıldı.
+    ///
+    /// `@FetchRequest` kullanan ekranlar `automaticallyMergesChangesFromParent`
+    /// sayesinde zaten tazeleniyor. Bu bildirim, background context'ten
+    /// `@Published` dizilere kopyalayan tüketiciler için — `ArchiveStore`,
+    /// `ProfileViewModel`, `TodayViewModel`. Onlar merge'i görmüyor.
+    static let momentsDidChangeRemotely = Notification.Name("momentsDidChangeRemotely")
 }

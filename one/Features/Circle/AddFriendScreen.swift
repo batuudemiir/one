@@ -70,7 +70,7 @@ struct AddFriendScreen: View {
                 suggestionRail
 
                 usernameTab
-                    .padding(.top, ONETokens.spacingXL)
+                    .padding(.top, V3Tokens.spacingXL)
             }
         }
         .sheet(isPresented: $showScanner) {
@@ -80,9 +80,11 @@ struct AddFriendScreen: View {
                 search()
             }
         }
+        .v3Sheet()
         .sheet(isPresented: $showCode) {
             codeSheet
         }
+        .v3Sheet()
         .task {
             CloudKitManager.shared.fetchSuggestedUsers(limit: 5) { list in
                 DispatchQueue.main.async { suggestions = list }
@@ -102,24 +104,24 @@ struct AddFriendScreen: View {
     /// göster, kod okut. Segmentli sekmelerin yerini alıyor; kod ve tarama
     /// artık burada, kişiler ise aşağıdaki öneri şeridiyle.
     private var quickTiles: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: V3Tokens.spacingSM) {
             ShareLink(
                 item: URL(string: "https://one.forvibe.app/invite/\(myInviteCode)")!,
                 message: Text(NSLocalizedString("addFriend.inviteMessage", comment: ""))
             ) {
                 quickTileLabel(glyph: "arrow.up.forward", title: NSLocalizedString("addFriend.tileShareLink", comment: ""))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
 
             Button { showCode = true } label: {
                 quickTileLabel(glyph: "qrcode", title: NSLocalizedString("addFriend.tileShowCode", comment: ""))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
 
             Button { showScanner = true } label: {
                 quickTileLabel(glyph: "viewfinder", title: NSLocalizedString("addFriend.tileScan", comment: ""))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
         }
     }
 
@@ -132,19 +134,19 @@ struct AddFriendScreen: View {
                 .background(Circle().fill(V3Tokens.ink))
 
             Text(title)
-                .font(V3Typography.sans(11, weight: .semibold))
+                .bodyMicroSemibold()
                 .multilineTextAlignment(.center)
                 .foregroundColor(V3Tokens.ink)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .padding(.horizontal, 8)
+        .padding(.horizontal, V3Tokens.spacingSM)
         .background(
-            RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                 .fill(Color.white.opacity(0.6))
                 .overlay(
-                    RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                         .strokeBorder(V3Tokens.ink.opacity(0.16),
                                       style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
                 )
@@ -159,11 +161,11 @@ struct AddFriendScreen: View {
             Text(NSLocalizedString("addFriend.contactsOnOne", comment: ""))
                 .monoLabel(tracking: 1.3)
                 .foregroundColor(V3Tokens.faintText)
-                .padding(.top, ONETokens.spacingXL)
-                .padding(.bottom, ONETokens.spacingSM)
+                .padding(.top, V3Tokens.spacingXL)
+                .padding(.bottom, V3Tokens.spacingSM)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                HStack(spacing: V3Tokens.spacingSM) {
                     ForEach(suggestions) { user in
                         QuickSuggestCard(user: user, sent: sentUserIDs.contains(user.id)) {
                             sendToSuggested(user)
@@ -177,7 +179,7 @@ struct AddFriendScreen: View {
                 .bodyXS()
                 .foregroundColor(V3Tokens.mutedText)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, ONETokens.spacingSM)
+                .padding(.top, V3Tokens.spacingSM)
         }
     }
 
@@ -189,14 +191,14 @@ struct AddFriendScreen: View {
                 .fill(V3Tokens.ink.opacity(0.16))
                 .frame(width: 36, height: 4)
                 .padding(.top, 10)
-                .padding(.bottom, ONETokens.spacingXL)
+                .padding(.bottom, V3Tokens.spacingXL)
 
             codeTab
-                .padding(.horizontal, ONETokens.spacingXL)
+                .padding(.horizontal, V3Tokens.spacingXL)
 
             Spacer()
         }
-        .presentationDetents([.medium, .large])
+        .v3Sheet(detents: [.medium, .large])
     }
 
     // MARK: - Kullanıcı adı
@@ -218,35 +220,33 @@ struct AddFriendScreen: View {
                 .onSubmit { search() }
             }
             .padding(.horizontal, 15)
-            .padding(.vertical, 12)
+            .padding(.vertical, V3Tokens.spacingMD)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                     .fill(Color.white.opacity(0.8))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                     .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
             )
 
             if isSearching {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, ONETokens.spacingXL)
+                V3Loading(.region)
             } else if let sent = sentToName {
                 Text(String(format: NSLocalizedString("addFriend.requestSent", comment: ""), sent))
                     .bodySM()
                     .foregroundColor(V3Tokens.ink)
                     .frame(maxWidth: .infinity)
-                    .padding(.top, ONETokens.spacingXL)
+                    .padding(.top, V3Tokens.spacingXL)
             } else if let user = foundUser {
                 resultRow(user)
-                    .padding(.top, ONETokens.spacingMD)
+                    .padding(.top, V3Tokens.spacingMD)
             } else if notFound {
                 Text(NSLocalizedString("addFriend.notFound", comment: ""))
                     .bodySM()
                     .foregroundColor(V3Tokens.mutedText)
                     .frame(maxWidth: .infinity)
-                    .padding(.top, ONETokens.spacingXL)
+                    .padding(.top, V3Tokens.spacingXL)
             }
 
             // İstek gönderilemediyse (zaten arkadaş / bekleyen istek /
@@ -256,9 +256,9 @@ struct AddFriendScreen: View {
                 Text(errorText)
                     .bodyXS()
                     .multilineTextAlignment(.center)
-                    .foregroundColor(ONETokens.moodOrange)
+                    .foregroundColor(V3Tokens.danger)
                     .frame(maxWidth: .infinity)
-                    .padding(.top, ONETokens.spacingMD)
+                    .padding(.top, V3Tokens.spacingMD)
                     .transition(.opacity)
             }
 
@@ -268,7 +268,7 @@ struct AddFriendScreen: View {
                 .multilineTextAlignment(.center)
                 .foregroundColor(V3Tokens.mutedText)
                 .frame(maxWidth: .infinity)
-                .padding(.top, ONETokens.spacingXL)
+                .padding(.top, V3Tokens.spacingXL)
         }
     }
 
@@ -277,19 +277,19 @@ struct AddFriendScreen: View {
         let uname = user["username"] as? String ?? ""
         let colorHex = user["avatarColor"] as? String ?? "#5B8DEF"
 
-        return HStack(spacing: 12) {
+        return HStack(spacing: V3Tokens.spacingMD) {
             Circle()
                 .fill(Color(hex: colorHex))
                 .frame(width: 36, height: 36)
                 .overlay(
                     Text(String(name.prefix(1)).uppercased())
-                        .font(V3Typography.sans(13, weight: .semibold))
+                        .bodyXSSemibold()
                         .foregroundColor(.white)
                 )
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(name)
-                    .font(V3Typography.sans(14, weight: .semibold))
+                    .bodySMSemibold()
                     .foregroundColor(V3Tokens.ink)
                 if !uname.isEmpty {
                     Text("@\(uname)")
@@ -301,19 +301,19 @@ struct AddFriendScreen: View {
             Spacer()
 
             if isSending {
-                ProgressView().controlSize(.small)
+                V3Loading(.inline)
             } else {
                 Button(NSLocalizedString("addFriend.addAction", comment: "")) {
                     send(to: user)
                 }
                 .font(.system(size: 12.5, weight: .semibold))
                 .foregroundColor(ONEBrand.kor)
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
-        .oneCardBackground(radius: 14, opacity: 0.75)
+        .oneCardBackground(radius: 14)
     }
 
     // MARK: - Kod
@@ -323,23 +323,23 @@ struct AddFriendScreen: View {
             qrImage
                 .frame(width: 168, height: 168)
                 .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                         .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
                 )
 
             Text(myHandle)
                 .font(V3Typography.sans(19, weight: .bold))
                 .foregroundColor(V3Tokens.ink)
-                .padding(.top, ONETokens.spacingLG)
+                .padding(.top, V3Tokens.spacingLG)
 
             Text(NSLocalizedString("addFriend.codeHint", comment: ""))
                 .bodyXS()
                 .foregroundColor(V3Tokens.mutedText)
                 .padding(.top, 6)
 
-            VStack(spacing: 8) {
+            VStack(spacing: V3Tokens.spacingSM) {
                 Button {
                     UIPasteboard.general.string = myInviteCode
                     ONEHaptics.feelingSelected()
@@ -355,7 +355,7 @@ struct AddFriendScreen: View {
                     .frame(maxWidth: .infinity, minHeight: 44)
                     .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
 
                 Button {
                     showScanner = true
@@ -369,9 +369,9 @@ struct AddFriendScreen: View {
                                 .stroke(V3Tokens.ink.opacity(0.14), lineWidth: 1.5)
                         )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
             }
-            .padding(.top, ONETokens.spacingXL)
+            .padding(.top, V3Tokens.spacingXL)
         }
         .frame(maxWidth: .infinity)
     }
@@ -383,7 +383,7 @@ struct AddFriendScreen: View {
                 .interpolation(.none)
                 .resizable()
                 .scaledToFit()
-                .padding(12)
+                .padding(V3Tokens.spacingMD)
         } else {
             Image(systemName: "qrcode")
                 .font(.system(size: 64, weight: .light))
@@ -420,7 +420,7 @@ struct AddFriendScreen: View {
                 switch result {
                 case .success(let user):
                     ONEHaptics.feelingSelected()
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    withAnimation(ONEAnimation.cardSpring) {
                         foundUser = user
                     }
                 case .failure:

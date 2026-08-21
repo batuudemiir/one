@@ -47,12 +47,11 @@ struct ONEShareSheet: View {
             Spacer(minLength: 24)
 
             actionButtons
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
+                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.bottom, V3Tokens.spacingXL2)
         }
-        .background(ONEBrand.bone.ignoresSafeArea())
-        .presentationDetents([.height(640), .large])
-        .presentationDragIndicator(.hidden)
+        .background(V3Tokens.paper.ignoresSafeArea())
+        .v3Sheet(detents: [.height(640), .large])
         .task { await generateCard() }
         .alert(NSLocalizedString("general.error", comment: ""), isPresented: $showError) {
             Button(NSLocalizedString("general.ok", comment: ""), role: .cancel) {}
@@ -65,16 +64,16 @@ struct ONEShareSheet: View {
     // MARK: - Subviews
 
     private var dragHandle: some View {
-        RoundedRectangle(cornerRadius: 3)
+        RoundedRectangle(cornerRadius: V3Tokens.radiusMicro)
             .fill(V3Tokens.faintText)
             .frame(width: 36, height: 4)
-            .padding(.top, 12)
+            .padding(.top, V3Tokens.spacingMD)
             .padding(.bottom, 14)
     }
 
     private var titleRow: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                 Text(NSLocalizedString("share.title", comment: ""))
                     .monoLabel(tracking: 2.0)
                     .foregroundColor(V3Tokens.mutedText)
@@ -89,15 +88,15 @@ struct ONEShareSheet: View {
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(V3Tokens.mutedText)
                     .frame(width: 32, height: 32)
-                    .background(Circle().fill(ONETokens.oneSilver))
+                    .background(Circle().fill(V3Tokens.hairline))
             }
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 16)
+        .padding(.horizontal, V3Tokens.spacingXL2)
+        .padding(.bottom, V3Tokens.spacingLG)
     }
 
     private var loadingView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: V3Tokens.spacingMD) {
             Circle()
                 .fill(V3Tokens.ink)
                 .frame(width: 8, height: 8)
@@ -119,7 +118,7 @@ struct ONEShareSheet: View {
         Image(uiImage: image)
             .resizable()
             .aspectRatio(9 / 16, contentMode: .fit)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusInner))
             .shadow(color: Color.black.opacity(0.14), radius: 14, x: 0, y: 6)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 80)
@@ -127,9 +126,9 @@ struct ONEShareSheet: View {
     }
 
     private var actionButtons: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: V3Tokens.spacingXL2) {
             // Social Sharing Grid
-            HStack(spacing: 16) {
+            HStack(spacing: V3Tokens.spacingLG) {
                 let instaInstalled = ShareManager.shared.isInstagramInstalled()
                 
                 ShareAppButton(
@@ -151,12 +150,12 @@ struct ONEShareSheet: View {
                 ShareAppButton(
                     title: NSLocalizedString("share.otherApps", comment: ""),
                     icon: "ellipsis",
-                    gradient: [V3Tokens.mutedText, ONETokens.oneStone],
+                    gradient: [V3Tokens.mutedText, V3Tokens.faintText],
                     isEnabled: storyImage != nil && xImage != nil,
                     action: shareViaSystem
                 )
             }
-            .padding(.top, 8)
+            .padding(.top, V3Tokens.spacingSM)
             
             // Other Actions
             VStack(spacing: 10) {
@@ -167,7 +166,7 @@ struct ONEShareSheet: View {
                         sublabel: "",
                         style: .ghost,
                         isEnabled: false,
-                        iconColorOverride: ONETokens.oneGreen,
+                        iconColorOverride: V3Tokens.success,
                         action: {}
                     )
                 } else {
@@ -190,7 +189,7 @@ struct ONEShareSheet: View {
                             sublabel: "",
                             style: .ghost,
                             isEnabled: false,
-                            iconColorOverride: ONETokens.oneGreen,
+                            iconColorOverride: V3Tokens.success,
                             action: {}
                         )
                     } else {
@@ -388,7 +387,7 @@ private struct ActionRow: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(label)
-                        .font(.system(size: 14, weight: .semibold))
+                        .bodySMSemibold()
                         .foregroundColor(labelColor)
                     Text(sublabel)
                         .monoSM(tracking: 0.3)
@@ -401,7 +400,7 @@ private struct ActionRow: View {
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(labelColor.opacity(0.35))
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, V3Tokens.spacingLG)
             .padding(.vertical, 13)
             .background(background)
         }
@@ -414,7 +413,7 @@ private struct ActionRow: View {
     private var labelColor: Color {
         switch style {
         case .filled: return .white
-        case .bordered, .ghost: return ONETokens.oneInk
+        case .bordered, .ghost: return V3Tokens.ink
         }
     }
 
@@ -424,14 +423,14 @@ private struct ActionRow: View {
     private var background: some View {
         switch style {
         case .filled(let color):
-            RoundedRectangle(cornerRadius: 14).fill(color)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusCard).fill(color)
         case .bordered:
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
                 .fill(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(V3Tokens.faintText, lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: V3Tokens.radiusCard).stroke(V3Tokens.faintText, lineWidth: 1))
         case .ghost:
-            RoundedRectangle(cornerRadius: 14)
-                .fill(ONETokens.oneSilver.opacity(0.6))
+            RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
+                .fill(V3Tokens.hairline.opacity(0.6))
         }
     }
 }
@@ -464,13 +463,14 @@ private struct ShareAppButton: View {
                 }
                 
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .bodyMicroMedium()
                     .foregroundColor(V3Tokens.ink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
             .frame(maxWidth: .infinity)
         }
+        .contentShape(Rectangle())
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1.0 : 0.4)
     }

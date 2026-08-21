@@ -27,7 +27,7 @@ struct MonthSummary {
         return entries[startOfDay] ?? []
     }
 
-    /// Whether a day has multiple entries (premium multi-entry)
+    /// Whether a day has multiple entries — v3'te her kullanıcıda açık.
     func hasMultipleEntries(for date: Date) -> Bool {
         let startOfDay = Calendar.current.startOfDay(for: date)
         return (entries[startOfDay]?.count ?? 0) > 1

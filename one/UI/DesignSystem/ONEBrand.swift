@@ -8,6 +8,15 @@ public enum ONEBrand {
 
     /// Kor — the single brand colour. Icon ground, primary press, active switch.
     public static let kor = Color(red: 1.0, green: 0.231, blue: 0.122)      // #FF3B1F
+    /// Kor'un açık ucu — **yalnız marka degradesinin ikinci durağı.**
+    ///
+    /// Düz bir yüzey rengi değil; tek başına kullanma, `kor` kullan.
+    /// Var olma sebebi: iki yerde (haftalık liste rozeti, WhatsNew CTA'sı)
+    /// `kor`'dan başlayan bir degrade `ONEBrand.kor` (#FF6B6B) ile
+    /// bitiyordu — turuncu-kırmızıdan pembeye kayan, markada karşılığı olmayan
+    /// bir geçiş. Değer v3 sisteminin koyu tema press tonundan (#FF5638)
+    /// geliyor: kor ile aynı hue'da, yalnızca bir tık açık.
+    public static let korLight = Color(red: 1.0, green: 0.337, blue: 0.220) // #FF5638
     /// Mürekkep — text and primary buttons.
     public static let ink = Color(red: 0.078, green: 0.078, blue: 0.102)    // #14141A
     /// Kemik — light ground and the wordmark on Kor.

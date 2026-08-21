@@ -20,11 +20,11 @@ struct PublicProfilePinnedSongCard: View {
             songInfo
         }
         .background(V3Tokens.surface)
-        .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusCardLg))
+        .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard))
         .shadow(color: .black.opacity(0.05), radius: 16, y: 6)
         .overlay(
-            RoundedRectangle(cornerRadius: ONETokens.radiusCardLg)
-                .stroke(ONETokens.oneSilver, lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
+                .stroke(V3Tokens.hairline, lineWidth: 0.5)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Sabitlenmiş şarkı: \(song.songName), \(song.artistName)")
@@ -69,33 +69,33 @@ struct PublicProfilePinnedSongCard: View {
     }
 
     private var pinChip: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: V3Tokens.spacingXS) {
             Image(systemName: "pin.fill")
                 .font(.system(size: 9, weight: .medium))
-            Text("sabitlenmiş")
+            Text(NSLocalizedString("profile.pinned", comment: ""))
                 .monoLabel(tracking: 0.3)
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.horizontal, V3Tokens.spacingSM)
+        .padding(.vertical, V3Tokens.spacingXS)
         .background(Capsule().fill(.black.opacity(0.22)))
     }
 
     // MARK: - Song info
 
     private var songInfo: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
             Text(song.songName)
                 .displaySM()
                 .foregroundStyle(V3Tokens.ink)
                 .lineLimit(1)
             Text(song.artistName)
                 .monoSM(tracking: 0)
-                .foregroundStyle(ONETokens.oneCharcoal)
+                .foregroundStyle(V3Tokens.mutedText)
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, V3Tokens.spacingLG)
+        .padding(.vertical, V3Tokens.spacingMD)
     }
 }

@@ -50,7 +50,7 @@ struct V3ProgressBar: View {
     var body: some View {
         HStack(spacing: 6) {
             ForEach(0..<3, id: \.self) { i in
-                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusMicro, style: .continuous)
                     .fill(i <= activeThrough ? V3Tokens.ink : V3Tokens.hairline)
                     .frame(height: 3)
             }
@@ -77,6 +77,7 @@ struct V3PrimaryButton: View {
         }) {
             Text(title)
         }
+        .contentShape(Rectangle())
         .buttonStyle(
             V3PrimaryButtonStyle(
                 isEnabled: isEnabled,
@@ -117,7 +118,7 @@ private struct V3PrimaryButtonStyle: ButtonStyle {
                 Capsule(style: .continuous)
                     .fill(isEnabled ? (isPressed ? V3Tokens.kor : V3Tokens.ink) : V3Tokens.hairline)
             )
-            .animation(V3Tokens.easingChip, value: isPressed)
+            .animation(ONEAnimation.easingChip, value: isPressed)
     }
 }
 
@@ -134,9 +135,9 @@ struct V3OutlineButton: View {
             action()
         }) {
             Text(title)
-                .font(V3Typography.sans(16, weight: .semibold))
+                .bodyLGSemibold()
                 .foregroundColor(V3Tokens.ink)
-                .padding(.vertical, 16)
+                .padding(.vertical, V3Tokens.spacingLG)
                 .padding(.horizontal, 34)
                 .frame(maxWidth: isFullWidth ? .infinity : nil)
                 .background(
@@ -144,7 +145,7 @@ struct V3OutlineButton: View {
                         .stroke(V3Tokens.ink, lineWidth: 1.5)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
     }
 }
 
@@ -160,17 +161,17 @@ struct V3BackButton: View {
             action()
         }) {
             Text(title)
-                .font(V3Typography.sans(14, weight: .medium))
+                .bodySMMedium()
                 .foregroundColor(Color(hex: "#5A5A66"))
                 .padding(.vertical, 9)
-                .padding(.leading, 12)
-                .padding(.trailing, 16)
+                .padding(.leading, V3Tokens.spacingMD)
+                .padding(.trailing, V3Tokens.spacingLG)
                 .background(
                     Capsule(style: .continuous)
                         .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
     }
 }
 
@@ -179,9 +180,7 @@ struct V3BackButton: View {
 enum V3DateFormatter {
     /// e.g. `28 TEMMUZ · SALI`
     static func headerLabel(for date: Date = Date()) -> String {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "tr_TR")
-        f.dateFormat = "d MMMM · EEEE"
-        return f.string(from: date).uppercased(with: Locale(identifier: "tr_TR"))
+        let f = ONEFormatters.dayMonthWeekday
+        return f.string(from: date).uppercased(with: LanguageManager.shared.currentLocale)
     }
 }

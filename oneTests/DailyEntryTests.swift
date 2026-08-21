@@ -54,7 +54,11 @@ struct DailyEntryTests {
             weatherDesc: weatherDesc,
             spotifyURL: spotifyURL,
             platform: platform,
-            note: note
+            note: note,
+            // `DailyEntry.passed` ("Bugün geçti" pas günü) modele sonradan
+            // eklendi, bu helper güncellenmedi ve test hedefi derlenmez oldu.
+            // Varsayılan false: helper normal bir kayıt üretiyor.
+            passed: false
         )
     }
 

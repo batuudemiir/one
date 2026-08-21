@@ -19,7 +19,7 @@ struct V3OfflineBanner: View {
 
     var body: some View {
         if isVisible {
-            Text("BAĞLANTI YOK · ANLARIN CİHAZINDA BEKLİYOR")
+            Text(NSLocalizedString("offline.banner", comment: ""))
                 .font(V3Typography.mono(10, weight: .regular))
                 .tracking(1.4)
                 .foregroundColor(ONEBrand.bone)

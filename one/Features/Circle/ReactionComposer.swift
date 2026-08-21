@@ -31,7 +31,7 @@ struct ReactionComposer: View {
             Text(NSLocalizedString("reaction.respond", comment: ""))
                 .monoLabel(tracking: 1.3)
                 .foregroundColor(V3Tokens.faintText)
-                .padding(.bottom, ONETokens.spacingSM)
+                .padding(.bottom, V3Tokens.spacingSM)
 
             // .rx-strip
             HStack(spacing: 7) {
@@ -40,7 +40,7 @@ struct ReactionComposer: View {
                 }
                 Button { send(kind: .color, colorHex: myColorHex) } label: {
                     Text(DailyReaction.Kind.color.glyph)
-                        .font(V3Typography.sans(15, weight: .medium))
+                        .bodyMDMedium()
                         .foregroundColor(.white)
                         .frame(width: 38, height: 38)
                         .background(Circle().fill(Color(hex: myColorHex)))
@@ -49,10 +49,10 @@ struct ReactionComposer: View {
                         .frame(minWidth: 44, minHeight: 44)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
                 .disabled(isSending)
                 .accessibilityLabel(Text("\(DailyReaction.Kind.color.label) tepkisi"))
-                .accessibilityHint(Text("Aç/kapat"))
+                .accessibilityHint(Text(NSLocalizedString("general.a11y.toggle", comment: "")))
                 .accessibilityAddTraits(sentReaction == .color ? .isSelected : [])
             }
 
@@ -83,41 +83,41 @@ struct ReactionComposer: View {
                         .frame(minWidth: 44, minHeight: 44)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
                 .disabled(replyText.trimmingCharacters(in: .whitespaces).isEmpty || isSending)
                 .opacity(replyText.trimmingCharacters(in: .whitespaces).isEmpty ? 0.3 : 1)
                 .accessibilityLabel("Yanıtı gönder")
             }
             .padding(.leading, 15)
-            .padding(.trailing, 8)
-            .padding(.vertical, 8)
+            .padding(.trailing, V3Tokens.spacingSM)
+            .padding(.vertical, V3Tokens.spacingSM)
             .background(
                 Capsule(style: .continuous)
                     .fill(Color.white.opacity(0.82))
                     .overlay(Capsule().strokeBorder(V3Tokens.ink.opacity(0.09), lineWidth: 1))
             )
-            .padding(.top, ONETokens.spacingMD)
+            .padding(.top, V3Tokens.spacingMD)
 
             if replySent {
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark").font(.system(size: 11, weight: .semibold))
-                    Text(NSLocalizedString("reaction.sent", comment: "")).font(.system(size: 12))
+                    Text(NSLocalizedString("reaction.sent", comment: "")).bodyMicro()
                 }
                 .foregroundColor(V3Tokens.mutedText)
                 .frame(maxWidth: .infinity)
-                .padding(.top, ONETokens.spacingMD)
+                .padding(.top, V3Tokens.spacingMD)
                 .transition(.opacity)
             }
 
             HStack(spacing: 7) {
                 Circle().fill(V3Tokens.faintText).frame(width: 5, height: 5)
                 Text(String(format: NSLocalizedString("reaction.ephemeralNote", comment: ""), friendDisplayName))
-                    .font(V3Typography.sans(11))
+                    .bodyMicro()
                     .foregroundColor(V3Tokens.faintText)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
-            .padding(.top, ONETokens.spacingLG)
+            .padding(.top, V3Tokens.spacingLG)
         }
     }
 
@@ -125,29 +125,29 @@ struct ReactionComposer: View {
         let selected = sentReaction == kind
         return Button { send(kind: kind) } label: {
             HStack(spacing: 7) {
-                Text(kind.glyph).font(V3Typography.sans(14))
-                Text(kind.label).font(V3Typography.sans(13, weight: .semibold))
+                Text(kind.glyph).bodySM()
+                Text(kind.label).bodyXSSemibold()
             }
             .foregroundColor(selected ? ONEBrand.bone : V3Tokens.ink)
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
             .background(
                 Capsule(style: .continuous)
-                    .fill(selected ? ONETokens.oneInk : Color.white.opacity(0.72))
+                    .fill(selected ? V3Tokens.ink : Color.white.opacity(0.72))
                     .overlay(Capsule().strokeBorder(V3Tokens.ink.opacity(selected ? 0 : 0.09), lineWidth: 1))
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
         .disabled(isSending)
         .accessibilityLabel(Text("\(kind.label) tepkisi"))
-        .accessibilityHint(Text("Aç/kapat"))
+        .accessibilityHint(Text(NSLocalizedString("general.a11y.toggle", comment: "")))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
     private func send(kind: DailyReaction.Kind, colorHex: String? = nil) {
         isSending = true
         ONEHaptics.feelingSelected()
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { sentReaction = kind }
+        withAnimation(ONEAnimation.micro) { sentReaction = kind }
         cloudKitManager.sendDailyReaction(
             shareRecordName: shareRecordName,
             shareOwnerID: shareOwnerID,

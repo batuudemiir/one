@@ -19,7 +19,7 @@ import UIKit
 // MARK: - WCAG hesabı
 
 /// WCAG 2.1 relative luminance — https://www.w3.org/TR/WCAG21/#dfn-relative-luminance
-private func relativeLuminance(hex: String) -> Double {
+func relativeLuminance(hex: String) -> Double {
     let (r, g, b) = rgbComponents(hex: hex)
     func linearize(_ c: Double) -> Double {
         c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4)
@@ -28,7 +28,7 @@ private func relativeLuminance(hex: String) -> Double {
 }
 
 /// `#RRGGBB` → 0...1 aralığında bileşenler.
-private func rgbComponents(hex: String) -> (Double, Double, Double) {
+func rgbComponents(hex: String) -> (Double, Double, Double) {
     var s = hex.trimmingCharacters(in: .whitespacesAndNewlines)
     if s.hasPrefix("#") { s.removeFirst() }
     let value = UInt32(s, radix: 16) ?? 0
@@ -40,7 +40,7 @@ private func rgbComponents(hex: String) -> (Double, Double, Double) {
 }
 
 /// WCAG kontrast oranı — https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio
-private func contrastRatio(_ a: String, _ b: String) -> Double {
+func contrastRatio(_ a: String, _ b: String) -> Double {
     let la = relativeLuminance(hex: a)
     let lb = relativeLuminance(hex: b)
     let lighter = max(la, lb)
@@ -79,17 +79,29 @@ private struct TextToken {
     let name: String
     let light: String
     let dark: String
+    /// Increased Contrast açıkken kullanılan varyantlar.
+    let lightHigh: String
+    let darkHigh: String
 
     func hex(_ theme: Theme) -> String {
         theme == .light ? light : dark
     }
+
+    func highHex(_ theme: Theme) -> String {
+        theme == .light ? lightHigh : darkHigh
+    }
 }
 
 private let textTokens: [TextToken] = [
-    TextToken(name: "ink",       light: "#14141A", dark: "#F2F1EE"),
-    TextToken(name: "mutedText", light: "#6B6B78", dark: "#9A9AA6"),
-    TextToken(name: "faintText", light: "#6E6E7A", dark: "#868694"),
-    TextToken(name: "ghostText", light: "#72727E", dark: "#80808E")
+    // `ink` Increased Contrast'ta değişmiyor — zaten 17:1 üstünde.
+    TextToken(name: "ink",       light: "#14141A", dark: "#F2F1EE",
+              lightHigh: "#14141A", darkHigh: "#F2F1EE"),
+    TextToken(name: "mutedText", light: "#6B6B78", dark: "#9A9AA6",
+              lightHigh: "#494955", darkHigh: "#B6B6C4"),
+    TextToken(name: "faintText", light: "#6E6E7A", dark: "#868694",
+              lightHigh: "#52525E", darkHigh: "#A9A9B7"),
+    TextToken(name: "ghostText", light: "#72727E", dark: "#80808E",
+              lightHigh: "#5B5B67", darkHigh: "#9D9DAB")
 ]
 
 // MARK: - Tests
@@ -137,6 +149,40 @@ struct ContrastTests {
                 #expect(
                     ratios[i] < ratios[i - 1],
                     "\(textTokens[i].name) (\(theme.rawValue)) \(textTokens[i - 1].name)'den daha kontrastlı — hiyerarşi ters dönmüş"
+                )
+            }
+        }
+    }
+
+    /// Increased Contrast açıkken her token en az normal kadar kontrastlı
+    /// olmalı. Kontrastı artıran kullanıcı için bir kademe geriye gitmek
+    /// sessiz bir gerileme olurdu.
+    @Test("Increased Contrast varyantları normalden daha kontrastlı")
+    func testHighContrastIsStronger() {
+        for theme in [Theme.light, .dark] {
+            for token in textTokens {
+                let normal = min(contrastRatio(token.hex(theme), theme.paper),
+                                 contrastRatio(token.hex(theme), theme.surface))
+                let high = min(contrastRatio(token.highHex(theme), theme.paper),
+                               contrastRatio(token.highHex(theme), theme.surface))
+                #expect(
+                    high >= normal,
+                    "\(token.name) (\(theme.rawValue)) Increased Contrast'ta düşüyor: \(String(format: "%.2f", normal)) → \(String(format: "%.2f", high))"
+                )
+            }
+        }
+    }
+
+    /// Increased Contrast hiyerarşiyi düzleştirmemeli — üç kademeyi birden
+    /// 7:1'e çekmek hepsini aynı renge indiriyordu.
+    @Test("Increased Contrast hiyerarşiyi koruyor")
+    func testHighContrastKeepsHierarchy() {
+        for theme in [Theme.light, .dark] {
+            let ratios = textTokens.map { contrastRatio($0.highHex(theme), theme.paper) }
+            for i in 1..<ratios.count {
+                #expect(
+                    ratios[i] < ratios[i - 1],
+                    "\(textTokens[i].name) (\(theme.rawValue)) Increased Contrast'ta hiyerarşi ters dönmüş"
                 )
             }
         }

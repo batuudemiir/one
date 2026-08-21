@@ -22,7 +22,7 @@ struct AppleSignInGateView: View {
 
     var body: some View {
         ZStack {
-            ONEBrand.bone.ignoresSafeArea()
+            V3Tokens.paper.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
@@ -40,7 +40,7 @@ struct AppleSignInGateView: View {
                     .displayLG()
                     .foregroundColor(V3Tokens.ink)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, 12)
+                    .padding(.top, V3Tokens.spacingMD)
 
                     Text(NSLocalizedString(
                         "signin.subtitle",
@@ -50,9 +50,9 @@ struct AppleSignInGateView: View {
                     .bodySM()
                     .foregroundColor(V3Tokens.mutedText)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, ONETokens.spacingLG)
+                    .padding(.top, V3Tokens.spacingLG)
                 }
-                .padding(.horizontal, ONETokens.spacingXL)
+                .padding(.horizontal, V3Tokens.spacingXL)
 
                 Spacer(minLength: 0)
 
@@ -68,8 +68,8 @@ struct AppleSignInGateView: View {
                 .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
                 .frame(height: 52)
                 .clipShape(Capsule(style: .continuous))
-                .padding(.horizontal, ONETokens.spacingXL)
-                .padding(.bottom, ONETokens.spacingXL3)
+                .padding(.horizontal, V3Tokens.spacingXL)
+                .padding(.bottom, V3Tokens.spacingXL3)
                 .accessibilityLabel(Text(NSLocalizedString(
                     "signin.button.accessibility",
                     value: "Apple ile giriş yap",

@@ -17,7 +17,7 @@ struct FirstEntryInviteSheet: View {
 
     var body: some View {
         ZStack {
-            ONEBrand.bone.ignoresSafeArea()
+            V3Tokens.paper.ignoresSafeArea()
 
             // Soft mood ambience
             RadialGradient(
@@ -45,7 +45,7 @@ struct FirstEntryInviteSheet: View {
                 }
                 .scaleEffect(appeared ? 1.0 : 0.85)
                 .opacity(appeared ? 1 : 0)
-                .padding(.bottom, 32)
+                .padding(.bottom, V3Tokens.spacingXL3)
 
                 Text(NSLocalizedString("firstEntryInvite.eyebrow", comment: ""))
                     .monoSM(tracking: 1.6)
@@ -64,13 +64,13 @@ struct FirstEntryInviteSheet: View {
                     .foregroundColor(V3Tokens.mutedText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
-                    .padding(.horizontal, 36)
+                    .padding(.horizontal, V3Tokens.spacingXL3)
 
                 Spacer()
 
-                VStack(spacing: 12) {
+                VStack(spacing: V3Tokens.spacingMD) {
                     Button(action: onInvite) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: V3Tokens.spacingSM) {
                             Image(systemName: "person.2.fill")
                                 .font(.system(size: 15))
                             Text(NSLocalizedString("firstEntryInvite.invite", comment: ""))
@@ -78,9 +78,9 @@ struct FirstEntryInviteSheet: View {
                         }
                         .foregroundColor(ONEBrand.bone)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, V3Tokens.spacingLG)
                         .background(
-                            RoundedRectangle(cornerRadius: 14)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
                                 .fill(V3Tokens.ink)
                         )
                     }
@@ -92,15 +92,16 @@ struct FirstEntryInviteSheet: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
                     }
+                    .contentShape(Rectangle())
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
+                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.bottom, V3Tokens.spacingXL2)
                 .opacity(appeared ? 1 : 0)
                 .offset(y: appeared ? 0 : 16)
             }
         }
         .onAppear {
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.85)) {
+            withAnimation(ONEAnimation.panelSpring) {
                 appeared = true
             }
         }

@@ -23,7 +23,7 @@ struct PublicProfileCTARow: View {
             ctaButtons
             mutualChip
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
     }
 
     // MARK: - CTA buttons
@@ -43,7 +43,7 @@ struct PublicProfileCTARow: View {
             ctaButton(
                 title: "İstek gönderildi",
                 foreground: V3Tokens.mutedText,
-                background: ONETokens.oneSilver,
+                background: V3Tokens.hairline,
                 action: onCancelRequest
             )
 
@@ -51,14 +51,14 @@ struct PublicProfileCTARow: View {
             HStack(spacing: 10) {
                 ctaButton(
                     title: "Kabul et",
-                    foreground: ONETokens.oneGreen,
-                    background: ONETokens.oneGreen.opacity(0.10),
+                    foreground: V3Tokens.success,
+                    background: V3Tokens.success.opacity(0.10),
                     action: onAccept
                 )
                 ctaButton(
                     title: "Reddet",
                     foreground: V3Tokens.mutedText,
-                    background: ONETokens.oneSilver,
+                    background: V3Tokens.hairline,
                     action: onDecline
                 )
             }
@@ -66,14 +66,14 @@ struct PublicProfileCTARow: View {
         case .friend:
             HStack(spacing: 6) {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(ONETokens.oneGreen)
-                Text("Çevrende")
+                    .foregroundStyle(V3Tokens.success)
+                Text(NSLocalizedString("publicProfile.inYourCircle", comment: ""))
                     .bodySMMedium()
-                    .foregroundStyle(ONETokens.oneGreen)
+                    .foregroundStyle(V3Tokens.success)
             }
             .frame(maxWidth: .infinity)
             .frame(minHeight: 44)
-            .background(Capsule().fill(ONETokens.oneGreen.opacity(0.08)))
+            .background(Capsule().fill(V3Tokens.success.opacity(0.08)))
 
         case .self_, .blockedByMe, .blockedMe:
             EmptyView()
@@ -88,13 +88,13 @@ struct PublicProfileCTARow: View {
             HStack(spacing: 5) {
                 Image(systemName: "person.2.fill")
                     .font(.system(size: 11))
-                Text("\(count) ortak arkadaşınız var")
+                Text(String(format: NSLocalizedString("publicProfile.mutualFriends", comment: ""), count))
                     .monoSM(tracking: 0)
             }
             .foregroundStyle(V3Tokens.mutedText)
-            .padding(.horizontal, 12)
+            .padding(.horizontal, V3Tokens.spacingMD)
             .padding(.vertical, 6)
-            .background(Capsule().fill(ONETokens.oneSilver))
+            .background(Capsule().fill(V3Tokens.hairline))
         }
     }
 
@@ -103,7 +103,7 @@ struct PublicProfileCTARow: View {
     private func ctaButton(title: String, foreground: Color, background: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                if isWorking { ProgressView().scaleEffect(0.75) }
+                if isWorking { V3Loading(.inline) }
                 Text(title)
                     .bodySMMedium()
             }
@@ -111,6 +111,7 @@ struct PublicProfileCTARow: View {
             .frame(maxWidth: .infinity)
             .frame(minHeight: 44)
         }
+        .contentShape(Rectangle())
         .background(Capsule().fill(background))
         .disabled(isWorking)
     }

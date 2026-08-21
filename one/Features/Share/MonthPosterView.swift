@@ -53,7 +53,7 @@ struct MonthPosterView: View {
                 poster
                     .aspectRatio(format.ratio, contentMode: .fit)
                     .frame(maxWidth: .infinity)
-                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous))
                     .animation(.easeOut(duration: 0.22), value: format)
 
                 sectionLabel(NSLocalizedString("poster.format", comment: ""))
@@ -88,9 +88,9 @@ struct MonthPosterView: View {
                 Rectangle()
                     .fill(V3Tokens.ink.opacity(0.09))
                     .frame(height: 1)
-                    .padding(.vertical, ONETokens.spacingXL)
+                    .padding(.vertical, V3Tokens.spacingXL)
 
-                VStack(spacing: 8) {
+                VStack(spacing: V3Tokens.spacingSM) {
                     Button { share() } label: {
                         Text(NSLocalizedString("general.share", comment: ""))
                             .bodySMMedium()
@@ -98,7 +98,7 @@ struct MonthPosterView: View {
                             .frame(maxWidth: .infinity, minHeight: 44)
                             .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.onePressable)
 
                     Button { saveToPhotos() } label: {
                         Text(NSLocalizedString("poster.saveImage", comment: ""))
@@ -106,13 +106,15 @@ struct MonthPosterView: View {
                             .foregroundColor(V3Tokens.mutedText)
                             .frame(maxWidth: .infinity, minHeight: 44)
                     }
-                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
+                    .buttonStyle(.onePressable)
                 }
             }
         }
         .sheet(item: $shareItem) { item in
             ShareSheet(items: [item.image])
         }
+        .v3Sheet()
     }
 
     // MARK: Poster
@@ -131,61 +133,72 @@ struct MonthPosterView: View {
             )
 
             VStack(alignment: .leading, spacing: 0) {
-                Text("one · \(data.month.lowercased()) \(String(data.year))")
-                    .font(.system(size: 9.5, weight: .semibold))
-                    .tracking(2)
-                    .foregroundColor(.white.opacity(0.7))
+                // Kelime işareti + mono tarih. Eskiden tek satır SF Pro
+                // semibold `"one · ağustos 2026"` idi: markanın adı gövde
+                // metniyle aynı yüzde, küçük harfle, poster üstünde.
+                HStack(spacing: 7) {
+                    ONEWordmark(size: 13, tone: .bone)
+                        .opacity(0.92)
+                    Text("·")
+                        .font(V3Typography.monoFixed(9.5, weight: .semibold))
+                        .foregroundColor(ONEBrand.bone.opacity(0.55))
+                    Text("\(data.month.lowercased()) \(String(data.year))")
+                        .font(V3Typography.monoFixed(9.5, weight: .semibold))
+                        .tracking(2)
+                        .textCase(.uppercase)
+                        .foregroundColor(ONEBrand.bone.opacity(0.7))
+                }
 
                 Text("\(data.daysLogged) \(NSLocalizedString("poster.days", comment: ""))\n\(data.emotionBreakdown.count) \(NSLocalizedString("poster.colours", comment: ""))")
-                    .font(.system(size: 40, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(V3Typography.displayFixed(40))
+                    .foregroundColor(ONEBrand.bone)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 10)
 
-                Spacer(minLength: ONETokens.spacingLG)
+                Spacer(minLength: V3Tokens.spacingLG)
 
                 if showGrid {
                     LazyVGrid(
-                        columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7),
-                        spacing: 4
+                        columns: Array(repeating: GridItem(.flexible(), spacing: V3Tokens.spacingXS), count: 7),
+                        spacing: V3Tokens.spacingXS
                     ) {
                         ForEach(Array(data.dailyMoods.enumerated()), id: \.offset) { _, c in
-                            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusMicro + 1, style: .continuous)
                                 .fill(c.opacity(0.9))
                                 .aspectRatio(1, contentMode: .fit)
                         }
                     }
                 }
 
-                Spacer(minLength: ONETokens.spacingLG)
+                Spacer(minLength: V3Tokens.spacingLG)
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(String(
                         format: NSLocalizedString("poster.mostly", comment: ""),
                         data.dominantMood
                     ))
-                    .font(.system(size: 12.5))
-                    .foregroundColor(.white.opacity(0.85))
+                    .font(V3Typography.sansFixed(12.5))
+                    .foregroundColor(ONEBrand.bone.opacity(0.85))
 
                     if showSongs, let top = data.topTracks.first {
                         Text(String(
                             format: NSLocalizedString("poster.mostPlayed", comment: ""),
                             top.name
                         ))
-                        .font(.system(size: 12.5))
-                        .foregroundColor(.white.opacity(0.6))
+                        .font(V3Typography.sansFixed(12.5))
+                        .foregroundColor(ONEBrand.bone.opacity(0.6))
                         .lineLimit(1)
                     }
 
                     if showNotes {
                         Text(NSLocalizedString("poster.notesHint", comment: ""))
-                            .font(.system(size: 12.5))
-                            .foregroundColor(.white.opacity(0.6))
+                            .font(V3Typography.sansFixed(12.5))
+                            .foregroundColor(ONEBrand.bone.opacity(0.6))
                             .lineLimit(1)
                     }
                 }
             }
-            .padding(26)
+            .padding(V3Tokens.spacingXL2)
         }
     }
 
@@ -193,8 +206,8 @@ struct MonthPosterView: View {
         Text(text)
             .monoLabel(tracking: 1.3)
             .foregroundColor(V3Tokens.faintText)
-            .padding(.top, ONETokens.spacingXL)
-            .padding(.bottom, ONETokens.spacingSM)
+            .padding(.top, V3Tokens.spacingXL)
+            .padding(.bottom, V3Tokens.spacingSM)
     }
 
     // MARK: Dışa aktarma

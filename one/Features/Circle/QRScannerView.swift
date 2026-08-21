@@ -19,8 +19,12 @@ struct QRScannerView: View {
     @State private var permissionDenied  = false
 
     var body: some View {
-        NavigationStack {
-            ZStack {
+        // Vizör tam kanamalı ve koyu; `V3SheetScreen`'in kağıt gövdesi
+        // buraya uymaz. Kabuk yalnız üst çubuk: `ground: .media` varyantı
+        // koyu scrim + açık glif veriyor, yani düğme kameranın üstünde de
+        // okunuyor. Sistem `toolbar`'ının beyaz metin düğmesi aydınlık bir
+        // kareye denk geldiğinde kayboluyordu.
+        ZStack {
                 Color.black.ignoresSafeArea()
 
                 if permissionGranted {
@@ -76,15 +80,19 @@ struct QRScannerView: View {
                     ProgressView().tint(.white)
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(NSLocalizedString("addFriend.cancel", comment: "")) { dismiss() }
-                        .foregroundColor(.white)
-                }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            // Bağlam etiketi yok: `V3TopBar` onu `faintText` ile çiziyor ve
+            // bu ekran temadan bağımsız siyah — açık temanın faint'i orada
+            // okunmuyordu. Vizörün talimatı zaten çerçevenin altında.
+            V3TopBar(leading: .none, progress: 0) {
+                V3TopBarIconButton(
+                    systemName: "xmark",
+                    label: NSLocalizedString("general.close", comment: ""),
+                    ground: .media
+                ) { dismiss() }
             }
-            .onAppear { requestCameraPermission() }
         }
+        .onAppear { requestCameraPermission() }
     }
 
     private func requestCameraPermission() {

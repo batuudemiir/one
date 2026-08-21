@@ -44,7 +44,7 @@ struct ContactsInviteView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                ONEBrand.bone.ignoresSafeArea()
+                V3Tokens.paper.ignoresSafeArea()
 
                 Group {
                     switch permissionStatus {
@@ -73,6 +73,7 @@ struct ContactsInviteView: View {
                 )
                 .ignoresSafeArea()
             }
+            .v3Sheet()
             .alert(NSLocalizedString("contacts.alertSmsCantSend", comment: ""), isPresented: $showMessageUnavailableAlert) {
                 Button(NSLocalizedString("general.ok", comment: ""), role: .cancel) {}
             } message: {
@@ -117,6 +118,7 @@ struct ContactsInviteView: View {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(V3Tokens.faintText)
                     }
+                    .contentShape(Rectangle())
                 }
             }
             .padding(.horizontal, 14)

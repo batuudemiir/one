@@ -18,18 +18,14 @@ enum V3Mood: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// Duygunun kullanıcıya görünen adı.
+    ///
+    /// Bu dokuz kelime uygulamanın **semantik yükünün tamamı** — renk ızgarası,
+    /// arşiv, dağılım, çevre kartı, bildirim, hepsi bunu gösteriyor. Uzun süre
+    /// koda gömülü Türkçe'ydi: uygulama 9 dile çevriliydi ama Almanca bir
+    /// kullanıcı renk seçerken "Hüzünlü" görüyordu. Artık katalogdan geliyor.
     var label: String {
-        switch self {
-        case .atesli:  return "Ateşli"
-        case .coskulu: return "Coşkulu"
-        case .gergin:  return "Gergin"
-        case .mutlu:   return "Mutlu"
-        case .enerjik: return "Enerjik"
-        case .odakli:  return "Odaklı"
-        case .huzurlu: return "Huzurlu"
-        case .huzunlu: return "Hüzünlü"
-        case .yorgun:  return "Yorgun"
-        }
+        NSLocalizedString("mood.v3.\(rawValue).label", comment: "v3 mood name")
     }
 
     /// Full-saturation renk (kart zemini).
@@ -47,18 +43,49 @@ enum V3Mood: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Duygunun tek cümlelik anlamı — VoiceOver değeri ve alt başlık.
+    ///
+    /// Eskiden çağıranlar `bridgedMood.meaning` diyordu, yani anlam legacy
+    /// 12-mood tablosundan **kayıplı köprü üzerinden** geliyordu: renk
+    /// seçicide "odaklı"nın ekran okuyucu değeri `derin`in anlamıydı
+    /// ("dengede, sabit"), "coşkulu"nunki `nostaljik`inki. Dokuz duygunun
+    /// artık kendi cümlesi var.
+    var meaning: String {
+        NSLocalizedString("mood.v3.\(rawValue).meaning", comment: "v3 mood meaning")
+    }
+
+    /// Doygun rengin yumuşatılmış hali — hale, mesh gradyan, atmosfer.
+    ///
+    /// `ONEMood.pastelColor`'ın v3 karşılığı. Orada her mood için elle
+    /// seçilmiş ikinci bir hex tablosu vardı; burada tek kaynaktan türüyor
+    /// çünkü iki tablo tutmak tam da 12-mood tarafındaki kaymanın sebebiydi:
+    /// doygun renk değişince pastel geride kalıyordu.
+    ///
+    /// Beyaza doğru karıştırma yerine düşük opaklık kullanılıyor ki koyu
+    /// temada da doğru yönde açılsın — pastel sabitler koyu zeminde
+    /// "solmuş" değil "kirli" görünüyordu.
+    var pastelColor: Color { color.opacity(0.42) }
+
     /// Zemin üstünde okunan mürekkep rengi. Sarı/lime üstünde beyaz yasak.
-    var ink: Color {
+    var ink: Color { Color(hex: inkHex) }
+
+    /// `ink`'in hex karşılığı — tek kaynak.
+    ///
+    /// `ink` doğrudan `Color(hex:)` döndürüyordu ve değeri testten okumanın
+    /// yolu yoktu; `Color` → hex roundtrip'i sRGB'de hafif kayıyor. Kontrast
+    /// testinin ölçtüğü şey token'ın **değeri** olmalı, SwiftUI'nin renk
+    /// çözümü değil — `hex` alanı da aynı sebeple sabit string.
+    var inkHex: String {
         switch self {
-        case .atesli:  return Color(hex: "#FFF1EE")
-        case .coskulu: return Color(hex: "#1A0C00")
-        case .gergin:  return Color(hex: "#F6ECFF")
-        case .mutlu:   return Color(hex: "#1A1200")
-        case .enerjik: return Color(hex: "#141A00")
-        case .odakli:  return Color(hex: "#EAEEFF")
-        case .huzurlu: return Color(hex: "#04170F")
-        case .huzunlu: return Color(hex: "#EDEFFA")
-        case .yorgun:  return Color(hex: "#F2F3F5")
+        case .atesli:  return "#FFF1EE"
+        case .coskulu: return "#1A0C00"
+        case .gergin:  return "#F6ECFF"
+        case .mutlu:   return "#1A1200"
+        case .enerjik: return "#141A00"
+        case .odakli:  return "#EAEEFF"
+        case .huzurlu: return "#04170F"
+        case .huzunlu: return "#EDEFFA"
+        case .yorgun:  return "#F2F3F5"
         }
     }
 
@@ -78,19 +105,16 @@ enum V3Mood: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Accusative-ish form used by the "curious" reminder tone (`Dün maviydin.`).
-    var accusativePastTense: String {
-        switch self {
-        case .atesli:  return "ateşliydin"
-        case .coskulu: return "coşkuluydun"
-        case .gergin:  return "gergindin"
-        case .mutlu:   return "mutluydun"
-        case .enerjik: return "enerjiktin"
-        case .odakli:  return "odaklıydın"
-        case .huzurlu: return "huzurluydun"
-        case .huzunlu: return "hüzünlüydün"
-        case .yorgun:  return "yorgundun"
-        }
+    /// "Meraklı" hatırlatma tonunun dünü anan cümlesi — **tam cümle**.
+    ///
+    /// Eskiden `accusativePastTense` vardı ve çağıran taraf `"Dün \(x)."` diye
+    /// birleştiriyordu. Bu Türkçe'ye özgü bir çekim ekiydi ("ateşliydin") ve
+    /// başka hiçbir dile taşınamıyordu; İngilizce'de yüklem başa, Japonca'da
+    /// cümle sonuna geliyor. Kelime birleştirmek yerine dil başına tam cümle
+    /// tutuluyor — çevirmen cümleyi kendi dilbilgisine göre kurabiliyor.
+    var yesterdayRecallSentence: String {
+        NSLocalizedString("reminder.curious.yesterday.\(rawValue)",
+                          comment: "Curious reminder: what the user felt yesterday")
     }
 
     /// v3 seçiminden mevcut `ONEMood`'a köprü. Var olan veri katmanı (Archive,

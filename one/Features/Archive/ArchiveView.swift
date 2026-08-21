@@ -31,6 +31,17 @@ struct ArchiveContainerView: View {
     /// DayPreviewCard fotoğraf ↔ FullScreenPhotoView morph namespace.
     @Namespace private var archivePhotoNS
 
+    /// Kabuk her tab değişiminde bunu günceller — biz de gün detayı
+    /// açıkken alt gezinmeyi küçültme kararı için okuyoruz.
+    @Environment(\.currentPrimaryTab) private var currentPrimaryTab
+
+    /// Gün detayı açık VE Arşiv sekmesi aktifken çubuk küçülür — Instagram/
+    /// Photos'un "bir öğeye odaklandın, chrome çekildi" pattern'i. Sekme
+    /// değişince otomatik düşer, kabuğun `currentScreen` resetine gerek yok.
+    private var shouldMinimizeTabBar: Bool {
+        selectedDate != nil && currentPrimaryTab == .archive
+    }
+
     init(context: NSManagedObjectContext) {
         _archiveStore = StateObject(wrappedValue: ArchiveStore(context: context))
         self.context = context
@@ -51,7 +62,7 @@ struct ArchiveContainerView: View {
                         // ile yükleseydik detay ilk karesini boş listeyle
                         // çizerdi. Tek sorgu, morph başlamadan.
                         let moments = PersistenceController.shared.fetchMoments(for: date, context: context)
-                        withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+                        withAnimation(ONEAnimation.screenTransition) {
                             selectedMoments = moments
                             selectedDate = date
                         }
@@ -66,7 +77,7 @@ struct ArchiveContainerView: View {
                 V3DayDetailView(
                     day: Day(date: Calendar.current.startOfDay(for: date), moments: selectedMoments),
                     onBack: {
-                        withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+                        withAnimation(ONEAnimation.screenTransition) {
                             selectedDate = nil
                         }
                     },
@@ -75,7 +86,7 @@ struct ArchiveContainerView: View {
                         // GlobalUIState.pendingEntryDate'i tüketir ve entryDay
                         // olarak V3EntryContainer'a geçirir.
                         GlobalUIState.shared.pendingEntryDate = Calendar.current.startOfDay(for: date)
-                        withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+                        withAnimation(ONEAnimation.screenTransition) {
                             selectedDate = nil
                         }
                         NotificationCenter.default.post(name: .init("switchToTodayTab"), object: nil)
@@ -109,8 +120,17 @@ struct ArchiveContainerView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .archiveTabRetapped)) { _ in
             if selectedDate != nil {
-                withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+                withAnimation(ONEAnimation.screenTransition) {
                     selectedDate = nil
+                }
+            }
+        }
+        .onChange(of: shouldMinimizeTabBar) { _, minimize in
+            withAnimation(ONEAnimation.easingColor) {
+                if minimize {
+                    GlobalUIState.shared.addMinimizeSource("archive.dayDetail")
+                } else {
+                    GlobalUIState.shared.removeMinimizeSource("archive.dayDetail")
                 }
             }
         }
@@ -124,25 +144,32 @@ struct ArchiveContainerView: View {
 
 struct ArchiveSkeletonView: View {
     @State private var shimmerOpacity: Double = 0.4
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let columns = 7
     private let rows = 5
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: V3Tokens.spacingMD) {
             ForEach(0..<rows, id: \.self) { _ in
-                HStack(spacing: 8) {
+                HStack(spacing: V3Tokens.spacingSM) {
                     ForEach(0..<columns, id: \.self) { _ in
-                        RoundedRectangle(cornerRadius: 6)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusSwatch)
                             .fill(V3Tokens.surface)
                             .frame(height: 36)
-                            .opacity(shimmerOpacity)
                     }
                 }
             }
         }
-        .padding(.horizontal, 20)
+        // Opaklık 35 hücrenin her birinde ayrı ayrı animate ediliyordu —
+        // hepsi aynı `shimmerOpacity`'ye baktığı için 35 bağımsız katman
+        // yerine tek bir grup yeterli. Ayrıca `reduceMotion` guard'ı yoktu;
+        // koddaki diğer tüm shimmer'lar (`CircleShimmer`, `SerenitySkeleton`)
+        // bu bayrağı okuyor, bu okumuyordu.
+        .opacity(reduceMotion ? 0.55 : shimmerOpacity)
+        .padding(.horizontal, V3Tokens.spacingXL)
         .onAppear {
+            guard !reduceMotion else { return }
             withAnimation(
                 .easeInOut(duration: 0.9).repeatForever(autoreverses: true)
             ) {

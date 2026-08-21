@@ -13,45 +13,70 @@ struct LanguagePickerView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationView {
-            List(AppLanguage.allCases) { language in
-                Button {
-                    languageManager.setLanguage(language)
-                    dismiss()
-                } label: {
-                    HStack {
-                        Text(language.displayName)
-                            .font(ONETypography.bodyLG)
-                            .foregroundColor(V3Tokens.ink)
-                        Spacer()
-                        if languageManager.currentLanguage == language {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(ONEBrand.kor)
-                        }
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .frame(minHeight: ONETokens.minTouchTarget)
-            }
-            .listStyle(.insetGrouped)
-            .navigationTitle(NSLocalizedString("profile.language", comment: ""))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
+        // `List(.insetGrouped)` kalktı: sistem listesi kendi zeminini, kendi
+        // satır yüksekliğini ve kendi ayraç payını getiriyordu. Kapatma
+        // düğmesi de sağ üstteydi — uygulamanın geri kalanında sol üstte.
+        V3SheetScreen(
+            title: NSLocalizedString("profile.language", comment: ""),
+            onClose: { dismiss() }
+        ) {
+            SettingsGroup {
+                ForEach(Array(AppLanguage.allCases.enumerated()), id: \.element.id) { index, language in
+                    LanguageRow(
+                        language: language,
+                        isSelected: languageManager.currentLanguage == language,
+                        isLast: index == AppLanguage.allCases.count - 1
+                    ) {
+                        ONEHaptics.pick()
+                        languageManager.setLanguage(language)
                         dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(V3Tokens.mutedText)
-                            .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
-                            .contentShape(Rectangle())
                     }
                 }
             }
         }
+    }
+}
+
+// MARK: - Dil satırı
+
+/// Seçim satırı. `ReasonRow` ile aynı kalıp — chevron yok, sağda işaret var.
+private struct LanguageRow: View {
+    let language: AppLanguage
+    let isSelected: Bool
+    let isLast: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 0) {
+                HStack(spacing: V3Tokens.spacingMD) {
+                    Text(language.displayName)
+                        .bodyMD()
+                        .foregroundColor(V3Tokens.ink)
+
+                    Spacer(minLength: V3Tokens.spacingSM)
+
+                    if isSelected {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(ONEBrand.kor)
+                    }
+                }
+                .padding(.horizontal, 15)
+                .padding(.vertical, 14)
+                .frame(minHeight: V3Tokens.minTouchTarget)
+                .contentShape(Rectangle())
+
+                if !isLast {
+                    Rectangle()
+                        .fill(V3Tokens.hairline)
+                        .frame(height: 1)
+                        .padding(.leading, 15)
+                }
+            }
+        }
+        .buttonStyle(.onePressable)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 

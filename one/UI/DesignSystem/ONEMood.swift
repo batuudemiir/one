@@ -2,7 +2,21 @@
 //  ONEMood.swift
 //  one
 //
-//  Design System - Mood System
+//  **Legacy mood — yalnızca göç/okuma katmanı.**
+//
+//  v3'ün tek mood kaynağı `V3Mood` (9 duygu). Bu enum bir seçici değil:
+//  arşivdeki eski kayıtların `moodColorHex` değerlerini çözebilmek için
+//  duruyor. `V3Mood.fromHex` onu bir fallback olarak kullanıyor — v1/v2
+//  doygun renkleri, pastel varyantları ve ara sürümlerin hex'leri hâlâ
+//  kullanıcıların arşivinde.
+//
+//  Sunum üyeleri (`color`, `pastelColor`, `label`, `meaning`, `icon`,
+//  `isDark`, `waveHeight`, `gradientStops`) kaldırıldı. Hepsi `V3Mood`'da
+//  var ve iki tablo tutmak paletlerin birbirinden kaymasının sebebiydi:
+//  doygun renk değişiyor, pastel geride kalıyordu.
+//
+//  Buraya yeni üye ekleme. Bir mood'un görünen bir özelliği gerekiyorsa
+//  `V3Mood`'a ekle.
 //
 
 import SwiftUI
@@ -22,154 +36,9 @@ enum ONEMood: String, Codable, CaseIterable, Identifiable {
     case sinirli   // sinirli  - dark crimson
 
     var id: String { rawValue }
-
-    var color: Color {
-        switch self {
-        case .atesli:    return ONETokens.moodTutkulu
-        case .isikli:    return ONETokens.moodYellow
-        case .enerjik:   return ONETokens.moodOrange
-        case .taze:      return ONETokens.moodLime
-        case .sakin:     return ONETokens.moodHuzurlu
-        case .nostaljik: return ONETokens.moodExcited
-        case .ozgur:     return ONETokens.moodTeal
-        case .derin:     return ONETokens.moodStabil
-        case .uzgun:     return ONETokens.moodIndigo
-        case .stresli:   return ONETokens.moodStress
-        case .yorgun:    return ONETokens.moodSlate
-        case .sinirli:   return ONETokens.moodAngry
-        }
-    }
-
-    var pastelColor: Color {
-        switch self {
-        case .atesli:    return ONETokens.moodPastelRed
-        case .isikli:    return ONETokens.moodPastelYellow
-        case .enerjik:   return ONETokens.moodPastelOrange
-        case .taze:      return ONETokens.moodPastelMint
-        case .sakin:     return ONETokens.moodPastelGreen
-        case .nostaljik: return ONETokens.moodPastelRose
-        case .ozgur:     return ONETokens.moodPastelBlue
-        case .derin:     return ONETokens.moodPastelIndigo
-        case .uzgun:     return ONETokens.moodPastelLavender
-        case .stresli:   return ONETokens.moodPastelStress
-        case .yorgun:    return ONETokens.moodPastelSlate
-        case .sinirli:   return ONETokens.moodPastelAngry
-        }
-    }
-
-    func atmosphereGradient(startPoint: UnitPoint = .topLeading,
-                            endPoint: UnitPoint = .bottomTrailing) -> LinearGradient {
-        LinearGradient(
-            stops: [
-                .init(color: pastelColor.opacity(0.18), location: 0.0),
-                .init(color: pastelColor.opacity(0.06), location: 0.55),
-                .init(color: .clear,                    location: 1.0)
-            ],
-            startPoint: startPoint,
-            endPoint: endPoint
-        )
-    }
-
-    var hex: String {
-        switch self {
-        case .atesli:    return "#E53935"
-        case .isikli:    return "#FDD835"
-        case .enerjik:   return "#FB6F3B"
-        case .taze:      return "#4CAF50"
-        case .sakin:     return "#26A69A"
-        case .nostaljik: return "#EC407A"
-        case .ozgur:     return "#42A5F5"
-        case .derin:     return "#3F51B5"
-        case .uzgun:     return "#78909C"
-        case .stresli:   return "#FF7043"
-        case .yorgun:    return "#90A4AE"
-        case .sinirli:   return "#B71C1C"
-        }
-    }
-
-    var label: String {
-        switch self {
-        case .atesli:    return "tutkulu"
-        case .isikli:    return "mutlu"
-        case .enerjik:   return "enerjik"
-        case .taze:      return "doğal"
-        case .sakin:     return "huzurlu"
-        case .nostaljik: return "heyecanlı"
-        case .ozgur:     return "sakin"
-        case .derin:     return "stabil"
-        case .uzgun:     return "üzgün"
-        case .stresli:   return "stresli"
-        case .yorgun:    return "yorgun"
-        case .sinirli:   return "sinirli"
-        }
-    }
-
-    var meaning: String {
-        switch self {
-        case .atesli:    return "içim yanıyor"
-        case .isikli:    return "içimden parlıyor"
-        case .enerjik:   return "taşıp duruyor"
-        case .taze:      return "yeni başlıyor"
-        case .sakin:     return "her şey yolunda"
-        case .nostaljik: return "coşkuyla doluyum"
-        case .ozgur:     return "hafif, dingin"
-        case .derin:     return "dengede, sabit"
-        case .uzgun:     return "içim sıkışmış"
-        case .stresli:   return "altında eziliyorum"
-        case .yorgun:    return "bitkin, tükenmişim"
-        case .sinirli:   return "içimde fırtına var"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .atesli:    return "flame.fill"
-        case .isikli:    return "sun.max.fill"
-        case .enerjik:   return "bolt.fill"
-        case .taze:      return "leaf.fill"
-        case .sakin:     return "water.waves"
-        case .nostaljik: return "star.fill"
-        case .ozgur:     return "wind"
-        case .derin:     return "anchor"
-        case .uzgun:     return "cloud.rain.fill"
-        case .stresli:   return "exclamationmark.triangle.fill"
-        case .yorgun:    return "moon.zzz.fill"
-        case .sinirli:   return "bolt.trianglebadge.exclamationmark.fill"
-        }
-    }
-
-    var isDark: Bool {
-        switch self {
-        case .isikli, .taze: return false
-        default: return true
-        }
-    }
-
-    var waveHeight: CGFloat {
-        switch self {
-        case .atesli:    return 28
-        case .isikli:    return 24
-        case .enerjik:   return 32
-        case .taze:      return 20
-        case .sakin:     return 16
-        case .nostaljik: return 30
-        case .ozgur:     return 22
-        case .derin:     return 18
-        case .uzgun:     return 14
-        case .stresli:   return 26
-        case .yorgun:    return 10
-        case .sinirli:   return 34
-        }
-    }
-
-    var gradientStops: [Color] {
-        let darkBase = ONETokens.oneVoid
-        return [color, color.opacity(0.4), darkBase]
-    }
-
-    var gradientStart: UnitPoint { .topLeading }
-    var gradientEnd: UnitPoint { .bottomTrailing }
 }
+
+// MARK: - Legacy hex çözümü
 
 extension ONEMood {
     init?(hex: String) {

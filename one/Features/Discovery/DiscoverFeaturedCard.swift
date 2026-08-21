@@ -1,1 +1,0 @@
-// DiscoverFeaturedCard — replaced by KesfetFeaturedCard

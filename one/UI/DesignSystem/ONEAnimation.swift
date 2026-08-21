@@ -51,29 +51,93 @@ enum ONEAnimation {
     
     // MARK: - Animation Type Configurations
     
-    /// Micro animation - subtle, quick interactions
-    /// Response: 0.25, Damping: 0.60
-    static let micro = Animation.spring(response: 0.25, dampingFraction: 0.60)
+    // Aşağıdaki altı token da **kritik sönümlü** (damping 1.0).
+    //
+    // Neden hepsi: bunların çağrı yerlerinin hiçbiri jest kaynaklı değil —
+    // ekran geçişi, bölüm açılışı, kademeli liste girişi, `.animation(_:value:)`
+    // ile sürülen bool'lar. Overshoot fiziksel bir borç ödemesidir: parmak
+    // momentum taşıdıysa hedefi aşmak doğru okunur, ama kendiliğinden beliren
+    // bir panelin zıplaması "yay" değil "arıza" gibi görünür. Bounce artık
+    // yalnız `dragSnapBack`/`dragDismiss`'te — orada jest gerçekten hız taşıyor.
+    //
+    // Response'lar da kısaldı: kritik sönümlü bir yay aynı response'ta
+    // alt-sönümlüden geç oturur, eskisiyle aynı bıraksak her şey ağırlaşırdı.
 
-    /// Card spring - card movements with organic bounce
-    /// Response: 0.40, Damping: 0.65
-    static let cardSpring = Animation.spring(response: 0.40, dampingFraction: 0.65)
+    // MARK: - Easing eğrileri (v3)
+    //
+    // `cubic-bezier(.2,.9,.25,1)` — v3 handoff'unun eğrisi. `V3Tokens`
+    // içinde duruyorlardı; hareketin tek bir yerde yaşaması için buraya
+    // taşındılar.
+    //
+    // Spring'lerle **birlikte** yaşıyorlar, çünkü iki farklı işi var:
+    // eğriler süresi bilinen, kesin başlangıç/bitişi olan geçişler için
+    // (renk dolgusu, çip seçimi, kayıt onayı); spring'ler ise ekran ve
+    // panel hareketi için — orada süre değil, oturma hissi belirleyici.
+    // "Tek eğri" iddiası bu yüzden bırakıldı: doğru değildi ve doğru
+    // olmasını istemek de yanlış olurdu.
+
+    /// Genel v3 geçişi.
+    static let easing      = Animation.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.32)
+    /// Basma anı — en kısa.
+    static let easingPress = Animation.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.12)
+    /// Çip / segment seçimi.
+    static let easingChip  = Animation.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.18)
+    /// Mood rengi dolgusu.
+    static let easingColor = Animation.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.30)
+    /// Kaydedildi ekranına geçiş.
+    static let easingSaved = Animation.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.36)
+
+    // MARK: - Spring'ler
+
+    /// Micro animation - subtle, quick interactions
+    /// Response: 0.22, Damping: 1.0
+    static let micro = Animation.spring(response: 0.22, dampingFraction: 1.0)
+
+    /// Card spring - card movements, screen switches, staggered list entrances
+    /// Response: 0.36, Damping: 1.0
+    static let cardSpring = Animation.spring(response: 0.36, dampingFraction: 1.0)
 
     /// Panel spring - panel and sheet transitions
-    /// Response: 0.44, Damping: 0.72
-    static let panelSpring = Animation.spring(response: 0.44, dampingFraction: 0.72)
+    /// Response: 0.38, Damping: 1.0
+    static let panelSpring = Animation.spring(response: 0.38, dampingFraction: 1.0)
 
     /// Screen transition - full screen changes
-    /// Response: 0.52, Damping: 0.82
-    static let screenTransition = Animation.spring(response: 0.52, dampingFraction: 0.82)
+    /// Response: 0.44, Damping: 1.0
+    static let screenTransition = Animation.spring(response: 0.44, dampingFraction: 1.0)
 
-    /// Mood transition - intentionally no bounce (emotional color shifts)
-    /// Response: 0.65, Damping: 0.92
-    static let moodTransition = Animation.spring(response: 0.65, dampingFraction: 0.92)
+    /// Mood transition - deliberately slow (emotional color shifts)
+    /// Response: 0.55, Damping: 1.0
+    static let moodTransition = Animation.spring(response: 0.55, dampingFraction: 1.0)
 
-    /// Tab switch - snappy with visible bounce
-    /// Response: 0.28, Damping: 0.60
-    static let tabSwitch = Animation.spring(response: 0.28, dampingFraction: 0.60)
+    /// Tab switch - a tap, not a flick: snappy but without overshoot
+    /// Response: 0.26, Damping: 1.0
+    static let tabSwitch = Animation.spring(response: 0.26, dampingFraction: 1.0)
+
+    // MARK: - Gesture-Driven Springs
+
+    /// Sürükleme eşiği aşılmadığında elemanın yerine dönüşü.
+    ///
+    /// `interactiveSpring` + `blendDuration`: kullanıcı geri dönen elemanı
+    /// yolda tekrar yakalarsa hareket kesilmeden devralınıyor. Düz `spring`
+    /// bunu yapamıyordu — yeni jest, hızı sıfırdan başlatıp görünür bir
+    /// duraklama üretiyordu.
+    /// Uygulamada bilerek bounce bırakılan **tek** yer burası: jest hızla
+    /// bitti, eleman o hızı taşıyarak yerine dönüyor. Apple'ın çekmece/sheet
+    /// değerleri (damping 0.8, response 0.3).
+    /// Response: 0.32, Damping: 0.80, Blend: 0.15
+    static let dragSnapBack = Animation.interactiveSpring(
+        response: 0.32, dampingFraction: 0.80, blendDuration: 0.15
+    )
+
+    /// Sürükleyerek kapatma onaylandığında elemanın ekran dışına uçuşu.
+    ///
+    /// Kritik sönümlü (0.72 değil 1.0): eleman ekrandan çıkıyor, orada
+    /// salınacak bir yer yok. Sabit süreli `easeOut` yerine spring, çünkü
+    /// kapanış da kesintiye uğratılabilir olmalı.
+    /// Response: 0.34, Damping: 1.0, Blend: 0.1
+    static let dragDismiss = Animation.interactiveSpring(
+        response: 0.34, dampingFraction: 1.0, blendDuration: 0.1
+    )
     
     // MARK: - Stagger Animation
     
@@ -98,12 +162,17 @@ enum ONEAnimation {
     /// Animation for button press
     /// Intended effect: Quick, responsive press with slight bounce
     /// Use for: Button press down animation
-    static let buttonPressAnimation = Animation.spring(response: 0.25, dampingFraction: 0.6)
+    ///
+    /// v3: spring'den tek easing eğrisine geçti. `.onePressable` uygulamada
+    /// 60'tan fazla yerde kullanılıyor; spring kaldığı sürece o butonların
+    /// hepsi v3'ün `cubic-bezier(.2,.9,.25,1)` kuralının dışında kalıyordu —
+    /// yeni v3 bileşenleri (`V3TopBar`, `SubScreenNavBar`) dahil.
+    static let buttonPressAnimation = easingPress
     
     /// Animation for button release
     /// Intended effect: Smooth return to normal state with controlled bounce
     /// Use for: Button release animation
-    static let buttonReleaseAnimation = Animation.spring(response: 0.35, dampingFraction: 0.7)
+    static let buttonReleaseAnimation = easingChip
 }
 
 // MARK: - Animation View Modifiers
@@ -196,12 +265,10 @@ private struct SlideTransitionModifier: ViewModifier {
         if reduceMotion {
             content.transition(.opacity)
         } else {
-            content.transition(
-                .asymmetric(
-                    insertion: .move(edge: edge).combined(with: .opacity),
-                    removal: .opacity
-                )
-            )
+            // Girdiği yoldan çıkar. Kenardan girip yerinde solmak, elemanın
+            // nereye gittiğine dair mekânsal ipucunu siliyordu — bir sonraki
+            // açılışta nereden geleceği de tahmin edilemez oluyor.
+            content.transition(.move(edge: edge).combined(with: .opacity))
         }
     }
 }

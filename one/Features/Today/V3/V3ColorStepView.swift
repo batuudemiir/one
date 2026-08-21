@@ -45,18 +45,18 @@ struct V3ColorStepView: View {
     private var scrollContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             if pastDayChip {
-                Text("GEÇMİŞ GÜN")
+                Text(NSLocalizedString("entry.pastDay", comment: ""))
                     .font(V3Typography.mono(11, weight: .regular))
                     .tracking(1.4)
                     .textCase(.uppercase)
                     .foregroundColor(V3Tokens.mutedText)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, V3Tokens.spacingMD)
                     .padding(.vertical, 6)
                     .background(
                         Capsule().fill(V3Tokens.wash)
                     )
-                    .padding(.top, 12)
-                    .padding(.bottom, 8)
+                    .padding(.top, V3Tokens.spacingMD)
+                    .padding(.bottom, V3Tokens.spacingSM)
             }
 
             // Selam varken başlık 38pt'ye iniyor: iki 44pt blok üst üste
@@ -90,23 +90,23 @@ struct V3ColorStepView: View {
                 .padding(.bottom, 6)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("Bir renk seç. Yeter.")
-                .font(V3Typography.sans(16, weight: .regular))
+            Text(NSLocalizedString("entry.pickColour", comment: ""))
+                .bodyLG()
                 .foregroundColor(V3Tokens.mutedText)
                 .padding(.bottom, 18)
 
             moodGrid
-                .padding(.bottom, 4)
+                .padding(.bottom, V3Tokens.spacingXS)
         }
     }
 
     // MARK: - Grid
 
     private var moodGrid: some View {
-        let columns = [GridItem(.flexible(), spacing: 8),
-                       GridItem(.flexible(), spacing: 8),
-                       GridItem(.flexible(), spacing: 8)]
-        return LazyVGrid(columns: columns, spacing: 8) {
+        let columns = [GridItem(.flexible(), spacing: V3Tokens.spacingSM),
+                       GridItem(.flexible(), spacing: V3Tokens.spacingSM),
+                       GridItem(.flexible(), spacing: V3Tokens.spacingSM)]
+        return LazyVGrid(columns: columns, spacing: V3Tokens.spacingSM) {
             ForEach(V3Mood.allCases) { mood in
                 MoodTile(
                     mood: mood,
@@ -139,27 +139,27 @@ struct V3ColorStepView: View {
     private var footer: some View {
         Button(action: { if selectedMood != nil { onContinue() } }) {
             Text(selectedMood == nil ? "Bir renk seç" : "Devam")
-                .font(V3Typography.sans(17, weight: .semibold))
+                .displayXS()
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
                 .foregroundColor(selectedMood?.ink ?? V3Tokens.mutedText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 18)
                 .background(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                         .fill(selectedMood?.color ?? V3Tokens.wash)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                                 .strokeBorder(V3Tokens.hairline,
                                               lineWidth: selectedMood == nil ? 1 : 0)
                         )
                 )
-                .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .contentShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous))
         }
-        .buttonStyle(V3CardPressStyle())
+        .buttonStyle(.onePressable)
         .disabled(selectedMood == nil)
         .accessibilityLabel(selectedMood.map { "Devam, \($0.label) seçildi" } ?? "Bir renk seç")
-        .animation(reduceMotion ? nil : V3Tokens.easingColor, value: selectedMood)
+        .animation(reduceMotion ? nil : ONEAnimation.easingColor, value: selectedMood)
         .padding(.top, 14)
         .background(V3Tokens.paper)
     }
@@ -190,12 +190,14 @@ private struct MoodTile: View {
                     // Hedef (details hero) tek kaynak bekler; seçili olmayan
                     // karelerin bu kimlikle hiç ilişkisi olmamalı.
                     if let ns = moodMorph, isSelected {
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                             .fill(mood.color)
                             .matchedGeometryEffect(id: "moodSurface", in: ns, isSource: true)
+                            .moodPattern(mood)
                     } else {
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                             .fill(mood.color)
+                            .moodPattern(mood)
                     }
                 }
                 // Kareler artık tam kare değil, hafif basık (1 : 0.88).
@@ -204,7 +206,7 @@ private struct MoodTile: View {
                 .aspectRatio(1.0 / 0.88, contentMode: .fit)
 
                 Text(mood.label.lowercased())
-                    .font(V3Typography.sans(14, weight: .semibold))
+                    .bodySMSemibold()
                     .foregroundColor(mood.ink)
                     .padding(11)
             }
@@ -217,21 +219,21 @@ private struct MoodTile: View {
             // yarıda kesiliyordu ("ateşli'yi seçince sol çizgi kesiliyor").
             // `strokeBorder` şeklin içine çizer — hiçbir kenar taşmaz.
             .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                     .strokeBorder(V3Tokens.ink,
                                   lineWidth: isSelected ? V3ColorStepView.selectionRing : 0)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 24 - V3ColorStepView.selectionRing, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusTile - V3ColorStepView.selectionRing, style: .continuous)
                     .strokeBorder(V3Tokens.paper,
                                   lineWidth: isSelected ? V3ColorStepView.selectionRing : 0)
                     .padding(V3ColorStepView.selectionRing)
             )
-            .animation(reduceMotion ? nil : V3Tokens.easingPress, value: isSelected)
+            .animation(reduceMotion ? nil : ONEAnimation.easingPress, value: isSelected)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
         .accessibilityLabel(mood.label)
-        .accessibilityValue(mood.bridgedMood.meaning)
+        .accessibilityValue(mood.meaning)
         .accessibilityHint("Bugünün rengi olarak seç")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }

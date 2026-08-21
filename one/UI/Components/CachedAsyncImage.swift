@@ -6,7 +6,7 @@
 //  Faz 3.3 (2026-04-26).
 //
 //  Why: SwiftUI's AsyncImage re-fetches every time the view re-mounts —
-//  this causes flicker in scrollable feeds (Discovery, Circle, Archive).
+//  this causes flicker in scrollable feeds (Circle, Archive).
 //  CachedAsyncImage serves from `ImageCache.shared` first, so revisits
 //  paint the previous result instantly while a fresh fetch happens silently.
 //
@@ -167,7 +167,7 @@ struct SerenitySkeleton: View {
 
     var body: some View {
         Rectangle()
-            .fill(ONEBrand.bone)
+            .fill(V3Tokens.wash)
             .overlay(
                 LinearGradient(
                     gradient: Gradient(colors: [
@@ -179,7 +179,7 @@ struct SerenitySkeleton: View {
                     endPoint: .init(x: phase + 0.4, y: 0.5)
                 )
             )
-            .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusCard))
+            .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard))
             .onAppear {
                 guard !reduceMotion else { return }
                 withAnimation(

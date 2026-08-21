@@ -206,11 +206,6 @@ class SpotifyManager: NSObject, ObservableObject {
         deleteTokenFromKeychain()
         deleteRefreshTokenFromKeychain()
         
-        // Clear recommendation cache when logging out
-        let cache = RecommendationCache()
-        cache.clearCache()
-        ONELogger.success("Cleared recommendation cache on logout", category: .spotify)
-        
         // Notify observers about authentication change
         NotificationCenter.default.post(name: NSNotification.Name("SpotifyAuthenticationChanged"), object: nil)
     }
@@ -547,98 +542,6 @@ extension SpotifyManager: ASWebAuthenticationPresentationContextProviding {
         return ASPresentationAnchor()
     }
 
-    // MARK: - Playlist Creation (ONE+ Premium)
-
-    /// Gets the current user's Spotify user ID
-    func getCurrentUserID() async throws -> String {
-        try await ensureValidToken()
-
-        guard let token = accessToken else {
-            throw SpotifyError.noToken
-        }
-
-        var request = URLRequest(url: URL(string: "https://api.spotify.com/v1/me")!)
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-
-        let (data, _) = try await URLSession.shared.data(for: request)
-        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        guard let userID = json?["id"] as? String else {
-            throw SpotifyError.invalidResponse
-        }
-        return userID
-    }
-
-    /// Creates a new private playlist on Spotify and adds tracks to it
-    func createPlaylist(name: String, description: String, trackURIs: [String]) async throws -> String {
-        let userID = try await getCurrentUserID()
-
-        try await ensureValidToken()
-        guard let token = accessToken else { throw SpotifyError.noToken }
-
-        // Create playlist
-        var createRequest = URLRequest(url: URL(string: "https://api.spotify.com/v1/users/\(userID)/playlists")!)
-        createRequest.httpMethod = "POST"
-        createRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        createRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let createBody: [String: Any] = [
-            "name": name,
-            "description": description,
-            "public": false
-        ]
-        createRequest.httpBody = try JSONSerialization.data(withJSONObject: createBody)
-
-        let (createData, _) = try await URLSession.shared.data(for: createRequest)
-        let createJSON = try JSONSerialization.jsonObject(with: createData) as? [String: Any]
-        guard let playlistID = createJSON?["id"] as? String else {
-            throw SpotifyError.invalidResponse
-        }
-
-        let externalURLs = createJSON?["external_urls"] as? [String: Any]
-        let playlistURL = externalURLs?["spotify"] as? String ?? ""
-
-        // Add tracks if available
-        if !trackURIs.isEmpty {
-            try await addTracksToPlaylist(playlistID: playlistID, trackURIs: trackURIs)
-        }
-
-        ONELogger.success("Created Spotify playlist: \(name) with \(trackURIs.count) tracks", category: .spotify)
-        return playlistURL
-    }
-
-    /// Adds tracks to an existing playlist
-    func addTracksToPlaylist(playlistID: String, trackURIs: [String]) async throws {
-        try await ensureValidToken()
-        guard let token = accessToken else { throw SpotifyError.noToken }
-
-        var request = URLRequest(url: URL(string: "https://api.spotify.com/v1/playlists/\(playlistID)/tracks")!)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body: [String: Any] = ["uris": trackURIs]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (_, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 else {
-            throw SpotifyError.invalidResponse
-        }
-    }
-
-    /// Searches for a specific track and returns its Spotify URI
-    func searchTrackURI(name: String, artist: String) async throws -> String? {
-        try await ensureValidToken()
-        guard let token = accessToken else { throw SpotifyError.noToken }
-
-        let query = "\(name) \(artist)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        var request = URLRequest(url: URL(string: "https://api.spotify.com/v1/search?q=\(query)&type=track&limit=1")!)
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-
-        let (data, _) = try await URLSession.shared.data(for: request)
-        let searchResponse = try JSONDecoder().decode(SpotifySearchResponse.self, from: data)
-        guard let track = searchResponse.tracks.items.first else { return nil }
-        return "spotify:track:\(track.id)"
-    }
 }
 
 // MARK: - Spotify Errors

@@ -30,12 +30,12 @@ struct V3SongPicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
-                .padding(.horizontal, 24)
-                .padding(.top, 24)
+                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.top, V3Tokens.spacingXL2)
 
             searchField
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
+                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.top, V3Tokens.spacingLG)
 
             if isQueryEmpty {
                 recommendationsContent
@@ -52,8 +52,8 @@ struct V3SongPicker: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack(spacing: 12) {
-            Text("Şarkı seç")
+        HStack(spacing: V3Tokens.spacingMD) {
+            Text(NSLocalizedString("song.pick", comment: ""))
                 .font(V3Typography.display(24, weight: .semibold))
                 .tracking(-0.6)
                 .foregroundColor(V3Tokens.ink)
@@ -67,10 +67,10 @@ struct V3SongPicker: View {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(.system(size: 12, weight: .semibold))
                         Text("Yenile")
-                            .font(V3Typography.sans(13, weight: .semibold))
+                            .bodyXSSemibold()
                     }
                     .foregroundColor(V3Tokens.mutedText)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, V3Tokens.spacingMD)
                     .padding(.vertical, 7)
                     .background(
                         Capsule(style: .continuous)
@@ -78,7 +78,7 @@ struct V3SongPicker: View {
                     )
                     .contentShape(Capsule(style: .continuous))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
                 .disabled(engine.isLoading)
                 .opacity(engine.isLoading ? 0.5 : 1)
             }
@@ -86,13 +86,13 @@ struct V3SongPicker: View {
                 dismiss()
             } label: {
                 Text("Kapat")
-                    .font(V3Typography.sans(15, weight: .medium))
+                    .bodyMDMedium()
                     .foregroundColor(V3Tokens.mutedText)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 7)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
         }
     }
 
@@ -101,9 +101,7 @@ struct V3SongPicker: View {
     private var searchContent: some View {
         Group {
             if vm.isSearching {
-                ProgressView()
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top, 24)
+                V3Loading(.region)
             }
             List {
                 ForEach(vm.searchResults) { song in
@@ -123,10 +121,10 @@ struct V3SongPicker: View {
     private var recommendationsContent: some View {
         if engine.sections.isEmpty {
             if engine.isLoading {
-                VStack(spacing: 12) {
-                    ProgressView()
-                    Text("Sana özel öneriler hazırlanıyor")
-                        .font(V3Typography.sans(13))
+                VStack(spacing: V3Tokens.spacingMD) {
+                    V3Loading(.inline)
+                    Text(NSLocalizedString("song.preparingSuggestions", comment: ""))
+                        .bodyXS()
                         .foregroundColor(V3Tokens.mutedText)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -137,14 +135,17 @@ struct V3SongPicker: View {
             }
         } else {
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 26) {
+                // `LazyVStack` — bölüm × şarkı sayısı kadar satır anında
+                // kuruluyordu, her biri kendi albüm kapağını yüklemeye
+                // başlıyordu. Şarkı arama en uzun listelerin olduğu yer.
+                LazyVStack(alignment: .leading, spacing: V3Tokens.spacingXL2) {
                     ForEach(engine.sections) { section in
                         sectionBlock(section)
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 22)
-                .padding(.bottom, 40)
+                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.top, V3Tokens.spacingXL)
+                .padding(.bottom, V3Tokens.spacingXL4)
             }
             .refreshable {
                 engine.refresh(mood: mood, context: viewContext)
@@ -162,7 +163,7 @@ struct V3SongPicker: View {
                 .tracking(1.6)
                 .foregroundColor(V3Tokens.faintText)
 
-            VStack(spacing: 0) {
+            LazyVStack(spacing: 0) {
                 ForEach(section.songs) { song in
                     songRowButton(song)
                         .padding(.vertical, 6)
@@ -181,12 +182,12 @@ struct V3SongPicker: View {
                 .font(.system(size: 24, weight: .light))
                 .foregroundColor(V3Tokens.faintText)
             Text(text)
-                .font(V3Typography.sans(14))
+                .bodySM()
                 .foregroundColor(V3Tokens.mutedText)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 40)
+        .padding(.horizontal, V3Tokens.spacingXL4)
     }
 
     // MARK: - Row
@@ -196,8 +197,8 @@ struct V3SongPicker: View {
             ONEHaptics.moodSelected()
             onSelect(song)
         } label: {
-            HStack(spacing: 12) {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
+            HStack(spacing: V3Tokens.spacingMD) {
+                RoundedRectangle(cornerRadius: V3Tokens.radiusChip, style: .continuous)
                     .fill(mood.color.opacity(0.4))
                     .frame(width: 44, height: 44)
                     .overlay(
@@ -208,17 +209,17 @@ struct V3SongPicker: View {
                                 } placeholder: {
                                     Color.clear
                                 }
-                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusChip, style: .continuous))
                             }
                         }
                     )
                 VStack(alignment: .leading, spacing: 2) {
                     Text(song.name)
-                        .font(V3Typography.sans(15, weight: .semibold))
+                        .bodyMDSemibold()
                         .foregroundColor(V3Tokens.ink)
                         .lineLimit(1)
                     Text(song.artist)
-                        .font(V3Typography.sans(13))
+                        .bodyXS()
                         .foregroundColor(V3Tokens.faintText)
                         .lineLimit(1)
                 }
@@ -226,7 +227,7 @@ struct V3SongPicker: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
     }
 
     // MARK: - Search field
@@ -236,7 +237,7 @@ struct V3SongPicker: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(V3Tokens.faintText)
             TextField("Şarkı, sanatçı…", text: $query)
-                .font(V3Typography.sans(15))
+                .bodyMD()
                 .foregroundColor(V3Tokens.ink)
                 .autocorrectionDisabled(true)
                 .onChange(of: query) { _, newValue in
@@ -250,16 +251,17 @@ struct V3SongPicker: View {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(V3Tokens.faintText)
                 }
-                .buttonStyle(.plain)
+                .contentShape(Rectangle())
+                .buttonStyle(.onePressable)
             }
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.vertical, V3Tokens.spacingMD)
         .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                 .fill(V3Tokens.surface)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                         .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         )

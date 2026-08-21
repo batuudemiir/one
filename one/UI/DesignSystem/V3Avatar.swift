@@ -219,7 +219,7 @@ struct V3AvatarPicker: View {
                 .animation(.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.42), value: popping)
                 .animation(.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.22), value: isSelected)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
         .accessibilityLabel(a11y(kind))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }

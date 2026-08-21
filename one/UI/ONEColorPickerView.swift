@@ -17,7 +17,6 @@ struct ONEColorPickerView: View {
     /// `-v3.debug.sampleFriends YES` launch argument'ı açar.
     @AppStorage("v3.debug.sampleFriends") private var sampleFriendsEnabled = false
     @Environment(\.managedObjectContext) private var viewContext
-    @State private var todayEntryStep: Step = .search
     @Namespace private var moodCoreNS
     /// Bugün kartındaki fotoğrafın tam ekrana morph'u için ortak namespace.
     /// Kart (source) ve `PhotoViewerSheet` (destination) environment üzerinden
@@ -28,13 +27,13 @@ struct ONEColorPickerView: View {
     /// `mainTabsView`. Optional so previews / isolated use still compile.
     var splashHandoffNS: Namespace.ID? = nil
     /// Last tab the user was on — used to coerce TabView selection when
-    /// `vm.currentScreen` becomes a non-tab screen (e.g. .confirm/.done).
+    /// `vm.currentScreen` becomes a non-tab screen.
     @State private var lastTab: ScreenType = Experiment.defaultLaunchScreen
 
     /// Per-scene persisted primary tab. Returning users should land where
     /// they left off, not always on `Experiment.defaultLaunchScreen`.
     /// Stored as `rawValue` of `PrimaryTab` so ritual/mid-flow screens
-    /// (`.confirm` / `.done` / `.today`) are structurally unrepresentable
+    /// (`.today`) are structurally unrepresentable
     /// as restore targets — only the four dock tabs round-trip.
     @SceneStorage("one.scene.primaryTab") private var restoredPrimaryTabRaw: String = ""
 
@@ -74,7 +73,7 @@ struct ONEColorPickerView: View {
 
     /// `TabView(selection:)` `Hashable` bir seçim istiyor ama
     /// `vm.currentScreen` sekme olmayan değerler de alabiliyor
-    /// (`.confirm` / `.done` / `.search`). `PrimaryTab(containing:)` o
+    /// (`.echo` gibi). `PrimaryTab(containing:)` o
     /// eşlemeyi yapıyor; yazma yönünde sekmenin kendi ekranına dönüyoruz.
     ///
     /// Bu köprü sayesinde deep-link ve SceneStorage restorasyonu
@@ -92,54 +91,21 @@ struct ONEColorPickerView: View {
 
     var body: some View {
         ZStack {
-            // v3: bone (#FBFAF7) — spec bg. Eski `oneCream` (#F7F6F3) daha bej.
-            ONEBrand.bone.ignoresSafeArea()
+            V3Tokens.paper.ignoresSafeArea()
 
-            // Shared tinted gradient for confirm/done screens
-            if vm.currentScreen == .confirm || vm.currentScreen == .done {
-                GeometryReader { geometry in
-                    RadialGradient(
-                        gradient: Gradient(colors: [
-                            (vm.selectedMood?.color ?? vm.selectedSong?.grad.first ?? Color.clear).opacity(0.15),
-                            Color.clear
-                        ]),
-                        center: .init(x: 0.5, y: vm.currentScreen == .confirm ? 0.3 : 0.5),
-                        startRadius: 0,
-                        endRadius: geometry.size.width * 0.8
-                    )
-                    .ignoresSafeArea()
-                    .animation(ONEAnimation.moodTransition, value: vm.selectedMood?.color)
-                }
-            }
-
-            // Kök yönlendirici:
-            // • confirm/done: sekme arayüzünü değiştiren tam ekranlar
-            // • diğer her şey: `BottomNavigation`'lı kabuk (Bugün dahil)
-            Group {
-                switch vm.currentScreen {
-                case .confirm:
-                    ConfirmScreen(vm: vm, viewContext: viewContext, moodCoreNS: moodCoreNS)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                            removal:   .move(edge: .leading).combined(with: .opacity)
-                        ))
-                case .done:
-                    DoneScreen(vm: vm, moodCoreNS: moodCoreNS)
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal:   .opacity
-                        ))
-                default:
-                    mainTabsView
-                        .transition(.opacity)
-                }
-            }
+            // Kök yönlendirici. v3'te tek dal var: dört sekmeli kabuk.
+            //
+            // Eskiden burada `.confirm` / `.done` için iki tam ekran dalı ve
+            // onlara özel bir radyal gradyan vardı. `currentScreen` hiçbir
+            // yerde `.confirm`'e atanmadığı için o dallar ulaşılamazdı —
+            // ekranların kendisiyle birlikte kalktılar.
+            mainTabsView
+                .transition(.opacity)
             .animation(ONEAnimation.cardSpring, value: vm.currentScreen)
         }
         .onChange(of: vm.currentScreen) { _, screen in
             if primaryTabs.contains(screen) { lastTab = screen }
             if screen != .today {
-                todayEntryStep = .search
                 // An akışı bir sekmede canlı kalıyor (TabView sekmeleri yok
                 // etmiyor), yani `V3EntryContainer.onDisappear`'ın tetiklendiğine
                 // güvenemeyiz. Kilit takılı kalırsa kullanıcı hiçbir sekmede
@@ -168,12 +134,10 @@ struct ONEColorPickerView: View {
             applyLaunchIntentIfNeeded()
         }
         .task {
-            // Arşiv/pattern senkron Core Data fetch'leri. Açılış Çevre olduğunda
-            // CloudKit `initializeUser()` ile aynı anda main thread'i tutuyorlardı —
-            // artık ilk kare çizildikten sonra çalışıyorlar.
+            // Arşiv/pattern fetch'leri buradaydı; sonuçlarını hiçbir view
+            // okumadığı için kaldırıldılar. Arşiv kendi verisini
+            // `ArchiveStore` üzerinden çekiyor.
             ONELaunchSignpost.event("pickerReady")
-            vm.loadArchiveData(context: viewContext)
-            vm.loadPatternData(context: viewContext)
         }
         .onChange(of: notificationManager.shouldNavigateToCircle) { _, shouldNavigate in
             if shouldNavigate {
@@ -191,12 +155,6 @@ struct ONEColorPickerView: View {
             if shouldNavigate {
                 showingEchoSheet = true
                 notificationManager.shouldNavigateToEcho = false
-            }
-        }
-        .onChange(of: notificationManager.shouldNavigateToDiscovery) { _, shouldNavigate in
-            if shouldNavigate {
-                withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .discover }
-                notificationManager.shouldNavigateToDiscovery = false
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .init("switchToTodayTab"))) { _ in
@@ -224,6 +182,19 @@ struct ONEColorPickerView: View {
                     }
             }
         }
+        .v3Sheet()
+        .onChange(of: showingEchoSheet) { _, isShown in
+            // Sheet açık iken alt çubuk arkada da olsa küçük dursun — kapanış
+            // animasyonu daha temiz oluyor ve varsayılan (.large değil) detent
+            // seçilirse arkadan görünen çubuk odağı bölmüyor.
+            withAnimation(ONEAnimation.easingColor) {
+                if isShown {
+                    GlobalUIState.shared.addMinimizeSource("profile.echo")
+                } else {
+                    GlobalUIState.shared.removeMinimizeSource("profile.echo")
+                }
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .init("openCitySettings"))) { _ in
             withAnimation(ONEAnimation.cardSpring) { vm.currentScreen = .profile }
         }
@@ -235,7 +206,7 @@ struct ONEColorPickerView: View {
                         get: { globalUI.archivePhotoURL != nil },
                         set: { newValue in
                             if !newValue {
-                                withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+                                withAnimation(ONEAnimation.screenTransition) {
                                     globalUI.archivePhotoURL = nil
                                 }
                             }
@@ -251,7 +222,7 @@ struct ONEColorPickerView: View {
                         get: { globalUI.archiveMomentImage != nil },
                         set: { newValue in
                             if !newValue {
-                                withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+                                withAnimation(ONEAnimation.screenTransition) {
                                     globalUI.archiveMomentImage = nil
                                 }
                             }
@@ -277,7 +248,7 @@ struct ONEColorPickerView: View {
                         get: { globalUI.todayPhotoURL != nil },
                         set: { newValue in
                             if !newValue {
-                                withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+                                withAnimation(ONEAnimation.screenTransition) {
                                     globalUI.todayPhotoURL = nil
                                 }
                             }
@@ -319,8 +290,7 @@ struct ONEColorPickerView: View {
         //    reloads, the latter is one-shot for cold-launch URLs.
         if notificationManager.shouldNavigateToCircle
             || notificationManager.shouldNavigateToToday
-            || notificationManager.shouldNavigateToEcho
-            || notificationManager.shouldNavigateToDiscovery {
+            || notificationManager.shouldNavigateToEcho {
             return
         }
         // If the app opened somewhere other than the experiment default,
@@ -328,7 +298,7 @@ struct ONEColorPickerView: View {
         if vm.currentScreen != Experiment.defaultLaunchScreen { return }
 
         guard let tab = primaryTab(fromRaw: restoredPrimaryTabRaw) else { return }
-        // Structurally impossible for `tab.screen` to be .confirm/.done/.today,
+        // Structurally impossible for `tab.screen` to be .today,
         // but guarding here documents the invariant for future changes.
         guard primaryTabs.contains(tab.screen) else { return }
         // Skip when restoring to the same tab the experiment already chose.
@@ -426,8 +396,8 @@ struct ONEColorPickerView: View {
     }
 
 
-    /// v3 dock: 4 sekme (An · Arşiv · Frekans · Profil), yüzen cam kapsül.
-    /// Keşfet ve Echo tabbardan çıktı — Keşfet feature-flag ile kapalı, Echo
+    /// v3 dock: 4 sekme (An · Arşiv · Çevre · Profil), yüzen cam kapsül.
+    /// Echo tabbardan çıktı —
     /// Profil altında layer route (Phase 4/6'ta bağlanacak).
     ///
     /// **Neden `TabView(.page)` ve neden `switch` değil?**
@@ -470,15 +440,19 @@ struct ONEColorPickerView: View {
             V3OfflineBanner(isVisible: !NetworkMonitor.shared.isOnline)
         }
         // Nav Instagram tarzı: yüzen pill içerik AKIŞININ ÜSTÜNE biner.
-        // `.safeAreaInset` ile şeffaf bir spacer bırakıyoruz — scroll içeriği
-        // buna kadar iner, kalan alan (nav yüksekliği kadar) nav'ın camının
-        // arkasına akar. Blur son satırları yumuşatarak Instagram/Music etkisi.
+        // `.safeAreaInset` scroll içeriğine nav yüksekliği kadar dinlenme payı
+        // bırakıyor — scroll bittiğinde son satır nav altında kalmıyor.
+        // Ama içerik nav altından **geçebilir** (scroll SIRASINDA blur efekti);
+        // spacer sadece "at-rest" pozisyonu belirliyor.
+        // 64pt ≈ nav gövdesi (52pt tab + 5×2 iç pad) + hafif nefes payı.
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            Color.clear.frame(height: 8)
+            Color.clear.frame(height: 64)
         }
         .overlay(alignment: .bottom) {
             BottomNavigation(currentScreen: $vm.currentScreen)
         }
+        // Sekme-içi scroll modifier'larının kimin aktif olduğunu bilmesi için.
+        .environment(\.currentPrimaryTab, PrimaryTab(containing: vm.currentScreen))
     }
 
     /// Tek bir sekmenin gövdesi.
@@ -531,12 +505,10 @@ struct ONEColorPickerView: View {
         #endif
     }
 
-    /// An sekmesi içeriği — birden fazla case (.today, default, .discover-kapalı)
-    /// aynı yere düşüyor.
+    /// An sekmesi içeriği — `.today` ve tanımsız ekranlar buraya düşüyor.
     private var entryTab: some View {
         TodayView(
             context: viewContext,
-            entryStep: $todayEntryStep,
             onClose: {
                 // Saved step'teki "Arşive git" bu closure'ı çağırıyor —
                 // kabuğu Arşiv sekmesine zıplat.
@@ -547,165 +519,6 @@ struct ONEColorPickerView: View {
 
 }
 
-// MARK: - Song Row Component
-struct SongRow: View {
-    let song: Song
-    var body: some View {
-        HStack(spacing: 12) {
-            if let artworkURL = song.artworkURL {
-                CachedAsyncImagePhase(url: artworkURL, maxPixelSize: ImageCache.thumbnailMaxPixelSize) { phase in
-                    if let image = phase.image {
-                        image.resizable().aspectRatio(contentMode: .fill)
-                    } else {
-                        RoundedRectangle(cornerRadius: 10).fill(V3Tokens.surface)
-                    }
-                }
-                .frame(width: 42, height: 42)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            } else {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(LinearGradient(gradient: Gradient(colors: [song.grad[0].opacity(0.6), song.grad[1].opacity(0.3)]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 42, height: 42)
-                    .overlay(Text(song.emoji).font(V3Typography.sans(20)))
-            }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(song.name)
-                    .monoSM(tracking: 0)
-                    .foregroundColor(.black)
-                    .lineLimit(1)
-                Text(song.artist)
-                    .monoSM(tracking: 0)
-                    .foregroundColor(V3Tokens.faintText)
-            }
-            Spacer()
-            
-            Text(song.genre.uppercased())
-                .monoLabel()
-                .foregroundColor(V3Tokens.faintText)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(V3Tokens.surface)
-                .cornerRadius(100)
-        }
-        .padding(.vertical, 6)
-    }
-}
-
-// MARK: - Mood Button Component
-struct MoodButton: View {
-    let mood: ONEMood
-    let isSelected: Bool
-    let action: () -> Void
-
-    @State private var rippleScale: CGFloat = 0
-    @State private var rippleOpacity: Double = 0
-    @State private var breatheAmp: CGFloat = 0
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        Button(action: {
-            if !reduceMotion { triggerRipple() }
-            action()
-        }) {
-            VStack(spacing: 8) {
-                ZStack {
-                    // Watch-style tap ripple
-                    Circle()
-                        .fill(mood.color.opacity(0.28))
-                        .frame(width: 80, height: 80)
-                        .scaleEffect(rippleScale)
-                        .opacity(rippleOpacity)
-                        .allowsHitTesting(false)
-
-                    BreatheBlob(amplitude: breatheAmp)
-                        .fill(mood.color)
-                        .frame(width: isSelected ? 56 : 48, height: isSelected ? 56 : 48)
-                        .overlay(
-                            Circle()
-                                .strokeBorder(isSelected ? Color.black.opacity(0.18) : Color.clear, lineWidth: 3)
-                                .padding(-4)
-                        )
-                        .shadow(color: isSelected ? mood.color.opacity(0.4) : Color.clear, radius: 10, y: 5)
-                        .animation(ONEAnimation.micro, value: isSelected)
-                }
-                .frame(width: 80, height: 80)
-
-                Text(mood.label.uppercased())
-                    .monoSM(tracking: 1.2)
-                    .foregroundColor(isSelected ? .black : V3Tokens.mutedText)
-                    .opacity(isSelected ? 1.0 : 0.6)
-                    .animation(ONEAnimation.micro, value: isSelected)
-            }
-        }
-        .onChange(of: isSelected) { _, selected in
-            if selected && !reduceMotion {
-                withAnimation(.easeInOut(duration: ONEAnimation.durationBreathe).repeatForever(autoreverses: true)) {
-                    breatheAmp = 5
-                }
-            } else {
-                withAnimation(.easeOut(duration: 0.25)) {
-                    breatheAmp = 0
-                }
-            }
-        }
-        .onAppear {
-            if isSelected && !reduceMotion {
-                withAnimation(.easeInOut(duration: ONEAnimation.durationBreathe).repeatForever(autoreverses: true)) {
-                    breatheAmp = 5
-                }
-            }
-        }
-        .buttonStyle(PlainButtonStyle())
-        .accessibilityLabel(String(format: NSLocalizedString("accessibility.confirm.moodButton", comment: ""), mood.label))
-        .accessibilityHint(mood.meaning)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-
-    private func triggerRipple() {
-        rippleScale = 0.2
-        rippleOpacity = 0.7
-        withAnimation(.easeOut(duration: 0.45)) {
-            rippleScale = 1.4
-            rippleOpacity = 0
-        }
-    }
-}
-
-// MARK: - Breathe Blob Shape (Watch Mindfulness morph)
-
-struct BreatheBlob: Shape {
-    var amplitude: CGFloat
-
-    var animatableData: CGFloat {
-        get { amplitude }
-        set { amplitude = newValue }
-    }
-
-    func path(in rect: CGRect) -> Path {
-        // amplitude ≈ 0 → saf daire, 180 trig hesabından kaçın
-        guard amplitude > 0.5 else {
-            return Path(ellipseIn: rect)
-        }
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        // baseR: frame sınırını aşmamak için amplitude kadar içeri al
-        let baseR  = min(rect.width, rect.height) / 2 - amplitude
-        let bumps  = 6
-        var path   = Path()
-        let steps  = 180
-
-        for i in 0...steps {
-            let angle = CGFloat(i) / CGFloat(steps) * 2 * .pi
-            let r     = baseR + amplitude * sin(CGFloat(bumps) * angle)
-            let x     = center.x + r * cos(angle - .pi / 2)
-            let y     = center.y + r * sin(angle - .pi / 2)
-            if i == 0 { path.move(to: CGPoint(x: x, y: y)) }
-            else       { path.addLine(to: CGPoint(x: x, y: y)) }
-        }
-        path.closeSubpath()
-        return path
-    }
-}
 
 // MARK: - Animations
 // BreathingAnimation now provided by DesignSystem/ONEAnimation.swift

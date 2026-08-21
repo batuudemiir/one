@@ -66,7 +66,7 @@ struct PublicProfileHeroSection: View {
 
                 // İsim + @username overlay
                 if let p = profile {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                         Text(p.displayName)
                             .displayLG()
                             .lineLimit(2)
@@ -84,20 +84,20 @@ struct PublicProfileHeroSection: View {
                                 .shadow(color: .black.opacity(0.30), radius: 6, x: 0, y: 1)
                         }
                     }
-                    .padding(.horizontal, 22)
-                    .padding(.bottom, 20)
+                    .padding(.horizontal, V3Tokens.spacingXL)
+                    .padding(.bottom, V3Tokens.spacingXL)
                 } else {
                     // Yükleme iskeleti
-                    VStack(alignment: .leading, spacing: 8) {
-                        RoundedRectangle(cornerRadius: 6)
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusSwatch)
                             .fill(Color.white.opacity(0.25))
                             .frame(width: 160, height: 24)
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusSwatch)
                             .fill(Color.white.opacity(0.18))
                             .frame(width: 100, height: 14)
                     }
-                    .padding(.horizontal, 22)
-                    .padding(.bottom, 20)
+                    .padding(.horizontal, V3Tokens.spacingXL)
+                    .padding(.bottom, V3Tokens.spacingXL)
                 }
             }
             .frame(width: proxy.size.width, height: stretchedHeight)

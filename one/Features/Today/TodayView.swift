@@ -11,7 +11,6 @@ struct TodayView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var vm: TodayViewModel
-    @Binding var entryStep: Step
 
     // Streak milestone kutlaması
     @State private var showMilestone:    Bool    = false
@@ -21,12 +20,9 @@ struct TodayView: View {
     // A4 — İlk entry sonrası Çevre davet kancası
     @State private var showContactsInvite: Bool  = false
 
-    // Faz 3 — telafi: bugün zaten doluyken geçmiş bir günü doldurma sheet'i
-    @State private var backfillTarget: BackfillTarget? = nil
-
     // Kayıt anı — SaveRitualMoment tetikleyicisi
     @State private var showRitual:   Bool    = false
-    @State private var ritualMood:   ONEMood? = nil
+    @State private var ritualMood:   V3Mood? = nil
 
     // Kayıt sonrası opsiyonel ekler (ritüel 2 adıma indiği için)
     @State private var showExtraPhotoPicker: Bool = false
@@ -34,18 +30,16 @@ struct TodayView: View {
     @State private var extraPhotoItem: PhotosPickerItem? = nil
     @State private var extraNoteText: String = ""
 
-    /// Ritüelin sol üstündeki ✕ — kullanıcıyı geldiği yere (Frekans) döndürür.
+    /// Ritüelin sol üstündeki ✕ — kullanıcıyı geldiği yere (Çevre) döndürür.
     /// nil ise ✕ gizlenir; kapatacak bir yer yoksa ölü bir buton göstermek
     /// yanlış olur.
     var onClose: (() -> Void)? = nil
 
     init(
         context: NSManagedObjectContext,
-        entryStep: Binding<Step>,
         onClose: (() -> Void)? = nil
     ) {
         _vm = StateObject(wrappedValue: TodayViewModel(context: context))
-        _entryStep = entryStep
         self.onClose = onClose
     }
 
@@ -60,14 +54,14 @@ struct TodayView: View {
                 V3EntryContainer(vm: vm, onArchive: onClose)
                     .transition(.opacity)
             }
-            .animation(.spring(response: 0.45, dampingFraction: 0.82), value: vm.todayState == .completed)
+            .animation(ONEAnimation.screenTransition, value: vm.todayState == .completed)
 
             // Streak milestone kutlaması
             if showMilestone, let milestone = vm.streakMilestone {
                 VStack {
                     Spacer()
                     StreakMilestoneCard(days: milestone)
-                        .padding(.horizontal, 24)
+                        .padding(.horizontal, V3Tokens.spacingXL2)
                         .padding(.bottom, 130)
                         .scaleEffect(milestoneScale)
                         .opacity(milestoneOpacity)
@@ -103,11 +97,11 @@ struct TodayView: View {
                    value: vm.hasHydratedTodayEntry)
         .overlay(alignment: .bottom) {
             if vm.circleShareFailed {
-                HStack(spacing: 8) {
+                HStack(spacing: V3Tokens.spacingSM) {
                     Image(systemName: "wifi.slash")
                         .font(.system(size: 13, weight: .medium))
-                    Text("Çevre paylaşımı başarısız — internet bağlantını kontrol et.")
-                        .font(ONETypography.bodyXS)
+                    Text(NSLocalizedString("circle.shareFailed", comment: ""))
+                        .font(V3Typography.sans(13, relativeTo: .footnote))
                         .multilineTextAlignment(.leading)
                     Spacer(minLength: 0)
                     Button {
@@ -116,18 +110,19 @@ struct TodayView: View {
                         Image(systemName: "xmark")
                             .font(.system(size: 11, weight: .semibold))
                     }
+                    .contentShape(Rectangle())
                 }
                 .foregroundStyle(ONEBrand.bone)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(.horizontal, V3Tokens.spacingLG)
+                .padding(.vertical, V3Tokens.spacingMD)
                 .background(
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
                         .fill(Color(hex: "#CC3333"))
                 )
-                .padding(.horizontal, 24)
+                .padding(.horizontal, V3Tokens.spacingXL2)
                 .padding(.bottom, 130)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
-                .animation(.spring(response: 0.38, dampingFraction: 0.78), value: vm.circleShareFailed)
+                .animation(ONEAnimation.panelSpring, value: vm.circleShareFailed)
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("Çevre paylaşımı başarısız. İnternet bağlantını kontrol et.")
             }
@@ -139,15 +134,15 @@ struct TodayView: View {
             // `hasHydratedTodayEntry` is set on the same tick the initial fetch
             // publishes, so any later change is a real save.
             guard vm.hasHydratedTodayEntry else { return }
-            let mood = ONEMood(hex: entry.moodColorHex)
-            triggerRitual(mood: mood)
+            // `closest(toHex:)` — tam eşleşme yoksa en yakın v3 rengine düşer.
+            // Eskiden `ONEMood(hex:)` idi ve kayıt yolu `V3Mood`'la yazdığı için
+            // aynı an iki farklı mood uzayında çözülüyordu.
+            triggerRitual(mood: V3Mood.closest(toHex: entry.moodColorHex))
             // VoiceOver kullanıcısı save ritual'ı görmez — sözel duyuru gerekli.
             UIAccessibility.post(
                 notification: .announcement,
                 argument: NSLocalizedString("today.moodSaved.a11y", comment: "Mood kaydedildi anonsu")
             )
-            // Kayıt tamamlandı — step sıfırla ki tab bar görünsün
-            entryStep = .search
         }
         .onChange(of: vm.streakMilestone) { _, milestone in
             guard milestone != nil else { return }
@@ -184,20 +179,12 @@ struct TodayView: View {
                     vm.dismissFirstEntryInvite(action: "skip")
                 }
             )
-            .presentationDetents([.large])
+            .v3Sheet(detents: [.large])
         }
         .sheet(isPresented: $showContactsInvite) {
             ContactsInviteView()
         }
-        // Faz 3 — telafi ritüeli. Bugün dolu olduğu için ana akış
-        // TodayCompletedView'da; geçmiş gün burada modal olarak doldurulur.
-        .sheet(item: $backfillTarget) { target in
-            TodayRitualView(vm: vm, backfillDate: target.date) {
-                // Kayıt da vazgeçme de buraya düşer — tek çıkış noktası.
-                backfillTarget = nil
-            }
-            .presentationDetents([.large])
-        }
+        .v3Sheet()
         // ── Kayıt sonrası opsiyonel ekler ──────────────────────────────
         .photosPicker(isPresented: $showExtraPhotoPicker,
                       selection: $extraPhotoItem,
@@ -217,7 +204,7 @@ struct TodayView: View {
                 vm.attachPhotoAndNote(note: note)
                 showExtraNoteSheet = false
             }
-            .presentationDetents([.height(300)])
+            .v3Sheet(detents: [.height(300)])
         }
         .alert("Dynamic Island Kapalı", isPresented: $vm.showLiveActivityAlert) {
             Button("Ayarları Aç") {
@@ -227,14 +214,14 @@ struct TodayView: View {
             }
             Button("Tamam", role: .cancel) {}
         } message: {
-            Text("Mood'unu Dynamic Island'da görmek için Ayarlar > ONE > Canlı Etkinlikler'i etkinleştir.")
+            Text(NSLocalizedString("liveActivity.enableHint", comment: ""))
         }
     }
 
     /// Kayıt anını tetikler. Koreografinin tamamı `SaveRitualMoment`
     /// içinde — burada yalnız hangi mood'la başlayacağı söyleniyor.
     /// Temizliği de o view kendi bitişinde yapıyor (`onFinished`).
-    private func triggerRitual(mood: ONEMood?) {
+    private func triggerRitual(mood: V3Mood?) {
         // mood çözülemezse (ör. arşivin nötr gri placeholder'ı) ritüel hiç
         // açılmıyor — eskiden burada yalnız `ritualMood` nil kalıyor ama
         // shader yine de başlatılıyordu, yani kapatacak kimse olmadan.
@@ -276,25 +263,25 @@ struct StreakMilestoneCard: View {
     }
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: V3Tokens.spacingLG) {
             Text(emoji)
                 .font(V3Typography.sans(32))
                 .accessibilityHidden(true) // emoji süs — title zaten gün sayısını söylüyor
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                 Text(title)
-                    .font(ONETypography.displaySM)
+                    .font(V3Typography.display(20, relativeTo: .title3))
                     .foregroundColor(ONEBrand.bone)
                 Text(subtitle)
-                    .font(ONETypography.monoSM)
+                    .font(V3Typography.mono(11, weight: .medium))
                     .foregroundColor(ONEBrand.bone.opacity(0.75))
             }
             Spacer()
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
         .padding(.vertical, 18)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel)
                 .fill(V3Tokens.ink)
                 .shadow(color: Color.black.opacity(0.18), radius: 20, x: 0, y: 8)
         )
@@ -322,7 +309,7 @@ private struct TodayEchoPlaceholder: View {
 
     var body: some View {
         ZStack {
-            ONEBrand.bone
+            V3Tokens.paper
                 .ignoresSafeArea()
 
             // Gentle color wash — echoes the mood without asserting it.
@@ -332,7 +319,7 @@ private struct TodayEchoPlaceholder: View {
 
             VStack(spacing: 14) {
                 Text("ONE")
-                    .font(ONETypography.displayXL)
+                    .font(V3Typography.display(40))
                     .foregroundColor(V3Tokens.ink)
 
                 Circle()
@@ -341,7 +328,7 @@ private struct TodayEchoPlaceholder: View {
                     .blur(radius: 8)
 
                 Text(label)
-                    .font(ONETypography.monoSM)
+                    .font(V3Typography.mono(11, weight: .medium))
                     .foregroundColor(V3Tokens.ink)
             }
             .opacity(0.35)
@@ -350,7 +337,7 @@ private struct TodayEchoPlaceholder: View {
 }
 
 #Preview {
-    TodayView(context: PersistenceController.preview.container.viewContext, entryStep: .constant(.search))
+    TodayView(context: PersistenceController.preview.container.viewContext)
 }
 
 // MARK: - Kayıt sonrası not ekleme
@@ -364,19 +351,19 @@ private struct ExtraNoteSheet: View {
     @FocusState private var focused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: ONETokens.spacingLG) {
-            Text("Bugün nasıl hissettirdi?")
-                .font(ONETypography.displaySM)
+        VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
+            Text(NSLocalizedString("today.howDidItFeel", comment: ""))
+                .font(V3Typography.display(20, relativeTo: .title3))
                 .fontWeight(.semibold)
-                .foregroundStyle(ONETokens.oneVoid)
+                .foregroundStyle(V3Tokens.darkGround)
 
             TextEditor(text: $text)
-                .font(ONETypography.bodySM)
+                .font(V3Typography.sans(14, relativeTo: .subheadline))
                 .foregroundStyle(V3Tokens.ink)
                 .scrollContentBackground(.hidden)
-                .padding(ONETokens.spacingMD)
+                .padding(V3Tokens.spacingMD)
                 .background(
-                    RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                         .fill(V3Tokens.surface)
                 )
                 .frame(height: 110)
@@ -384,19 +371,19 @@ private struct ExtraNoteSheet: View {
 
             Button(action: { onSave(text) }) {
                 Text("kaydet")
-                    .font(ONETypography.bodyMD)
+                    .font(V3Typography.sans(15, relativeTo: .callout))
                     .fontWeight(.semibold)
                     .foregroundStyle(ONEBrand.bone)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 15)
                     .background(Capsule().fill(V3Tokens.ink))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
             .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .opacity(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.4 : 1)
         }
-        .padding(ONETokens.spacingXL2)
-        .background(ONEBrand.bone)
+        .padding(V3Tokens.spacingXL2)
+        .background(V3Tokens.paper)
         .onAppear { focused = true }
     }
 }

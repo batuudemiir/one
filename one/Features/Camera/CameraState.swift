@@ -82,20 +82,23 @@ final class CameraState: ObservableObject {
     }
 
     // Called from SwiftUI buttons — always on main thread
-    func cycleFlash()  { flash = flash.next; ud.set(flash.rawValue, forKey: "cam.flash"); haptic(.light) }
-    func cycleDelay()  { delay = delay.next; ud.set(delay.rawValue, forKey: "cam.delay"); haptic(.light) }
-    func toggleGrid()  { grid.toggle(); ud.set(grid, forKey: "cam.grid"); haptic(.light) }
+    //
+    // Bu dördü `haptic(.light)` diyordu: dosyanın kendi içindeki, ham
+    // `UIImpactFeedbackGenerator` saran özel bir yardımcı. Yardımcı
+    // `ONEHaptics`'e geçiş sırasında kaldırıldı ama çağrıları kalmıştı.
+    // `toggle()` doğru karşılığı — vizör ayarlarının hepsi bir anahtar
+    // çevirme jesti (flash, gecikme, ızgara, film tonu).
+    func cycleFlash()  { flash = flash.next; ud.set(flash.rawValue, forKey: "cam.flash"); ONEHaptics.toggle() }
+    func cycleDelay()  { delay = delay.next; ud.set(delay.rawValue, forKey: "cam.delay"); ONEHaptics.toggle() }
+    func toggleGrid()  { grid.toggle(); ud.set(grid, forKey: "cam.grid"); ONEHaptics.toggle() }
     func selectFilmPreset(_ preset: FilmPreset) {
         filmPreset = preset
         ud.set(preset.rawValue, forKey: "cam.filmPreset")
-        haptic(.light)
+        ONEHaptics.toggle()
     }
-    func shoot()       { haptic(.heavy); onShoot?() }
-    func flip()        { haptic(.medium); onFlip?() }
-    func zoomPreset(_ f: CGFloat) { haptic(.light); onSetZoom?(f) }
+    func shoot()       { ONEHaptics.photoCapture(); onShoot?() }
+    func flip()        { ONEHaptics.toggle();       onFlip?() }
+    func zoomPreset(_ f: CGFloat) { ONEHaptics.pick(); onSetZoom?(f) }
     func adjustExp(_ v: Float)    { onSetExp?(v) }
 
-    private func haptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
-        UIImpactFeedbackGenerator(style: style).impactOccurred()
-    }
 }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import CloudKit
 
 /// Bir arkadaşın profili.
@@ -17,11 +18,11 @@ import CloudKit
 ///
 /// `PublicUserProfile` modeli `totalShareDays`, `currentStreak`,
 /// `dominantMoodWord`, `topTracks` taşıyor ama eski ekran bunları hiç
-/// göstermiyordu — prototipin "ortak frekans" ve "ortak şarkılar"
+/// göstermiyordu — prototipin "ortak uyum" ve "ortak şarkılar"
 /// bölümlerinin gerçek veri karşılığı bunlar.
 struct FriendProfileScreen: View {
     let userID: String
-    /// Bugünkü paylaşımı elde varsa kart doğrudan çizilir (Frekans'tan
+    /// Bugünkü paylaşımı elde varsa kart doğrudan çizilir (Çevre'den
     /// gelindiğinde ikinci bir sorgu gerekmesin diye).
     var todayShare: CKRecord? = nil
     let onBack: () -> Void
@@ -29,6 +30,15 @@ struct FriendProfileScreen: View {
     @StateObject private var vm: PublicProfileViewModel
     @State private var isWorking = false
     @State private var showRemoveConfirm = false
+    /// Çözülmüş profil fotoğrafı.
+    ///
+    /// Eskiden `identity(_:)` view builder'ının içinde
+    /// `UIImage(contentsOfFile:)` çağrılıyordu — yani her render'da diskten
+    /// okuma + JPEG decode, main thread'de. Doğru desen zaten kod tabanında
+    /// var (`PublicProfileHeroSection.loadAvatarIfNeeded`); burada
+    /// uygulanmamıştı.
+    @State private var avatarImage: UIImage? = nil
+    @State private var avatarLoadedForPath: String? = nil
 
     init(userID: String, todayShare: CKRecord? = nil, onBack: @escaping () -> Void) {
         self.userID = userID
@@ -48,15 +58,13 @@ struct FriendProfileScreen: View {
             onBack: onBack
         ) {
             if vm.isLoading && profile == nil {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, ONETokens.spacingXL4)
+                V3Loading(.region)
             } else if let profile {
                 VStack(alignment: .leading, spacing: 0) {
                     identity(profile)
 
                     if let share = todayShare {
-                        todayCard(share).padding(.top, ONETokens.spacingXL)
+                        todayCard(share).padding(.top, V3Tokens.spacingXL)
                     }
 
                     if hasStats(profile) {
@@ -78,7 +86,7 @@ struct FriendProfileScreen: View {
                             .bodySM()
                             .fixedSize(horizontal: false, vertical: true)
                         }
-                        .padding(.top, ONETokens.spacingMD)
+                        .padding(.top, V3Tokens.spacingMD)
                     }
 
                     if let tracks = profile.topTracks, !tracks.isEmpty {
@@ -94,7 +102,7 @@ struct FriendProfileScreen: View {
                         Rectangle()
                             .fill(V3Tokens.ink.opacity(0.09))
                             .frame(height: 1)
-                            .padding(.vertical, ONETokens.spacingXL)
+                            .padding(.vertical, V3Tokens.spacingXL)
 
                         Button {
                             showRemoveConfirm = true
@@ -104,7 +112,8 @@ struct FriendProfileScreen: View {
                                 .foregroundColor(ONEBrand.kor)
                                 .frame(maxWidth: .infinity, minHeight: 44)
                         }
-                        .buttonStyle(.plain)
+                        .contentShape(Rectangle())
+                        .buttonStyle(.onePressable)
                         .disabled(isWorking)
                     }
                 }
@@ -113,7 +122,7 @@ struct FriendProfileScreen: View {
                     .bodySM()
                     .foregroundColor(V3Tokens.mutedText)
                     .frame(maxWidth: .infinity)
-                    .padding(.top, ONETokens.spacingXL3)
+                    .padding(.top, V3Tokens.spacingXL3)
             }
         }
         .confirmationDialog(
@@ -127,17 +136,34 @@ struct FriendProfileScreen: View {
             Button(NSLocalizedString("general.cancel", comment: ""), role: .cancel) {}
         }
         .task { vm.load() }
+        .task(id: profile?.profilePhotoFileURL?.path) {
+            await loadAvatarIfNeeded()
+        }
+    }
+
+    /// Avatarı arka planda okuyup çözer. Aynı yol için tekrar çalışmaz.
+    private func loadAvatarIfNeeded() async {
+        guard let path = profile?.profilePhotoFileURL?.path else {
+            avatarImage = nil
+            avatarLoadedForPath = nil
+            return
+        }
+        guard avatarLoadedForPath != path else { return }
+        let decoded = await Task.detached(priority: .userInitiated) {
+            UIImage(contentsOfFile: path)
+        }.value
+        avatarImage = decoded
+        avatarLoadedForPath = path
     }
 
     // MARK: Kimlik
 
     private func identity(_ profile: PublicUserProfile) -> some View {
-        HStack(spacing: ONETokens.spacingLG) {
+        HStack(spacing: V3Tokens.spacingLG) {
             // Kişinin yüklediği profil fotoğrafı — eskiden bu ekran her zaman
             // baş harf çiziyordu, fotoğraf hiç okunmuyordu.
             Group {
-                if let url = profile.profilePhotoFileURL,
-                   let image = UIImage(contentsOfFile: url.path) {
+                if let image = avatarImage {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
@@ -206,17 +232,17 @@ struct FriendProfileScreen: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 7) {
                     Text(NSLocalizedString("friendProfile.today", comment: ""))
-                        .font(V3Typography.sans(14.5, weight: .semibold))
+                        .bodySMSemibold()
                         .foregroundColor(V3Tokens.ink)
 
                     if !moodWord.isEmpty {
                         Text(moodWord)
-                            .font(V3Typography.sans(10.5, weight: .semibold))
+                            .bodyMicroSemibold()
                             .foregroundColor(Color(hex: moodHex))
                             .padding(.horizontal, 7)
                             .padding(.vertical, 2)
                             .background(
-                                RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                RoundedRectangle(cornerRadius: V3Tokens.radiusSwatch, style: .continuous)
                                     .fill(Color(hex: moodHex).opacity(0.14))
                             )
                     }
@@ -230,7 +256,7 @@ struct FriendProfileScreen: View {
                 }
 
                 Text("\(song) — \(artist)")
-                    .font(V3Typography.sans(12.5))
+                    .bodyMicro()
                     .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
             }
@@ -238,7 +264,7 @@ struct FriendProfileScreen: View {
         .padding(.horizontal, 15)
         .padding(.vertical, 13)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .oneCardBackground(radius: ONETokens.radiusFriend, opacity: 0.78)
+        .oneCardBackground(radius: V3Tokens.radiusPanel)
     }
 
     // MARK: İstatistik
@@ -257,8 +283,8 @@ struct FriendProfileScreen: View {
     }
 
     private func trackRow(_ title: String) -> some View {
-        HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
+        HStack(spacing: V3Tokens.spacingMD) {
+            RoundedRectangle(cornerRadius: V3Tokens.radiusMosaic, style: .continuous)
                 .fill(accent.opacity(0.85))
                 .frame(width: 40, height: 40)
                 .overlay(
@@ -268,7 +294,7 @@ struct FriendProfileScreen: View {
                 )
 
             Text(title)
-                .font(V3Typography.sans(14, weight: .semibold))
+                .bodySMSemibold()
                 .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
 
@@ -282,8 +308,8 @@ struct FriendProfileScreen: View {
         Text(text)
             .monoLabel(tracking: 1.3)
             .foregroundColor(V3Tokens.faintText)
-            .padding(.top, ONETokens.spacingXL)
-            .padding(.bottom, ONETokens.spacingSM)
+            .padding(.top, V3Tokens.spacingXL)
+            .padding(.bottom, V3Tokens.spacingSM)
     }
 
     // MARK: Actions

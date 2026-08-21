@@ -86,6 +86,9 @@ class EchoViewModel: ObservableObject {
 
     private func fetchAllSongs() -> [DailySong] {
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        // Sinirsiz tarama: kayit sayisi buyudukce bellek dogrusal artiyordu.
+        // Batch faulting ile tepe bellek sabit kaliyor.
+        fetchRequest.fetchBatchSize = 100
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
         return (try? context.fetch(fetchRequest)) ?? []
     }

@@ -106,7 +106,6 @@ enum NotificationMessageBuilder {
  case .streakMilestone: return streakMilestoneVariants(ctx)
  case .weeklySummary: return weeklySummaryVariants(ctx)
  case .monthEndSummary: return monthlyPortraitVariants(ctx)
- case .discoveryReminder: return discoveryVariants(ctx)
  case .circleActivity: return circleActivityVariants(ctx)
  case .winBack3: return winBackVariants(days: 3, ctx: ctx)
  case .winBack7: return winBackVariants(days: 7, ctx: ctx)
@@ -182,7 +181,7 @@ enum NotificationMessageBuilder {
  let prevMonth = cal.date(byAdding: .month, value: -1, to: ctx.now) ?? ctx.now
  let formatter = DateFormatter()
  formatter.dateFormat = "LLLL"
- formatter.locale = Locale(identifier: "tr_TR")
+ formatter.locale = LanguageManager.shared.currentLocale
  let monthName = formatter.string(from: prevMonth).capitalized
  return [
  ("İşte senin \(monthName) ayın", "30 gün, 30 mood — aylık portrenin hazır."),
@@ -258,8 +257,14 @@ enum NotificationMessageBuilder {
 
  private static func nurtureDay1Variants(_ ctx: MessageContext) -> [(String, String)] {
  // Onboarding sırasında seçilen ilk mood'u referans al (varsa)
- if let firstMoodRaw = UserDefaults.standard.string(forKey: "onboardingFirstMood"),
- let firstMood = ONEMood(rawValue: firstMoodRaw) {
+ // `OnboardingRecord.firstMoodHex` okunuyor.
+ //
+ // Eskiden burada `UserDefaults.string(forKey: "onboardingFirstMood")` vardı
+ // ama o anahtarı **hiçbir yer yazmıyordu** — v3 onboarding'i seçimi
+ // `v3.onboarding.firstMoodHex` altına kaydediyor. Yani bu dal hiç
+ // çalışmıyor, Day-1 bildirimi her zaman jenerik metne düşüyordu.
+ if let hex = OnboardingRecord.firstMoodHex,
+ let firstMood = V3Mood.closest(toHex: hex) {
  return [
  ("Bugünün rengi neydi? ", "Dün '\(firstMood.label)' dedin. Bugünkü hissini de bırak."),
  ("Dünkü '\(firstMood.label)' bugün nasıl? ", "Tek bir renk, tek bir his. ONE seni bekliyor."),
@@ -367,17 +372,7 @@ enum NotificationMessageBuilder {
  }
  }
 
- // MARK: - Discovery & Circle
-
- private static func discoveryVariants(_ ctx: MessageContext) -> [(String, String)] {
- if let mood = ctx.lastMoodLabel {
- return [
- ("Bugünkü ruh haline göre", "\(mood) hissine özel aktiviteler seni bekliyor."),
- ("Keşfet — sana özel", "\(mood) mood'una uygun etkinlikler hazır.")
- ]
- }
- return [("Keşfet seni bekliyor", "Bugüne özel öneriler hazır.")]
- }
+ // MARK: - Circle
 
  private static func circleActivityVariants(_ ctx: MessageContext) -> [(String, String)] {
  let friend = ctx.friendName ?? "Bir arkadaşın"

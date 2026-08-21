@@ -32,11 +32,11 @@ struct InviteShareSheet: View {
             titleRow
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
+                VStack(spacing: V3Tokens.spacingXL2) {
                     
                     formatPicker
-                        .padding(.horizontal, 40)
-                        .padding(.top, 8)
+                        .padding(.horizontal, V3Tokens.spacingXL4)
+                        .padding(.top, V3Tokens.spacingSM)
                     
                     // Card preview or loading indicator
                     Group {
@@ -49,17 +49,16 @@ struct InviteShareSheet: View {
                     .frame(height: 400)
                     
                     actionButtons
-                        .padding(.top, 12)
+                        .padding(.top, V3Tokens.spacingMD)
                     
                     shareLinkView
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 40)
+                        .padding(.horizontal, V3Tokens.spacingXL2)
+                        .padding(.bottom, V3Tokens.spacingXL4)
                 }
             }
         }
-        .background(ONEBrand.bone.ignoresSafeArea())
-        .presentationDetents([.fraction(0.9), .large])
-        .presentationDragIndicator(.hidden)
+        .background(V3Tokens.paper.ignoresSafeArea())
+        .v3Sheet(detents: [.fraction(0.9), .large])
         .task { await generateCard() }
         .alert(NSLocalizedString("general.error", comment: ""), isPresented: $showError) {
             Button(NSLocalizedString("general.ok", comment: ""), role: .cancel) {}
@@ -75,34 +74,31 @@ struct InviteShareSheet: View {
     // MARK: - Subviews
     
     private var dragHandle: some View {
-        RoundedRectangle(cornerRadius: 3)
+        RoundedRectangle(cornerRadius: V3Tokens.radiusMicro)
             .fill(V3Tokens.faintText)
             .frame(width: 36, height: 4)
-            .padding(.top, 12)
+            .padding(.top, V3Tokens.spacingMD)
             .padding(.bottom, 14)
     }
     
     private var titleRow: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                 Text(NSLocalizedString("invite.sendInvite", comment: "Profili Paylaş"))
-                    .font(.system(size: 24, weight: .bold))
+                    .font(V3Typography.sans(24, weight: .bold))
                     .foregroundColor(V3Tokens.ink)
                 Text(NSLocalizedString("invite.shareSubtitle", comment: "Davet kodun veya link ile seni ekleyebilirler"))
-                    .font(.system(size: 14, weight: .regular))
-                    .foregroundColor(ONETokens.oneMist)
+                    .bodySM()
+                    .foregroundColor(V3Tokens.mutedText)
             }
             Spacer()
-            Button(action: { dismiss() }) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(V3Tokens.mutedText)
-                    .frame(width: 32, height: 32)
-                    .background(Circle().fill(ONETokens.oneSilver.opacity(0.6)))
-            }
+            V3TopBarIconButton(
+                systemName: "xmark",
+                label: NSLocalizedString("general.close", comment: "")
+            ) { dismiss() }
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 16)
+        .padding(.horizontal, V3Tokens.spacingXL2)
+        .padding(.bottom, V3Tokens.spacingLG)
     }
     
     private var formatPicker: some View {
@@ -114,7 +110,7 @@ struct InviteShareSheet: View {
     }
     
     private var loadingView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: V3Tokens.spacingMD) {
             Circle()
                 .fill(V3Tokens.ink)
                 .frame(width: 8, height: 8)
@@ -126,7 +122,7 @@ struct InviteShareSheet: View {
                     }
                 }
             Text(NSLocalizedString("invite.preparing", comment: "Hazırlanıyor..."))
-                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .font(V3Typography.mono(13, weight: .medium))
                 .foregroundColor(V3Tokens.mutedText)
         }
         .frame(maxWidth: .infinity)
@@ -136,7 +132,7 @@ struct InviteShareSheet: View {
         Image(uiImage: image)
             .resizable()
             .aspectRatio(selectedFormat == .story ? 9 / 16 : 16 / 9, contentMode: .fit)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel))
             .shadow(color: Color.black.opacity(0.25), radius: 24, x: 0, y: 12)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, selectedFormat == .story ? 70 : 20)
@@ -145,7 +141,7 @@ struct InviteShareSheet: View {
     
     private var actionButtons: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 24) {
+            HStack(spacing: V3Tokens.spacingXL2) {
                 
                 let instaInstalled = ShareManager.shared.isInstagramInstalled()
                 ShareAppIcon(
@@ -187,7 +183,7 @@ struct InviteShareSheet: View {
     private var shareLinkView: some View {
         HStack {
             Text(inviteLinkURL?.absoluteString ?? "")
-                .font(.system(size: 14, weight: .medium, design: .monospaced))
+                .font(V3Typography.mono(14, weight: .medium))
                 .foregroundColor(V3Tokens.ink)
                 .lineLimit(1)
                 .truncationMode(.middle)
@@ -196,15 +192,15 @@ struct InviteShareSheet: View {
             
             Button(action: copyLink) {
                 Text(isCopied ? NSLocalizedString("general.copied", comment: "Kopyalandı") : NSLocalizedString("general.copy", comment: "Kopyala"))
-                    .font(.system(size: 13, weight: .bold))
+                    .font(V3Typography.sans(13, weight: .bold))
                     .foregroundColor(isCopied ? .white : V3Tokens.ink)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(isCopied ? ONETokens.oneGreen : ONETokens.oneSilver.opacity(0.8)))
+                    .padding(.horizontal, V3Tokens.spacingLG)
+                    .padding(.vertical, V3Tokens.spacingSM)
+                    .background(RoundedRectangle(cornerRadius: V3Tokens.radiusInner).fill(isCopied ? V3Tokens.success : V3Tokens.hairline.opacity(0.8)))
             }
         }
-        .padding(12)
-        .background(RoundedRectangle(cornerRadius: 16).fill(ONETokens.oneSilver.opacity(0.3)))
+        .padding(V3Tokens.spacingMD)
+        .background(RoundedRectangle(cornerRadius: V3Tokens.radiusCard).fill(V3Tokens.hairline.opacity(0.3)))
     }
     
     // MARK: - Actions
@@ -310,7 +306,7 @@ private struct ShareAppIcon: View {
                 }
                 
                 Text(title)
-                    .font(.system(size: 12, weight: .semibold))
+                    .bodyMicroSemibold()
                     .foregroundColor(V3Tokens.ink)
             }
         }

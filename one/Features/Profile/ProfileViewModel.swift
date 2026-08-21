@@ -89,12 +89,6 @@ final class ProfileViewModel: ObservableObject {
             writeSettingToICloud(key: "weeklySummaryEnabled", value: weeklySummaryEnabled)
         }
     }
-    @Published var discoveryNotificationsEnabled: Bool {
-        didSet {
-            UserDefaults.standard.set(discoveryNotificationsEnabled, forKey: "discoveryNotificationsEnabled")
-            writeSettingToICloud(key: "discoveryNotificationsEnabled", value: discoveryNotificationsEnabled)
-        }
-    }
     @Published var hapticFeedbackEnabled: Bool {
         didSet {
             UserDefaults.standard.set(hapticFeedbackEnabled, forKey: "hapticFeedbackEnabled")
@@ -108,7 +102,7 @@ final class ProfileViewModel: ObservableObject {
         }
     }
     @Published var preferredCity: String {
-        didSet { UserDefaults.standard.set(preferredCity, forKey: ONETokens.cityPreferenceKey) }
+        didSet { UserDefaults.standard.set(preferredCity, forKey: ONEConfig.cityPreferenceKey) }
     }
 
     // MARK: - Pinned Song
@@ -137,11 +131,10 @@ final class ProfileViewModel: ObservableObject {
         notificationsEnabled = ud.bool(forKey: "notificationsEnabled")
         streakNotificationsEnabled = ud.object(forKey: "streakNotificationsEnabled") == nil ? true : ud.bool(forKey: "streakNotificationsEnabled")
         weeklySummaryEnabled = ud.object(forKey: "weeklySummaryEnabled") == nil ? true : ud.bool(forKey: "weeklySummaryEnabled")
-        discoveryNotificationsEnabled = ud.object(forKey: "discoveryNotificationsEnabled") == nil ? true : ud.bool(forKey: "discoveryNotificationsEnabled")
         hapticFeedbackEnabled = ud.object(forKey: "hapticFeedbackEnabled") == nil ? true : ud.bool(forKey: "hapticFeedbackEnabled")
         isDarkMode = ud.bool(forKey: "isDarkMode")
         
-        let city = ud.string(forKey: ONETokens.cityPreferenceKey) ?? ONETokens.defaultCity
+        let city = ud.string(forKey: ONEConfig.cityPreferenceKey) ?? ONEConfig.defaultCity
         preferredCity = city == "İzmit" ? "Kocaeli" : city
 
         // v2.6 — Privacy defaults: ON for friends (plana göre).
@@ -189,7 +182,7 @@ final class ProfileViewModel: ObservableObject {
     }
     
     var hasExistingProfile: Bool {
-        KeychainHelper.bool(forKey: "hasCreatedProfile") && cloudKitManager.currentUser != nil
+        KeychainHelper.completionFlag(forKey: "hasCreatedProfile") && cloudKitManager.currentUser != nil
     }
     
     var canSaveProfile: Bool {
@@ -491,7 +484,7 @@ final class ProfileViewModel: ObservableObject {
     private static let icloudKeys: [String] = [
         "dailyReminderHour", "dailyReminderMinute",
         "notificationsEnabled", "streakNotificationsEnabled",
-        "weeklySummaryEnabled", "discoveryNotificationsEnabled",
+        "weeklySummaryEnabled",
         "hapticFeedbackEnabled", "isDarkMode",
         "privacy.musicTasteVisible", "privacy.moodHistoryVisible"
     ]

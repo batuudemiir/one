@@ -245,7 +245,7 @@ struct PublicProfileView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            ONEBrand.bone.ignoresSafeArea()
+            V3Tokens.paper.ignoresSafeArea()
 
             if vm.relationship == .blockedMe {
                 blockedMeState
@@ -256,14 +256,13 @@ struct PublicProfileView: View {
             // Top bar — kendi ProfileTopBarOverlay gibi sticky, hero üzerinde gezer
             if vm.relationship != .blockedMe {
                 topBar
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
+                    .padding(.horizontal, V3Tokens.spacingLG)
+                    .padding(.top, V3Tokens.spacingSM)
                     .zIndex(10)
             }
         }
         .liquidGlassSheetBackground()
-        .presentationDetents([.large])
-        .presentationDragIndicator(.hidden)
+        .v3Sheet(detents: [.large])
         .onAppear {
             vm.load()
             // Store değişim observer'ı: kullanıcı profili (foto/pinned/isim) güncellenince
@@ -290,6 +289,7 @@ struct PublicProfileView: View {
                 ReportSheet(target: .user(id: p.id, displayName: p.displayName))
             }
         }
+        .v3Sheet()
         .confirmationDialog(
             "Bu kullanıcıyı engelle?",
             isPresented: $showBlockConfirm,
@@ -298,7 +298,7 @@ struct PublicProfileView: View {
             Button("Engelle", role: .destructive) { blockAction() }
             Button("Vazgeç", role: .cancel) {}
         } message: {
-            Text("Yorumları ve paylaşımları artık görünmeyecek.")
+            Text(NSLocalizedString("block.confirmBody", comment: ""))
         }
     }
 
@@ -327,21 +327,21 @@ struct PublicProfileView: View {
                     // Sabitlenmiş şarkı (index 2) — kendi ProfilePinnedSongCard yerleşimi
                     if let song = vm.profile?.pinnedSong {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("SABİTLENMİŞ ŞARKI")
+                            Text(NSLocalizedString("profile.pinnedSong", comment: ""))
                                 .monoBase(tracking: 1.5)
                                 .foregroundColor(V3Tokens.mutedText)
-                                .padding(.leading, 4)
+                                .padding(.leading, V3Tokens.spacingXS)
 
                             PublicProfilePinnedSongCard(song: song)
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, V3Tokens.spacingXL)
                         .listItemEntrance(isVisible: appeared, index: 2)
                     }
 
                     // Son 7 gün (index 3) — kendi ProfileRecentMoodStrip ile aynı yerleşim
                     if let p = vm.profile, p.moodHistoryVisible {
                         moodStripSection
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, V3Tokens.spacingXL)
                             .listItemEntrance(isVisible: appeared, index: 3)
                     }
 
@@ -349,12 +349,12 @@ struct PublicProfileView: View {
                         Text(toast)
                             .monoSM(tracking: 0)
                             .foregroundStyle(V3Tokens.mutedText)
-                            .padding(.top, 4)
+                            .padding(.top, V3Tokens.spacingXS)
                             .frame(maxWidth: .infinity)
                     }
                 }
                 .padding(.top, 18)
-                .padding(.bottom, 40)
+                .padding(.bottom, V3Tokens.spacingXL4)
             }
         }
         .ignoresSafeArea(edges: .top)
@@ -365,17 +365,11 @@ struct PublicProfileView: View {
 
     private var topBar: some View {
         HStack {
-            Button(action: { dismiss() }) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(.black.opacity(0.32))
-                            .overlay(Circle().stroke(.white.opacity(0.18), lineWidth: 0.5))
-                    )
-            }
+            V3TopBarIconButton(
+                systemName: "xmark",
+                label: NSLocalizedString("general.close", comment: ""),
+                ground: .media
+            ) { dismiss() }
 
             Spacer()
 
@@ -397,15 +391,11 @@ struct PublicProfileView: View {
                 }
             } label: {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(.black.opacity(0.32))
-                            .overlay(Circle().stroke(.white.opacity(0.18), lineWidth: 0.5))
-                    )
+                    .v3TopBarIconGround(.media)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Circle())
             }
+            .accessibilityLabel(NSLocalizedString("general.more", comment: ""))
         }
     }
 
@@ -426,8 +416,8 @@ struct PublicProfileView: View {
                 return cols + Array(repeating: nil, count: max(0, 7 - cols.count))
             }()
 
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {
+                HStack(spacing: V3Tokens.spacingSM) {
                     Text(NSLocalizedString("profile.recentWeek.title", comment: ""))
                         .monoBase(tracking: 1.5)
                         .foregroundColor(V3Tokens.mutedText)
@@ -437,12 +427,12 @@ struct PublicProfileView: View {
                         .foregroundColor(V3Tokens.faintText)
                 }
 
-                HStack(spacing: 8) {
+                HStack(spacing: V3Tokens.spacingSM) {
                     ForEach(0..<7, id: \.self) { idx in
-                        VStack(spacing: 8) {
+                        VStack(spacing: V3Tokens.spacingSM) {
                             ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(recentColors[idx] ?? ONETokens.oneSilver.opacity(0.45))
+                                RoundedRectangle(cornerRadius: V3Tokens.radiusInner)
+                                    .fill(recentColors[idx] ?? V3Tokens.hairline.opacity(0.45))
                                 if recentColors[idx] == nil {
                                     Image(systemName: "minus")
                                         .monoMicro()
@@ -452,7 +442,7 @@ struct PublicProfileView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 10)
+                                RoundedRectangle(cornerRadius: V3Tokens.radiusInner)
                                     .stroke(
                                         idx == 6 ? V3Tokens.ink.opacity(0.30) : Color.clear,
                                         lineWidth: 1.5
@@ -461,15 +451,15 @@ struct PublicProfileView: View {
 
                             Text(weekdayLabels[idx])
                                 .monoLabel(tracking: 0.4)
-                                .foregroundColor(idx == 6 ? ONETokens.oneInk : V3Tokens.mutedText)
+                                .foregroundColor(idx == 6 ? V3Tokens.ink : V3Tokens.mutedText)
                         }
                     }
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 14)
                 .background(V3Tokens.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 18))
-                .overlay(RoundedRectangle(cornerRadius: 18).stroke(ONETokens.oneSilver, lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel))
+                .overlay(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel).stroke(V3Tokens.hairline, lineWidth: 1))
             }
         }
     }
@@ -479,7 +469,7 @@ struct PublicProfileView: View {
         let cal = Calendar.current
         let today = cal.startOfDay(for: Date())
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.locale = LanguageManager.shared.currentLocale
         formatter.dateFormat = "EE"
         return (0..<7).reversed().map { offset in
             guard let day = cal.date(byAdding: .day, value: -offset, to: today) else { return "·" }
@@ -491,12 +481,12 @@ struct PublicProfileView: View {
     // MARK: - Blocked state
 
     private var blockedMeState: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: V3Tokens.spacingLG) {
             Spacer()
             Image(systemName: "hand.raised.slash")
                 .font(.system(size: 40, weight: .light))
                 .foregroundStyle(V3Tokens.mutedText)
-            Text("Bu profil görüntülenemiyor.")
+            Text(NSLocalizedString("publicProfile.unavailable", comment: ""))
                 .bodySM()
                 .foregroundStyle(V3Tokens.mutedText)
             Button("Kapat") { dismiss() }

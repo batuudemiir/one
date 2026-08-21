@@ -15,42 +15,34 @@ struct ProfileView: View {
     
     @StateObject private var vm = ProfileViewModel()
     
-    var isFromTab: Bool = false
-    
     var body: some View {
         ZStack {
-            if vm.isDarkMode {
-                Color.black.ignoresSafeArea()
-            } else {
-                ONEBrand.bone.ignoresSafeArea()
-            }
+            // Zemin token'dan geliyor. Eskiden `vm.isDarkMode ? .black : ...`
+            // diye elle seçiliyordu; `V3Tokens.paper` zaten adaptif.
+            V3Tokens.paper.ignoresSafeArea()
             
-            if isFromTab && vm.hasExistingProfile && !vm.isEditingFromTab {
-                ProfileDashboardView(vm: vm, isFromTab: isFromTab, context: viewContext)
-            } else {
-                // Form is presented in a sheet-like manner when coming from tab
-                if isFromTab {
-                    ProfileFormView(vm: vm, isFromTab: isFromTab, onDismiss: { dismiss() })
-                } else {
-                    NavigationStack {
-                        ProfileFormView(vm: vm, isFromTab: isFromTab, onDismiss: { dismiss() })
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarTrailing) {
-                                    Button(action: { dismiss() }) {
-                                        Image(systemName: "xmark")
-                                            .font(.system(size: 13, weight: .medium))
-                                            .foregroundColor(V3Tokens.mutedText)
-                                            .frame(width: 32, height: 32)
-                                            .background(V3Tokens.surface.opacity(0.8))
-                                            .clipShape(Circle())
-                                    }
-                                    .frame(minWidth: ONETokens.minTouchTarget, minHeight: ONETokens.minTouchTarget)
-                                    .contentShape(Rectangle())
-                                }
+            // Bu view yalnızca `ContentView`'daki ilk kurulum sheet'i olarak
+            // açılıyor — profil *sekmesi* `V3ProfileView`. Burada bir zamanlar
+            // `isFromTab` ile ikinci bir dal vardı ama hiçbir çağrı yerinde
+            // `true` geçilmiyordu; onunla birlikte gelen dashboard →
+            // `OnePlusPaywallView` zinciri de ölüydü.
+            NavigationStack {
+                ProfileFormView(vm: vm, onDismiss: { dismiss() })
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(action: { dismiss() }) {
+                                Image(systemName: "xmark")
+                                    .bodyXSMedium()
+                                    .foregroundColor(V3Tokens.mutedText)
+                                    .frame(width: 32, height: 32)
+                                    .background(V3Tokens.surface.opacity(0.8))
+                                    .clipShape(Circle())
                             }
-                            .navigationBarTitleDisplayMode(.inline)
+                            .frame(minWidth: V3Tokens.minTouchTarget, minHeight: V3Tokens.minTouchTarget)
+                            .contentShape(Rectangle())
+                        }
                     }
-                }
+                    .navigationBarTitleDisplayMode(.inline)
             }
         }
         .overlay {
@@ -60,7 +52,7 @@ struct ProfileView: View {
                         .ignoresSafeArea()
                         .transition(.opacity)
                         .onTapGesture {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            withAnimation(ONEAnimation.screenTransition) {
                                 vm.profilePhotoZoomed = false
                             }
                         }
@@ -76,7 +68,7 @@ struct ProfileView: View {
                 }
             }
         }
-        .animation(.spring(response: 0.32, dampingFraction: 0.75), value: vm.profilePhotoZoomed)
+        .animation(ONEAnimation.screenTransition, value: vm.profilePhotoZoomed)
         .task {
             vm.appleMusicStatus = MusicAuthorization.currentStatus
         }

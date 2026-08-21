@@ -1,0 +1,146 @@
+#!/bin/bash
+#
+# ui_guard.sh — Ekran Sözleşmesi bekçisi
+#
+# Tutarlılık kurallarını sayarak zorlar. Her kural bir sayaç; sayaç
+# `ui_guard_baseline.txt`'teki eşiği AŞARSA build hata verir.
+#
+# Neden eşik, neden sıfır değil: kuralların çoğu bugün ihlal ediliyor ve
+# hepsini aynı anda sıfırlamak tek bir dev commit demek. Eşik mandalı tek
+# yönlü çeviriyor — borç azalabilir, artamaz. Bir faz bitince
+# `--update` ile eşikler o günkü sayıya çekilir ve bir daha yukarı çıkamaz.
+#
+# Kullanım:
+#   tooling/ui_guard.sh            # denetle (CI / build phase)
+#   tooling/ui_guard.sh --update   # eşikleri bugünkü sayılara çek
+#   tooling/ui_guard.sh --report   # sayıları ve dosya kırılımını göster
+#
+set -uo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SRC="$ROOT/one"
+BASELINE="$ROOT/tooling/ui_guard_baseline.txt"
+
+MODE="check"
+case "${1:-}" in
+  --update) MODE="update" ;;
+  --report) MODE="report" ;;
+  "")       MODE="check" ;;
+  *) echo "bilinmeyen argüman: $1"; exit 2 ;;
+esac
+
+if [[ ! -d "$SRC" ]]; then
+  echo "kaynak bulunamadı: $SRC"; exit 2
+fi
+
+# Yalnız ekran katmanı taranır. Tasarım sistemi kendi ham sayılarını
+# tanımlamak zorunda — kural onu çağıranlar için.
+SCAN=(-name "*.swift")
+scan_dirs() { find "$SRC/Features" "$SRC/UI" "${SCAN[@]}" -not -path "*/UI/DesignSystem/*"; }
+
+# Paylaşılan kabuk ve bileşen dosyaları ham sayı yazmak zorunda olduğu için
+# bazı kurallarda hariç tutuluyor.
+CHROME_EXCLUDE='UI/Components/V3TopBar.swift|UI/Components/SubScreenChrome.swift|UI/Components/V3Sheet.swift|UI/Components/BottomNavigation.swift|UI/Components/V3Skeleton.swift'
+
+count() { grep -rEl "$1" $(scan_dirs) 2>/dev/null | wc -l | tr -d ' '; }
+hits()  { grep -rEn "$1" $(scan_dirs) 2>/dev/null | grep -vE "$CHROME_EXCLUDE" ; }
+hitcount() { hits "$1" | wc -l | tr -d ' '; }
+
+# ── Kurallar ────────────────────────────────────────────────────────────
+#
+# Her kural: ad | açıklama | regex
+# Sayım satır bazlı; `CHROME_EXCLUDE` dosyaları düşülür.
+
+RULE_NAMES=(
+  system_nav
+  system_font
+  raw_screen_padding
+  hardcoded_tr
+  white_on_color
+  plain_button
+  raw_hex
+  adhoc_card
+)
+
+RULE_DESC=(
+  "Sistem NavigationStack / navigationTitle / toolbar"
+  ".font(.system(size:)) — anlamsal rol kullan"
+  "Ham ekran kenar payı — V3Tokens.channel kullan"
+  "Sabit Türkçe dize — NSLocalizedString kullan"
+  "Renk zemin üstünde .white / .black — mood ink eşi kullan"
+  ".buttonStyle(.plain) — .onePressable kullan"
+  "Ham hex rengi — V3Tokens / V3Mood kullan"
+  "Ad-hoc kart zemini — .oneCardBackground(radius:) kullan"
+)
+
+RULE_REGEX=(
+  'NavigationStack|NavigationView|\.navigationTitle|navigationBarTitleDisplayMode|ToolbarItem'
+  '\.font\(\.system\(size:'
+  '\.padding\(\.horizontal, (1[4-9]|2[0-9]|3[0-9])\)'
+  'Text\("[^"]*(ç|ğ|ı|ö|ş|ü|Ç|Ğ|İ|Ö|Ş|Ü)'
+  'foregroundColor\(\.white\)|foregroundStyle\(\.white\)|foregroundColor\(\.black\)'
+  '\.buttonStyle\(\.plain\)'
+  'Color\(hex: "#'
+  '\.fill\(V3Tokens\.surface\)'
+)
+
+declare -a CURRENT
+for i in "${!RULE_NAMES[@]}"; do
+  CURRENT[$i]=$(hitcount "${RULE_REGEX[$i]}")
+done
+
+# ── Rapor ───────────────────────────────────────────────────────────────
+
+if [[ "$MODE" == "report" ]]; then
+  for i in "${!RULE_NAMES[@]}"; do
+    printf '\n── %s  (%s)\n   %s\n' "${RULE_NAMES[$i]}" "${CURRENT[$i]}" "${RULE_DESC[$i]}"
+    hits "${RULE_REGEX[$i]}" | awk -F: '{print $1}' | sort | uniq -c | sort -rn | head -8 | sed 's/^/     /'
+  done
+  echo
+  exit 0
+fi
+
+# ── Eşik yazımı ─────────────────────────────────────────────────────────
+
+if [[ "$MODE" == "update" ]]; then
+  {
+    echo "# ui_guard eşikleri — $(date '+%Y-%m-%d')"
+    echo "# Bu sayılar yalnız AZALIR. Artıran değişiklik build'i kırar."
+    for i in "${!RULE_NAMES[@]}"; do
+      echo "${RULE_NAMES[$i]}=${CURRENT[$i]}"
+    done
+  } > "$BASELINE"
+  echo "eşikler güncellendi → $BASELINE"
+  cat "$BASELINE"
+  exit 0
+fi
+
+# ── Denetim ─────────────────────────────────────────────────────────────
+
+if [[ ! -f "$BASELINE" ]]; then
+  echo "eşik dosyası yok. Önce: tooling/ui_guard.sh --update"; exit 2
+fi
+
+FAILED=0
+for i in "${!RULE_NAMES[@]}"; do
+  name="${RULE_NAMES[$i]}"
+  now="${CURRENT[$i]}"
+  want=$(grep -E "^${name}=" "$BASELINE" | cut -d= -f2)
+  want="${want:-0}"
+
+  if (( now > want )); then
+    echo "error: ui_guard — ${RULE_DESC[$i]}"
+    echo "note:  ${name}: ${now} ihlal, eşik ${want}. Yeni ihlal eklenmiş."
+    hits "${RULE_REGEX[$i]}" | head -5 | sed 's/^/note:  /'
+    FAILED=1
+  elif (( now < want )); then
+    echo "note: ui_guard — ${name}: ${now} (eşik ${want}). Eşiği düşür: tooling/ui_guard.sh --update"
+  fi
+done
+
+if (( FAILED )); then
+  echo "error: Ekran Sözleşmesi ihlali. CLAUDE.md › Ekran Sözleşmesi."
+  exit 1
+fi
+
+echo "ui_guard: tamam"

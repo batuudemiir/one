@@ -99,6 +99,8 @@
 "general.done" = "Listo";
 "general.back" = "Atrás";
 "general.close" = "Cerrar";
+"general.more" = "Más";
+"general.new" = "Nuevo";
 "general.loading" = "Cargando...";
 "general.error" = "Ocurrió un error";
 "general.retry" = "Intentar de nuevo";
@@ -1298,3 +1300,173 @@ one day.";
 "circle.sameColorCount" = "%d personas comparten tu color hoy";
 "circle.requests" = "Solicitudes de amistad";
 "circle.notifications" = "Notificaciones";
+
+/* v3 mood adlari - uygulamanin semantik yuku, koda gomulu olamaz */
+"mood.v3.atesli.label" = "Ardiente";
+"mood.v3.coskulu.label" = "Alegre";
+"mood.v3.gergin.label" = "Tenso";
+"mood.v3.mutlu.label" = "Feliz";
+"mood.v3.enerjik.label" = "Enérgico";
+"mood.v3.odakli.label" = "Concentrado";
+"mood.v3.huzurlu.label" = "Sereno";
+"mood.v3.huzunlu.label" = "Melancólico";
+"mood.v3.yorgun.label" = "Cansado";
+
+/* v3 mood anlamları — VoiceOver değeri ve alt başlık. */
+"mood.v3.atesli.meaning" = "Ardo por dentro";
+"mood.v3.coskulu.meaning" = "Me desbordo";
+"mood.v3.gergin.meaning" = "Siento la presión";
+"mood.v3.mutlu.meaning" = "Brillo por dentro";
+"mood.v3.enerjik.meaning" = "Vivo y veloz";
+"mood.v3.odakli.meaning" = "Firme y centrado";
+"mood.v3.huzurlu.meaning" = "Todo está bien";
+"mood.v3.huzunlu.meaning" = "Un nudo por dentro";
+"mood.v3.yorgun.meaning" = "Agotado, sin nada";
+
+/* Merakli hatirlatma tonu - tam cumle, kelime birlestirme yok */
+"reminder.curious.yesterday.atesli" = "Ayer estabas ardiente.";
+"reminder.curious.yesterday.coskulu" = "Ayer estabas alegre.";
+"reminder.curious.yesterday.gergin" = "Ayer estabas tenso.";
+"reminder.curious.yesterday.mutlu" = "Ayer estabas feliz.";
+"reminder.curious.yesterday.enerjik" = "Ayer estabas enérgico.";
+"reminder.curious.yesterday.odakli" = "Ayer estabas concentrado.";
+"reminder.curious.yesterday.huzurlu" = "Ayer estabas sereno.";
+"reminder.curious.yesterday.huzunlu" = "Ayer estabas melancólico.";
+"reminder.curious.yesterday.yorgun" = "Ayer estabas cansado.";
+
+/* Legacy 12-mood (ONEMood) - arsiv/echo okuma yollari kullaniyor */
+"mood.legacy.atesli.label" = "apasionado";
+"mood.legacy.isikli.label" = "feliz";
+"mood.legacy.enerjik.label" = "enérgico";
+"mood.legacy.taze.label" = "natural";
+"mood.legacy.sakin.label" = "en paz";
+"mood.legacy.nostaljik.label" = "emocionado";
+"mood.legacy.ozgur.label" = "sereno";
+"mood.legacy.derin.label" = "estable";
+"mood.legacy.uzgun.label" = "triste";
+"mood.legacy.stresli.label" = "estresado";
+"mood.legacy.yorgun.label" = "cansado";
+"mood.legacy.sinirli.label" = "enfadado";
+"mood.legacy.atesli.meaning" = "me arde por dentro";
+"mood.legacy.isikli.meaning" = "brillo por dentro";
+"mood.legacy.enerjik.meaning" = "me desbordo";
+"mood.legacy.taze.meaning" = "recién empieza";
+"mood.legacy.sakin.meaning" = "todo va bien";
+"mood.legacy.nostaljik.meaning" = "lleno de júbilo";
+"mood.legacy.ozgur.meaning" = "ligero, sereno";
+"mood.legacy.derin.meaning" = "en equilibrio";
+"mood.legacy.uzgun.meaning" = "apretado por dentro";
+"mood.legacy.stresli.meaning" = "aplastado por ello";
+"mood.legacy.yorgun.meaning" = "agotado, vacío";
+"mood.legacy.sinirli.meaning" = "una tormenta dentro";
+"reminder.curious.body" = "¿De qué color hoy?";
+"archive.previousMonth" = "Mes anterior";
+"archive.nextMonth" = "Mes siguiente";
+
+/* ── v3 ekranlarından kataloğa taşınan metinler ──────────────────────
+   Bu 69 anahtar koda gömülü Türkçe olarak duruyordu: katalog tamdı
+   ama bu ekranlar ona hiç bakmıyordu, dolayısıyla Almanca bir
+   kullanıcı Profil sekmesinde Türkçe görüyordu.
+   TR ve EN gerçek; diğer diller çeviri gelene kadar TR'ye düşüyor. */
+"applock.noPasscode" = "Cihazında parola veya biyometri tanımlı değil.";
+"archive.addMomentToDay" = "Bu güne an ekle";
+"archive.addNow" = "Şimdi ekle";
+"archive.dayCount" = "%@ gün";
+"archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
+"archive.empty.title" = "Arşiv boş.";
+"archive.momentsOnDay" = "%d an bu güne kaydedildi.";
+"archive.mostFrequent" = "en çok %@";
+"archive.todayWaiting" = "Bugün seni bekliyor";
+"block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
+"camera.noAccess" = "Kamera erişimi yok";
+"camera.useThisMoment" = "Bu anı kullan";
+"circle.shareFailed" = "Çevre paylaşımı başarısız — internet bağlantını kontrol et.";
+"echo.monthColour" = "%@ · AYIN RENGİ";
+"echo.monthStory" = "%@ · AY HİKAYESİ";
+"echo.noRepeatSong" = "Aynı şarkı iki kez geçmedi.";
+"echo.posterFailed" = "Poster yüklenemedi";
+"entry.changeColour" = "Rengi değiştir";
+"entry.pastDay" = "GEÇMİŞ GÜN";
+"entry.pickColour" = "Bir renk seç. Yeter.";
+"entry.removePhoto" = "Fotoğrafı kaldır";
+"entry.scopeSubtitle" = "Her an için ayrı seçebilirsin.";
+"entry.scopeTitle" = "Bu an kimde kalsın?";
+"general.a11y.toggle" = "Aç/kapat";
+"general.change" = "Değiştir";
+"general.now" = "şimdi";
+"general.openSettings" = "Ayarları aç";
+"invite.validSevenDays" = "7 GÜN GEÇERLİ";
+"invite.addMeOnONE" = "Beni ONE'da ekle";
+"liveActivity.enableHint" = "Mood'unu Dynamic Island'da görmek için Ayarlar > ONE > Canlı Etkinlikler'i etkinleştir.";
+"moment.a11y.openPhoto" = "Fotoğrafı aç";
+"moment.archiveTag" = "· ARŞİV";
+"offline.banner" = "BAĞLANTI YOK · ANLARIN CİHAZINDA BEKLİYOR";
+"privacy.hiddenField" = "%@ bu kişinin gizlilik tercihi nedeniyle görüntülenemiyor";
+"profile.colourBreakdown" = "Renk dağılımı";
+"profile.monthColour" = "%@ · ayın rengi";
+"profile.monthCounts" = "%1$d gün · %2$d an";
+"profile.monthlySummary" = "AYLIK ÖZET";
+"profile.photoVisibility" = "Fotoğrafın çevrendeki arkadaşlara görünür.";
+"profile.pickAvatar" = "Avatar seç";
+"profile.pinned" = "sabitlenmiş";
+"profile.pinnedSong" = "SABİTLENMİŞ ŞARKI";
+"profile.sevenSteps" = "7 adım";
+"profile.signInOptional" = "Giriş yapmasan da ONE tam çalışır.";
+"profile.signOut" = "ÇIKIŞ";
+"profile.signedInWithApple" = "Apple ile giriş yapıldı";
+"profile.syncPitch" = "Arşivini cihazlar\narasında taşı.";
+"profile.versionLine" = "Sürüm %1$@ · %2$d an";
+"publicProfile.inYourCircle" = "Çevrende";
+"publicProfile.mutualFriends" = "%d ortak arkadaşınız var";
+"publicProfile.unavailable" = "Bu profil görüntülenemiyor.";
+"reminder.daily" = "Günlük hatırlatma";
+"reminder.days" = "GÜNLER";
+"reminder.lockPreview" = "KİLİT EKRANI ÖNİZLEMESİ";
+"reminder.subtitle" = "Seçtiğin saatte tek hatırlatma.";
+"reminder.title" = "Hatırlatma";
+"reminder.tone" = "NE DESİN?";
+"report.notice" = "Bildirimler 24 saat içinde değerlendirilir. Yinelenen şikâyetler içeriği otomatik gizleyebilir.";
+"saved.backToDay" = "Güne dön";
+"saved.goToArchive" = "Arşive git";
+"settings.appearance" = "Görünüm";
+"share.createStoryCard" = "Story kart oluştur";
+"share.noNote" = "Not bırakmadın.";
+"share.noSong" = "Şarkı eklemedin.";
+"share.orSave" = "Paylaş ya da kaydet.";
+"song.pick" = "Şarkı seç";
+"song.preparingSuggestions" = "Sana özel öneriler hazırlanıyor";
+"splash.tagline" = "DUYGU VE ŞARKI GÜNLÜĞÜ";
+"today.howDidItFeel" = "Bugün nasıl hissettirdi?";
+
+/* ── Kodda kullanılıyordu ama katalogda yoktu ────────────────────────
+   Bu anahtarlar `NSLocalizedString` ile çağrılıyor ama hiçbir dilde
+   tanımlı değildi; iOS bu durumda anahtarın kendisini döndürür,
+   yani kullanıcı ekranda "general.copy" yazısını görüyordu. */
+"accessibility.loading" = "Yükleniyor";
+"accessibility.today.closeViewer" = "Fotoğraf görüntüleyiciyi kapat";
+"accessibility.today.photoViewerHint" = "Yakınlaştırmak için çift dokun, kapatmak için aşağı kaydır";
+"accessibility.unread" = "Okunmadı";
+"general.copied" = "Kopyalandı";
+"general.copy" = "Kopyala";
+"invite.shareSubtitle" = "Davet kodun veya link ile seni ekleyebilirler";
+"profile.usernameCurrent" = "Bu zaten senin kullanıcı adın";
+"profile.usernameInvalidFormat" = "Yalnızca harf, rakam ve alt çizgi kullan";
+"profile.usernameTooShort" = "En az 3 karakter olmalı";
+
+
+/* Rapor sheet'i — v3 kabuk geçişi */
+"report.title" = "Reportar";
+"report.reason" = "MOTIVO";
+"report.noteOptional" = "NOTA — OPCIONAL";
+"report.notePlaceholder" = "Añade más detalles";
+"report.submit" = "Enviar reporte";
+"report.submitted" = "Enviado";
+"report.target.comment" = "Reportar comentario";
+"report.target.user" = "Reportar a %@";
+"report.target.userFallback" = "esta persona";
+"report.target.share" = "Reportar publicación";
+"report.context.comment" = "COMENTARIO";
+"report.context.user" = "PERSONA";
+"report.context.share" = "PUBLICACIÓN";
+
+"circle.resonanceTitle" = "Sintonía";

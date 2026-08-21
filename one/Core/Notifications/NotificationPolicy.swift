@@ -46,7 +46,6 @@ enum NotificationKind: String, CaseIterable {
     case streakMilestone
     case weeklySummary
     case monthEndSummary
-    case discoveryReminder
     case circleActivity
     case winBack3
     case winBack7
@@ -81,7 +80,7 @@ enum NotificationKind: String, CaseIterable {
              .nurtureDay1, .nurtureDay2, .nurtureDay3,
              .circleInviteWave:
             return .normal
-        case .discoveryReminder, .winBack3, .winBack7, .winBack14, .winBack30:
+        case .winBack3, .winBack7, .winBack14, .winBack30:
             return .low
         }
     }
@@ -92,8 +91,7 @@ enum NotificationKind: String, CaseIterable {
         switch self {
         case .winBack3, .winBack7, .winBack14, .winBack30,
              .nurtureDay1, .nurtureDay2, .nurtureDay3,
-             .circleInviteWave,
-             .discoveryReminder:
+             .circleInviteWave:
             return true
         default:
             return false
@@ -105,7 +103,6 @@ enum NotificationKind: String, CaseIterable {
         case .streakWarning, .streakEscalation, .streakMilestone:
             return "STREAK_WARNING"
         case .weeklySummary:          return "WEEKLY_SUMMARY"
-        case .discoveryReminder:      return "DISCOVERY_REMINDER"
         case .friendShared, .circleActivity: return "FRIEND_SHARED"
         case .friendRequest:          return "FRIEND_REQUEST"
         case .friendReaction, .friendAccepted: return "FRIEND_ACCEPTED"

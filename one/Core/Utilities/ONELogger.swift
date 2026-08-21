@@ -26,7 +26,6 @@ enum ONELogCategory: String {
     case circle      = "Circle"
     case camera      = "Camera"
     case profile     = "Profile"
-    case discovery   = "Discovery"
     case ui          = "UI"
     case notification = "Notification"
     case calendar    = "Calendar"

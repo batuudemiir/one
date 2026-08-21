@@ -35,6 +35,11 @@ struct V3DayDetailView: View {
 
     private var count: Int { day.moments.count }
     private var countLabel: String { count == 1 ? "1 an" : "\(count) an" }
+    /// Çubuğun tek satırı: tarih + an sayısı. İkisi de başka hiçbir yerde
+    /// tekrar etmiyor.
+    private var barContext: String {
+        day.isEmpty ? dateLabel : "\(dateLabel) · \(countLabel)"
+    }
     private var heroHexes: [String] {
         day.moments.map { $0.moodColorHex }
     }
@@ -47,7 +52,17 @@ struct V3DayDetailView: View {
 
     // MARK: - Collapse
 
-    private static let collapseThreshold: CGFloat = 40
+    /// Başlığın gerçekten ekrandan çıktığı yer.
+    ///
+    /// 40pt idi ve bozuktu: çubuk 40pt'de tamamen doluyordu ama genişletilmiş
+    /// başlık (hero + damga + sayaç) 276pt aşağıdaydı ve hâlâ görünürdü.
+    /// ~230pt boyunca ekranda aynı bilginin üç kopyası duruyordu — çubukta
+    /// tarih + "3 AN", gövdede "Aug 17" + "3 AN".
+    ///
+    /// Artık yalnız zemin opaklığını sürüyor — çubuğun İÇERİĞİ sabit, kaydırınca
+    /// bir şey belirip kaybolmuyor. O yüzden eşik düşük: hero çubuğun altına
+    /// girmeye başlar başlamaz zemin kapanmalı ki metin okunur kalsın.
+    private static let collapseThreshold: CGFloat = 56
     /// 0 → header genişletilmiş, 1 → tamamen kollapse.
     private var collapseProgress: CGFloat {
         let scrolled = max(0, -scrollOffset)
@@ -66,8 +81,8 @@ struct V3DayDetailView: View {
                 VStack {
                     Spacer()
                     Button(action: onAddMoment) {
-                        Text("Bu güne an ekle")
-                            .font(V3Typography.sans(16, weight: .semibold))
+                        Text(NSLocalizedString("archive.addMomentToDay", comment: ""))
+                            .bodyLGSemibold()
                             .foregroundColor(V3Tokens.paper)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 18)
@@ -75,9 +90,9 @@ struct V3DayDetailView: View {
                                 Capsule(style: .continuous).fill(V3Tokens.ink)
                             )
                     }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 24)
+                    .buttonStyle(.onePressable)
+                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.bottom, V3Tokens.spacingXL2)
                 }
             }
         }
@@ -97,35 +112,60 @@ struct V3DayDetailView: View {
             .frame(height: 0)
 
             VStack(alignment: .leading, spacing: 0) {
-                // Hero — grid hücresinden matched-geometry ile gelir.
-                // Sticky bar üst-sağda 48pt yer kaplıyor — hero'ya nefes payı
-                // ver ki Kapat butonu mood şeridinin üstüne düşmesin.
-                DayFill(hexes: heroHexes, cornerRadius: 18)
+                // Ekranın **tek** başlık öğesi: günün renk kompozisyonu.
+                // Aynı zamanda ızgaradan gelen morph'un kaynağı.
+                //
+                // Yanında bir el yazısı damga ("Aug 17") ve bir mono sayaç
+                // ("3 AN") daha vardı. Üçü birlikte çubuktakileri tekrar
+                // ediyordu: tarih iki yerde (üstelik biri Türkçe biri
+                // İngilizce), sayı iki yerde, renk kompozisyonu iki yerde.
+                // Kaydırınca azalmıyor, artıyordu — çubuğa mini şerit ve
+                // sayaç ekleniyordu. Tarih ve sayı artık yalnız çubukta,
+                // renk yalnız burada.
+                DayFill(hexes: heroHexes, cornerRadius: V3Tokens.radiusPanel)
                     .frame(height: 96)
                     .matchedGeometryEffect(
                         id: V3ArchiveView.cellMorphID(for: day.date),
                         in: dayNS,
                         isSource: true
                     )
-                    .padding(.horizontal, 24)
-                    .padding(.top, 56)
-
-                expandedHeader
-                    .padding(.horizontal, 24)
-                    .padding(.top, 18)
+                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.top, 44)
 
                 if day.isEmpty {
                     emptyDayContent
-                        .padding(.horizontal, 24)
-                        .padding(.top, 40)
+                        .padding(.horizontal, V3Tokens.spacingXL2)
+                        .padding(.top, V3Tokens.spacingXL4)
                 } else {
-                    VStack(alignment: .leading, spacing: 22) {
+                    // Kartlar arası 56pt. Ayrımı kenarlık değil boşluk
+                    // yapıyor (bkz. V3MomentCard — çerçevesiz kart kararı).
+                    // 40 değil 56: kartın kendi altyazısı artık kağıtta
+                    // yaşıyor, iki kart arasındaki boşluk kart İÇİ boşluktan
+                    // belirgin şekilde büyük olmazsa altyazı bir sonraki
+                    // fotoğrafa ait gibi okunuyor.
+                    VStack(alignment: .leading, spacing: 56) {
                         ForEach(day.moments) { moment in
-                            momentCard(moment)
+                            V3MomentCard(
+                                moment: moment,
+                                onTapPhoto: { ui in
+                                    withAnimation(ONEAnimation.easing) {
+                                        globalUI.archiveMomentImage = ui
+                                    }
+                                },
+                                onTapPhotoURL: { url in
+                                    withAnimation(ONEAnimation.easing) {
+                                        globalUI.archivePhotoURL = url
+                                    }
+                                },
+                                photoNamespace: photoNS,
+                                isPhotoViewerActive: globalUI.archivePhotoURL.map {
+                                    $0.absoluteString == moment.photoRef
+                                } ?? false
+                            )
                         }
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 22)
+                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.top, V3Tokens.spacingXL2)
                 }
             }
             .padding(.bottom, canAddMoment ? 110 : 32)
@@ -136,89 +176,33 @@ struct V3DayDetailView: View {
         }
     }
 
-    // MARK: - Sticky top bar (Kapat her zaman erişilebilir)
+    // MARK: - Sticky top bar
 
+    /// Ortak `V3TopBar`. Eskiden burası kendi çubuğunu çiziyordu ve durağan
+    /// halde solu boştu — yalnız sağda bir "Kapat" vardı, üst şerit bomboş
+    /// duruyordu. Artık sol yuvada geri düğmesi, yanında tarih **her zaman**
+    /// duruyor; kollapse'de sağda mini şerit + an sayısı beliriyor.
     private var stickyTopBar: some View {
-        HStack(spacing: 12) {
-            // Kompakt gün özeti — sadece kollapse'de görünür.
-            HStack(spacing: 10) {
-                DayFill(hexes: heroHexes, cornerRadius: 2)
-                    .frame(width: 32, height: 5)
-                Text("\(dateLabel) · \(countLabel.uppercased())")
-                    .font(V3Typography.mono(11, weight: .regular))
-                    .tracking(1.4)
-                    .foregroundColor(V3Tokens.mutedText)
-                    .lineLimit(1)
-            }
-            .opacity(collapseProgress)
-
-            Spacer(minLength: 8)
-
-            Button(action: {
+        V3TopBar(
+            leading: .back {
                 ONEHaptics.nudge()
                 onBack()
-            }) {
-                Text("Kapat")
-                    .font(V3Typography.sans(14, weight: .semibold))
-                    .foregroundColor(V3Tokens.mutedText)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 9)
-                    .background(
-                        ZStack {
-                            Capsule(style: .continuous)
-                                .fill(V3Tokens.paper)
-                            Capsule(style: .continuous)
-                                .strokeBorder(V3Tokens.hairline, lineWidth: 1)
-                        }
-                    )
-            }
-            .buttonStyle(.plain)
-            .accessibilityHint("Arşive geri dön")
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 8)
-        .padding(.bottom, 10)
-        .background(
-            V3Tokens.paper
-                .opacity(collapseProgress)
-                .overlay(alignment: .bottom) {
-                    Rectangle()
-                        .fill(V3Tokens.hairline)
-                        .frame(height: 0.5)
-                        .opacity(collapseProgress)
-                }
-                .ignoresSafeArea(edges: .top)
+            },
+            context: barContext,
+            progress: collapseProgress
         )
-        .animation(.easeOut(duration: 0.22), value: collapseProgress >= 1)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("\(dateLabel), \(countLabel)")
-    }
-
-    // MARK: - Expanded header (scroll'la kaybolur)
-
-    private var expandedHeader: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(dateLabel)
-                .font(V3Typography.mono(11, weight: .regular))
-                .tracking(1.4)
-                .textCase(.uppercase)
-                .foregroundColor(V3Tokens.faintText)
-            Text(countLabel)
-                .font(V3Typography.display(28, weight: .semibold))
-                .tracking(-0.8)
-                .foregroundColor(V3Tokens.ink)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityLabel(barContext)
     }
 
     // MARK: - Empty day
 
     private var emptyDayContent: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
             ZStack {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                     .strokeBorder(V3Tokens.hairline, style: StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                     .strokeBorder(V3Tokens.hairline, style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
                     .frame(width: 60, height: 60)
             }
@@ -231,7 +215,7 @@ struct V3DayDetailView: View {
 
             if let subtitle = emptySubtitle {
                 Text(subtitle)
-                    .font(V3Typography.sans(15))
+                    .bodyMD()
                     .foregroundColor(V3Tokens.mutedText)
             }
 
@@ -239,14 +223,14 @@ struct V3DayDetailView: View {
                 Button {
                     onAddMoment?()
                 } label: {
-                    Text("Şimdi ekle")
-                        .font(V3Typography.sans(16, weight: .semibold))
+                    Text(NSLocalizedString("archive.addNow", comment: ""))
+                        .bodyLGSemibold()
                         .foregroundColor(V3Tokens.paper)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
                         .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
                 .padding(.top, 10)
             }
         }
@@ -261,131 +245,10 @@ struct V3DayDetailView: View {
     }
 
     private var dateLabel: String {
-        let f = DateFormatter()
-        f.dateFormat = "d MMMM"
-        f.locale = Locale(identifier: "tr_TR")
+        let f = ONEFormatters.dayMonth
         return f.string(from: day.date).uppercased()
     }
 
-    // MARK: - Moment card
-
-    private func momentCard(_ moment: Moment) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .center, spacing: 12) {
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .fill((V3Mood.fromHex(moment.moodColorHex)?.color ?? Color(hex: moment.moodColorHex)))
-                    .frame(width: 40, height: 40)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(timeString(moment.time))
-                        .font(V3Typography.mono(11, weight: .regular))
-                        .tracking(1.2)
-                        .foregroundColor(V3Tokens.faintText)
-                    if let label = V3Mood.fromHex(moment.moodColorHex)?.label {
-                        Text(label)
-                            .font(V3Typography.display(18, weight: .semibold))
-                            .tracking(-0.4)
-                            .foregroundColor(V3Tokens.ink)
-                    }
-                }
-                Spacer()
-            }
-
-            if moment.hasNote {
-                Text(moment.note ?? "")
-                    .font(V3Typography.sans(15))
-                    .foregroundColor(V3Tokens.ink)
-                    .lineSpacing(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            momentPhoto(moment)
-
-            if moment.hasSong, let song = moment.songName, !song.isEmpty {
-                HStack(spacing: 10) {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill((V3Mood.fromHex(moment.moodColorHex)?.color ?? Color(hex: moment.moodColorHex)).opacity(0.6))
-                        .frame(width: 40, height: 40)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(song)
-                            .font(V3Typography.sans(14, weight: .semibold))
-                            .foregroundColor(V3Tokens.ink)
-                        if let artist = moment.songArtist {
-                            Text(artist)
-                                .font(V3Typography.sans(12))
-                                .foregroundColor(V3Tokens.mutedText)
-                        }
-                    }
-                    Spacer()
-                }
-            }
-
-            if moment.scope == .private {
-                Text("ARŞİV")
-                    .font(V3Typography.mono(10, weight: .regular))
-                    .tracking(1.4)
-                    .foregroundColor(V3Tokens.ghostText)
-            }
-        }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(V3Tokens.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(V3Tokens.hairline, lineWidth: 1)
-                )
-        )
-    }
-
-    // Local UIImage → archiveMomentImage; URL → archivePhotoURL (mevcut viewer).
-    @ViewBuilder
-    private func momentPhoto(_ moment: Moment) -> some View {
-        if let data = moment.photoData, let ui = UIImage(data: data) {
-            Image(uiImage: ui)
-                .resizable()
-                .scaledToFill()
-                .frame(maxWidth: .infinity)
-                .frame(height: 220)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .contentShape(Rectangle())
-                .accessibilityAddTraits(.isButton)
-                .accessibilityLabel("Fotoğrafı tam ekran aç")
-                .onTapGesture {
-                    ONEHaptics.moodSelected()
-                    withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
-                        globalUI.archiveMomentImage = ui
-                    }
-                }
-        } else if let ref = moment.photoRef, let url = URL(string: ref) {
-            let isViewerActive = globalUI.archivePhotoURL == url
-            AsyncImage(url: url) { image in
-                image.resizable().scaledToFill()
-            } placeholder: {
-                Rectangle().fill(V3Tokens.hairline)
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 220)
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .matchedGeometryEffect(id: "archivePhoto", in: photoNS, isSource: !isViewerActive)
-            .opacity(isViewerActive ? 0 : 1)
-            .contentShape(Rectangle())
-            .accessibilityAddTraits(.isButton)
-            .accessibilityLabel("Fotoğrafı tam ekran aç")
-            .onTapGesture {
-                ONEHaptics.moodSelected()
-                withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
-                    globalUI.archivePhotoURL = url
-                }
-            }
-        }
-    }
-
-    private func timeString(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "HH:mm"
-        return f.string(from: date)
-    }
 }
 
 // MARK: - Scroll offset probe

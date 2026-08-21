@@ -10,66 +10,51 @@ import SwiftUI
 
 // MARK: - Üst çubuk (.nb)
 
-/// Alt ekran üst çubuğu: solda geri, ortada başlık, sağda opsiyonel eylem.
+/// Alt ekran üst çubuğu: solda geri, yanında başlık, sağda opsiyonel eylem.
 ///
-/// `NavigationStack`'in kendi bar'ı kullanılmıyor — prototipte çubuk krem
-/// zeminden içeriğe doğru sönen bir gradyan, ayrı bir yüzey değil. Sistem
-/// bar'ı bunu veremiyor (kendi materyali ve ayırıcı çizgisi var).
+/// Artık `V3TopBar`'ın ince bir sarmalayıcısı. Eskiden kendi çubuğunu
+/// çiziyordu ve iki sorunu vardı: 96pt yüksekliğiyle sekme köklerinin
+/// çubuğundan iki kat kalındı (aynı uygulamada iki farklı header dili), ve
+/// zemini `ONEBrand.bone` + `Color.white.opacity(0.7)` ile **sabit açık
+/// temaydı** — koyu temada krem bir şerit olarak duruyordu.
 struct SubScreenNavBar: View {
     let title: String
     var actionTitle: String? = nil
     let onBack: () -> Void
     var onAction: (() -> Void)? = nil
+    /// Zemin opaklığı. Kendi scroll'u olmayan çağrılarda 1 (düz `paper`);
+    /// `SubScreen` bunu kendi scroll offset'inden besliyor.
+    var progress: CGFloat = 1
 
     var body: some View {
-        HStack(spacing: 10) {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(V3Tokens.ink)
-                    .frame(width: 32, height: 32)
-                    .background(Circle().fill(Color.white.opacity(0.7)))
-                    .overlay(Circle().stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1))
-            }
-            .buttonStyle(.onePressable)
-            .accessibilityLabel(NSLocalizedString("general.back", comment: ""))
-
-            Text(title)
-                .font(V3Typography.sans(16, weight: .semibold))
-                .foregroundColor(V3Tokens.ink)
-                .lineLimit(1)
-
-            Spacer()
-
+        V3TopBar(
+            leading: .back(onBack),
+            title: title,
+            titleMode: .always,
+            progress: progress
+        ) {
             if let actionTitle, let onAction {
                 Button(action: onAction) {
                     Text(actionTitle)
-                        .font(V3Typography.sans(13, weight: .semibold))
+                        .bodyXSSemibold()
                         .foregroundColor(ONEBrand.kor)
+                        .padding(.horizontal, 4)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.onePressable)
             }
         }
-        .padding(.horizontal, ONETokens.spacingXL)
-        .padding(.bottom, 12)
-        .frame(height: 96, alignment: .bottom)
-        .background(
-            LinearGradient(
-                stops: [
-                    .init(color: ONEBrand.bone, location: 0.62),
-                    .init(color: ONEBrand.bone.opacity(0), location: 1.0)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea(edges: .top)
-        )
     }
 }
 
-/// Üst çubuk + kaydırılabilir gövde. Prototipteki `.scroll.sub`
-/// (üstten 104pt boşluk) bu sarmalayıcıda toplanıyor ki her ekran
-/// aynı sayıyı tekrar yazmasın.
+/// Üst çubuk + kaydırılabilir gövde. Alt ekranların tamamı bunu kullanıyor,
+/// yani buradaki her karar on bir ekrana birden iniyor.
+///
+/// Üstten boşluk artık elle yazılan bir sayı değil (`.padding(.top, 104)`),
+/// `safeAreaInset`: çubuk gövdeye kendi yüksekliği kadar pay bıraktırıyor ve
+/// içerik kaydırılırken **altından geçiyor** — kök sekmelerdeki davranışın
+/// aynısı.
 struct SubScreen<Content: View>: View {
     let title: String
     var actionTitle: String? = nil
@@ -77,23 +62,33 @@ struct SubScreen<Content: View>: View {
     var onAction: (() -> Void)? = nil
     @ViewBuilder let content: () -> Content
 
+    /// Bu ekrana özgü scroll uzayı — aynı anda birden fazla alt ekran
+    /// yığında canlı olabiliyor, isim çakışırsa offset'ler karışır.
+    @State private var spaceName = "one.scroll.sub.\(UUID().uuidString)"
+    @State private var progress: CGFloat = 0
+
     var body: some View {
-        ZStack(alignment: .top) {
-            ONEBrand.bone.ignoresSafeArea()
+        ScrollView(showsIndicators: false) {
+            Color.clear.frame(height: 0)
+                .scrollOffsetSensor(spaceName: spaceName)
 
-            ScrollView(showsIndicators: false) {
-                content()
-                    .padding(.horizontal, ONETokens.spacingXL)
-                    .padding(.top, 104)
-                    .padding(.bottom, 116)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
+            content()
+                // Üst çubukla aynı hat. Eskiden `V3Tokens.spacingXL` (22)
+                // idi ve başlık ile gövde her alt ekranda 2pt kaçıktı.
+                .padding(.horizontal, V3Tokens.channel)
+                .padding(.top, 8)
+                .padding(.bottom, 116)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(V3Tokens.paper.ignoresSafeArea())
+        .topBarProgress($progress, spaceName: spaceName)
+        .safeAreaInset(edge: .top, spacing: 0) {
             SubScreenNavBar(
                 title: title,
                 actionTitle: actionTitle,
                 onBack: onBack,
-                onAction: onAction
+                onAction: onAction,
+                progress: progress
             )
         }
     }
@@ -110,16 +105,16 @@ struct SegmentedControl: View {
             ForEach(Array(options.enumerated()), id: \.offset) { index, label in
                 Button {
                     ONEHaptics.tabSwitch()
-                    withAnimation(.easeOut(duration: 0.16)) { selection = index }
+                    withAnimation(ONEAnimation.easingChip) { selection = index }
                 } label: {
                     Text(label)
-                        .font(V3Typography.sans(12.5, weight: .semibold))
+                        .bodyMicroSemibold()
                         .foregroundColor(selection == index ? V3Tokens.ink : V3Tokens.mutedText)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 7)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(selection == index ? Color.white : .clear)
+                                .fill(selection == index ? V3Tokens.surface : .clear)
                                 .shadow(
                                     color: selection == index
                                         ? V3Tokens.ink.opacity(0.1) : .clear,
@@ -154,12 +149,12 @@ struct StatRow: View {
                         .monospacedDigit()
                         .foregroundColor(V3Tokens.ink)
                     Text(item.label)
-                        .font(V3Typography.sans(10.5))
+                        .bodyMicro()
                         .foregroundColor(V3Tokens.mutedText)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
-                .oneCardBackground(radius: ONETokens.radiusCardLg)
+                .oneCardBackground(radius: V3Tokens.radiusCard)
             }
         }
     }
@@ -180,9 +175,9 @@ struct InsightCard<Content: View>: View {
             }
             content()
         }
-        .padding(ONETokens.spacingXL)
+        .padding(V3Tokens.spacingXL)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .oneCardBackground(radius: ONETokens.radiusSheet)
+        .oneCardBackground(radius: V3Tokens.radiusPanel)
     }
 }
 
@@ -195,8 +190,8 @@ struct SettingsGroup<Content: View>: View {
 
     var body: some View {
         VStack(spacing: 0) { content() }
-            .oneCardBackground(radius: ONETokens.radiusCardLg)
-            .clipShape(RoundedRectangle(cornerRadius: ONETokens.radiusCardLg, style: .continuous))
+            .oneCardBackground(radius: V3Tokens.radiusCard)
+            .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous))
     }
 }
 
@@ -211,21 +206,21 @@ struct SettingsRow: View {
     var body: some View {
         Button { action?() } label: {
             VStack(spacing: 0) {
-                HStack(spacing: ONETokens.spacingMD) {
+                HStack(spacing: V3Tokens.spacingMD) {
                     Image(systemName: icon)
                         .font(.system(size: 15))
                         .foregroundColor(V3Tokens.mutedText)
                         .frame(width: 22)
 
                     Text(title)
-                        .font(V3Typography.sans(14))
+                        .bodySM()
                         .foregroundColor(V3Tokens.ink)
 
                     Spacer()
 
                     if let value {
                         Text(value)
-                            .font(V3Typography.sans(13))
+                            .bodyXS()
                             .foregroundColor(V3Tokens.faintText)
                     }
                     if showsChevron {
@@ -239,13 +234,13 @@ struct SettingsRow: View {
 
                 if !isLast {
                     Rectangle()
-                        .fill(V3Tokens.ink.opacity(0.09))
+                        .fill(V3Tokens.hairline)
                         .frame(height: 1)
                         .padding(.leading, 15)
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
         .disabled(action == nil)
     }
 }
@@ -260,23 +255,23 @@ struct FilterChip: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(V3Typography.sans(12, weight: .semibold))
+                .bodyMicroSemibold()
                 .foregroundColor(isSelected ? ONEBrand.bone : V3Tokens.ink)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(
                     Capsule(style: .continuous)
-                        .fill(isSelected ? V3Tokens.ink : Color.white.opacity(0.7))
+                        .fill(isSelected ? V3Tokens.ink : V3Tokens.surface)
                 )
                 .overlay(
                     Capsule(style: .continuous)
                         .stroke(
-                            isSelected ? .clear : V3Tokens.ink.opacity(0.09),
+                            isSelected ? .clear : V3Tokens.hairline,
                             lineWidth: 1
                         )
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
@@ -326,24 +321,13 @@ struct SubScreenState: View {
     }
 }
 
-// MARK: - Ortak kart zemini
-
-extension View {
-    /// Prototipin her yerde tekrarlanan kart zemini:
-    /// beyaz %70-78 + 1px hairline. Tek yerde tanımlı ki opaklık
-    /// ekrandan ekrana kaymasın.
-    func oneCardBackground(radius: CGFloat, opacity: Double = 0.72) -> some View {
-        self
-            .background(
-                RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .fill(Color.white.opacity(opacity))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .stroke(V3Tokens.ink.opacity(0.09), lineWidth: 1)
-            )
-    }
-}
+// Kart zemini burada değil — `View+ONE.swift`'te `oneCardBackground(radius:)`.
+//
+// Bir ara ikisi de vardı: buradaki `opacity:` parametresi alıyordu ama onu
+// hiç kullanmıyordu (yorumunda "kullanılmıyor" yazılıydı), ve altı çağrı
+// noktası o ölü parametreyi geçiyordu. İki aşırı yükleme aynı isimde
+// durduğu sürece hangi çağrının hangisine gittiği okunarak anlaşılamıyordu.
+// Ölü parametre çağrı yerlerinden düştü, tanım tek yere indi.
 
 // MARK: - Anahtarlı satır
 
@@ -361,7 +345,7 @@ struct SettingsToggleRow: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(V3Typography.sans(14, weight: .semibold))
+                        .bodySMSemibold()
                         .foregroundColor(V3Tokens.ink)
                     Text(subtitle)
                         .bodyXS()
@@ -378,7 +362,7 @@ struct SettingsToggleRow: View {
 
             if !isLast {
                 Rectangle()
-                    .fill(V3Tokens.ink.opacity(0.09))
+                    .fill(V3Tokens.hairline)
                     .frame(height: 1)
                     .padding(.leading, 15)
             }

@@ -3,14 +3,20 @@ import CoreData
 
 extension TodayViewModel {
 
-    /// v3 akışının bekliyorum: song opsiyonel. Var olan `saveEntry` song'u zorunlu
-    /// tuttuğu için burada ince bir sarmalayıcı — song yoksa DailySong'a yalnızca
-    /// mood/note/photo yazıp Core Data'ya commit ediyor.
+    /// v3 kayıt yolu — şarkılı ya da şarkısız, bugüne ya da geçmiş bir güne.
     ///
-    /// Not: existing saveEntry'nin tüm yan etkileri (streak, badge, orchestrator,
-    /// widget) yalnızca song varken çalışıyor. Song'suz kayıtta minimum kritik
-    /// yan etkileri burada replikliyoruz — bildirim yeniden kurulumu ve
-    /// UI hydrate'i dahil.
+    /// Eskiden burada `if let song` diye bir dallanma vardı ve şarkılı kayıt
+    /// legacy `saveEntry`'ye gidiyordu. O yol iki şeyi sessizce bozuyordu:
+    ///
+    /// 1. **Upsert.** `saveEntry` günün tek kaydını günceller. v3'ün çekirdek
+    ///    vaadi "bir gün = N an" olduğu hâlde, şarkı seçen kullanıcı o günün
+    ///    önceki anlarını eziyordu.
+    /// 2. **`entryDate` yok sayılıyordu.** Arşiv'den geçmiş bir güne şarkılı
+    ///    an eklendiğinde kayıt **bugüne** düşüyordu.
+    ///
+    /// Artık tek yol var: `MomentWriter`. Aynı yolu App Intents (Siri /
+    /// kısayol / Control Center) de kullanıyor — uygulamadan kaydetmekle
+    /// Siri'den kaydetmek arasında fark kalmıyor.
     @MainActor
     func saveV3Entry(
         mood: V3Mood,
@@ -20,88 +26,15 @@ extension TodayViewModel {
         scope: MomentScope = .private,
         entryDate: Date? = nil
     ) {
-        // v3: her `saveV3Entry` yeni bir "an" eklemeli — o gün mevcut kayıt
-        // olsa bile üzerine yazma. Legacy `saveEntry` (song varken çalışan)
-        // hâlâ upsert; song'lu akış Faz 3'te de tek-an. Multi-moment yolu
-        // song'suz akıştan geçiyor.
-        if let song {
-            let feeling = FeelingType(rawValue: mood.bridgedMood.rawValue)
-            let moodOption = MoodOption(
-                key: mood.rawValue,
-                color: mood.color,
-                label: mood.label.lowercased(),
-                meaning: mood.bridgedMood.meaning
-            )
-            saveEntry(
-                song: song,
-                mood: moodOption,
-                feeling: feeling,
-                photo: photo,
-                note: note,
-                sharePhoto: scope == .friends
-            )
-            return
-        }
-
-        // v3 çok-an write path — Persistence.insertNewMoment daima yeni satır
-        // ekler, entryIndex auto atanır.
-        let normalized = Calendar.current.startOfDay(for: entryDate ?? Date())
-        let photoData = photo?.jpegData(compressionQuality: 0.75)
-
-        let item = PersistenceController.shared.insertNewMoment(
-            for: normalized,
-            moodColorHex: mood.hex,
-            moodWord: mood.label.lowercased(),
+        guard MomentWriter.write(
+            mood: mood,
             note: note,
-            songName: nil,
-            songArtist: nil,
-            photoData: photoData,
+            photo: photo,
+            song: song,
             scope: scope,
+            entryDate: entryDate,
             context: self.context
-        )
-        // Placeholder alanlar — eski ekranlar boş göstermek yerine bunları okur.
-        item.songName   = ""
-        item.artistName = ""
-        item.genre      = ""
-        item.emoji      = "🎵"
-        item.moodLabel  = mood.label.lowercased()
-        item.platform   = "None"
-
-        do {
-            try self.context.save()
-        } catch {
-            ErrorHandler.shared.handle(error, context: "saveV3Entry")
-            return
-        }
-
-        // Şarkısız çok-an yol entrySaved tetiklemiyor; mood/not sinyalini
-        // burada yakala ki günlük mood dağılımı tüm kayıtları kapsasın.
-        // bridgedMood.rawValue → saveEntry (MoodOption.key) ve onboarding ile
-        // aynı ONEMood key uzayı; dashboard'da tek mood dağılımı çıkar.
-        AppAnalytics.shared.track(.moodSelected(mood: mood.bridgedMood.rawValue))
-        if !note.isEmpty {
-            AppAnalytics.shared.track(.noteAdded(length: note.count))
-        }
-
-        Self.writeCachedEchoMood(hex: mood.hex, label: mood.label.lowercased())
-
-        // Bildirimi tazele — bugün kayıt tamam, bugün için pending iptal edilir.
-        NotificationOrchestrator.shared.onSongSaved(
-            moodLabel: mood.label.lowercased(),
-            moodColorHex: mood.hex
-        )
-        V3ReminderScheduler.reschedule(yesterdayMood: mood)
-
-        WidgetDataWriter.writeTodayEntry(
-            songName: "",
-            artistName: "",
-            moodLabel: mood.label.lowercased(),
-            moodColorHex: mood.hex,
-            note: note.isEmpty ? nil : note,
-            entryCount: 1
-        )
-
-        NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
+        ) else { return }
 
         // vm'nin published state'ini yenile — bir sonraki render'da Kaydedildi
         // ekranı, son 7 gün şeridi ve streak count doğru veriyle gelir.

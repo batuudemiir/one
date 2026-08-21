@@ -2,7 +2,7 @@
 //  V3CircleView.swift
 //  one
 //
-//  Çevre — v3 prototip ekran 10 ("Frekans · ana", ürün adı: Çevre).
+//  Çevre — v3 prototip ekran 10.
 //
 //  Prototipin bağlayıcı ölçüleri:
 //   - Başlık Archivo 38pt, tracking −1.1; altında 16pt mut alt satır.
@@ -34,7 +34,6 @@ struct V3CircleView: View {
     @Environment(\.managedObjectContext) private var context
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var cloudKitManager = CloudKitManager.shared
-    @StateObject private var globalUI = GlobalUIState.shared
     /// Ekran header'ındaki zil noktası bunu okuyor.
     @StateObject private var circleNotifications = CircleNotificationStore.shared
 
@@ -72,6 +71,8 @@ struct V3CircleView: View {
     @Namespace private var cardTransitionNS
     /// Kendi bugünkü CloudKit paylaşımın — "kendi paylaşımın" detayı bunu ister.
     @State private var myShare: CKRecord? = nil
+    /// Üst çubuğun 0→1 zemin/başlık ilerlemesi. Scroll offset'inden geliyor.
+    @State private var topBarProgress: CGFloat = 0
 
     var onNavigateToToday: (() -> Void)? = nil
 
@@ -100,14 +101,14 @@ struct V3CircleView: View {
         .onChange(of: path.isEmpty) { _, _ in syncSwipeLock() }
         .onChange(of: isActive) { _, _ in syncSwipeLock() }
         .onDisappear {
-            globalUI.detailStackLocksSwipe = false
+            GlobalUIState.shared.detailStackLocksSwipe = false
         }
     }
 
     /// Yalnız sekme görünürken etkili — arka planda duran bir detay yığını
     /// başka sekmenin swipe'ını kilitlememeli.
     private func syncSwipeLock() {
-        globalUI.detailStackLocksSwipe = isActive && !path.isEmpty
+        GlobalUIState.shared.detailStackLocksSwipe = isActive && !path.isEmpty
     }
 
     // MARK: - Feed (yığının kökü)
@@ -116,10 +117,10 @@ struct V3CircleView: View {
         ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
-                    Color.clear.frame(height: 0).id("circleTop")
-
-                    headerActions
-                        .padding(.top, 8)
+                    // Anchor + scroll-driven tab-bar minimize sensörü.
+                    Color.clear.frame(height: 0)
+                        .id("circleTop")
+                        .scrollOffsetSensor(spaceName: "one.scroll.circle")
 
                     if injectedSample != nil {
                         mainContent
@@ -138,7 +139,7 @@ struct V3CircleView: View {
                                 }
                             }
                         )
-                        .padding(.top, 26)
+                        .padding(.top, V3Tokens.spacingXL2)
                     } else if isLoading && !hasLoadedOnce {
                         skeleton
                     } else if hasLoadedOnce && friends.isEmpty {
@@ -147,18 +148,31 @@ struct V3CircleView: View {
                         mainContent
                     }
                 }
-                .padding(.horizontal, 24)
-                // Sekme çubuğu `safeAreaInset` olarak eklendiği için yüksekliği
-                // ScrollView'ın içerik payına **zaten** ekleniyor. Buradaki 110
-                // onun üstüne biniyordu: altta ~175pt ölü alan kalıyor ve hiçbir
-                // içerik çubuğun altından geçmiyordu — cam da kırıp bükecek bir
-                // şey bulamayınca düz bir plaka gibi görünüyordu.
-                .padding(.bottom, 24)
+                .padding(.horizontal, V3Tokens.spacingXL2)
+                // Dinlenme pozisyonunun tek sahibi kabuk: `safeAreaInset`
+                // nav yüksekliği kadar pay bırakıyor. Buradaki fazladan 24pt
+                // o payın üstüne biniyordu — son satır çubuğun 16pt üstünde
+                // duruyor, çubuk boş kağıdın üzerinde asılı kalıyordu. Cam
+                // ancak arkasından bir şey geçerse cam gibi okunur.
             }
             .background(V3Tokens.paper)
+            .hidesTabBarOnScroll(tab: .circle, spaceName: "one.scroll.circle")
+            .topBarProgress($topBarProgress, spaceName: "one.scroll.circle")
+            .safeAreaInset(edge: .top, spacing: 0) {
+                // İstek ve bildirim çipleri buraya taşındı. Eskiden scroll
+                // içeriğinin ilk satırıydılar — aşağı kaydırınca kayboluyor,
+                // "yeni istek var mı" sorusu ekranın dışına çıkıyordu.
+                V3TopBar(
+                    leading: .mark,
+                    title: PrimaryTab.circle.title,
+                    progress: topBarProgress
+                ) {
+                    headerActions
+                }
+            }
             .refreshable { await refresh() }
             .onReceive(NotificationCenter.default.publisher(for: .circleTabRetapped)) { _ in
-                withAnimation(V3Tokens.easing) { proxy.scrollTo("circleTop", anchor: .top) }
+                withAnimation(ONEAnimation.easing) { proxy.scrollTo("circleTop", anchor: .top) }
                 loadFriends(force: true)
             }
         }
@@ -235,6 +249,7 @@ struct V3CircleView: View {
         .sheet(isPresented: $showResonance) {
             V3ResonanceView(friends: friends, myMoments: myMoments)
         }
+        .v3Sheet()
         .sheet(isPresented: $showQRScanner) {
             QRScannerView { code in
                 showQRScanner = false
@@ -242,6 +257,7 @@ struct V3CircleView: View {
                 showAddFriend = true
             }
         }
+        .v3Sheet()
     }
 
     // MARK: - Routes
@@ -299,17 +315,15 @@ struct V3CircleView: View {
 
     // MARK: - Header actions
 
-    /// Ekranın üstünde sağa yaslı iki aksiyon çipi: arkadaş istekleri +
-    /// bildirimler. Kabuğun üst barı kaldırıldığı için sekmeye özgü aksiyonlar
-    /// burada yaşıyor.
+    /// İki aksiyon çipi: arkadaş istekleri + bildirimler. `V3TopBar`'ın sağ
+    /// yuvasında duruyorlar — çubuk sabit olduğu için scroll'la kaybolmuyorlar.
     ///
     /// Tasarım: `actionChip` ile sibling — 44pt kapsül, `surface` dolgu +
     /// hairline kenar. Sayı > 0 iken sağa `mono(11)` kor sayaç, ikon `ink`
     /// kalır; sıfırken ikon `mutedText` (dinginlik). Nokta rozet yok —
     /// sayaç okumak "kaç" bilgisini bir bakışta veriyor.
     private var headerActions: some View {
-        HStack(spacing: 8) {
-            Spacer(minLength: 0)
+        HStack(spacing: V3Tokens.spacingSM) {
             headerActionChip(
                 systemName: "person.badge.plus",
                 count: pendingRequestCount,
@@ -337,7 +351,7 @@ struct V3CircleView: View {
     ) -> some View {
         let hasCount = count > 0
         return Button(action: action) {
-            HStack(spacing: 8) {
+            HStack(spacing: V3Tokens.spacingSM) {
                 Image(systemName: systemName)
                     .font(.system(size: 16, weight: .regular))
                     .foregroundColor(V3Tokens.ink)
@@ -361,8 +375,8 @@ struct V3CircleView: View {
                     .strokeBorder(hasCount ? ONEBrand.kor.opacity(0.35) : V3Tokens.hairline, lineWidth: 1)
             )
         }
-        .buttonStyle(V3CardPressStyle())
-        .animation(reduceMotion ? nil : V3Tokens.easingChip, value: hasCount)
+        .buttonStyle(.onePressable)
+        .animation(reduceMotion ? nil : ONEAnimation.easingChip, value: hasCount)
         .accessibilityLabel(a11y)
         .accessibilityValue(hasCount ? "\(count)" : "")
     }
@@ -375,14 +389,14 @@ struct V3CircleView: View {
                 .font(ONEBrand.display(38))
                 .tracking(-1.1)
                 .foregroundColor(V3Tokens.ink)
-                .padding(.top, 26)
+                .padding(.top, V3Tokens.spacingXL2)
 
             Text(NSLocalizedString("circle.v3Subtitle", comment: ""))
-                .font(V3Typography.sans(16))
+                .bodyLG()
                 .foregroundColor(V3Tokens.mutedText)
                 .padding(.top, 10)
 
-            HStack(spacing: 8) {
+            HStack(spacing: V3Tokens.spacingSM) {
                 actionChip(NSLocalizedString("circle.resonance", comment: "")) {
                     ONEHaptics.tabSwitch()
                     showResonance = true
@@ -392,18 +406,18 @@ struct V3CircleView: View {
                     showAddFriend = true
                 }
             }
-            .padding(.top, 20)
+            .padding(.top, V3Tokens.spacingXL)
 
             Text(String(format: NSLocalizedString("circle.peopleCount", comment: ""), friends.count))
                 .font(V3Typography.mono(10))
                 .tracking(1.5)
                 .textCase(.uppercase)
                 .foregroundColor(V3Tokens.ghostText)
-                .padding(.top, 24)
+                .padding(.top, V3Tokens.spacingXL2)
 
             LazyVGrid(
-                columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
-                spacing: 12
+                columns: [GridItem(.flexible(), spacing: V3Tokens.spacingMD), GridItem(.flexible(), spacing: V3Tokens.spacingMD)],
+                spacing: V3Tokens.spacingMD
             ) {
                 ownCard
                 ForEach(friends) { data in
@@ -413,12 +427,12 @@ struct V3CircleView: View {
             .padding(.top, 18)
 
             if pendingRequestCount > 0 {
-                requestsTeaser.padding(.top, 16)
+                requestsTeaser.padding(.top, V3Tokens.spacingLG)
             }
         }
         .opacity(appeared || reduceMotion ? 1 : 0)
         .offset(y: appeared || reduceMotion ? 0 : 9)
-        .animation(reduceMotion ? nil : V3Tokens.easing, value: appeared)
+        .animation(reduceMotion ? nil : ONEAnimation.easing, value: appeared)
         .onAppear {
             appeared = true
             loadSelfPhoto()
@@ -459,7 +473,7 @@ struct V3CircleView: View {
                     .strokeBorder(V3Tokens.ink, lineWidth: 1.5)
             )
         }
-        .buttonStyle(V3CardPressStyle())
+        .buttonStyle(.onePressable)
         .accessibilityLabel(
             "\(NSLocalizedString("circle.youCard", comment: "")), \(mood?.label ?? NSLocalizedString("circle.youNotShared", comment: "")), \(momentCountLabel(hexes.count))"
         ))
@@ -495,7 +509,7 @@ struct V3CircleView: View {
                 photo: friendPhotos[data.id]
             )
         }
-        .buttonStyle(V3CardPressStyle())
+        .buttonStyle(.onePressable)
         // Kart görsel olarak dört satır: ad, duygu, renk şeridi, mono meta.
         // Şerit ve meta satırı VoiceOver'da hiç okunmuyordu — an sayısı ve
         // son paylaşım saati kartın bilgisinin yarısı. Hepsi tek cümlede.
@@ -524,7 +538,7 @@ struct V3CircleView: View {
         rightMeta: String,
         photo: UIImage? = nil
     ) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {
             // Avatar — 46pt, radius 46×0.3 ≈ 14.
             // Fotoğraf varsa o, yoksa kişinin bugünkü renginde baş harf.
             // (Kart eskiden fotoğrafı hiç okumuyordu; kullanıcının yüklediği
@@ -556,13 +570,13 @@ struct V3CircleView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(V3Typography.sans(16, weight: .semibold))
+                    .bodyLGSemibold()
                     .foregroundColor(V3Tokens.ink)
                     // Uzun adlar ve büyük metin ayarları tek satıra sığmıyor.
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
                 Text(subtitle)
-                    .font(V3Typography.sans(13))
+                    .bodyXS()
                     .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
@@ -577,7 +591,11 @@ struct V3CircleView: View {
                 } else {
                     HStack(spacing: 3) {
                         ForEach(Array(stripHexes.enumerated()), id: \.offset) { _, hex in
-                            Rectangle().fill(Color(hex: hex))
+                            Rectangle()
+                                .fill(Color(hex: hex))
+                                // 6pt'lik şerit gün içindeki anları yalnız
+                                // renkle ayırıyordu — desen ikinci kanal.
+                                .moodPattern(V3Mood.fromHex(hex), lineWidth: 0.7)
                         }
                     }
                     .clipShape(Capsule())
@@ -599,7 +617,7 @@ struct V3CircleView: View {
             // metin ayarlarında "3 AN" / "21:14" yerine "…" görünmesin.
             .minimumScaleFactor(0.7)
         }
-        .padding(16)
+        .padding(V3Tokens.spacingLG)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -623,14 +641,14 @@ struct V3CircleView: View {
                 .padding(.top, 30)
 
             Text(NSLocalizedString("circle.v3EmptyBody", comment: ""))
-                .font(V3Typography.sans(16))
+                .bodyLG()
                 .foregroundColor(V3Tokens.mutedText)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 12)
+                .padding(.top, V3Tokens.spacingMD)
 
             LazyVGrid(
-                columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
-                spacing: 12
+                columns: [GridItem(.flexible(), spacing: V3Tokens.spacingMD), GridItem(.flexible(), spacing: V3Tokens.spacingMD)],
+                spacing: V3Tokens.spacingMD
             ) {
                 ForEach(0..<4, id: \.self) { i in
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -648,25 +666,25 @@ struct V3CircleView: View {
                     showAddFriend = true
                 } label: {
                     Text(NSLocalizedString("circle.addFriend", comment: ""))
-                        .font(V3Typography.sans(16, weight: .semibold))
+                        .bodyLGSemibold()
                         .foregroundColor(V3Tokens.paper)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 17)
                         .background(Capsule().fill(V3Tokens.ink))
                 }
-                .buttonStyle(V3CardPressStyle())
+                .buttonStyle(.onePressable)
 
                 Button {
                     showQRScanner = true
                 } label: {
                     Text(NSLocalizedString("circle.scanQR", comment: ""))
-                        .font(V3Typography.sans(16, weight: .semibold))
+                        .bodyLGSemibold()
                         .foregroundColor(V3Tokens.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 17)
                         .background(Capsule().strokeBorder(V3Tokens.hairline, lineWidth: 1.5))
                 }
-                .buttonStyle(V3CardPressStyle())
+                .buttonStyle(.onePressable)
             }
             .padding(.top, 28)
         }
@@ -679,8 +697,8 @@ struct V3CircleView: View {
             RoundedRectangle(cornerRadius: 8).fill(V3Tokens.wash)
                 .frame(width: 160, height: 34)
             LazyVGrid(
-                columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
-                spacing: 12
+                columns: [GridItem(.flexible(), spacing: V3Tokens.spacingMD), GridItem(.flexible(), spacing: V3Tokens.spacingMD)],
+                spacing: V3Tokens.spacingMD
             ) {
                 ForEach(0..<4, id: \.self) { _ in
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -689,7 +707,7 @@ struct V3CircleView: View {
                 }
             }
         }
-        .padding(.top, 26)
+        .padding(.top, V3Tokens.spacingXL2)
         .shimmeringCircle()
     }
 
@@ -698,29 +716,29 @@ struct V3CircleView: View {
     private func actionChip(_ label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(V3Typography.sans(14, weight: .medium))
+                .bodySMMedium()
                 .foregroundColor(V3Tokens.ink)
                 .padding(.horizontal, 15)
                 .frame(minHeight: 44)
                 .background(Capsule().strokeBorder(V3Tokens.hairline, lineWidth: 1))
         }
-        .buttonStyle(V3CardPressStyle())
+        .buttonStyle(.onePressable)
     }
 
     private var requestsTeaser: some View {
         Button {
             showRequests = true
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: V3Tokens.spacingMD) {
                 Text(String(format: NSLocalizedString("circle.pendingRequests", comment: ""), pendingRequestCount))
-                    .font(V3Typography.sans(15, weight: .medium))
+                    .bodyMDMedium()
                     .foregroundColor(V3Tokens.ink)
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(V3Tokens.ghostText)
             }
-            .padding(16)
+            .padding(V3Tokens.spacingLG)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(V3Tokens.surface)
@@ -730,7 +748,7 @@ struct V3CircleView: View {
                     )
             )
         }
-        .buttonStyle(V3CardPressStyle())
+        .buttonStyle(.onePressable)
     }
 
     // MARK: - Derived
@@ -749,9 +767,7 @@ struct V3CircleView: View {
 
     private func timeString(_ date: Date?) -> String {
         guard let date else { return "" }
-        let f = DateFormatter()
-        f.dateFormat = "HH:mm"
-        return f.string(from: date)
+        return ONEFormatters.time.string(from: date)
     }
 
     // MARK: - Data
@@ -839,8 +855,7 @@ struct V3CircleView: View {
     /// Sekme çubuğundaki kor nokta — bugün görülmemiş paylaşım sayısı.
     /// İşaretleyiciyi `FriendDetailView` yazıyor (`seenShare_<uid>_<gün>`).
     private func computeUnseenCount(_ list: [CloudKitManager.FriendCircleData]) {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
+        let f = ONEFormatters.dayKey
         let today = f.string(from: Date())
         let count = list.filter { data in
             guard data.share != nil, let uid = data.user["userID"] as? String else { return false }
@@ -889,17 +904,6 @@ struct V3CircleView: View {
 }
 
 // MARK: - Press style
-
-/// v3 basma geri bildirimi: `scale(0.96)`, tek easing eğrisi.
-struct V3CardPressStyle: ButtonStyle {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.96 : 1)
-            .animation(V3Tokens.easingPress, value: configuration.isPressed)
-    }
-}
 
 
 #if DEBUG

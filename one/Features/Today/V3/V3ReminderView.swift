@@ -19,39 +19,39 @@ struct V3ReminderView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             V3Header(dateLabel: "AYARLAR · HATIRLATMA")
-                .padding(.bottom, 12)
+                .padding(.bottom, V3Tokens.spacingMD)
 
             V3BackButton(title: "← Geri", action: onBack)
-                .padding(.top, 8)
+                .padding(.top, V3Tokens.spacingSM)
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("Hatırlatma")
+                    Text(NSLocalizedString("reminder.title", comment: ""))
                         .font(V3Typography.display(34, weight: .black))
                         .tracking(-1.6)
                         .foregroundColor(V3Tokens.ink)
-                        .padding(.top, 22)
+                        .padding(.top, V3Tokens.spacingXL)
                         .padding(.bottom, 6)
 
-                    Text("Seçtiğin saatte tek hatırlatma.")
-                        .font(V3Typography.sans(15))
+                    Text(NSLocalizedString("reminder.subtitle", comment: ""))
+                        .bodyMD()
                         .foregroundColor(V3Tokens.mutedText)
                         .lineSpacing(2)
-                        .padding(.bottom, 22)
+                        .padding(.bottom, V3Tokens.spacingXL)
 
                     timeStepper
 
                     masterToggle
-                        .padding(.top, 12)
+                        .padding(.top, V3Tokens.spacingMD)
 
                     weekdayChips
-                        .padding(.top, 24)
+                        .padding(.top, V3Tokens.spacingXL2)
 
                     tonePicker
-                        .padding(.top, 24)
+                        .padding(.top, V3Tokens.spacingXL2)
 
                     lockScreenPreview
-                        .padding(.top, 24)
+                        .padding(.top, V3Tokens.spacingXL2)
                 }
             }
 
@@ -94,12 +94,12 @@ struct V3ReminderView: View {
                 settings.minutes = new
             }
         }
-        .padding(20)
+        .padding(V3Tokens.spacingXL)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                 .fill(V3Tokens.surface)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                         .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         )
@@ -115,11 +115,11 @@ struct V3ReminderView: View {
                 .foregroundColor(Color(hex: "#5A5A66"))
                 .frame(width: 44, height: 44)
                 .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                         .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
     }
 
     // MARK: - Master toggle
@@ -127,11 +127,11 @@ struct V3ReminderView: View {
     private var masterToggle: some View {
         HStack(spacing: 14) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("Günlük hatırlatma")
-                    .font(V3Typography.sans(16, weight: .semibold))
+                Text(NSLocalizedString("reminder.daily", comment: ""))
+                    .bodyLGSemibold()
                     .foregroundColor(V3Tokens.ink)
                 Text(settings.enabled ? "Açık · her gün \(settings.formattedTime)" : "Kapalı · bildirim gelmez")
-                    .font(V3Typography.sans(13))
+                    .bodyXS()
                     .foregroundColor(V3Tokens.faintText)
             }
 
@@ -139,13 +139,13 @@ struct V3ReminderView: View {
 
             V3Switch(isOn: $settings.enabled)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
         .padding(.vertical, 18)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                 .fill(V3Tokens.surface)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                         .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         )
@@ -155,7 +155,7 @@ struct V3ReminderView: View {
 
     private var weekdayChips: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("GÜNLER")
+            Text(NSLocalizedString("reminder.days", comment: ""))
                 .font(V3Typography.mono(11, weight: .regular))
                 .tracking(1.4)
                 .foregroundColor(V3Tokens.faintText)
@@ -167,21 +167,21 @@ struct V3ReminderView: View {
                         settings.days[i].toggle()
                     } label: {
                         Text(weekdayLabels[i])
-                            .font(V3Typography.sans(13, weight: .semibold))
+                            .bodyXSSemibold()
                             .foregroundColor(settings.days[i] ? V3Tokens.paper : V3Tokens.faintText)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
+                            .padding(.vertical, V3Tokens.spacingMD)
                             .background(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                                     .fill(settings.days[i] ? V3Tokens.ink : Color.clear)
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                                             .stroke(settings.days[i] ? V3Tokens.ink : V3Tokens.hairline, lineWidth: 1.5)
                                     )
                             )
                     }
-                    .buttonStyle(.plain)
-                    .animation(V3Tokens.easingChip, value: settings.days[i])
+                    .buttonStyle(.onePressable)
+                    .animation(ONEAnimation.easingChip, value: settings.days[i])
                 }
             }
         }
@@ -191,42 +191,42 @@ struct V3ReminderView: View {
 
     private var tonePicker: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("NE DESİN?")
+            Text(NSLocalizedString("reminder.tone", comment: ""))
                 .font(V3Typography.mono(11, weight: .regular))
                 .tracking(1.4)
                 .foregroundColor(V3Tokens.faintText)
 
-            VStack(spacing: 8) {
+            VStack(spacing: V3Tokens.spacingSM) {
                 ForEach(V3ReminderTone.allCases) { tone in
                     Button {
                         ONEHaptics.feelingSelected()
                         settings.tone = tone
                     } label: {
-                        HStack(spacing: 12) {
+                        HStack(spacing: V3Tokens.spacingMD) {
                             radio(isSelected: settings.tone == tone)
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(tone.displayName)
-                                    .font(V3Typography.sans(15, weight: .semibold))
+                                    .bodyMDSemibold()
                                     .foregroundColor(V3Tokens.ink)
                                 Text(tone.sampleBody)
-                                    .font(V3Typography.sans(13))
+                                    .bodyXS()
                                     .foregroundColor(V3Tokens.faintText)
                             }
                             Spacer()
                         }
                         .padding(.horizontal, 18)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, V3Tokens.spacingLG)
                         .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                                 .fill(V3Tokens.surface)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                                         .stroke(settings.tone == tone ? V3Tokens.ink : V3Tokens.hairline,
                                                 lineWidth: 1.5)
                                 )
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.onePressable)
                 }
             }
         }
@@ -251,7 +251,7 @@ struct V3ReminderView: View {
 
     private var lockScreenPreview: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("KİLİT EKRANI ÖNİZLEMESİ")
+            Text(NSLocalizedString("reminder.lockPreview", comment: ""))
                 .font(V3Typography.mono(11, weight: .regular))
                 .tracking(1.4)
                 .foregroundColor(V3Tokens.faintText)
@@ -262,7 +262,7 @@ struct V3ReminderView: View {
                     .tracking(-1.6)
                     .foregroundColor(V3Tokens.darkText)
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 4)
+                    .padding(.top, V3Tokens.spacingXS)
 
                 Text(V3DateFormatter.headerLabel())
                     .font(V3Typography.mono(10, weight: .regular))
@@ -270,25 +270,25 @@ struct V3ReminderView: View {
                     .foregroundColor(V3Tokens.darkMuted)
                     .padding(.top, 6)
 
-                HStack(alignment: .top, spacing: 12) {
+                HStack(alignment: .top, spacing: V3Tokens.spacingMD) {
                     V3AppMark(side: 34, iconRadiusRatio: 9/34, wordmarkSize: 17, tracking: -1.1)
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                         HStack {
                             Text("ONE")
                                 .font(V3Typography.mono(10, weight: .regular))
                                 .tracking(1.2)
                                 .foregroundColor(V3Tokens.darkMuted)
                             Spacer()
-                            Text("şimdi")
+                            Text(NSLocalizedString("general.now", comment: ""))
                                 .font(V3Typography.mono(10, weight: .regular))
                                 .foregroundColor(Color(hex: "#6E6E7C"))
                         }
                         Text(previewNotification.title)
-                            .font(V3Typography.sans(15, weight: .semibold))
+                            .bodyMDSemibold()
                             .foregroundColor(V3Tokens.darkText)
                         Text(previewNotification.body)
-                            .font(V3Typography.sans(14))
+                            .bodySM()
                             .foregroundColor(V3Tokens.darkMuted)
                             .lineSpacing(2)
                     }
@@ -296,16 +296,16 @@ struct V3ReminderView: View {
                 .padding(14)
                 .frame(maxWidth: .infinity)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                         .fill(Color.white.opacity(0.09))
                 )
                 .padding(.top, 18)
             }
             .padding(.horizontal, 18)
-            .padding(.top, 22)
+            .padding(.top, V3Tokens.spacingXL)
             .padding(.bottom, 18)
             .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                     .fill(V3Tokens.ink)
             )
         }
@@ -344,7 +344,7 @@ private struct V3Switch: View {
                     .padding(3)
             }
         }
-        .buttonStyle(.plain)
-        .animation(V3Tokens.easingChip, value: isOn)
+        .buttonStyle(.onePressable)
+        .animation(ONEAnimation.easingChip, value: isOn)
     }
 }

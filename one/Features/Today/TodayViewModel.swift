@@ -39,8 +39,6 @@ class TodayViewModel: ObservableObject {
     @Published var lastBrokenStreakDays: Int = 0
     /// This week's logged entries for WeeklyProgressDots.
     @Published var thisWeekEntries: [(date: Date, moodColorHex: String)] = []
-    /// Faz 3 — haftalık ritim: 7 günün dolu/boş/telafi durumu.
-    @Published var weekRhythm: [WeekRhythm.Day] = []
     /// Total entry count ever (for milestone insights).
     @Published var totalEntryCount: Int = 0
     /// Days since last entry before today (nil = no prior entry).
@@ -136,6 +134,18 @@ class TodayViewModel: ObservableObject {
         loadThisWeekEntries()
         loadTotalEntryCount()
         loadYesterdayMood()
+
+        // Rozet ve App Store puan istemi.
+        //
+        // Bunlar silinen legacy `saveEntry`'nin içindeydi ve v3 çok-an yolu
+        // onu yalnızca şarkı seçildiğinde çağırıyordu. Yani şarkısız kaydeden
+        // kullanıcı — v3'ün varsayılan akışı — hiç rozet kazanmıyor, puan
+        // istemi de hiç görmüyordu. Tek yazma yoluna inince buraya taşındı.
+        BadgeManager.shared.evaluateEntryCount(totalEntryCount)
+        AppReviewManager.shared.evaluateAfterSave(
+            totalEntryCount: totalEntryCount,
+            uniqueDayCount: uniqueEntryDayCount()
+        )
     }
 
     // MARK: - Load today's entries from CoreData
@@ -177,12 +187,7 @@ class TodayViewModel: ObservableObject {
             if hasYesterday {
                 // Dün giriş yapılmış → streak henüz kırılmamış (bugün yapılırsa devam eder)
                 // Bu durumda yesterdayStreak'i dünün hesabıyla bul
-                let allReq: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-                let songs = (try? context.fetch(allReq)) ?? []
-                let filledDates = Set(songs.compactMap { s -> Date? in
-                    guard let d = s.date else { return nil }
-                    return cal.startOfDay(for: d)
-                })
+                let filledDates = fetchFilledDates()
                 let yesterdayStreak = StreakEngine.compute(
                     filledDates: filledDates,
                     today: yesterday,
@@ -251,11 +256,16 @@ class TodayViewModel: ObservableObject {
         isLoadingRecommendations = true
 
         // Already-logged song keys — exclude from recommendations.
-        let allReq: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        let loggedKeys = Set((try? context.fetch(allReq))?.compactMap { item -> String? in
-            guard let t = item.songName, let a = item.artistName else { return nil }
+        // Yalnız iki metin kolonu okunuyor; tabloyu NSManagedObject olarak
+        // materialize etmeye gerek yok (bkz. `fetchFilledDates`).
+        let allReq = NSFetchRequest<NSDictionary>(entityName: "DailySong")
+        allReq.resultType = .dictionaryResultType
+        allReq.propertiesToFetch = ["songName", "artistName"]
+        allReq.returnsDistinctResults = true
+        let loggedKeys = Set(((try? context.fetch(allReq)) ?? []).compactMap { row -> String? in
+            guard let t = row["songName"] as? String, let a = row["artistName"] as? String else { return nil }
             return "\(t)|\(a)"
-        } ?? [])
+        })
 
         // Daily seed: same day → same 16 songs; next day → different 16.
         let dayOfYear = calendar.ordinality(of: .day, in: .year, for: Date()) ?? 1
@@ -383,307 +393,6 @@ class TodayViewModel: ObservableObject {
         loadTodayEntry()
     }
 
-    // MARK: - Save entry
-    func saveEntry(
-        song: SongResult,
-        mood: MoodOption,
-        feeling: FeelingType? = nil,
-        photo: UIImage?,
-        note: String = "",
-        sharePhoto: Bool
-    ) {
-        let today = Calendar.current.startOfDay(for: Date())
-
-        // v3: her `saveEntry` daima YENİ an ekler — aynı güne 2. şarkılı
-        // an geldiğinde birincisini ezmiyoruz. entryIndex auto atanır.
-        let item = PersistenceController.shared.insertNewMoment(
-            for: today,
-            moodColorHex: mood.color.toHex(),
-            moodWord: mood.label,
-            note: note,
-            songName: song.name,
-            songArtist: song.artist,
-            photoData: photo?.jpegData(compressionQuality: 0.75),
-            scope: sharePhoto ? .friends : .private,
-            context: context
-        )
-
-        // insertNewMoment tarafından set edilmeyen song/UX alanları.
-        item.genre        = song.genre
-        item.emoji        = "🎵"
-        item.artworkURL   = song.artworkURLString
-        item.moodLabel    = mood.label
-        item.feeling      = feeling?.rawValue
-        item.feelingLabel = feeling.flatMap { f in FeelingOption.all.first { $0.type == f }?.label }
-        item.platform     = "Apple Music"
-
-        do {
-            try context.save()
-        } catch {
-            ErrorHandler.shared.handle(error, context: "saveEntry")
-            CrashReporter.shared.capture(error: error, context: ["operation": "saveEntry"])
-            return
-        }
-
-        // Echo cache — next launch's first frame can show this mood softly
-        // before the real fetch lands. Cheap: two UserDefaults writes.
-        Self.writeCachedEchoMood(hex: mood.color.toHex(), label: mood.label)
-
-        // Sayaç aşağıda da tazeleniyor ama orası bir closure'ın içinde —
-        // event'in `entry_index`'i bu kaydı İÇERMELİ, o yüzden burada bir kez.
-        loadTotalEntryCount()
-        AppAnalytics.shared.track(.entrySaved(
-            hasPhoto: photo != nil,
-            hasNote: !note.isEmpty,
-            entryIndex: totalEntryCount
-        ))
-        AppAnalytics.shared.track(.moodSelected(mood: mood.key))
-        if !note.isEmpty {
-            AppAnalytics.shared.track(.noteAdded(length: note.count))
-        }
-
-        // A4 — İlk entry sonrası Çevre davet kancası (one-shot)
-        evaluateFirstEntryInviteHook()
-
-        // Lock Screen widget güncellemesi
-        WidgetDataWriter.writeTodayEntry(
-            songName:     song.name,
-            artistName:   song.artist,
-            moodLabel:    mood.label,
-            moodColorHex: mood.color.toHex(),
-            note:         note.isEmpty ? nil : note,
-            entryCount:   1
-        )
-
-        let photoData = (sharePhoto && photo != nil) ? photo?.jpegData(compressionQuality: 0.75) : nil
-        let streak = computeCurrentStreak(includingToday: true)
-        WidgetDataWriter.writeStreak(streak)
-        let milestoneCountReq: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        let realEntryCount = (try? context.count(for: milestoneCountReq)) ?? 1
-        if Self.streakMilestones.contains(streak) && realEntryCount >= streak - 1 {
-            streakMilestone = streak
-        }
-        BadgeManager.shared.evaluateStreak(streak)
-        let currentHour = Calendar.current.component(.hour, from: Date())
-        BadgeManager.shared.evaluateTimeBasedBadges(hour: currentHour)
-
-        // B3 — Push planlama anında okunmak üzere persist et.
-        EngagementTracker.lastKnownStreak = streak
-        let savedMoodColorHex = mood.color.toHex()
-
-        // Çevreyle paylaşılmıyorsa CloudKit'e yükleme — sadece arşivde kalır
-        guard sharePhoto else {
-            CloudKitManager.shared.invalidateCircleCache()
-            NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
-            NotificationOrchestrator.shared.onSongSaved(moodLabel: mood.label, moodColorHex: mood.color.toHex())
-            NotificationManager.shared.scheduleDiscoveryReminder(moodLabel: mood.label)
-            AppReviewManager.shared.evaluateAfterSave(
-            totalEntryCount: totalEntryCount,
-            uniqueDayCount: uniqueEntryDayCount()
-        )
-            loadTodayEntry()
-            loadThisWeekEntries()
-            loadTotalEntryCount()
-            loadYesterdayMood()
-            BadgeManager.shared.evaluateEntryCount(totalEntryCount)
-            trackWeekRhythmCompletionIfNeeded()
-            return
-        }
-
-        circleShareFailed = false
-        CloudKitManager.shared.shareDailySong(
-            songName: song.name,
-            artistName: song.artist,
-            genre: song.genre,
-            emoji: "🎵",
-            albumArtURL: song.artworkURLString,
-            moodWord: mood.label,
-            moodColor: savedMoodColorHex,
-            moodTheme: "",
-            dailyNote: note,
-            platform: "Apple Music",
-            date: today,
-            photoData: photoData,
-            feeling: feeling?.rawValue ?? "",
-            feelingLabel: feeling.flatMap { f in FeelingOption.all.first { $0.type == f }?.label } ?? "",
-            weatherIcon: item.weatherIcon ?? "☀️",
-            weatherDesc: item.weatherDesc ?? "",
-            currentStreak: streak,
-            entryIndex: Int(item.entryIndex)
-        ) { [weak self] result in
-            switch result {
-            case .success(let record):
-                ONELogger.debug("Successfully shared daily song to CloudKit: \(record.recordID)", category: .general)
-                CloudKitManager.shared.checkMoodResonance(myMoodColorHex: savedMoodColorHex)
-            case .failure(let error):
-                ONELogger.debug("Failed to share daily song to CloudKit: \(error)", category: .general)
-                CloudKitManager.shared.checkMoodResonance(myMoodColorHex: savedMoodColorHex)
-                DispatchQueue.main.async { self?.circleShareFailed = true }
-            }
-            DispatchQueue.main.async {
-                CloudKitManager.shared.invalidateCircleCache()
-                NotificationCenter.default.post(name: .init("circleDataNeedsRefresh"), object: nil)
-            }
-        }
-        
-        NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
-        // Bugün seçim yapıldı — Orchestrator engagement update + yarın için
-        // deterministik seed ile daily_reminder yeniden kurulur, streak
-        // uyarıları iptal edilir (race-free).
-        NotificationOrchestrator.shared.onSongSaved(
-            moodLabel: mood.label,
-            moodColorHex: mood.color.toHex()
-        )
-        // Keşfet hatırlatıcısı (mood bilgisiyle)
-        NotificationManager.shared.scheduleDiscoveryReminder(moodLabel: mood.label)
-        // App review — anlamlı event sonrası
-        AppReviewManager.shared.evaluateAfterSave(
-            totalEntryCount: totalEntryCount,
-            uniqueDayCount: uniqueEntryDayCount()
-        )
-        loadTodayEntry()
-        loadThisWeekEntries()
-        loadTotalEntryCount()
-        loadYesterdayMood()
-        BadgeManager.shared.evaluateEntryCount(totalEntryCount)
-        trackWeekRhythmCompletionIfNeeded()
-
-        // v3: Dynamic Island + Live Activity şimdilik iptal (Features.liveActivitiesEnabled).
-        // Tetiklemez, izin alert'i de göstermez.
-    }
-
-    // MARK: - Save Ritual Entry
-    func saveRitualEntry(draft: DraftEntry) {
-        guard let song = draft.song, let mood = draft.mood else {
-            // Eskiden sessizce return ediyordu: kayıt yok, hata yok, kullanıcıya
-            // hiçbir geri bildirim yok. İki adımlı ritüelde ihtimal düşük ama
-            // sessizce veri kaybetmek her durumda yanlış.
-            ONELogger.error("saveRitualEntry: eksik draft (song: \(draft.song != nil), mood: \(draft.mood != nil))",
-                            category: .general)
-            ErrorHandler.shared.handle(AppError.unknown(message: "Kayıt tamamlanamadı."))
-            return
-        }
-        let moodOption = MoodOption.all.first { $0.key == mood.rawValue } ?? MoodOption.all[4]
-        saveEntry(
-            song: song,
-            mood: moodOption,
-            photo: draft.photoData.flatMap { UIImage(data: $0) },
-            note: draft.feeling,
-            sharePhoto: draft.shareToCircle
-        )
-    }
-
-    // MARK: - Faz 3 — Geri tarihli (telafi) giriş
-
-    /// Son 72 saat içindeki boş bir günü doldurur.
-    ///
-    /// `saveEntry`'den bilinçli olarak ayrı tutuldu: o metodun yan etkileri
-    /// ("bugün" widget'ı, Live Activity, push yeniden planlama, Çevre'ye
-    /// *bugünün* paylaşımı olarak yükleme) geçmiş bir gün için yanlış olur —
-    /// arkadaşların akışına 2 gün önceki bir renk "bugünkü" gibi düşerdi.
-    /// Telafi girişi bu yüzden sessizdir: yalnız arşive ve haftalık ritme yazar.
-    @discardableResult
-    func backfillEntry(
-        song: SongResult,
-        mood: MoodOption,
-        on date: Date,
-        note: String = ""
-    ) -> Bool {
-        let cal = Calendar.current
-        let day = cal.startOfDay(for: date)
-        // Tek referans an: pencere kontrolü ile daysAgo hesabı ayrı `Date()`
-        // çağırırsa gece yarısı geçişinde tutarsız değer üretirler.
-        let now = Date()
-
-        guard WeekRhythm.isBackfillable(day, today: now, calendar: cal) else {
-            ONELogger.error("backfillEntry: \(day) telafi penceresi dışında", category: .general)
-            ErrorHandler.shared.handle(AppError.unknown(message: "Bu gün artık doldurulamıyor."))
-            return false
-        }
-
-        let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        req.predicate = NSPredicate(format: "date == %@", day as NSDate)
-        req.fetchLimit = 1
-        guard (try? context.fetch(req))?.first == nil else {
-            ONELogger.error("backfillEntry: \(day) zaten dolu", category: .general)
-            return false
-        }
-
-        let item = DailySong(context: context)
-        item.id            = UUID()
-        item.date          = day
-        // createdAt gerçek yazım anı kalır — "ne zaman dolduruldu" bilgisi
-        // kaybolmasın (arşiv sıralaması `date`'e göre, bu sadece iz).
-        item.createdAt     = Date()
-        item.entryIndex    = 0
-        item.songName      = song.name
-        item.artistName    = song.artist
-        item.genre         = song.genre
-        item.emoji         = "🎵"
-        item.artworkURL    = song.artworkURLString
-        item.moodWord      = mood.label
-        item.moodColorHex  = mood.color.toHex()
-        item.moodLabel     = mood.label
-        item.platform      = "Apple Music"
-        item.dailyNote     = note.isEmpty ? nil : note
-        // Telafi girişi Çevre'ye gitmez — geçmiş bir günü "bugün" diye paylaşmayız.
-        item.shareWithCircle    = false
-        item.isSharedWithCircle = false
-
-        do {
-            try context.save()
-        } catch {
-            ErrorHandler.shared.handle(error, context: "backfillEntry")
-            CrashReporter.shared.capture(error: error, context: ["operation": "backfillEntry"])
-            return false
-        }
-
-        // Echo cache — keep freshest recorded mood on disk regardless of which
-        // day it belongs to. Next launch echoes this while CoreData settles.
-        Self.writeCachedEchoMood(hex: mood.color.toHex(), label: mood.label)
-
-        let daysAgo = cal.dateComponents(
-            [.day], from: day, to: cal.startOfDay(for: now)
-        ).day ?? 0
-        AppAnalytics.shared.track(.entryBackfilled(daysAgo: daysAgo))
-
-        // Telafi ritüel içinde yerinde de yapılabiliyor (sheet yok, ekran
-        // değişmiyor) — geri bildirim olmazsa kullanıcı kaydın olduğunu
-        // anlamıyor. Dil suçlayıcı değil: kayıp değil, tamamlanmış bir gün.
-        ErrorHandler.shared.showInfo(
-            daysAgo == 1 ? "Dün de tamamlandı." : "\(daysAgo) gün öncesi tamamlandı."
-        )
-
-        // loadTodayEntry streak'i de yeniden hesaplar — dünü doldurmak
-        // bugünkü streak'i uzatabilir, bu yüzden şart.
-        loadTodayEntry()
-        loadThisWeekEntries()
-        loadTotalEntryCount()
-        loadYesterdayMood()
-        WidgetDataWriter.writeStreak(streakDays)
-        BadgeManager.shared.evaluateEntryCount(totalEntryCount)
-        trackWeekRhythmCompletionIfNeeded()
-
-        return true
-    }
-
-    /// Haftalık hedef (4 gün) bu hafta ilk kez dolduğunda bir kez ölçer.
-    /// Hafta anahtarı UserDefaults'ta tutulur — aynı hafta tekrar tetiklenmez.
-    private func trackWeekRhythmCompletionIfNeeded() {
-        guard WeekRhythm.isComplete(weekRhythm) else { return }
-
-        let cal = Calendar.current
-        let comps = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
-        guard let year = comps.yearForWeekOfYear, let week = comps.weekOfYear else { return }
-        let key = "weekRhythmCompleted-\(year)-\(week)"
-        guard !UserDefaults.standard.bool(forKey: key) else { return }
-
-        UserDefaults.standard.set(true, forKey: key)
-        AppAnalytics.shared.track(
-            .weekRhythmCompleted(filledDays: WeekRhythm.filledCount(weekRhythm))
-        )
-    }
-
     // MARK: - Attach photo / note after saving
     /// Kaydedilmiş bugünkü entry'ye sonradan fotoğraf ve/veya not ekler.
     ///
@@ -706,7 +415,7 @@ class TodayViewModel: ObservableObject {
         }
 
         if let photo {
-            item.photoData = photo.jpegData(compressionQuality: 0.8)
+            item.photoData = ONEPhotoEncoder.encode(photo)
         }
         if let note {
             let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -753,7 +462,7 @@ class TodayViewModel: ObservableObject {
         circleShareFailed = false
     }
 
-    /// Clear a specific entry by ID (premium multi-entry)
+    /// Clear a specific entry by ID (v3 çoklu an)
     func clearEntry(id: UUID) {
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -851,18 +560,37 @@ class TodayViewModel: ObservableObject {
     // MARK: - Streak Calculation
     /// Counts consecutive days ending at today, applying StreakEngine's
     /// soft-streak rules (1 freeze per 7-day window). Returns 1 on first save.
-    private func computeCurrentStreak(includingToday: Bool = true) -> Int {
-        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
-        guard let songs = try? context.fetch(fetchRequest) else { return 1 }
+    /// Kayıt bulunan günlerin kümesi.
+    ///
+    /// Streak hesabı yalnızca **tarihlere** bakıyor, ama eskiden iki ayrı
+    /// yerde predicate'siz `DailySong.fetchRequest()` ile tablonun tamamı
+    /// `NSManagedObject` olarak materialize ediliyordu. `loadTodayEntry()`
+    /// on ayrı yerden çağrılıyor (açılış, kayıt, silme, güncelleme…) ve her
+    /// çağrıda bu tarama koşuyordu — bir yıllık kullanımda yüzlerce satır.
+    ///
+    /// Dictionary fetch yalnız `date` kolonunu okuyor: nesne kurulumu yok.
+    /// `returnsDistinctResults` da v3'ün gün içi çoklu girişlerini tek
+    /// satıra indiriyor, çünkü küme zaten gün bazlı.
+    private func fetchFilledDates() -> Set<Date> {
+        let request = NSFetchRequest<NSDictionary>(entityName: "DailySong")
+        request.resultType = .dictionaryResultType
+        request.propertiesToFetch = ["date"]
+        request.returnsDistinctResults = true
 
+        let calendar = Calendar.current
+        let rows = (try? context.fetch(request)) ?? []
+        return Set(rows.compactMap { row -> Date? in
+            guard let d = row["date"] as? Date else { return nil }
+            return calendar.startOfDay(for: d)
+        })
+    }
+
+    private func computeCurrentStreak(includingToday: Bool = true) -> Int {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
-        let filledDates = Set(songs.compactMap { s -> Date? in
-            guard let d = s.date else { return nil }
-            return calendar.startOfDay(for: d)
-        })
+        let filledDates = fetchFilledDates()
+        guard !filledDates.isEmpty else { return 1 }
 
         // Önceki gün entry yoksa freeze köprüsüne gerek yok — sadece 1.
         let hasPriorEntry = filledDates.contains { $0 < today }
@@ -911,15 +639,6 @@ class TodayViewModel: ObservableObject {
             guard let d = s.date, let hex = s.moodColorHex else { return nil }
             return (date: cal.startOfDay(for: d), moodColorHex: hex)
         }
-
-        // Faz 3 — aynı veriden haftalık ritim. Aynı güne birden fazla kayıt
-        // teoride yok (upsert) ama savunmacı davranıp ilkini korumuyoruz:
-        // son yazılan renk o günün rengidir.
-        let filled = Dictionary(
-            thisWeekEntries.map { ($0.date, $0.moodColorHex) },
-            uniquingKeysWith: { _, latest in latest }
-        )
-        weekRhythm = WeekRhythm.days(filled: filled, today: today, calendar: cal)
     }
 
     private func loadTotalEntryCount() {
@@ -928,12 +647,9 @@ class TodayViewModel: ObservableObject {
     }
 
     /// Kaç farklı takvim gününde giriş yapıldığını döndürür.
+    /// `fetchFilledDates()` ile aynı işi yapıyordu — tek kaynağa bağlandı.
     private func uniqueEntryDayCount() -> Int {
-        let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        let songs = (try? context.fetch(req)) ?? []
-        let cal = Calendar.current
-        let days = Set(songs.compactMap { $0.date.map { cal.startOfDay(for: $0) } })
-        return days.count
+        fetchFilledDates().count
     }
 
     private func loadYesterdayMood() {

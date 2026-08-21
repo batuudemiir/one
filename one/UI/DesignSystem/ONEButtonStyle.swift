@@ -42,3 +42,34 @@ extension ButtonStyle where Self == ONEPressableButtonStyle {
     /// Tüm ONE buton call-site'ları için tercih edilen stil.
     static var onePressable: ONEPressableButtonStyle { .init() }
 }
+
+// MARK: - Buton dili: iki stil, iki rol
+//
+// ONE'da yalnızca iki buton stili vardır:
+//
+// 1. `.onePressable` — **dokunulabilir her şey.** Görünümü değiştirmez,
+//    yalnız basma geri bildirimi ekler (scale + opacity, Reduce Motion ve
+//    disabled farkında).
+// 2. `V3PrimaryButton` — **birincil eylem.** Kapsül biçimini, dolgusunu ve
+//    tipografisini kendisi çizer (`Devam`, `Kaydet`, `Gönder`).
+//
+// Buraya nasıl gelindi: bir ara altı ayrı stil vardı — `ONEPressableButtonStyle`,
+// `V3CardPressStyle`, `ScaleButtonStyle`, `GlassButtonStyle`,
+// `RecommendationCardButtonStyle`, `V3PrimaryButtonStyle`. İlk üçü aynı işi
+// (scale 0.96) üç farklı eksiklikle yapıyordu: yalnız `ONEPressableButtonStyle`
+// Reduce Motion ve `isEnabled` okuyordu. Kalan ikisi ölü koddu ve bir yerde de
+// sistemin `.borderedProminent`'ı sızmıştı.
+//
+// **Kalan iş yok.** Uygulamadaki 90 `.buttonStyle(.plain)` çağrısının hepsi
+// `.onePressable`'a çevrildi. Dönüşümün güvenli olmasının nedeni stilin
+// katkısal olmasıydı: etiketi `.plain` ile birebir aynı çiziyor, üstüne
+// yalnız basılı anın scale/opacity'sini ekliyor. Çevirmeden önce her çağrı
+// noktasının etiketi tarandı; riskli desen (tam ekran perde, `Color.clear`
+// etiket, kendi basma görselini zaten çizen buton) aranıp bulunamadı.
+// `V3AvatarPicker` sınırdaki tek durumdu — orada seçildikten *sonra* bir pop
+// var ama basma anında hiçbir şey yoktu; press dip + release pop doğru sıra,
+// o yüzden o da çevrildi.
+//
+// Yeni bir buton yazarken `.plain` değil `.onePressable` kullan. `.plain`
+// dokunma geri bildirimini tamamen kaldırır ve bu, dokunulabilir olduğu
+// belli olmayan bir yüzey üretir.

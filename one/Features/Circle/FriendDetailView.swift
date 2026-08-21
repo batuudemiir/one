@@ -76,7 +76,7 @@ struct FriendDetailView: View {
 
     var body: some View {
         ZStack {
-            ONEBrand.bone.ignoresSafeArea()
+            V3Tokens.paper.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
@@ -119,6 +119,7 @@ struct FriendDetailView: View {
             // v2.6 — Arkadaşın aggregate profili
             PublicProfileView(userID: friendData.user["userID"] as? String ?? "")
         }
+        .v3Sheet()
         .overlay {
             if profilePhotoPressed, let img = friendProfileImageCache {
                 ZStack {
@@ -137,7 +138,11 @@ struct FriendDetailView: View {
                 .allowsHitTesting(false)
             }
         }
-        .animation(.spring(response: 0.28, dampingFraction: 0.72), value: profilePhotoPressed)
+        // Uzun basma bir "peek": 280pt fotoğraf 0.45'ten açılıyor. Basma
+        // geri bildirimi değil, parmağa bağlı bir açılış — bu yüzden
+        // `easingPress` (0.12s) değil `micro`. Aşağıdaki `withAnimation`
+        // ile aynı token olmalı, yoksa açılış ve kapanış ayrışır.
+        .animation(ONEAnimation.micro, value: profilePhotoPressed)
         .alert(NSLocalizedString("circle.removeFriend", comment: ""), isPresented: $showRemoveAlert) {
             Button(NSLocalizedString("circle.removeAction", comment: ""), role: .destructive) { removeFriend() }
             Button(NSLocalizedString("general.cancel", comment: ""), role: .cancel) { }
@@ -242,7 +247,7 @@ struct FriendDetailView: View {
                         }
                     }
                     .onLongPressGesture(minimumDuration: 0.2, pressing: { isPressing in
-                        withAnimation(.spring(response: 0.28, dampingFraction: 0.72)) {
+                        withAnimation(ONEAnimation.micro) {
                             profilePhotoPressed = isPressing
                         }
                         if isPressing, friendProfileImageCache != nil { ONEHaptics.feelingSelected() }
@@ -250,7 +255,7 @@ struct FriendDetailView: View {
 
                     Text(firstName.uppercased())
                         .monoSM(tracking: 1.6)
-                        .foregroundColor(ONETokens.oneCharcoal)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
 
                 Spacer()
@@ -288,8 +293,8 @@ struct FriendDetailView: View {
                 .lineSpacing(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, ONETokens.spacingXL2)
-        .padding(.top, ONETokens.spacingXL4)
+        .padding(.horizontal, V3Tokens.spacingXL2)
+        .padding(.top, V3Tokens.spacingXL5)
         .padding(.bottom, 24)
         .opacity(appeared ? 1 : 0)
         .animation(ONEAnimation.panelSpring.delay(0.05), value: appeared)
@@ -347,16 +352,16 @@ struct FriendDetailView: View {
 
                     Text(displayName.firstNameOnly + " " + NSLocalizedString("circle.willAppear", comment: ""))
                     .monoSM(tracking: 0.3)
-                    .foregroundColor(ONETokens.oneMist)
+                    .foregroundColor(V3Tokens.mutedText)
                 }
                 .multilineTextAlignment(.center)
 
                 if isPolling {
                     HStack(spacing: 6) {
-                        ProgressView().scaleEffect(0.65).tint(ONETokens.oneMist)
+                        ProgressView().scaleEffect(0.65).tint(V3Tokens.mutedText)
                         Text(NSLocalizedString("circle.updating", comment: ""))
                             .monoLabel(tracking: 0.3)
-                            .foregroundColor(ONETokens.oneMist)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                 }
             }
@@ -413,7 +418,7 @@ struct FriendDetailView: View {
                             .clipped()
                             .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.onePressable)
                 } else {
                     LinearGradient(
                         stops: [.init(color: moodColor.opacity(0.65), location: 0),
@@ -447,7 +452,7 @@ struct FriendDetailView: View {
                                 }
                             }
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.onePressable)
                         .padding(14)
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -457,7 +462,7 @@ struct FriendDetailView: View {
             .frame(height: 180).frame(maxWidth: .infinity)
 
             // Info
-            VStack(alignment: .leading, spacing: ONETokens.spacingLG) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(songName)
@@ -465,7 +470,7 @@ struct FriendDetailView: View {
                             .foregroundColor(V3Tokens.ink).tracking(-0.8).lineLimit(2)
                         Text(artistName)
                             .monoSM(tracking: 0)
-                            .foregroundColor(ONETokens.oneCharcoal)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
                     Spacer()
                     // Platform rozeti
@@ -483,14 +488,14 @@ struct FriendDetailView: View {
                         .padding(.vertical, 4)
                         .background(
                             Capsule()
-                                .fill(ONETokens.oneSilver.opacity(0.8))
+                                .fill(V3Tokens.hairline.opacity(0.8))
                         )
                     }
                 }
                 if !genre.isEmpty {
                     Text(genre)
                         .monoLabel(tracking: 0.5)
-                        .foregroundColor(ONETokens.oneMist)
+                        .foregroundColor(V3Tokens.mutedText)
                 }
 
                 Rectangle().fill(V3Tokens.wash).frame(height: 1).padding(.vertical, 4)
@@ -500,16 +505,16 @@ struct FriendDetailView: View {
                         Circle().fill(moodColor).frame(width: 7, height: 7)
                         Text(moodWord.uppercased())
                             .monoLabel(tracking: 1.2)
-                            .foregroundColor(ONETokens.oneCharcoal)
+                            .foregroundColor(V3Tokens.mutedText)
                     }
-                    .padding(.horizontal, ONETokens.spacingMD).padding(.vertical, 6)
+                    .padding(.horizontal, V3Tokens.spacingMD).padding(.vertical, 6)
                     .background(Capsule().fill(moodColor.opacity(0.12)))
                 }
 
                 if !wDesc.isEmpty {
                     HStack(spacing: 5) {
-                        Text(wIcon).font(V3Typography.sans(11))
-                        Text(wDesc).monoSM(tracking: 0).foregroundColor(ONETokens.oneCharcoal)
+                        Text(wIcon).bodyMicro()
+                        Text(wDesc).monoSM(tracking: 0).foregroundColor(V3Tokens.mutedText)
                     }
                 }
 
@@ -519,9 +524,9 @@ struct FriendDetailView: View {
                         Text(note).bodySM().foregroundColor(V3Tokens.ink).lineSpacing(2)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(ONETokens.spacingLG)
+                    .padding(V3Tokens.spacingLG)
                     .background(RoundedRectangle(cornerRadius: 12).fill(moodColor.opacity(0.08)))
-                    .padding(.top, ONETokens.spacingLG)
+                    .padding(.top, V3Tokens.spacingLG)
                 }
             }
             .padding(20).frame(maxWidth: .infinity, alignment: .leading)
@@ -552,11 +557,11 @@ struct FriendDetailView: View {
     // MARK: - Emoji row
 
     private var emojiRow: some View {
-        HStack(spacing: ONETokens.spacingSM) {
+        HStack(spacing: V3Tokens.spacingSM) {
             ForEach(["🤍", "🌊", "✨", "🫶", "🔥"], id: \.self) { emoji in
                 let moodColor = Color(hex: share?["moodColor"] as? String ?? "#888888")
                 Button { sendEmoji(emoji) } label: {
-                    Text(emoji).font(V3Typography.sans(16))
+                    Text(emoji).bodyLG()
                         .frame(width: 42, height: 42)
                         .background(
                             Circle().fill(sentEmoji == emoji ? moodColor.opacity(0.15) : V3Tokens.wash)
@@ -584,7 +589,7 @@ struct FriendDetailView: View {
             Image(systemName: "lock")
                 .font(.system(size: 14, weight: .light))
                 .foregroundColor(V3Tokens.mutedText)
-            Text("\(label) bu kişinin gizlilik tercihi nedeniyle görüntülenemiyor")
+            Text(String(format: NSLocalizedString("privacy.hiddenField", comment: ""), label))
                 .monoSM(tracking: 0.3)
                 .foregroundColor(V3Tokens.mutedText)
                 .lineLimit(2)
@@ -602,8 +607,8 @@ struct FriendDetailView: View {
                 Image(systemName: "chevron.down").font(.system(size: 10))
                 Text(NSLocalizedString("general.close", comment: "")).monoSM(tracking: 1)
             }
-            .foregroundColor(ONETokens.oneCharcoal)
-            .padding(.horizontal, 20).padding(.vertical, ONETokens.spacingMD)
+            .foregroundColor(V3Tokens.mutedText)
+            .padding(.horizontal, 20).padding(.vertical, V3Tokens.spacingMD)
             .background(Capsule().stroke(V3Tokens.faintText, lineWidth: 1.5))
         }
         .padding(.top, 24).padding(.bottom, 40)

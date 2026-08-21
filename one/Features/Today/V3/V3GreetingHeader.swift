@@ -77,10 +77,10 @@ enum V3GreetingHeaderCopy {
 }
 
 #Preview {
-    VStack(alignment: .leading, spacing: 32) {
+    VStack(alignment: .leading, spacing: V3Tokens.spacingXL3) {
         V3GreetingHeader(name: "Batu", prompt: "Bugün nasılsın?")
         V3GreetingHeader(name: nil, prompt: "Bir an daha?")
     }
-    .padding(24)
+    .padding(V3Tokens.spacingXL2)
     .background(V3Tokens.paper)
 }

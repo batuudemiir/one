@@ -2,7 +2,7 @@
 //  PrimaryTab.swift
 //  one
 //
-//  Sekme çubuğunun tek kaynağı — v3: An · Arşiv · Frekans · Profil.
+//  Sekme çubuğunun tek kaynağı — v3: An · Arşiv · Çevre · Profil.
 //
 //  Sekme sırası üç ayrı yerde kopyalanıyordu (ONEColorPickerView.primaryTabs,
 //  liquidGlassTabView'ın Tab bildirimleri, BottomNavigation.tabs). Üçü sessizce
@@ -12,7 +12,6 @@
 //  - `.entry` (An) artık ilk sekme — ritüel eskiden ortadaki "+" idi, şimdi
 //    birinci sınıf sekme. Ekran arka planda hâlâ `ScreenType.today`.
 //  - `.echo` (Yankı) tabbardan çıktı — Profil > Ayarlar > Aylık özet altında.
-//  - `.discover` (Keşfet) v3'te yok — feature-flag ile kapalı, kodu duruyor.
 //
 
 import SwiftUI
@@ -25,7 +24,7 @@ import SwiftUI
 enum PrimaryTab: String, CaseIterable {
     case entry   = "entry"     // An — kayıt akışı (ScreenType.today)
     case archive = "archive"   // Arşiv — renk mozaiği
-    case circle  = "circle"    // Frekans — sosyal katman
+    case circle  = "circle"    // Çevre — sosyal katman
     case profile = "profile"   // Profil
 
     var screen: ScreenType {
@@ -65,7 +64,7 @@ enum PrimaryTab: String, CaseIterable {
     /// Kabuk `TabView(selection:)` kullanıyor ve seçim `PrimaryTab` olmak
     /// zorunda; ama `ColorPickerViewModel.currentScreen` sekme olmayan
     /// değerler de alabiliyor (`.confirm` / `.done` ritüel ekranları,
-    /// `.echo` sheet'e taşındı, `.discover` feature-flag ile kapalı,
+    /// `.echo` sheet'e taşındı,
     /// `.search` şarkı akışı içi). Kabuk bunların hepsini eskiden
     /// `default: entryTab` ile An sekmesine düşürüyordu — bu fonksiyon o
     /// örtük davranışı tek yerde açık hale getiriyor.

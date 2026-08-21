@@ -86,7 +86,7 @@ final class LanguageManager: ObservableObject {
     @Published private(set) var currentLanguage: AppLanguage
 
     private init() {
-        let saved = UserDefaults.standard.string(forKey: ONETokens.languagePreferenceKey)
+        let saved = UserDefaults.standard.string(forKey: ONEConfig.languagePreferenceKey)
         let lang  = AppLanguage(rawValue: saved ?? "") ?? .system
         self.currentLanguage = lang
         Bundle.setLanguage(lang.bundleCode)
@@ -94,7 +94,7 @@ final class LanguageManager: ObservableObject {
 
     /// Apply a new language. Persists the choice and forces a full UI rebuild.
     func setLanguage(_ language: AppLanguage) {
-        UserDefaults.standard.set(language.rawValue, forKey: ONETokens.languagePreferenceKey)
+        UserDefaults.standard.set(language.rawValue, forKey: ONEConfig.languagePreferenceKey)
         Bundle.setLanguage(language.bundleCode)
         currentLanguage = language
         refreshToken    = UUID()

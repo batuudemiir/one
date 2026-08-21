@@ -219,8 +219,8 @@ struct AudioWaveform: View {
     var body: some View {
         HStack(spacing: 2.5) {
             ForEach(0..<3, id: \.self) { i in
-                RoundedRectangle(cornerRadius: 1.5)
-                    .fill(ONETokens.oneVoid)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusMicro)
+                    .fill(V3Tokens.darkGround)
                     .frame(width: 2.5, height: phase ? heights[1][i] : heights[0][i])
                     .animation(
                         .easeInOut(duration: 0.38)

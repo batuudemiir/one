@@ -50,7 +50,7 @@ struct SelfShareDetailView: View {
 
     var body: some View {
         ZStack {
-            ONEBrand.bone.ignoresSafeArea()
+            V3Tokens.paper.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     headerSection
@@ -74,7 +74,7 @@ struct SelfShareDetailView: View {
                 myUserID: myUserID,
                 accentColorHex: share["moodColor"] as? String ?? "#5B8DEF"
             )
-            .presentationDetents([.large])
+            .v3Sheet(detents: [.large])
         }
         .onAppear {
             withAnimation(ONEAnimation.screenTransition) { appeared = true }
@@ -104,7 +104,7 @@ struct SelfShareDetailView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
             HStack {
                 HStack(spacing: 10) {
                     Circle()
@@ -130,9 +130,9 @@ struct SelfShareDetailView: View {
                 .lineSpacing(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, ONETokens.spacingXL2)
-        .padding(.top, ONETokens.spacingXL4)
-        .padding(.bottom, 24)
+        .padding(.horizontal, V3Tokens.spacingXL2)
+        .padding(.top, V3Tokens.spacingXL5)
+        .padding(.bottom, V3Tokens.spacingXL2)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : -10)
         .animation(ONEAnimation.screenTransition.delay(0.1), value: appeared)
@@ -162,7 +162,8 @@ struct SelfShareDetailView: View {
                                 }
                             )
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .contentShape(Rectangle())
+                    .buttonStyle(.onePressable)
                 } else {
                     LinearGradient(
                         stops: [
@@ -182,20 +183,20 @@ struct SelfShareDetailView: View {
                             .monoLabel(tracking: 1.0)
                             .foregroundColor(.white.opacity(0.85))
                     }
-                    .padding(.horizontal, ONETokens.spacingMD)
+                    .padding(.horizontal, V3Tokens.spacingMD)
                     .padding(.vertical, 6)
                     .background(
                         Capsule()
                             .fill(Color.white.opacity(0.15))
                             .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 1))
                     )
-                    .padding(20)
+                    .padding(V3Tokens.spacingXL)
                 }
             }
             .frame(height: 180)
             .frame(maxWidth: .infinity)
 
-            VStack(alignment: .leading, spacing: ONETokens.spacingLG) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
                 Text(songName)
                     .displayMD()
                     .foregroundColor(V3Tokens.ink)
@@ -209,9 +210,9 @@ struct SelfShareDetailView: View {
                 Rectangle()
                     .fill(V3Tokens.wash)
                     .frame(height: 1)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, V3Tokens.spacingXS)
 
-                HStack(spacing: ONETokens.spacingMD) {
+                HStack(spacing: V3Tokens.spacingMD) {
                     if !moodWord.isEmpty {
                         HStack(spacing: 6) {
                             Circle().fill(moodColor).frame(width: 7, height: 7)
@@ -219,28 +220,28 @@ struct SelfShareDetailView: View {
                                 .monoLabel(tracking: 1.2)
                                 .foregroundColor(V3Tokens.mutedText)
                         }
-                        .padding(.horizontal, ONETokens.spacingMD)
+                        .padding(.horizontal, V3Tokens.spacingMD)
                         .padding(.vertical, 6)
                         .background(Capsule().fill(moodColor.opacity(0.12)))
                     }
                 }
 
-                HStack(spacing: ONETokens.spacingMD) {
+                HStack(spacing: V3Tokens.spacingMD) {
                     if !weatherDesc.isEmpty {
                         HStack(spacing: 5) {
-                            Text(weatherIcon).font(V3Typography.sans(11))
+                            Text(weatherIcon).bodyMicro()
                             Text(weatherDesc).monoLabel().foregroundColor(V3Tokens.mutedText)
                         }
                     }
                     HStack(spacing: 5) {
-                        Text("🎵").font(V3Typography.sans(11))
+                        Text("🎵").bodyMicro()
                         Text(platform).monoLabel().foregroundColor(V3Tokens.mutedText)
                     }
                 }
-                .padding(.top, 4)
+                .padding(.top, V3Tokens.spacingXS)
 
                 if let note = dailyNote {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
                         Text(NSLocalizedString("circle.note", comment: ""))
                             .monoLabel(tracking: 1.5)
                             .foregroundColor(V3Tokens.mutedText)
@@ -251,18 +252,18 @@ struct SelfShareDetailView: View {
                             .tracking(-0.2)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(ONETokens.spacingLG)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(moodColor.opacity(0.08)))
-                    .padding(.top, ONETokens.spacingLG)
+                    .padding(V3Tokens.spacingLG)
+                    .background(RoundedRectangle(cornerRadius: V3Tokens.radiusInner).fill(moodColor.opacity(0.08)))
+                    .padding(.top, V3Tokens.spacingLG)
                 }
             }
-            .padding(20)
+            .padding(V3Tokens.spacingXL)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(V3Tokens.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel))
         .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
         .scaleEffect(appeared ? 1 : 0.94)
         .opacity(appeared ? 1 : 0)
         .animation(ONEAnimation.panelSpring.delay(0.2), value: appeared)
@@ -272,7 +273,7 @@ struct SelfShareDetailView: View {
 
     private var echoesSection: some View {
         Button(action: { ONEHaptics.feelingSelected(); showEchoes = true }) {
-            HStack(spacing: 8) {
+            HStack(spacing: V3Tokens.spacingSM) {
                 Image(systemName: "dot.radiowaves.left.and.right")
                     .font(.system(size: 14, weight: .medium))
                 Text(NSLocalizedString("echoes.title", comment: ""))
@@ -281,14 +282,14 @@ struct SelfShareDetailView: View {
                 Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
             }
             .foregroundColor(V3Tokens.mutedText)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-            .background(RoundedRectangle(cornerRadius: 16).fill(V3Tokens.wash))
+            .padding(.horizontal, V3Tokens.spacingXL)
+            .padding(.vertical, V3Tokens.spacingLG)
+            .background(RoundedRectangle(cornerRadius: V3Tokens.radiusCard).fill(V3Tokens.wash))
         }
-        .buttonStyle(.plain)
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
-        .padding(.bottom, 8)
+        .buttonStyle(.onePressable)
+        .padding(.horizontal, V3Tokens.spacingXL)
+        .padding(.top, V3Tokens.spacingLG)
+        .padding(.bottom, V3Tokens.spacingSM)
         .opacity(appeared ? 1 : 0)
         .animation(.easeOut(duration: 0.3).delay(0.3), value: appeared)
     }
@@ -297,18 +298,18 @@ struct SelfShareDetailView: View {
 
     private var closeButton: some View {
         Button(action: { dismiss() }) {
-            HStack(spacing: 8) {
+            HStack(spacing: V3Tokens.spacingSM) {
                 Image(systemName: "chevron.down").monoMicro()
                 Text(NSLocalizedString("general.close", comment: ""))
                     .monoBase(tracking: 1.0)
             }
             .foregroundColor(V3Tokens.mutedText)
-            .padding(.horizontal, 20)
-            .padding(.vertical, ONETokens.spacingMD)
+            .padding(.horizontal, V3Tokens.spacingXL)
+            .padding(.vertical, V3Tokens.spacingMD)
             .background(Capsule().stroke(V3Tokens.faintText, lineWidth: 1.5))
         }
-        .padding(.top, 24)
-        .padding(.bottom, 40)
+        .padding(.top, V3Tokens.spacingXL2)
+        .padding(.bottom, V3Tokens.spacingXL4)
         .opacity(appeared ? 1 : 0)
         .animation(.easeOut(duration: ONEAnimation.durationLong).delay(0.4), value: appeared)
     }

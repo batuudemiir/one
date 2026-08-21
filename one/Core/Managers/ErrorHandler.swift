@@ -34,9 +34,9 @@ enum ToastType {
     var color: Color {
         switch self {
         case .error:   return ONEBrand.kor
-        case .success: return ONETokens.oneGreen
-        case .info:    return ONETokens.oneBlue
-        case .warning: return ONETokens.moodOrange
+        case .success: return V3Tokens.success
+        case .info:    return V3Tokens.info
+        case .warning: return V3Tokens.warning
         }
     }
 }

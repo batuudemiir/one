@@ -119,7 +119,7 @@ class ArchiveStore: ObservableObject {
         return nil
     }
 
-    /// Returns all entries for a given date (supports premium multi-entry)
+    /// Returns all entries for a given date (v3 çoklu an)
     func allEntries(for date: Date) -> [DailyEntry] {
         let startOfDay = Calendar.current.startOfDay(for: date)
         if let entries = currentMonth.entries[startOfDay], !entries.isEmpty { return entries }

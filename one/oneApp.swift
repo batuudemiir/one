@@ -113,28 +113,19 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             options: []
         )
 
-        // Keşfet hatırlatıcısı
-        let openDiscoveryAction = UNNotificationAction(
-            identifier: "OPEN_DISCOVERY",
-            title: NSLocalizedString("notification.openDiscovery", comment: ""),
-            options: [.foreground]
-        )
-        let discoveryCategory = UNNotificationCategory(
-            identifier: "DISCOVERY_REMINDER",
-            actions: [openDiscoveryAction],
-            intentIdentifiers: [],
-            options: []
-        )
-
-        // Arkadaş paylaşımı — "Keşfet" aksiyonu ile Discover'a yönlendir
-        let openDiscoverAction = UNNotificationAction(
-            identifier: "OPEN_DISCOVER",
-            title: NSLocalizedString("notification.openDiscovery", comment: ""),
+        // Arkadaş paylaşımı — Çevre'ye yönlendirir.
+        //
+        // Eskiden buradaki aksiyon "Keşfet"ti ve Discovery'ye gidiyordu;
+        // Keşfet kaldırıldı, üstelik arkadaşın paylaşımının doğal hedefi
+        // zaten Çevre.
+        let openSharedCircleAction = UNNotificationAction(
+            identifier: "OPEN_CIRCLE",
+            title: NSLocalizedString("notification.openCircle", comment: ""),
             options: [.foreground]
         )
         let friendSharedCategory = UNNotificationCategory(
             identifier: "FRIEND_SHARED",
-            actions: [openDiscoverAction],
+            actions: [openSharedCircleAction],
             intentIdentifiers: [],
             options: []
         )
@@ -166,7 +157,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             friendRequestCategory,
             streakCategory,
             weeklySummaryCategory,
-            discoveryCategory,
             friendSharedCategory,
             moodResonanceCategory,
             appUpdateCategory
@@ -182,7 +172,6 @@ struct oneApp: App {
     @StateObject private var cloudKitManager = CloudKitManager.shared
     @StateObject private var languageManager = LanguageManager.shared
     @StateObject private var updateChecker = AppUpdateChecker.shared
-    @StateObject private var premiumManager = PremiumManager.shared
     @AppStorage("isDarkMode") private var isDarkMode = false
     /// Uygulama kilidi perdesi — Profil'deki anahtar bunu besliyor.
     @StateObject private var appLock = AppLockManager.shared
@@ -233,7 +222,6 @@ struct oneApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(languageManager)
-                .environmentObject(premiumManager)
                 .badgeUnlockToast()
                 // Rebuild the entire SwiftUI tree when the language changes
                 .id(languageManager.refreshToken)
@@ -362,7 +350,7 @@ struct oneApp: App {
                         }
                     }
                     // 4. Direct tab deep links: ones://circle · ones://archive
-                    // · ones://echo · ones://profile · ones://discover
+                    // · ones://echo · ones://profile
                     // Added for parity so any external surface (share
                     // extension, notification, widget variant) can route
                     // straight to a tab without a NotificationCenter round-trip.
@@ -374,7 +362,6 @@ struct oneApp: App {
                         // Yankı artık sekme değil — layer route olarak açılıyor.
                         case "echo":     LaunchIntent.shared.setPendingScreen(.echo)
                         case "profile":  LaunchIntent.shared.setPendingTab(.profile)
-                        case "discover": LaunchIntent.shared.setPendingScreen(.discover)
                         default:
                             ONELogger.warning("Unknown deep link host: \(host)", category: .general)
                         }

@@ -2,7 +2,7 @@
 //  V3OnboardingView.swift
 //  one
 //
-//  v3 onboarding — 7 adım: intent · auth · mood · song · reward · frekans · notif.
+//  v3 onboarding — 7 adım: intent · auth · mood · song · reward · çevre · notif.
 //  Talimattan: Archivo 40pt başlık, Instrument Sans 16pt açıklama,
 //  ink primary + ghost buton. Üstte 7 nokta ilerleme (aktif geniş kor).
 //
@@ -46,10 +46,10 @@ struct V3OnboardingView: View {
     var isPreview: Bool = false
 
     enum Step: String, CaseIterable, Identifiable {
-        // v3 sıra: intent → mood → auth → song → reward → frekans → notif.
+        // v3 sıra: intent → mood → auth → song → reward → çevre → notif.
         // Auth mood'dan sonra — kullanıcı önce ilk rengini seçer, sonra
         // Apple ile giriş kararı verir (daha az sürtünme).
-        case intent, mood, auth, song, reward, frekans, notif
+        case intent, mood, auth, song, reward, circle, notif
         var id: String { rawValue }
         var label: String {
             switch self {
@@ -58,7 +58,7 @@ struct V3OnboardingView: View {
             case .auth:    return "Giriş"
             case .song:    return "Şarkı"
             case .reward:  return "İlk kare"
-            case .frekans: return "Çevre"
+            case .circle: return "Çevre"
             case .notif:   return "Hatırlatma"
             }
         }
@@ -79,24 +79,24 @@ struct V3OnboardingView: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 progressDots
-                    .padding(.top, 22)
+                    .padding(.top, V3Tokens.spacingXL)
 
                 stepLabel
                     .padding(.top, 18)
 
                 content
-                    .padding(.top, 26)
+                    .padding(.top, V3Tokens.spacingXL2)
                     .transition(.opacity.combined(with: .offset(y: 9)))
 
                 Spacer(minLength: 22)
 
                 footer
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 40)
+            .padding(.horizontal, V3Tokens.spacingXL2)
+            .padding(.top, V3Tokens.spacingXL4)
             .padding(.bottom, 28)
         }
-        .animation(V3Tokens.easing, value: pos)
+        .animation(ONEAnimation.easing, value: pos)
     }
 
     // MARK: - Progress dots
@@ -112,7 +112,7 @@ struct V3OnboardingView: View {
                     .frame(maxWidth: .infinity)
                     .frame(maxWidth: isActive ? .infinity : nil)
                     .layoutPriority(isActive ? 2.4 : 1)
-                    .animation(V3Tokens.easing, value: pos)
+                    .animation(ONEAnimation.easing, value: pos)
             }
         }
     }
@@ -140,7 +140,7 @@ struct V3OnboardingView: View {
         case .mood:    moodStep
         case .song:    songStep
         case .reward:  rewardStep
-        case .frekans: frekansStep
+        case .circle: circleStep
         case .notif:   notifStep
         case .none:    doneStep
         }
@@ -149,7 +149,7 @@ struct V3OnboardingView: View {
     // MARK: - Steps
 
     private var intentStep: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
             heading("Neden buradasın?")
             lead("Bir cümle yeter. Sonra değişebilir.")
 
@@ -159,7 +159,7 @@ struct V3OnboardingView: View {
                 intentPill("Şarkılarla eşleştirmek")
                 intentPill("Sadece merak ettim")
             }
-            .padding(.top, 8)
+            .padding(.top, V3Tokens.spacingSM)
         }
     }
 
@@ -170,7 +170,7 @@ struct V3OnboardingView: View {
         } label: {
             HStack {
                 Text(title)
-                    .font(V3Typography.sans(16, weight: .medium))
+                    .bodyLGMedium()
                     .foregroundColor(V3Tokens.ink)
                 Spacer()
                 if selectedIntent == title {
@@ -180,21 +180,21 @@ struct V3OnboardingView: View {
                 }
             }
             .padding(.horizontal, 18)
-            .padding(.vertical, 16)
+            .padding(.vertical, V3Tokens.spacingLG)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                     .strokeBorder(selectedIntent == title ? V3Tokens.ink : V3Tokens.hairline, lineWidth: 1.5)
                     .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                             .fill(V3Tokens.surface)
                     )
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
     }
 
     private var authStep: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
             heading("Apple ile\ngiriş yap.")
             lead("iCloud'da saklanır. Şifre yok.")
 
@@ -208,12 +208,12 @@ struct V3OnboardingView: View {
             .signInWithAppleButtonStyle(.black)
             .frame(height: 50)
             .clipShape(Capsule())
-            .padding(.top, 16)
+            .padding(.top, V3Tokens.spacingLG)
         }
     }
 
     private var moodStep: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
             heading("Bugün\nnasılsın?")
             lead("Bir renk seç. Yeter.")
 
@@ -224,28 +224,28 @@ struct V3OnboardingView: View {
                         selectedMood = mood
                     } label: {
                         ZStack(alignment: .bottomLeading) {
-                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                                 .fill(mood.color)
                                 .aspectRatio(1, contentMode: .fit)
                             Text(mood.label.lowercased())
-                                .font(V3Typography.sans(13, weight: .semibold))
+                                .bodyXSSemibold()
                                 .foregroundColor(mood.ink)
                                 .padding(10)
                         }
                         .overlay(
-                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                                 .stroke(V3Tokens.ink, lineWidth: selectedMood == mood ? 2 : 0)
                                 .padding(-2)
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.onePressable)
                 }
             }
         }
     }
 
     private var songStep: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
             heading("Bir şarkı\nekle mi?")
             lead("Sonra da ekleyebilirsin.")
             // Simplified — bu adımda picker yerine sadece "Sonra ekle" seçeneği.
@@ -254,42 +254,42 @@ struct V3OnboardingView: View {
     }
 
     private var rewardStep: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
             heading("İlk karen\nhazır.")
             lead("Her an bir renk daha ekler.")
             if let mood = selectedMood {
-                DayFill(hexes: [mood.hex], cornerRadius: 24)
+                DayFill(hexes: [mood.hex], cornerRadius: V3Tokens.radiusTile)
                     .frame(width: 140, height: 140)
-                    .padding(.top, 12)
+                    .padding(.top, V3Tokens.spacingMD)
             }
         }
     }
 
-    private var frekansStep: some View {
-        VStack(alignment: .leading, spacing: 22) {
+    private var circleStep: some View {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
             heading("Çevrene\nkim girsin?")
             lead("Sonra da davet edebilirsin.")
         }
     }
 
     private var notifStep: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
             heading("Küçük bir\nhatırlatma?")
             lead("İstediğin saatte, bir kez.")
 
             Toggle(isOn: $reminderOn) {
-                Text("Günlük hatırlatma")
-                    .font(V3Typography.sans(15, weight: .medium))
+                Text(NSLocalizedString("reminder.daily", comment: ""))
+                    .bodyMDMedium()
                     .foregroundColor(V3Tokens.ink)
             }
             .tint(ONEBrand.kor)
             .padding(.horizontal, 18)
-            .padding(.vertical, 12)
+            .padding(.vertical, V3Tokens.spacingMD)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                     .fill(V3Tokens.surface)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                             .stroke(V3Tokens.hairline, lineWidth: 1)
                     )
             )
@@ -297,7 +297,7 @@ struct V3OnboardingView: View {
     }
 
     private var doneStep: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
             heading("Hazırsın.")
             lead("İlk anın seni bekliyor.")
         }
@@ -315,7 +315,7 @@ struct V3OnboardingView: View {
 
     private func lead(_ text: String) -> some View {
         Text(text)
-            .font(V3Typography.sans(16))
+            .bodyLG()
             .foregroundColor(V3Tokens.mutedText)
     }
 
@@ -325,23 +325,24 @@ struct V3OnboardingView: View {
         VStack(spacing: 10) {
             Button(action: { current == nil ? finish() : next() }) {
                 Text(primaryLabel)
-                    .font(V3Typography.sans(17, weight: .semibold))
+                    .displayXS()
                     .foregroundColor(V3Tokens.paper)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 18)
                     .background(Capsule(style: .continuous).fill(canProceed ? V3Tokens.ink : V3Tokens.hairline))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.onePressable)
             .disabled(!canProceed)
 
             if pos > 0 && current != nil {
                 Button(action: { back() }) {
                     Text("Geri")
-                        .font(V3Typography.sans(15, weight: .medium))
+                        .bodyMDMedium()
                         .foregroundColor(V3Tokens.mutedText)
                         .padding(.vertical, 10)
                 }
-                .buttonStyle(.plain)
+                .contentShape(Rectangle())
+                .buttonStyle(.onePressable)
             }
         }
     }
@@ -363,12 +364,12 @@ struct V3OnboardingView: View {
     // MARK: - Actions
 
     private func next() {
-        withAnimation(V3Tokens.easing) { pos += 1 }
+        withAnimation(ONEAnimation.easing) { pos += 1 }
         if current == .notif { /* Notif izni izin butonuna bağlı, otomatik değil */ }
     }
 
     private func back() {
-        withAnimation(V3Tokens.easing) { pos = max(0, pos - 1) }
+        withAnimation(ONEAnimation.easing) { pos = max(0, pos - 1) }
     }
 
     private func finish() {

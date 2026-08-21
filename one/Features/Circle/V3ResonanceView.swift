@@ -2,7 +2,7 @@
 //  V3ResonanceView.swift
 //  one
 //
-//  Uyum — v3 prototip ekran 22 ("Frekans · uyum", ürün adı: Çevre · Uyum).
+//  Uyum — v3 prototip ekran 22. Ürün adı: Çevre · Uyum.
 //
 //  Üç bölüm:
 //   1) Kendi renginde hero — "Bugün senin rengin" + duygu adı 36pt +
@@ -23,30 +23,25 @@ struct V3ResonanceView: View {
     let myMoments: [Moment]
 
     var body: some View {
-        NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
-                    hero
-                    if !matches.isEmpty {
-                        sectionLabel(NSLocalizedString("circle.sameColorLabel", comment: ""))
-                            .padding(.top, 26)
-                        matchList.padding(.top, 12)
-                    }
-                    if !distribution.isEmpty {
-                        sectionLabel(NSLocalizedString("circle.distributionLabel", comment: ""))
-                            .padding(.top, 26)
-                        distributionList.padding(.top, 12)
-                    }
+        // Kabuk `V3SheetScreen`'e geçti: kenar payı (24) ve zemin artık
+        // elle yazılmıyor, kapatma düğmesi sağ üstteki metin yerine sol
+        // üstteki dairesel `xmark` — uygulamanın geri kalanıyla aynı.
+        V3SheetScreen(
+            title: NSLocalizedString("circle.resonanceTitle", comment: ""),
+            context: NSLocalizedString("nav.circle", comment: ""),
+            onClose: { dismiss() }
+        ) {
+            VStack(alignment: .leading, spacing: 0) {
+                hero
+                if !matches.isEmpty {
+                    sectionLabel(NSLocalizedString("circle.sameColorLabel", comment: ""))
+                        .padding(.top, V3Tokens.spacingXL2)
+                    matchList.padding(.top, V3Tokens.spacingMD)
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
-            }
-            .background(V3Tokens.paper)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("general.close", comment: "")) { dismiss() }
-                        .font(V3Typography.sans(15, weight: .semibold))
-                        .foregroundColor(V3Tokens.ink)
+                if !distribution.isEmpty {
+                    sectionLabel(NSLocalizedString("circle.distributionLabel", comment: ""))
+                        .padding(.top, V3Tokens.spacingXL2)
+                    distributionList.padding(.top, V3Tokens.spacingMD)
                 }
             }
         }
@@ -68,7 +63,7 @@ struct V3ResonanceView: View {
                 .foregroundColor(myMood?.ink ?? V3Tokens.ink)
 
             Text(matchLine)
-                .font(V3Typography.sans(15))
+                .bodyMD()
                 .foregroundColor((myMood?.ink ?? V3Tokens.mutedText).opacity(0.85))
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -99,7 +94,7 @@ struct V3ResonanceView: View {
                         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(item.mood.color))
 
                     Text(item.name)
-                        .font(V3Typography.sans(16))
+                        .bodyLG()
                         .foregroundColor(V3Tokens.ink)
                         .lineLimit(1)
 
@@ -135,7 +130,7 @@ struct V3ResonanceView: View {
             ForEach(Array(distribution.enumerated()), id: \.offset) { _, row in
                 HStack(spacing: 12) {
                     Text(row.mood.label)
-                        .font(V3Typography.sans(14))
+                        .bodySM()
                         .foregroundColor(V3Tokens.ink)
                         .frame(width: 76, alignment: .leading)
 

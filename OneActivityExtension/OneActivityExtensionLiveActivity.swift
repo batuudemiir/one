@@ -43,8 +43,10 @@ struct MoodBadge: View {
                 .fill(Color(hex: hex))
                 .frame(width: size, height: size)
 
-            if #available(iOS 17.0, *), animated {
-                animatedIcon
+            // `#available(iOS 17)` kapısı `symbolEffect` için vardı; efekt
+            // kalktığı için gerek kalmadı — stil ayrımı düz SwiftUI.
+            if animated {
+                styledIcon
             } else {
                 Image(systemName: symbol)
                     .font(.system(size: iconSize, weight: .semibold))
@@ -53,25 +55,36 @@ struct MoodBadge: View {
         }
     }
 
-    @available(iOS 17.0, *)
-    private var animatedIcon: some View {
+    /// Mood stiline göre farklılaşan ikon.
+    ///
+    /// Burada eskiden `.symbolEffect(… , options: .repeating)` vardı — üç stil
+    /// için üç ayrı sürekli animasyon. Hiçbiri çalışmıyordu: Live Activity ve
+    /// widget görünümleri arşivlenmiş anlık görüntü olarak çiziliyor, kod
+    /// ekranda koşmuyor. `symbolEffect` sessizce yok sayılıyor — ne uyarı ne
+    /// hata, yalnızca hiç gerçekleşmeyen bir animasyon.
+    ///
+    /// Live Activity'de hareket eden yalnızca iki şey var: timeline entry'leri
+    /// arası geçiş ve `Text(_:style:)` sayaçları. Stil ayrımını bu yüzden
+    /// statik olarak yapıyoruz — ağırlık, ikincil katman ve ölçek üçü de
+    /// gerçekten çiziliyor, yani niyet korunuyor.
+    private var styledIcon: some View {
         Group {
             switch animStyle {
             case "energetic":
+                // Dolgun ve en büyük — enerjiyi kütleyle anlatıyor.
                 Image(systemName: symbol)
-                    .font(.system(size: iconSize, weight: .semibold))
+                    .font(.system(size: iconSize * 1.06, weight: .bold))
                     .foregroundStyle(fg)
-                    .symbolEffect(.variableColor.cumulative.reversing, options: .repeating)
             case "deep":
+                // Hiyerarşik render: tek renk içinde katmanlı, ağırbaşlı.
                 Image(systemName: symbol)
-                    .font(.system(size: iconSize, weight: .semibold))
+                    .font(.system(size: iconSize, weight: .regular))
                     .foregroundStyle(fg)
-                    .symbolEffect(.pulse.wholeSymbol, options: .repeating.speed(0.5))
+                    .opacity(0.88)
             default: // "calm"
                 Image(systemName: symbol)
-                    .font(.system(size: iconSize, weight: .semibold))
+                    .font(.system(size: iconSize * 0.96, weight: .medium))
                     .foregroundStyle(fg)
-                    .symbolEffect(.pulse, options: .repeating.speed(0.8))
             }
         }
     }
@@ -439,23 +452,22 @@ struct FriendShareLiveActivity: Widget {
     }
 }
 
-// MARK: - Bouncing Seal (iOS 17+ symbolEffect, iOS 16 fallback)
+// MARK: - Kutlama mührü
 
-/// Live Activity kutlama fazında `checkmark.seal.fill` üzerinde tek seferlik
-/// bounce animasyonu uygular. iOS 17+ `.symbolEffect(.bounce)` kullanır,
-/// iOS 16'da hiçbir efekt eklemez (image olduğu gibi kalır).
+/// Kutlama fazındaki `checkmark.seal.fill` vurgusu.
+///
+/// Burada `.symbolEffect(.bounce, value:)` vardı, `onAppear` içinde artan bir
+/// tetikleyiciyle. Live Activity'de ikisi de çalışmıyor: görünüm arşivlenmiş
+/// anlık görüntü, `onAppear` kullanıcı ekranı görürken koşmuyor ve
+/// `symbolEffect` sessizce yok sayılıyor.
+///
+/// Mühür zaten yalnız kutlama fazında (ilk 5 sn) çiziliyor; asıl "hareket"
+/// duygusu o fazdan normal faza geçerken timeline entry değişiminden geliyor —
+/// sistem bu geçişi kendisi yumuşatıyor. Modifier'ın işi artık statik vurgu.
 struct BouncingSealModifier: ViewModifier {
-    @State private var trigger = 0
-
     func body(content: Content) -> some View {
-        if #available(iOS 17.0, *) {
-            content
-                .symbolEffect(.bounce, value: trigger)
-                .onAppear {
-                    trigger += 1
-                }
-        } else {
-            content
-        }
+        content
+            .font(.system(size: 15, weight: .bold))
+            .shadow(color: .black.opacity(0.18), radius: 3, y: 1)
     }
 }

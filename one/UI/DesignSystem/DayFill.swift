@@ -22,6 +22,15 @@ struct DayFill: View {
     /// Karenin köşe yuvarlaması. Mozaikte 9, yıl mini'sinde 2, widget 5, poster 4.
     var cornerRadius: CGFloat = 9
 
+    /// Renk körlüğü ikinci kanalı — açıkken her dilim kendi desenini taşır.
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiate
+
+    /// Anların v3 mood karşılıkları. Legacy (v2) hex'ler köprüleniyor;
+    /// eşleşmeyen hex `nil` kalır ve desensiz düz renk çizilir.
+    private var moods: [V3Mood?] {
+        hexes.map { V3Mood.fromHex($0) }
+    }
+
     /// Rendera edilecek renkler — legacy hex'ler v3'e mapping'lenir.
     private var normalizedColors: [Color] {
         hexes.map { hex in
@@ -46,11 +55,39 @@ struct DayFill: View {
                     )
             case 1:
                 shape.fill(colors[0])
+                    .moodPattern(moods.first ?? nil)
             default:
-                shape.fill(
-                    LinearGradient(stops: stops(colors: colors), startPoint: .topLeading, endPoint: .bottomTrailing)
-                )
+                if differentiate {
+                    // Desen modunda dilimler **gerçek bant** olarak çiziliyor:
+                    // gradient tek bir dolgu olduğu için dilim başına ayrı
+                    // desen bindirilemiyor. Bantlar 135°'ye döndürülünce
+                    // gradient'in sert duraklarıyla aynı görüntüyü veriyor.
+                    diagonalBands(colors: colors).clipShape(shape)
+                } else {
+                    shape.fill(
+                        LinearGradient(stops: stops(colors: colors), startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                }
             }
+        }
+    }
+
+    /// 135° bantlar — her biri kendi mood desenini taşıyabilsin diye ayrı view.
+    private func diagonalBands(colors: [Color]) -> some View {
+        GeometryReader { geo in
+            // Kare döndürülünce köşeler dışarı taşıyor; kenarı √2 kat büyütmek
+            // yerine 1.5 kat alıp merkeze oturtmak yeterli ve ucuz.
+            let side = max(geo.size.width, geo.size.height) * 1.5
+            HStack(spacing: 0) {
+                ForEach(Array(colors.enumerated()), id: \.offset) { index, color in
+                    Rectangle()
+                        .fill(color)
+                        .moodPattern(index < moods.count ? moods[index] : nil, lineWidth: 0.9)
+                }
+            }
+            .frame(width: side, height: side)
+            .rotationEffect(.degrees(-45))
+            .position(x: geo.size.width / 2, y: geo.size.height / 2)
         }
     }
 
@@ -76,18 +113,18 @@ extension DayFill {
 }
 
 #Preview {
-    VStack(spacing: 16) {
-        HStack(spacing: 8) {
+    VStack(spacing: V3Tokens.spacingLG) {
+        HStack(spacing: V3Tokens.spacingSM) {
             DayFill(hexes: []).frame(width: 46, height: 46)
             DayFill(hexes: ["#FF3B1F"]).frame(width: 46, height: 46)
             DayFill(hexes: ["#FF3B1F", "#00B58C"]).frame(width: 46, height: 46)
             DayFill(hexes: ["#FF3B1F", "#00B58C", "#2B4CF0"]).frame(width: 46, height: 46)
         }
-        HStack(spacing: 4) {
-            DayFill(hexes: ["#FF8A00", "#C8F135", "#5C6BC0", "#8B2FD6"], cornerRadius: 4)
+        HStack(spacing: V3Tokens.spacingXS) {
+            DayFill(hexes: ["#FF8A00", "#C8F135", "#5C6BC0", "#8B2FD6"], cornerRadius: V3Tokens.radiusSwatch)
                 .frame(width: 24, height: 24)
         }
     }
     .padding(30)
-    .background(ONEBrand.bone)
+    .background(V3Tokens.paper)
 }

@@ -37,7 +37,6 @@ enum AnalyticsEvent {
     /// bununla görülür.
     case notifPermissionPrompted
     case notifPermissionResult(granted: Bool)
-    case weekRhythmCompleted(filledDays: Int)        // Faz 3 — haftada 4+ gün doldu
 
     // ── Circle (social) ────────────────────────────────────────────
     case circleOpened
@@ -48,19 +47,8 @@ enum AnalyticsEvent {
     case firstEntryInviteHookShown                                // A4 — first-entry invite kancası gösterildi
     case firstEntryInviteHookAction(action: String)               // "invite" | "skip"
     // ── Comments (v2.5) ────────────────────────────────────────────
-    case commentCreated
-    case commentEdited
-    case commentDeleted
-    case commentReported
-    case commentAuthorProfileOpened
     case userBlocked
     case userUnblocked
-
-    // ── Discovery ──────────────────────────────────────────────────
-    case discoverOpened
-    case recommendationTapped(source: String)        // "apple" | "spotify"
-    case eventTapped(category: String)
-    case playlistOpened
 
     // ── Share ──────────────────────────────────────────────────────
     case storyCardShared(surface: String)            // "ig_story" | "system_sheet" | "save"
@@ -109,7 +97,6 @@ enum AnalyticsEvent {
         case .entryBackfilled:           return "entry_backfilled"
         case .notifPermissionPrompted:   return "notif_permission_prompted"
         case .notifPermissionResult:     return "notif_permission_result"
-        case .weekRhythmCompleted:       return "week_rhythm_completed"
         case .circleOpened:              return "circle_opened"
         case .friendInviteSent:          return "friend_invite_sent"
         case .friendRequestSent:         return "friend_request_sent"
@@ -117,17 +104,8 @@ enum AnalyticsEvent {
         case .friendShareViewed:         return "friend_share_viewed"
         case .firstEntryInviteHookShown: return "first_entry_invite_hook_shown"
         case .firstEntryInviteHookAction:return "first_entry_invite_hook_action"
-        case .commentCreated:            return "comment_created"
-        case .commentEdited:             return "comment_edited"
-        case .commentDeleted:            return "comment_deleted"
-        case .commentReported:           return "comment_reported"
-        case .commentAuthorProfileOpened:return "comment_author_profile_opened"
         case .userBlocked:               return "user_blocked"
         case .userUnblocked:             return "user_unblocked"
-        case .discoverOpened:            return "discover_opened"
-        case .recommendationTapped:      return "recommendation_tapped"
-        case .eventTapped:               return "event_tapped"
-        case .playlistOpened:            return "playlist_opened"
         case .storyCardShared:           return "story_card_shared"
         case .monthlyPosterShared:       return "monthly_poster_shared"
         case .badgeUnlocked:                    return "badge_unlocked"
@@ -151,11 +129,10 @@ enum AnalyticsEvent {
     /// counts, and booleans. User identity flows through `AppAnalytics.identify`.
     var properties: [String: Any] {
         switch self {
-        case .onboardingStarted, .circleOpened, .discoverOpened,
+        case .onboardingStarted, .circleOpened,
              .friendRequestSent, .friendRequestAccepted, .friendShareViewed,
-             .playlistOpened, .monthlyPosterShared, .songSelected,
-             .commentCreated, .commentEdited, .commentDeleted, .commentReported,
-             .commentAuthorProfileOpened, .userBlocked, .userUnblocked,
+             .monthlyPosterShared, .songSelected,
+             .userBlocked, .userUnblocked,
              .firstEntryInviteHookShown,
              .streakFreezeConsumed,
              .notifPermissionPrompted:
@@ -164,8 +141,6 @@ enum AnalyticsEvent {
             return ["action": action]
         case .entryBackfilled(let daysAgo):
             return ["days_ago": daysAgo]
-        case .weekRhythmCompleted(let filledDays):
-            return ["filled_days": filledDays]
         case .onboardingCompleted(let musicPlatform):
             return ["music_platform": musicPlatform]
         case .platformSelected(let platform):
@@ -192,10 +167,6 @@ enum AnalyticsEvent {
             return ["granted": granted]
         case .friendInviteSent(let method):
             return ["method": method]
-        case .recommendationTapped(let source):
-            return ["source": source]
-        case .eventTapped(let category):
-            return ["category": category]
         case .storyCardShared(let surface):
             return ["surface": surface]
         case .badgeUnlocked(let id):

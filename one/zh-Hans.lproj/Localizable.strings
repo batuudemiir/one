@@ -99,6 +99,8 @@
 "general.done" = "完成";
 "general.back" = "返回";
 "general.close" = "关闭";
+"general.more" = "更多";
+"general.new" = "新";
 "general.loading" = "加载中...";
 "general.error" = "发生错误";
 "general.retry" = "重试";
@@ -1296,3 +1298,173 @@ one day.";
 "circle.sameColorCount" = "今天有 %d 人与你同色";
 "circle.requests" = "好友请求";
 "circle.notifications" = "通知";
+
+/* v3 mood adlari - uygulamanin semantik yuku, koda gomulu olamaz */
+"mood.v3.atesli.label" = "炽热";
+"mood.v3.coskulu.label" = "欢快";
+"mood.v3.gergin.label" = "紧绷";
+"mood.v3.mutlu.label" = "快乐";
+"mood.v3.enerjik.label" = "有劲";
+"mood.v3.odakli.label" = "专注";
+"mood.v3.huzurlu.label" = "平静";
+"mood.v3.huzunlu.label" = "惆怅";
+"mood.v3.yorgun.label" = "疲惫";
+
+/* v3 mood anlamları — VoiceOver değeri ve alt başlık. */
+"mood.v3.atesli.meaning" = "心里在燃烧";
+"mood.v3.coskulu.meaning" = "快要溢出来了";
+"mood.v3.gergin.meaning" = "被压得喘不过气";
+"mood.v3.mutlu.meaning" = "从心里亮起来";
+"mood.v3.enerjik.meaning" = "鲜活又迅速";
+"mood.v3.odakli.meaning" = "沉稳而笃定";
+"mood.v3.huzurlu.meaning" = "一切都好";
+"mood.v3.huzunlu.meaning" = "心里发紧";
+"mood.v3.yorgun.meaning" = "耗尽了，空空的";
+
+/* Merakli hatirlatma tonu - tam cumle, kelime birlestirme yok */
+"reminder.curious.yesterday.atesli" = "昨天你很炽热。";
+"reminder.curious.yesterday.coskulu" = "昨天你很欢快。";
+"reminder.curious.yesterday.gergin" = "昨天你很紧绷。";
+"reminder.curious.yesterday.mutlu" = "昨天你很快乐。";
+"reminder.curious.yesterday.enerjik" = "昨天你很有劲。";
+"reminder.curious.yesterday.odakli" = "昨天你很专注。";
+"reminder.curious.yesterday.huzurlu" = "昨天你很平静。";
+"reminder.curious.yesterday.huzunlu" = "昨天你有些惆怅。";
+"reminder.curious.yesterday.yorgun" = "昨天你很疲惫。";
+
+/* Legacy 12-mood (ONEMood) - arsiv/echo okuma yollari kullaniyor */
+"mood.legacy.atesli.label" = "热烈";
+"mood.legacy.isikli.label" = "快乐";
+"mood.legacy.enerjik.label" = "有劲";
+"mood.legacy.taze.label" = "自然";
+"mood.legacy.sakin.label" = "安宁";
+"mood.legacy.nostaljik.label" = "兴奋";
+"mood.legacy.ozgur.label" = "平静";
+"mood.legacy.derin.label" = "稳定";
+"mood.legacy.uzgun.label" = "难过";
+"mood.legacy.stresli.label" = "压力";
+"mood.legacy.yorgun.label" = "疲惫";
+"mood.legacy.sinirli.label" = "恼火";
+"mood.legacy.atesli.meaning" = "心里在烧";
+"mood.legacy.isikli.meaning" = "从里面发光";
+"mood.legacy.enerjik.meaning" = "满得溢出来";
+"mood.legacy.taze.meaning" = "刚刚开始";
+"mood.legacy.sakin.meaning" = "一切都好";
+"mood.legacy.nostaljik.meaning" = "满是喜悦";
+"mood.legacy.ozgur.meaning" = "轻盈、安静";
+"mood.legacy.derin.meaning" = "平衡、稳定";
+"mood.legacy.uzgun.meaning" = "心里发紧";
+"mood.legacy.stresli.meaning" = "被压得喘不过气";
+"mood.legacy.yorgun.meaning" = "精疲力尽";
+"mood.legacy.sinirli.meaning" = "心里有场风暴";
+"reminder.curious.body" = "今天是什么颜色？";
+"archive.previousMonth" = "上个月";
+"archive.nextMonth" = "下个月";
+
+/* ── v3 ekranlarından kataloğa taşınan metinler ──────────────────────
+   Bu 69 anahtar koda gömülü Türkçe olarak duruyordu: katalog tamdı
+   ama bu ekranlar ona hiç bakmıyordu, dolayısıyla Almanca bir
+   kullanıcı Profil sekmesinde Türkçe görüyordu.
+   TR ve EN gerçek; diğer diller çeviri gelene kadar TR'ye düşüyor. */
+"applock.noPasscode" = "Cihazında parola veya biyometri tanımlı değil.";
+"archive.addMomentToDay" = "Bu güne an ekle";
+"archive.addNow" = "Şimdi ekle";
+"archive.dayCount" = "%@ gün";
+"archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
+"archive.empty.title" = "Arşiv boş.";
+"archive.momentsOnDay" = "%d an bu güne kaydedildi.";
+"archive.mostFrequent" = "en çok %@";
+"archive.todayWaiting" = "Bugün seni bekliyor";
+"block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
+"camera.noAccess" = "Kamera erişimi yok";
+"camera.useThisMoment" = "Bu anı kullan";
+"circle.shareFailed" = "Çevre paylaşımı başarısız — internet bağlantını kontrol et.";
+"echo.monthColour" = "%@ · AYIN RENGİ";
+"echo.monthStory" = "%@ · AY HİKAYESİ";
+"echo.noRepeatSong" = "Aynı şarkı iki kez geçmedi.";
+"echo.posterFailed" = "Poster yüklenemedi";
+"entry.changeColour" = "Rengi değiştir";
+"entry.pastDay" = "GEÇMİŞ GÜN";
+"entry.pickColour" = "Bir renk seç. Yeter.";
+"entry.removePhoto" = "Fotoğrafı kaldır";
+"entry.scopeSubtitle" = "Her an için ayrı seçebilirsin.";
+"entry.scopeTitle" = "Bu an kimde kalsın?";
+"general.a11y.toggle" = "Aç/kapat";
+"general.change" = "Değiştir";
+"general.now" = "şimdi";
+"general.openSettings" = "Ayarları aç";
+"invite.validSevenDays" = "7 GÜN GEÇERLİ";
+"invite.addMeOnONE" = "Beni ONE'da ekle";
+"liveActivity.enableHint" = "Mood'unu Dynamic Island'da görmek için Ayarlar > ONE > Canlı Etkinlikler'i etkinleştir.";
+"moment.a11y.openPhoto" = "Fotoğrafı aç";
+"moment.archiveTag" = "· ARŞİV";
+"offline.banner" = "BAĞLANTI YOK · ANLARIN CİHAZINDA BEKLİYOR";
+"privacy.hiddenField" = "%@ bu kişinin gizlilik tercihi nedeniyle görüntülenemiyor";
+"profile.colourBreakdown" = "Renk dağılımı";
+"profile.monthColour" = "%@ · ayın rengi";
+"profile.monthCounts" = "%1$d gün · %2$d an";
+"profile.monthlySummary" = "AYLIK ÖZET";
+"profile.photoVisibility" = "Fotoğrafın çevrendeki arkadaşlara görünür.";
+"profile.pickAvatar" = "Avatar seç";
+"profile.pinned" = "sabitlenmiş";
+"profile.pinnedSong" = "SABİTLENMİŞ ŞARKI";
+"profile.sevenSteps" = "7 adım";
+"profile.signInOptional" = "Giriş yapmasan da ONE tam çalışır.";
+"profile.signOut" = "ÇIKIŞ";
+"profile.signedInWithApple" = "Apple ile giriş yapıldı";
+"profile.syncPitch" = "Arşivini cihazlar\narasında taşı.";
+"profile.versionLine" = "Sürüm %1$@ · %2$d an";
+"publicProfile.inYourCircle" = "Çevrende";
+"publicProfile.mutualFriends" = "%d ortak arkadaşınız var";
+"publicProfile.unavailable" = "Bu profil görüntülenemiyor.";
+"reminder.daily" = "Günlük hatırlatma";
+"reminder.days" = "GÜNLER";
+"reminder.lockPreview" = "KİLİT EKRANI ÖNİZLEMESİ";
+"reminder.subtitle" = "Seçtiğin saatte tek hatırlatma.";
+"reminder.title" = "Hatırlatma";
+"reminder.tone" = "NE DESİN?";
+"report.notice" = "Bildirimler 24 saat içinde değerlendirilir. Yinelenen şikâyetler içeriği otomatik gizleyebilir.";
+"saved.backToDay" = "Güne dön";
+"saved.goToArchive" = "Arşive git";
+"settings.appearance" = "Görünüm";
+"share.createStoryCard" = "Story kart oluştur";
+"share.noNote" = "Not bırakmadın.";
+"share.noSong" = "Şarkı eklemedin.";
+"share.orSave" = "Paylaş ya da kaydet.";
+"song.pick" = "Şarkı seç";
+"song.preparingSuggestions" = "Sana özel öneriler hazırlanıyor";
+"splash.tagline" = "DUYGU VE ŞARKI GÜNLÜĞÜ";
+"today.howDidItFeel" = "Bugün nasıl hissettirdi?";
+
+/* ── Kodda kullanılıyordu ama katalogda yoktu ────────────────────────
+   Bu anahtarlar `NSLocalizedString` ile çağrılıyor ama hiçbir dilde
+   tanımlı değildi; iOS bu durumda anahtarın kendisini döndürür,
+   yani kullanıcı ekranda "general.copy" yazısını görüyordu. */
+"accessibility.loading" = "Yükleniyor";
+"accessibility.today.closeViewer" = "Fotoğraf görüntüleyiciyi kapat";
+"accessibility.today.photoViewerHint" = "Yakınlaştırmak için çift dokun, kapatmak için aşağı kaydır";
+"accessibility.unread" = "Okunmadı";
+"general.copied" = "Kopyalandı";
+"general.copy" = "Kopyala";
+"invite.shareSubtitle" = "Davet kodun veya link ile seni ekleyebilirler";
+"profile.usernameCurrent" = "Bu zaten senin kullanıcı adın";
+"profile.usernameInvalidFormat" = "Yalnızca harf, rakam ve alt çizgi kullan";
+"profile.usernameTooShort" = "En az 3 karakter olmalı";
+
+
+/* Rapor sheet'i — v3 kabuk geçişi */
+"report.title" = "举报";
+"report.reason" = "原因";
+"report.noteOptional" = "备注 — 可选";
+"report.notePlaceholder" = "补充更多细节";
+"report.submit" = "发送举报";
+"report.submitted" = "已发送";
+"report.target.comment" = "举报评论";
+"report.target.user" = "举报 %@";
+"report.target.userFallback" = "此用户";
+"report.target.share" = "举报动态";
+"report.context.comment" = "评论";
+"report.context.user" = "用户";
+"report.context.share" = "动态";
+
+"circle.resonanceTitle" = "共鸣";

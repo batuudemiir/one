@@ -33,12 +33,12 @@ struct V3CameraView: View {
 
     var body: some View {
         ZStack {
-            ONEBrand.bone.ignoresSafeArea()
+            V3Tokens.paper.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 topBar
-                    .padding(.horizontal, 24)
-                    .padding(.top, 20)
+                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.top, V3Tokens.spacingXL)
 
                 content
 
@@ -68,13 +68,14 @@ struct V3CameraView: View {
         HStack {
             Button(action: { dismiss() }) {
                 Text("← Kapat")
-                    .font(V3Typography.sans(14, weight: .semibold))
+                    .bodySMSemibold()
                     .foregroundColor(V3Tokens.mutedText)
                     .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, V3Tokens.spacingSM)
                     .overlay(Capsule().stroke(V3Tokens.hairline, lineWidth: 1))
             }
-            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+            .buttonStyle(.onePressable)
 
             Spacer()
 
@@ -100,20 +101,19 @@ struct V3CameraView: View {
             if showPreview, let raw = captured {
                 previewScreen(raw)
                     .transition(.opacity)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 20)
+                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.top, V3Tokens.spacingXL)
             } else {
                 captureScreen
-                    .padding(.horizontal, 24)
-                    .padding(.top, 20)
+                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.top, V3Tokens.spacingXL)
             }
         case .checking:
-            ProgressView()
-                .tint(V3Tokens.mutedText)
+            V3Loading(.region)
                 .padding(.top, 120)
         case .denied:
             deniedScreen
-                .padding(.horizontal, 24)
+                .padding(.horizontal, V3Tokens.spacingXL2)
                 .padding(.top, 60)
         }
     }
@@ -121,17 +121,20 @@ struct V3CameraView: View {
     // MARK: - Capture screen
 
     private var captureScreen: some View {
-        VStack(spacing: 22) {
+        VStack(spacing: V3Tokens.spacingXL) {
             // Viewfinder card — 3:4 aspect, dark ground.
             ZStack {
                 // Ön izleme (AVCaptureSession).
                 LivePreviewView(
                     state: state,
-                    ratio: .standard,        // 3:4 storage
+                    // 9:16 çekim: story'ye kırpmasız gitsin. Kartta 4:5
+                    // gösteriliyor (bkz. V3MomentCard.canvasAspect) — çekim
+                    // oranı ile gösterim oranı bilinçli olarak ayrı.
+                    ratio: .story,
                     onPhoto: handleCapture,
                     onDismiss: { dismiss() }
                 )
-                .aspectRatio(3.0 / 4.0, contentMode: .fit)
+                .aspectRatio(CaptureRatio.story.wh, contentMode: .fit)
                 .background(
                     LinearGradient(
                         stops: [
@@ -143,7 +146,7 @@ struct V3CameraView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous))
 
                 // 33% grid overlay (spec).
                 if state.grid {
@@ -154,7 +157,7 @@ struct V3CameraView: View {
 
                 // Top chips — flash + grid (vizör içinde).
                 VStack {
-                    HStack(spacing: 8) {
+                    HStack(spacing: V3Tokens.spacingSM) {
                         chip(active: state.flash != .off, label: state.flash == .off ? "Flaş kapalı" : "Flaş açık") {
                             state.cycleFlash()
                         }
@@ -174,9 +177,9 @@ struct V3CameraView: View {
                     Rectangle().fill(moodColor).frame(height: 6)
                 }
                 .allowsHitTesting(false)
-                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous))
             }
-            .aspectRatio(3.0 / 4.0, contentMode: .fit)
+            .aspectRatio(CaptureRatio.story.wh, contentMode: .fit)
 
             // Bottom bar: galeri | shutter | front/back
             HStack {
@@ -206,44 +209,45 @@ struct V3CameraView: View {
             ZStack {
                 Image(uiImage: raw)
                     .resizable()
-                    .aspectRatio(3.0 / 4.0, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    .aspectRatio(CaptureRatio.story.wh, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous))
 
                 VStack {
                     Spacer()
                     Rectangle().fill(moodColor).frame(height: 6)
                 }
                 .allowsHitTesting(false)
-                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous))
             }
 
             HStack(spacing: 10) {
                 Button {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    ONEHaptics.commit()
                     image = raw
                     dismiss()
                 } label: {
-                    Text("Bu anı kullan")
-                        .font(V3Typography.sans(16, weight: .semibold))
+                    Text(NSLocalizedString("camera.useThisMoment", comment: ""))
+                        .bodyLGSemibold()
                         .foregroundColor(V3Tokens.paper)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
                         .background(Capsule().fill(V3Tokens.ink))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.onePressable)
 
                 Button {
                     withAnimation(.easeInOut(duration: 0.16)) { showPreview = false }
                     captured = nil
                 } label: {
-                    Text("Değiştir")
-                        .font(V3Typography.sans(15, weight: .medium))
+                    Text(NSLocalizedString("general.change", comment: ""))
+                        .bodyMDMedium()
                         .foregroundColor(V3Tokens.mutedText)
                         .padding(.horizontal, 18)
                         .padding(.vertical, 18)
                         .overlay(Capsule().stroke(V3Tokens.hairline, lineWidth: 1))
                 }
-                .buttonStyle(.plain)
+                .contentShape(Rectangle())
+                .buttonStyle(.onePressable)
             }
         }
     }
@@ -255,22 +259,22 @@ struct V3CameraView: View {
             Image(systemName: "camera.slash")
                 .font(.system(size: 34, weight: .light))
                 .foregroundColor(V3Tokens.mutedText)
-            Text("Kamera erişimi yok")
+            Text(NSLocalizedString("camera.noAccess", comment: ""))
                 .font(ONEBrand.display(20))
                 .tracking(-0.4)
                 .foregroundColor(V3Tokens.ink)
             Text("Ayarlardan izin verebilirsin.")
-                .font(V3Typography.sans(14))
+                .bodySM()
                 .foregroundColor(V3Tokens.mutedText)
             Button {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             } label: {
-                Text("Ayarları aç")
-                    .font(V3Typography.sans(15, weight: .semibold))
+                Text(NSLocalizedString("general.openSettings", comment: ""))
+                    .bodyMDSemibold()
                     .foregroundColor(V3Tokens.paper)
-                    .padding(.horizontal, 22).padding(.vertical, 12)
+                    .padding(.horizontal, V3Tokens.spacingXL).padding(.vertical, V3Tokens.spacingMD)
                     .background(Capsule().fill(V3Tokens.ink))
             }
         }
@@ -283,15 +287,15 @@ struct V3CameraView: View {
             state.shoot()
         } label: {
             Circle()
-                .fill(ONEBrand.bone)
+                .fill(V3Tokens.surface)
                 .frame(width: 74, height: 74)
                 .overlay(
                     Circle().stroke(V3Tokens.hairline, lineWidth: 4).padding(-4)
                 )
                 .scaleEffect(state.capturing ? 0.94 : 1.0)
-                .animation(.spring(response: 0.16, dampingFraction: 0.6), value: state.capturing)
+                .animation(ONEAnimation.buttonReleaseAnimation, value: state.capturing)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
         .disabled(state.capturing)
     }
 
@@ -302,11 +306,12 @@ struct V3CameraView: View {
                 .foregroundColor(V3Tokens.mutedText)
                 .frame(width: 52, height: 52)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                         .stroke(V3Tokens.hairline, lineWidth: 1)
                 )
         }
-        .buttonStyle(.plain)
+        .contentShape(Rectangle())
+        .buttonStyle(.onePressable)
     }
 
     private func chip(active: Bool, label: String, action: @escaping () -> Void) -> some View {
@@ -321,10 +326,10 @@ struct V3CameraView: View {
                 .background(
                     Capsule()
                         .fill(active ? Color(red: 0.984, green: 0.980, blue: 0.969).opacity(0.92) : Color(red: 0.047, green: 0.047, blue: 0.063).opacity(0.34))
-                        .background(Capsule().fill(.ultraThinMaterial))
+                        .background(Capsule().glassFill(opaque: Color(red: 0.047, green: 0.047, blue: 0.063)))
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
     }
 
     // MARK: - Helpers
@@ -345,7 +350,7 @@ struct V3CameraView: View {
     private func handleCapture(_ raw: UIImage) {
         DispatchQueue.main.async {
             captured = raw
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.8)) { showPreview = true }
+            withAnimation(ONEAnimation.screenTransition) { showPreview = true }
         }
     }
 }

@@ -37,7 +37,7 @@ struct EchoView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            ONEBrand.bone.ignoresSafeArea()
+            V3Tokens.paper.ignoresSafeArea()
 
             if vm.isLoading {
                 loadingView
@@ -47,7 +47,7 @@ struct EchoView: View {
             } else {
                 // v3 spec: cover · mood map · en çok dinlenenler · sayısal · poster.
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 22) {
+                    VStack(spacing: V3Tokens.spacingXL) {
                         EchoCoverSection(
                             data: vm.data,
                             monthName: currentMonthName,
@@ -67,19 +67,19 @@ struct EchoView: View {
                         } label: {
                             HStack {
                                 Text(NSLocalizedString("year.poster", comment: ""))
-                                    .font(V3Typography.sans(15, weight: .semibold))
+                                    .bodyMDSemibold()
                                     .foregroundColor(V3Tokens.paper)
                                 Spacer()
                                 Image(systemName: "arrow.up.right")
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundColor(V3Tokens.paper)
                             }
-                            .padding(.horizontal, 22)
+                            .padding(.horizontal, V3Tokens.spacingXL)
                             .padding(.vertical, 18)
                             .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(V3Tokens.ink))
                         }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal, 20)
+                        .buttonStyle(.onePressable)
+                        .padding(.horizontal, V3Tokens.spacingXL)
 
                         Color.clear.frame(height: 100)
                     }
@@ -115,7 +115,7 @@ struct EchoView: View {
                             Image(systemName: "exclamationmark.triangle")
                                 .font(.system(size: 28, weight: .light))
                                 .foregroundColor(V3Tokens.mutedText)
-                            Text("Poster yüklenemedi")
+                            Text(NSLocalizedString("echo.posterFailed", comment: ""))
                                 .bodyLG()
                                 .foregroundColor(V3Tokens.ink)
                             Button {
@@ -126,15 +126,15 @@ struct EchoView: View {
                                 Text("Tekrar dene")
                                     .monoSM(tracking: 0.8)
                                     .foregroundColor(ONEBrand.bone)
-                                    .padding(.horizontal, 22)
-                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, V3Tokens.spacingXL)
+                                    .padding(.vertical, V3Tokens.spacingMD)
                                     .background(Capsule().fill(V3Tokens.ink))
                             }
                             Button("Kapat") { showPoster = false }
                                 .foregroundColor(V3Tokens.mutedText)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(ONEBrand.bone.ignoresSafeArea())
+                        .background(V3Tokens.paper.ignoresSafeArea())
                         // (v3: eski oneCream → bone)
                     } else {
                         ProgressView().task {
@@ -154,7 +154,7 @@ struct EchoView: View {
                             .bodySMMedium()
                     }
                     .foregroundColor(V3Tokens.ink)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, V3Tokens.spacingLG)
                     .padding(.vertical, 10)
                     .background(
                         Capsule()
@@ -164,7 +164,7 @@ struct EchoView: View {
                     )
                 }
                 .padding(.top, 54)
-                .padding(.leading, 20)
+                .padding(.leading, V3Tokens.spacingXL)
             }
         }
         .navigationBarHidden(true)
@@ -200,7 +200,7 @@ struct EchoView: View {
                     .foregroundColor(V3Tokens.mutedText)
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: V3Tokens.spacingSM) {
                 Text(NSLocalizedString("echo.empty.title", comment: ""))
                     .displayMD()
                     .foregroundColor(V3Tokens.ink)
@@ -210,7 +210,7 @@ struct EchoView: View {
                     .foregroundColor(V3Tokens.mutedText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
-                    .padding(.horizontal, 36)
+                    .padding(.horizontal, V3Tokens.spacingXL3)
             }
 
             Button {
@@ -222,7 +222,7 @@ struct EchoView: View {
                 Text(NSLocalizedString("echo.empty.cta", comment: ""))
                     .monoSM(tracking: 0.8)
                     .foregroundColor(ONEBrand.bone)
-                    .padding(.horizontal, 22)
+                    .padding(.horizontal, V3Tokens.spacingXL)
                     .padding(.vertical, 13)
                     .background(Capsule().fill(V3Tokens.ink))
             }
@@ -232,12 +232,12 @@ struct EchoView: View {
             Spacer().frame(height: 100)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 24)
+        .padding(.horizontal, V3Tokens.spacingXL2)
     }
 
     private var currentMonthName: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "tr_TR")
+        f.locale = LanguageManager.shared.currentLocale
         f.setLocalizedDateFormatFromTemplate("MMMM")
         return f.string(from: Date())
     }
@@ -262,11 +262,11 @@ struct EchoView: View {
     private var loadingView: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(0..<4, id: \.self) { _ in
-                RoundedRectangle(cornerRadius: ONETokens.radiusCard)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
                     .fill(V3Tokens.hairline)
                     .frame(height: 88)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, V3Tokens.spacingLG)
+                    .padding(.vertical, V3Tokens.spacingSM)
                     .shimmeringCircle()
             }
         }

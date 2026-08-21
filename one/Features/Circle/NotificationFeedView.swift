@@ -55,8 +55,8 @@ struct NotificationFeedView: View {
                         Text(group.label)
                             .monoLabel(tracking: 1.3)
                             .foregroundColor(V3Tokens.faintText)
-                            .padding(.top, index == 0 ? 0 : ONETokens.spacingXL)
-                            .padding(.bottom, ONETokens.spacingSM)
+                            .padding(.top, index == 0 ? 0 : V3Tokens.spacingXL)
+                            .padding(.bottom, V3Tokens.spacingSM)
 
                         ForEach(group.items) { item in
                             row(item)
@@ -66,7 +66,7 @@ struct NotificationFeedView: View {
                     Rectangle()
                         .fill(V3Tokens.ink.opacity(0.09))
                         .frame(height: 1)
-                        .padding(.vertical, ONETokens.spacingXL)
+                        .padding(.vertical, V3Tokens.spacingXL)
 
                     Text(NSLocalizedString("notif.promise", comment: ""))
                         .bodyXS()
@@ -89,7 +89,7 @@ struct NotificationFeedView: View {
                 store.update(id: item.id) { $0.isRead = true }
             }
         } label: {
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .top, spacing: V3Tokens.spacingMD) {
                 // Okunmamış işareti solda, satırın dışında — prototipteki
                 // `.unread::before`. İçeride bir rozet olsaydı metni iterdi.
                 Circle()
@@ -101,13 +101,13 @@ struct NotificationFeedView: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.title)
-                        .font(V3Typography.sans(13.5, weight: .semibold))
+                        .bodyXSSemibold()
                         .foregroundColor(V3Tokens.ink)
                         .multilineTextAlignment(.leading)
 
                     if !item.body.isEmpty {
                         Text(item.body)
-                            .font(V3Typography.sans(13.5))
+                            .bodyXS()
                             .foregroundColor(V3Tokens.mutedText)
                             .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
@@ -129,7 +129,7 @@ struct NotificationFeedView: View {
                     .frame(height: 1)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.onePressable)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
             "\(item.isRead ? "" : NSLocalizedString("notif.unread", comment: "") + ", ")"
@@ -139,14 +139,14 @@ struct NotificationFeedView: View {
 
     @ViewBuilder
     private func avatar(_ item: CircleNotification) -> some View {
-        let color = item.moodColorHex.map { Color(hex: $0) } ?? ONETokens.oneSilver
+        let color = item.moodColorHex.map { Color(hex: $0) } ?? V3Tokens.hairline
 
         Circle()
             .fill(color)
             .frame(width: 30, height: 30)
             .overlay(
                 Text(item.emoji ?? "")
-                    .font(V3Typography.sans(13))
+                    .bodyXS()
             )
     }
 

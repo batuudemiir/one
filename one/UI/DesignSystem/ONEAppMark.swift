@@ -44,6 +44,58 @@ public struct ONEAppMark: View {
     }
 }
 
+/// Salt kelime işareti — kare rozet olmadan, yalnız "ONE".
+///
+/// Dışa aktarılan yüzeylerin (davet kartı, poster, story kartı) ihtiyacı bu:
+/// orada kare rozet değil, tek satır kor/ink metin isteniyor. O yüzeylerin
+/// üçü de bunu kendi içinde `Text("ONE").font(.system(size: 22, weight: .black))`
+/// diye yazıyordu — yani ONE'ın kelime işareti Archivo değil **SF Pro Black**
+/// ile, üç ayrı boyut ve üç ayrı tracking ile çiziliyordu.
+///
+/// Boyut ölçeklenmiyor (`displayFixed`): kelime işareti okunacak bir metin
+/// değil, sabit oranları olan bir marka nesnesi.
+///
+/// - Note: `ONELockup` "Kor asla kelime işareti rengi değildir" diyor; davet
+///   kartı ve story kartı spec'i ise kor metin istiyor. İki kural çelişiyor,
+///   bu tip çelişkiyi çözmüyor — `tone` açıkça çağıranda seçiliyor ki
+///   çelişki görünür kalsın.
+public struct ONEWordmark: View {
+    public enum Tone {
+        case ink, bone, kor
+        /// Zemin renginden türetilen mürekkep — mood renkli story kartı gibi,
+        /// zemini çalışma anında belli olan yüzeyler için. Marka paletinden
+        /// bir sapma değil: yüzey zaten ONE'ın kendi duygu rengi.
+        case custom(Color)
+
+        var color: Color {
+            switch self {
+            case .ink:            return ONEBrand.ink
+            case .bone:           return ONEBrand.bone
+            case .kor:            return ONEBrand.kor
+            case .custom(let c):  return c
+            }
+        }
+    }
+
+    public let size: CGFloat
+    public let tone: Tone
+
+    public init(size: CGFloat, tone: Tone = .ink) {
+        self.size = size
+        self.tone = tone
+    }
+
+    public var body: some View {
+        Text("ONE")
+            .font(V3Typography.displayFixed(size))
+            .tracking(size * ONEBrand.tracking)
+            .foregroundStyle(tone.color)
+            .lineLimit(1)
+            .fixedSize()
+            .accessibilityLabel("ONE")
+    }
+}
+
 /// Horizontal lockup: mark + gap + ink/bone wordmark.
 /// Kor is never used for the wordmark — Kor is a ground, not a text colour.
 public struct ONELockup: View {
@@ -90,8 +142,8 @@ public struct ONEBreathingMark: View {
 }
 
 #Preview {
-    VStack(spacing: 32) {
-        HStack(alignment: .bottom, spacing: 20) {
+    VStack(spacing: V3Tokens.spacingXL3) {
+        HStack(alignment: .bottom, spacing: V3Tokens.spacingXL) {
             ONEAppMark(side: 120)
             ONEAppMark(side: 60)
             ONEAppMark(side: 40)
@@ -102,6 +154,6 @@ public struct ONEBreathingMark: View {
             .padding(28)
             .background(ONEBrand.kor)
     }
-    .padding(40)
+    .padding(V3Tokens.spacingXL4)
     .background(ONEBrand.bone)
 }

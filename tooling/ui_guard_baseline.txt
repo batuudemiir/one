@@ -1,0 +1,10 @@
+# ui_guard eşikleri — 2026-08-21
+# Bu sayılar yalnız AZALIR. Artıran değişiklik build'i kırar.
+system_nav=32
+system_font=94
+raw_screen_padding=157
+hardcoded_tr=1
+white_on_color=27
+plain_button=0
+raw_hex=39
+adhoc_card=35

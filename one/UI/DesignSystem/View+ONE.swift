@@ -2,96 +2,128 @@
 //  View+ONE.swift
 //  one
 //
-//  Design System - View Modifiers
-//  Provides convenient view modifiers for common styling patterns
+//  Design System — ekran kabuğu.
+//
+//  Bu dosya bir "yardımcılar çantası" değil: ONE'ın her ekranının paylaştığı
+//  **üç karar** burada yaşıyor — zemin, kanal, başlık. Bir ekran bunları
+//  kendi yazdığı anda uygulama iki uygulamaya bölünüyor.
+//
+//  Önceki hâli on modifier içeriyordu ve **hiçbirinin çağrısı yoktu**
+//  (`primaryText`, `cardBackground`, `standardHorizontalPadding`, …). Ölü
+//  olmaları asıl sorun değildi; yanlış olmaları sorundu:
+//
+//  - `mutedText()` metin rengi olarak `V3Tokens.wash` döndürüyordu — wash bir
+//    *zemin* rengi, metin olarak kontrastı 1.1:1.
+//  - `tertiaryText()` ile `secondaryText()` aynı rengi döndürüyordu, yani
+//    isimlerinin vaat ettiği hiyerarşi yoktu.
+//  - `standardHorizontalPadding()` 26pt veriyordu; ONE'ın içerik kanalı
+//    `V3Tokens.channel` = 24pt. Bu API'yi bulan bir sonraki ekran markanın
+//    kenar hattından 2pt kaymış olarak doğacaktı.
 //
 
 import SwiftUI
 
+// MARK: - Ekran kabuğu
+
 extension View {
-    
-    // MARK: - Color Combination Modifiers
-    
-    /// Apply primary text color (oneInk)
-    /// Purpose: Standard text color for maximum readability and hierarchy
-    /// Usage: Headings, body text, primary content
-    func primaryText() -> some View {
-        self.foregroundColor(V3Tokens.ink)
-    }
-    
-    /// Apply secondary text color (oneAsh)
-    /// Purpose: Secondary text with reduced emphasis
-    /// Usage: Metadata, timestamps, supporting information
-    func secondaryText() -> some View {
-        self.foregroundColor(V3Tokens.mutedText)
-    }
-    
-    /// Apply tertiary text color (oneCharcoal)
-    /// Purpose: Tertiary text for minimal emphasis
-    /// Usage: Placeholder text, disabled states, subtle labels
-    func tertiaryText() -> some View {
-        self.foregroundColor(V3Tokens.mutedText)
-    }
-    
-    /// Apply muted text color (oneCreamLow)
-    /// Purpose: Very subtle text that blends with background
-    /// Usage: Watermarks, very subtle hints, background text
-    func mutedText() -> some View {
-        self.foregroundColor(V3Tokens.wash)
-    }
-    
-    // MARK: - Background Modifiers
-    
-    /// Apply cream background
-    /// Purpose: Standard light background for main content areas
-    /// Usage: Screen backgrounds, main content areas
-    func creamBackground() -> some View {
-        self.background(ONEBrand.bone)
-    }
-    
-    /// Apply card background with standard radius
-    /// Purpose: Elevated card appearance with rounded corners
-    /// Usage: Cards, elevated panels, content containers
-    func cardBackground() -> some View {
-        self.background(
-            RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                .fill(V3Tokens.surface)
-        )
-    }
-    
-    // MARK: - Border Modifiers
-    
-    /// Apply standard card border
-    /// Purpose: Subtle border for card separation and definition
-    /// Usage: Card outlines, container borders, visual separation
-    /// - Parameter color: Border color (default: oneStone)
-    func cardBorder(color: Color = V3Tokens.faintText) -> some View {
-        self.overlay(
-            RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                .stroke(color, lineWidth: 1)
-        )
-    }
-    
-    // MARK: - Spacing Modifiers
-    
-    /// Apply standard horizontal padding (XL2 - 26pt)
-    /// Purpose: Consistent horizontal screen margins
-    /// Usage: Screen-level horizontal padding, main content margins
-    func standardHorizontalPadding() -> some View {
-        self.padding(.horizontal, ONETokens.spacingXL2)
-    }
-    
-    /// Apply standard vertical padding (LG - 16pt)
-    /// Purpose: Comfortable vertical spacing for content
-    /// Usage: Section padding, content vertical spacing
-    func standardVerticalPadding() -> some View {
-        self.padding(.vertical, ONETokens.spacingLG)
+
+    /// **Kök sekme gövdesi.** Zemin + içerik kanalı, tek yerden.
+    ///
+    /// ONE'ın sol kenar hattı 24pt (`V3Tokens.channel`). Bugün ekranlar bu
+    /// hattı elle yazıyor ve beş farklı sayı kullanıyor — 20 (42 çağrı),
+    /// 24 (34), 22 (14), 18 (15), 16 (12). Tek tek hiçbiri fark edilmiyor;
+    /// sekme değiştirirken hepsi birden fark ediliyor.
+    ///
+    /// Yatay pay burada, dikey pay çağıranda: ekranların üst boşluğu
+    /// `safeAreaInset` ile üst çubuktan geliyor, tek sayıya indirilemez.
+    func oneScreenBody() -> some View {
+        self
+            .padding(.horizontal, V3Tokens.channel)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - v3 screen entrance
+    /// **Ekran zemini.** `paper`, safe area dahil.
+    ///
+    /// `.background(Color(UIColor.systemBackground))` ile arasındaki fark
+    /// koyu temada görünür: sistem zemini saf siyaha (#000) giderken ONE'ın
+    /// zemini #0C0C10 — mavi tarafa çalan, kağıt hissini koruyan bir koyu.
+    func oneScreenGround() -> some View {
+        self.background(V3Tokens.paper.ignoresSafeArea())
+    }
 
-    /// v3 `prrise` — 9px translateY + opacity fade in 0.32s cubic-bezier(.2,.9,.25,1).
-    /// Applied once when the screen enters. Respects Reduce Motion.
+    /// Kök sekme kabuğu: zemin + kanal birlikte.
+    func oneScreen() -> some View {
+        self.oneScreenBody().oneScreenGround()
+    }
+}
+
+// MARK: - Başlık rolleri
+//
+// Boyutlar `ONETypography` ölçeğinden geliyor; buradakiler o ölçeğe **rol**
+// adı veriyor. Neden gerekli: bugün başlıklar ham çağrıyla yazılıyor ve
+// `sans` ailesi 21 ayrı punto kullanıyor (10.5, 11, 11.5, 12, 12.5, 13,
+// 13.5, 14, 14.5, 15, 16, 17, 18, 19, 20, 21, 23, 24, 32 …) — markanın
+// tanımladığı beş kademe yerine. Ölçek dışına çıkmak serbest olmalı ama
+// *kasıtlı* olmalı; kolay yol ölçeğin içinde kalmalı.
+
+extension View {
+
+    /// Ekran başlığı — Archivo, 30pt. Kök sekmelerin en üst başlığı.
+    func oneScreenTitle() -> some View {
+        self.displayLG().foregroundColor(V3Tokens.ink)
+    }
+
+    /// Sayfa / modal başlığı — Archivo, 24pt. Sheet ve alt ekran başlıkları.
+    func onePageTitle() -> some View {
+        self.displayMD().foregroundColor(V3Tokens.ink)
+    }
+
+    /// Bölüm başlığı — Archivo, 22pt. Ekran içi gruplar.
+    func oneSectionTitle() -> some View {
+        self.displayLgAlt().foregroundColor(V3Tokens.ink)
+    }
+
+    /// Kart başlığı — Archivo, 20pt.
+    func oneCardTitle() -> some View {
+        self.displaySM().foregroundColor(V3Tokens.ink)
+    }
+
+    /// Bölüm üstü mikro etiket — mono, büyük harf, tracking'li.
+    /// v3'ün her ekranda tekrar eden "kapsam" satırı.
+    func oneEyebrow() -> some View {
+        self.v3MicroLabel().foregroundColor(V3Tokens.faintText)
+    }
+}
+
+// MARK: - Yüzeyler
+
+extension View {
+
+    /// Kart yüzeyi — `surface` dolgu + saç teli kenar + kart yarıçapı.
+    ///
+    /// Kenar çizgisi opsiyonel değil: v3'ün kağıt estetiğinde kartı zeminden
+    /// ayıran şey gölge değil, 1pt'lik neredeyse görünmez bir hat. Kontrastı
+    /// artıran kullanıcıda `hairline` gerçek bir çizgiye dönüyor —
+    /// `V3Tokens.hairline` bunu kendisi hallediyor.
+    func oneCardBackground(radius: CGFloat = V3Tokens.radiusCard) -> some View {
+        self
+            .background(
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
+                    .fill(V3Tokens.surface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
+                    .strokeBorder(V3Tokens.hairline, lineWidth: 1)
+            )
+    }
+}
+
+// MARK: - v3 ekran girişi
+
+extension View {
+
+    /// v3 `prrise` — 9px translateY + opacity fade, 0.32s cubic-bezier(.2,.9,.25,1).
+    /// Ekran girerken bir kez. Reduce Motion'a saygılı.
     func prrise() -> some View {
         modifier(PrriseEntranceModifier())
     }
@@ -106,7 +138,7 @@ private struct PrriseEntranceModifier: ViewModifier {
             .opacity(shown || reduceMotion ? 1 : 0)
             .offset(y: shown || reduceMotion ? 0 : 9)
             .onAppear {
-                withAnimation(V3Tokens.easingSaved) { shown = true }
+                withAnimation(ONEAnimation.easingSaved) { shown = true }
             }
     }
 }

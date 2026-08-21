@@ -44,10 +44,10 @@ final class AppReviewManager {
     // MARK: - App Store page (manual)
 
     func openAppStorePage() {
-        guard let url = URL(string: "itms-apps://itunes.apple.com/app/id\(ONETokens.appStoreID)?action=write-review") else { return }
+        guard let url = URL(string: "itms-apps://itunes.apple.com/app/id\(ONEConfig.appStoreID)?action=write-review") else { return }
         if UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
-        } else if let fallback = URL(string: ONETokens.appStoreURL) {
+        } else if let fallback = URL(string: ONEConfig.appStoreURL) {
             UIApplication.shared.open(fallback)
         }
     }

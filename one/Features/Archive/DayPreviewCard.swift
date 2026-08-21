@@ -24,20 +24,29 @@ struct FullScreenPhotoView: View {
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
 
-    // Swipe-to-dismiss — @GestureState for zero-overhead live tracking
-    @GestureState private var dragY: CGFloat = 0
+    // Sürükleyerek kapatma.
+    //
+    // `@GestureState` değil `@State`: `@GestureState` parmak kalkınca değerini
+    // *anında* sıfırlıyor. Eşiği aşmayan bir sürüklemede fotoğraf yerine
+    // yaylanarak değil, tek karede zıplayarak dönüyordu — jestle animasyon
+    // arasındaki dikişin en görünür hali. `@State` ile dönüş
+    // `dragSnapBack`'e devredilebiliyor ve yoldayken tekrar yakalanabiliyor.
+    @State private var dragY: CGFloat = 0
     @State private var appeared = false
 
     private let minScale: CGFloat = 1.0
     private let maxScale: CGFloat = 5.0
     private let dismissThreshold: CGFloat = 120
 
+    /// Yukarı çekişte `dragY` artık negatif olabiliyor (rubberband). Her iki
+    /// hesap da `max(0, ·)` ile taban alıyor: aksi halde yukarı direnç,
+    /// perdeyi 1.0'ın üstüne iterek "kararma" gibi ters bir sinyal veriyordu.
     private var backgroundOpacity: Double {
-        Double(max(0.15, 1.0 - dragY / 320))
+        Double(max(0.15, 1.0 - max(0, dragY) / 320))
     }
 
     private var chromeOpacity: Double {
-        let fade = 1.0 - min(1.0, dragY / 80)
+        let fade = 1.0 - min(1.0, max(0, dragY) / 80)
         return appeared ? fade : 0
     }
 
@@ -45,9 +54,12 @@ struct FullScreenPhotoView: View {
 
     private func dismiss() {
         ONEHaptics.moodSelected()
-        withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+        withAnimation(ONEAnimation.screenTransition) {
             isPresented = false
         }
+        // `dragY` artık `@State`; kapanışta elle sıfırlanmazsa görüntüleyici
+        // bir sonraki açılışta kaydırılmış halde beliriyor.
+        dragY = 0
     }
 
     var body: some View {
@@ -76,7 +88,7 @@ struct FullScreenPhotoView: View {
                                     .onEnded { _ in
                                         lastScale = scale
                                         if scale < minScale {
-                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                                            withAnimation(ONEAnimation.dragSnapBack) {
                                                 scale = minScale
                                                 offset = .zero
                                             }
@@ -84,32 +96,59 @@ struct FullScreenPhotoView: View {
                                             lastOffset = .zero
                                         }
                                     },
-                                DragGesture()
-                                    .updating($dragY) { val, state, _ in
-                                        guard scale <= 1.01 else { return }
-                                        let dy = val.translation.height
-                                        if dy > 0 { state = dy }
-                                    }
+                                DragGesture(minimumDistance: 5)
                                     .onChanged { val in
                                         if scale > 1.01 {
                                             offset = CGSize(
                                                 width:  lastOffset.width  + val.translation.width,
                                                 height: lastOffset.height + val.translation.height
                                             )
+                                            // Kapatma sürüklemesi başladıktan *sonra*
+                                            // aynı jest içinde yakınlaştırılırsa, bu dal
+                                            // devralıyor ve `dragY` asla sıfırlanmıyordu:
+                                            // fotoğraf kalıcı olarak kaymış kalıyordu.
+                                            if dragY != 0 {
+                                                withAnimation(ONEAnimation.dragSnapBack) { dragY = 0 }
+                                            }
+                                            return
                                         }
+                                        let dy = val.translation.height
+                                        // Aşağı: 1:1 takip. Yukarı: `if dy > 0`'ın
+                                        // sert duvarı yerine ilerledikçe artan direnç —
+                                        // "hâlâ canlı, ama bu yönde gidecek yer yok".
+                                        dragY = dy > 0
+                                            ? dy
+                                            : dy.rubberbanded(over: UIScreen.main.bounds.height)
                                     }
                                     .onEnded { val in
                                         if scale > 1.01 {
                                             lastOffset = offset
-                                        } else if val.translation.height > dismissThreshold {
+                                            return
+                                        }
+                                        // Karar bırakma noktasına değil jestin
+                                        // *gittiği* yere veriliyor. Tek başına
+                                        // `translation > 120` kısa ama sert bir
+                                        // fiskeyi yutuyordu: parmak hızla iniyor,
+                                        // 80pt'de kalkıyor, fotoğraf hiçbir şey
+                                        // olmamış gibi geri dönüyordu.
+                                        let dy = val.translation.height
+                                        let projected = val.predictedEndTranslation.height
+                                        if dy > dismissThreshold || projected > 260 {
                                             dismiss()
+                                        } else {
+                                            // interactiveSpring + blendDuration:
+                                            // geri dönerken tekrar yakalanırsa
+                                            // hareket kesilmeden devralınıyor.
+                                            withAnimation(ONEAnimation.dragSnapBack) {
+                                                dragY = 0
+                                            }
                                         }
                                     }
                             )
                         )
                         .onTapGesture(count: 2) {
                             ONEHaptics.nudge()
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                            withAnimation(ONEAnimation.screenTransition) {
                                 if scale > 1.01 {
                                     scale = minScale; lastScale = minScale
                                     offset = .zero; lastOffset = .zero
@@ -120,7 +159,7 @@ struct FullScreenPhotoView: View {
                         }
 
                 case .failure:
-                    VStack(spacing: 12) {
+                    VStack(spacing: V3Tokens.spacingMD) {
                         Image(systemName: "photo")
                             .font(.system(size: 40))
                             .foregroundColor(.white.opacity(0.4))
@@ -130,11 +169,10 @@ struct FullScreenPhotoView: View {
                     }
 
                 default:
-                    ProgressView()
-                        .tint(.white)
+                    V3Loading(.media)
                 }
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, V3Tokens.spacingMD)
         }
         .overlay(alignment: .top) {
             HStack {
@@ -146,23 +184,29 @@ struct FullScreenPhotoView: View {
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
-                                .fill(.ultraThinMaterial)
+                                .glassFill(opaque: Color(red: 0.047, green: 0.047, blue: 0.063))
                                 .environment(\.colorScheme, .dark)
                         )
                         .overlay(
                             Circle().stroke(Color.white.opacity(0.18), lineWidth: 1)
                         )
+                        // Görünen daire 36pt kalıyor; dokunma hedefi HIG'in
+                        // 44pt asgarisine genişliyor. Fotoğraf görüntüleyicide
+                        // düğme tek çıkış yolu — 36pt'de ıskalanıyordu.
+                        .frame(width: V3Tokens.minTouchTarget,
+                               height: V3Tokens.minTouchTarget)
+                        .contentShape(Circle())
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
+            .padding(.horizontal, V3Tokens.spacingLG)
+            .padding(.top, V3Tokens.spacingSM)
             .opacity(chromeOpacity)
         }
         .overlay(alignment: .bottom) {
             Image(systemName: "chevron.compact.down")
                 .font(.system(size: 34, weight: .light))
                 .foregroundColor(.white.opacity(isZoomed ? 0 : 0.32))
-                .padding(.bottom, 8)
+                .padding(.bottom, V3Tokens.spacingSM)
                 .opacity(chromeOpacity)
                 .accessibilityHidden(true)
         }
@@ -203,8 +247,8 @@ struct DayPreviewCard: View {
                     .monoMicro(tracking: 0.8)
                     .foregroundColor(V3Tokens.mutedText)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
+            .padding(.horizontal, V3Tokens.spacingXL)
+            .padding(.top, V3Tokens.spacingXL)
 
             // ── Fotoğraf veya Mood Pattern (Sabit Boyut) ──────────
             ZStack {
@@ -219,7 +263,7 @@ struct DayPreviewCard: View {
                                 .frame(width: 300, height: 200)
                                 .clipped()
                         default:
-                            RoundedRectangle(cornerRadius: 14)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
                                 .fill(V3Tokens.surface)
                                 .frame(width: 300, height: 200)
                         }
@@ -230,7 +274,7 @@ struct DayPreviewCard: View {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         ONEHaptics.moodSelected()
-                        withAnimation(.spring(response: 0.44, dampingFraction: 0.88)) {
+                        withAnimation(ONEAnimation.screenTransition) {
                             onPhotoTap?(url)
                         }
                     }
@@ -240,10 +284,10 @@ struct DayPreviewCard: View {
                         .frame(width: 300, height: 200)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard))
             .frame(width: 300, height: 200)
             .frame(maxWidth: .infinity)
-            .padding(.top, 16)
+            .padding(.top, V3Tokens.spacingLG)
 
             // ── Şarkı Bilgileri (Temiz & Minimal) ──────────
             VStack(alignment: .leading, spacing: 6) {
@@ -258,8 +302,8 @@ struct DayPreviewCard: View {
                     .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
 
-                HStack(spacing: 8) {
-                    HStack(spacing: 4) {
+                HStack(spacing: V3Tokens.spacingSM) {
+                    HStack(spacing: V3Tokens.spacingXS) {
                         Circle()
                             .fill(Color(hex: entry.moodColorHex))
                             .frame(width: 7, height: 7)
@@ -278,27 +322,27 @@ struct DayPreviewCard: View {
                         .bodySM()
                         .foregroundColor(V3Tokens.mutedText.opacity(0.85))
                         .lineLimit(3)
-                        .padding(.top, 8)
-                        .padding(.horizontal, 12)
+                        .padding(.top, V3Tokens.spacingSM)
+                        .padding(.horizontal, V3Tokens.spacingMD)
                         .padding(.vertical, 10)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(
-                            RoundedRectangle(cornerRadius: 10)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusInner)
                                 .fill(Color(hex: entry.moodColorHex).opacity(0.08))
                         )
                 }
             }
             .frame(minHeight: 90)
-            .padding(.horizontal, 20)
+            .padding(.horizontal, V3Tokens.spacingXL)
             .padding(.top, 18)
 
             // ── Alt: Saat + Paylaşım (Daha Belirgin) ──────────────────────
             Divider()
                 .background(V3Tokens.surface)
-                .padding(.horizontal, 20)
+                .padding(.horizontal, V3Tokens.spacingXL)
                 .padding(.top, 14)
 
-            HStack(spacing: 8) {
+            HStack(spacing: V3Tokens.spacingSM) {
                 // Sol: Saat ve Aç butonu
                 VStack(alignment: .leading, spacing: 6) {
                     Text(String(format: NSLocalizedString("archive.selectedAt", comment: ""), entry.time))
@@ -306,7 +350,7 @@ struct DayPreviewCard: View {
                         .foregroundColor(V3Tokens.mutedText)
                     
                     Button(action: openSong) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: V3Tokens.spacingXS) {
                             Image(systemName: "play.circle.fill")
                                 .font(.system(size: 10))
                             Text(NSLocalizedString("archive.openSong", comment: ""))
@@ -354,14 +398,14 @@ struct DayPreviewCard: View {
                     )
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, V3Tokens.spacingXL)
             .padding(.vertical, 14)
 
             // Efemer karşılıklar yalnız bugüne ait; arşivde (geçmiş) yok.
             // Prototip: geçmiş herkesin kendinde kalır.
         }
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel)
                 .fill(V3Tokens.surface)
                 .shadow(color: Color.black.opacity(0.14), radius: 30, x: 0, y: 14)
         )
@@ -515,26 +559,26 @@ struct DayShareCard: View {
                         .frame(width: 40, height: 1.5)
 
                     Text(entry.songName)
-                        .font(V3Typography.sans(15, weight: .semibold))
+                        .bodyMDSemibold()
                         .foregroundColor(.white)
                         .lineLimit(2)
 
                     Text(entry.artistName)
-                        .font(ONETypography.monoSM)
+                        .font(V3Typography.mono(11, weight: .medium))
                         .foregroundColor(.white.opacity(0.85))
 
                     Spacer().frame(height: 5)
 
                     Text(dayText)
-                        .font(ONETypography.monoMicro)
+                        .font(V3Typography.mono(9))
                         .foregroundColor(.white.opacity(0.6))
 
                     Text(NSLocalizedString("share.brandWatermark", comment: ""))
-                        .font(ONETypography.monoMicro)
+                        .font(V3Typography.mono(9))
                         .foregroundColor(.white.opacity(0.3))
                         .padding(.top, 1)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, V3Tokens.spacingXL)
                 .padding(.bottom, 80)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -554,20 +598,20 @@ struct DayShareCard: View {
                 }
             }
             .frame(width: 155, height: 275) // strictly 9:16 aspect ratio roughly
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard))
             .shadow(color: Color.black.opacity(0.4), radius: 15, x: 0, y: 10)
-            .padding(.leading, 40)
+            .padding(.leading, V3Tokens.spacingXL4)
             
             Spacer()
             
             // Right: Info Display
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
                 Spacer()
                 
                 Rectangle()
                     .fill(Color(hex: entry.moodColorHex))
                     .frame(width: 50, height: 2)
-                    .padding(.bottom, 4)
+                    .padding(.bottom, V3Tokens.spacingXS)
 
                 Text(entry.songName)
                     .font(V3Typography.sans(24, weight: .bold))
@@ -576,28 +620,28 @@ struct DayShareCard: View {
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(entry.artistName)
-                    .font(ONETypography.bodyMD)
+                    .font(V3Typography.sans(15, relativeTo: .callout))
                     .foregroundColor(.white.opacity(0.9))
                 
                 Spacer()
 
                 HStack {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                         Text(dayText.uppercased())
-                            .font(ONETypography.monoLabel)
+                            .font(V3Typography.mono(10, weight: .medium))
                             .tracking(1.0)
                             .foregroundColor(.white.opacity(0.8))
 
                         Text(NSLocalizedString("share.brandWatermarkUpper", comment: ""))
-                            .font(ONETypography.monoMicro)
+                            .font(V3Typography.mono(9))
                             .tracking(1.5)
                             .foregroundColor(.white.opacity(0.6))
                     }
                 }
-                .padding(.bottom, 32)
+                .padding(.bottom, V3Tokens.spacingXL3)
             }
-            .padding(.trailing, 40)
-            .padding(.vertical, 32)
+            .padding(.trailing, V3Tokens.spacingXL4)
+            .padding(.vertical, V3Tokens.spacingXL3)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
@@ -620,8 +664,8 @@ struct MoodPatternBackground: View {
             // Base gradient
             LinearGradient(
                 stops: [
-                    .init(color: (ONEMood(hex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.18), location: 0.0),
-                    .init(color: (ONEMood(hex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.08), location: 0.55),
+                    .init(color: (V3Mood.closest(toHex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.18), location: 0.0),
+                    .init(color: (V3Mood.closest(toHex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.08), location: 0.55),
                     .init(color: .clear, location: 1.0)
                 ],
                 startPoint: .topLeading,
@@ -694,8 +738,8 @@ struct MoodPatternPreview: View {
             // Base gradient
             LinearGradient(
                 stops: [
-                    .init(color: (ONEMood(hex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.18), location: 0.0),
-                    .init(color: (ONEMood(hex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.08), location: 0.55),
+                    .init(color: (V3Mood.closest(toHex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.18), location: 0.0),
+                    .init(color: (V3Mood.closest(toHex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.08), location: 0.55),
                     .init(color: .clear, location: 1.0)
                 ],
                 startPoint: .topLeading,
