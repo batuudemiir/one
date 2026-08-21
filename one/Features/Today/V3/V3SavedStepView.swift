@@ -11,7 +11,6 @@ struct V3SavedStepView: View {
     let mood: V3Mood
     let note: String?
     let photo: UIImage?
-    let streakDays: Int
     let last7Days: [V3Mood?]   // ← unused now, backward compat
 
     let onArchive: () -> Void

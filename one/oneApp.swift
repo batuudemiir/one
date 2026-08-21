@@ -222,7 +222,6 @@ struct oneApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(languageManager)
-                .badgeUnlockToast()
                 // Rebuild the entire SwiftUI tree when the language changes
                 .id(languageManager.refreshToken)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)

@@ -2,38 +2,39 @@
 //  V3MomentCard.swift
 //  one
 //
-//  Bir anın kartı — referans kompozisyonun birebir karşılığı.
+//  Bir anın kartı — BeReal kompozisyonu.
 //
+//        HUZURLU                        21:14   ← başlık satırı: ne hissettin · ne zaman
 //      ┌─────────────────────┐
-//      │                     │   fotoğraf — kare köşe, üstünde HİÇBİR ŞEY yok
-//      │      FOTOĞRAF       │   yoksa: mood rengi, aynı kutu
-//      │                     │
+//      │ ▣                   │   ▣ = mood rengi, "ikinci kamera" kutucuğu
+//      │      FOTOĞRAF       │   fotoğraf 4:5, köşe yuvarlatılmış
+//      │                     │   fotoğraf yoksa: mood rengi tuvali doldurur
 //      └─────────────────────┘
-//                             ← boşluk, kompozisyonun yarısı bu
-//                     21:14     el yazısı — iri, sağa dayalı, kağıt üstünde
+//        Bugün nihayet sessizdi.        ← altyazı, ortalanmış, kağıt üstünde
+//        CADILLAC — DEFTONES            ← mono şarkı satırı, soluk
 //
-//        ● HUZURLU · ŞARKI       mono altyazı — ortalanmış, soluk
+//  **Neden BeReal.** Önceki kompozisyon fotoğrafın altına 88pt el yazısıyla
+//  saati basıyordu: kartın en iri öğesi bir saatti ve o yüz (CaveatBrush)
+//  uygulamanın başka hiçbir ekranında gövde metni olarak geçmiyor. Kart
+//  kendi tipografik adasında yaşıyordu. Saat artık başlık satırında
+//  `monoSM` — veri register'ı, uygulamanın geri kalanıyla aynı yüz.
 //
-//      Bugün nihayet sessizdi.   not — sola dayalı, tam okunur
+//  **İki bakış, tek an.** BeReal'ın kartı aynı anın iki görüntüsünü yan yana
+//  koyar (ön/arka kamera). Bizde eşdeğeri: gördüğün (fotoğraf) ve hissettiğin
+//  (renk). Renk fotoğrafın sol üstünde kağıt çerçeveli bir kutucuk. Fotoğraf
+//  yoksa renk zaten tuvalin kendisi — kutucuk o zaman çizilmiyor, aynı sinyal
+//  iki kez görünmüyor.
 //
 //  **Yazı fotoğrafın üstünde değil.** Bir ara öyle denendi (scrim + tema
 //  bağımsız `darkText`) ve iki bağımsız kontrast denetimi aynı sonuca vardı:
 //  parlak bir fotoğrafın üstünde el yazısı 1.68:1, mono altyazı 3.1:1
-//  çıkıyordu — ikisi de AA'nın çok altında. Dynamic Type'ın en büyük
-//  kademesinde caption bloğu 127pt'ye çıkıp sabit 150pt'lik scrim'in dışına
-//  taşıyordu. Yazı kağıda inince sorun kökten bitiyor: `ink` ve `faintText`
-//  zaten ölçülmüş, `ContrastTests` ile doğrulanmış tokenlar.
-//
-//  Aynı hamle `V3Mood.ink` sorununu da kapatıyor — Ateşli (3.23:1),
-//  Hüzünlü (4.24:1) ve Yorgun (4.22:1) 10pt mono için sınırın altındaydı.
-//  Altyazı artık renk zeminde değil, o çiftlere hiç ihtiyaç yok.
+//  çıkıyordu — ikisi de AA'nın çok altında. Yazı kağıda inince sorun kökten
+//  bitiyor: `ink` ve `faintText` zaten ölçülmüş, `ContrastTests` ile
+//  doğrulanmış tokenlar. Fotoğrafın üstünde duran tek şey renk kutucuğu —
+//  metin taşımadığı için kontrast borcu da yok.
 //
 //  **Çerçeve yok.** Kart `surface` + hairline bir kutu değil; doğrudan
-//  `paper` üzerinde duruyor, komşusundan boşlukla ayrılıyor. Referansın
-//  havasını veren şey bu — kutuya alındığı anda editoryal boşluk kayboluyor.
-//
-//  **Kare köşe.** Referansta fotoğrafın köşesi yuvarlatılmamış. `radiusTile`
-//  yerine 0 — bilinçli, tek yerde tanımlı (`canvasRadius`).
+//  `paper` üzerinde duruyor, komşusundan boşlukla ayrılıyor.
 //
 
 import SwiftUI
@@ -57,34 +58,35 @@ struct V3MomentCard: View {
     static var colorCanvasHeight: CGFloat { V3Tokens.momentColorCanvasHeight }
     static var canvasRadius: CGFloat { V3Tokens.momentCanvasRadius }
 
-    // Dikey ritim — referanstaki oranlardan türetildi (fotoğraf genişliğine
-    // göre: boşluk 0.106 · el yazısı 0.32 · altyazı payı 0.076).
-    private let gapToStamp: CGFloat = 22
-    private let gapToMeta: CGFloat = 10
-    private let gapToNote: CGFloat = 20
-
     private var mood: V3Mood? { V3Mood.fromHex(moment.moodColorHex) }
     private var moodColor: Color { mood?.color ?? Color(hex: moment.moodColorHex) }
+    /// Ad için `closest` de kabul: v1/v2 legacy hex'leri tam eşleşmiyor ama
+    /// başlık satırı boş kalmamalı. Renk yine kaydedilen hex'in kendisi.
+    private var moodLabel: String {
+        (mood ?? V3Mood.closest(toHex: moment.moodColorHex))?.label ?? ""
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            header
+                .padding(.bottom, V3Tokens.spacingMD)
+
             canvas
-
-            // El yazısı damga — referansın en iri ikinci öğesi. Kağıt üstünde
-            // `ink`, yani kontrast her fotoğrafta aynı ve garantili.
-            V3HandText.time(moment.time, size: 88, color: V3Tokens.ink)
-                .padding(.top, gapToStamp)
-
-            metaLine
-                .padding(.top, gapToMeta)
 
             if moment.hasNote, let note = moment.note {
                 Text(note)
                     .bodyLG()
                     .foregroundColor(V3Tokens.ink)
                     .lineSpacing(2)
+                    .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, gapToNote)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, V3Tokens.spacingLG)
+            }
+
+            if !songText.isEmpty {
+                songLine
+                    .padding(.top, moment.hasNote ? V3Tokens.spacingSM : V3Tokens.spacingLG)
             }
         }
         .accessibilityElement(children: .combine)
@@ -95,6 +97,38 @@ struct V3MomentCard: View {
         // okuyucuya tamamen kapalı kalıyordu.
         .accessibilityAction(named: Text(NSLocalizedString("moment.a11y.openPhoto", comment: ""))) { openPhoto() }
         .accessibilityRemoveTraits(hasVisualPhoto ? [] : .isButton)
+    }
+
+    // MARK: - Başlık satırı
+
+    /// BeReal'ın kart başlığı: solda kim/ne, sağda ne zaman. Bizde "kim" yok
+    /// (arşiv zaten senin), yerine mood adı geçiyor. Saat burada — kartta
+    /// başka hiçbir yerde tekrar etmiyor.
+    private var header: some View {
+        HStack(alignment: .firstTextBaseline, spacing: V3Tokens.spacingSM) {
+            if !moodLabel.isEmpty {
+                Text(moodLabel)
+                    .bodySMSemibold()
+                    .foregroundColor(V3Tokens.ink)
+                    .lineLimit(2)
+            }
+
+            Spacer(minLength: V3Tokens.spacingSM)
+
+            if moment.scope == .private {
+                Text(NSLocalizedString("moment.archiveTag", comment: ""))
+                    .monoLabel()
+                    .foregroundColor(V3Tokens.ghostText)
+                    .lineLimit(1)
+            }
+
+            Text(ONEFormatters.time.string(from: moment.time))
+                .monoSM()
+                .monospacedDigit()
+                .foregroundColor(V3Tokens.faintText)
+                .lineLimit(1)
+                .layoutPriority(1)
+        }
     }
 
     // MARK: - Tuval (fotoğraf ya da renk)
@@ -114,12 +148,33 @@ struct V3MomentCard: View {
                 .aspectRatio(V3MomentCard.canvasAspect, contentMode: .fit)
                 .overlay { canvasContent }
                 .clipShape(shape)
+                .overlay(alignment: .topLeading) { moodChip }
         } else {
             moodColor
                 .frame(maxWidth: .infinity)
                 .frame(height: V3MomentCard.colorCanvasHeight)
                 .clipShape(shape)
         }
+    }
+
+    /// "İkinci kamera" — fotoğrafın üstünde mood rengi. Kağıt çerçeve onu her
+    /// fotoğraftan ayırıyor; metin taşımadığı için kontrast sorunu yok.
+    /// Dokunma geçirmiyor: altındaki fotoğraf tam ekrana açılmaya devam etsin.
+    private var moodChip: some View {
+        RoundedRectangle(cornerRadius: V3Tokens.momentChipRadius, style: .continuous)
+            .fill(moodColor)
+            .frame(
+                width: V3Tokens.momentChipWidth,
+                height: V3Tokens.momentChipWidth / V3Tokens.momentCanvasAspect
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: V3Tokens.momentChipRadius, style: .continuous)
+                    .strokeBorder(V3Tokens.paper, lineWidth: V3Tokens.momentChipBorder)
+            )
+            .elevation(.sheetFloat)
+            .padding(V3Tokens.spacingMD)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 
     @ViewBuilder
@@ -152,55 +207,26 @@ struct V3MomentCard: View {
         // Fotoğrafsız dal `canvas` içinde — 4:5 kutu yerine 200pt bant.
     }
 
-    // MARK: - Mono altyazı
+    // MARK: - Mono şarkı satırı
 
-    /// Referanstaki "Hand Mirror Snap · Aug 17, 2026" satırının karşılığı:
-    /// ortalanmış, soluk, tracking'li mono. Saat burada tekrar edilmiyor —
-    /// onu el yazısı söylüyor.
-    ///
-    /// Renk noktası referansta yok ama bizde olmak zorunda: uygulamanın tek
-    /// sinyali renk ve fotoğraf varken rengin başka evi kalmıyor. Satırın
-    /// kendi "·" ayraçlarıyla aynı ailede okunuyor.
-    private var metaLine: some View {
-        HStack(spacing: V3Tokens.spacingSM) {
-            Circle()
-                .fill(moodColor)
-                .frame(width: 8, height: 8)
-
-            Text(metaText)
-                .font(V3Typography.mono(10, weight: .regular))
-                .tracking(1.4)
-                .textCase(.uppercase)
-                .foregroundColor(V3Tokens.faintText)
-                .lineLimit(2)
-                .multilineTextAlignment(.center)
-
-            if moment.scope == .private {
-                Text(NSLocalizedString("moment.archiveTag", comment: ""))
-                    .font(V3Typography.mono(10, weight: .regular))
-                    .tracking(1.4)
-                    .foregroundColor(V3Tokens.ghostText)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .center)
+    /// BeReal altyazısının altındaki ince meta satırı. Mood adı buradan
+    /// çıktı — başlık satırına taşındı, iki yerde durmuyor.
+    private var songLine: some View {
+        Text(songText)
+            .monoLabel(tracking: 1.4)
+            .textCase(.uppercase)
+            .foregroundColor(V3Tokens.faintText)
+            .lineLimit(2)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity, alignment: .center)
     }
 
-    /// Mood adı + şarkı.
-    private var metaText: String {
-        var parts: [String] = []
-        if let label = mood?.label { parts.append(label) }
-        if moment.hasSong {
-            let name = moment.songName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let artist = moment.songArtist?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            if !name.isEmpty && !artist.isEmpty {
-                parts.append("\(name) — \(artist)")
-            } else if !name.isEmpty {
-                parts.append(name)
-            } else if !artist.isEmpty {
-                parts.append(artist)
-            }
-        }
-        return parts.joined(separator: " · ")
+    private var songText: String {
+        guard moment.hasSong else { return "" }
+        let name = moment.songName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let artist = moment.songArtist?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !name.isEmpty && !artist.isEmpty { return "\(name) — \(artist)" }
+        return name.isEmpty ? artist : name
     }
 
     // MARK: - Fotoğraf açma
@@ -222,12 +248,12 @@ struct V3MomentCard: View {
     // MARK: - Erişilebilirlik
 
     /// Kart tek bir öğe olarak okunuyor. Renk noktası tek başına anlam
-    /// taşımıyor — mood adı `metaText` içinde yazıyla da var.
+    /// taşımıyor — mood adı başlık satırında yazıyla da var.
     private var accessibilityText: String {
         var parts = [ONEFormatters.time.string(from: moment.time)]
-        if let label = mood?.label { parts.append(label) }
+        if !moodLabel.isEmpty { parts.append(moodLabel) }
         if hasVisualPhoto { parts.append("Fotoğraflı") }
-        if moment.hasSong, !metaText.isEmpty { parts.append("Şarkı: \(metaText)") }
+        if !songText.isEmpty { parts.append("Şarkı: \(songText)") }
         if let note = moment.note, !note.isEmpty { parts.append("Not: \(note)") }
         if moment.scope == .private { parts.append("Arşivde, çevrede görünmüyor") }
         return parts.joined(separator: ", ")
@@ -254,9 +280,9 @@ private struct PhotoMorph: ViewModifier {
 
 // MARK: - Previews
 
-#Preview("Referans kompozisyonu") {
+#Preview("BeReal kompozisyonu") {
     ScrollView {
-        VStack(spacing: 56) {
+        VStack(spacing: V3Tokens.spacingXL5) {
             V3MomentCard(moment: .previewWithNote)
             V3MomentCard(moment: .previewColorOnly)
         }

@@ -55,7 +55,6 @@ enum AnalyticsEvent {
     case monthlyPosterShared
 
     // ── Badges ─────────────────────────────────────────────────────
-    case badgeUnlocked(id: String)
 
     // ── Neuromarketing / A-B ────────────────────────────────────────
     case moodPickedBeforeLabel                              // #02 — renk seçildi, label henüz gizliydi
@@ -108,7 +107,6 @@ enum AnalyticsEvent {
         case .userUnblocked:             return "user_unblocked"
         case .storyCardShared:           return "story_card_shared"
         case .monthlyPosterShared:       return "monthly_poster_shared"
-        case .badgeUnlocked:                    return "badge_unlocked"
         case .moodPickedBeforeLabel:            return "mood_picked_before_label"
         case .moodLabelRevealedAfterPick:       return "mood_label_revealed"
         case .passButtonTapped:                 return "pass_button_tapped"
@@ -169,8 +167,6 @@ enum AnalyticsEvent {
             return ["method": method]
         case .storyCardShared(let surface):
             return ["surface": surface]
-        case .badgeUnlocked(let id):
-            return ["badge_id": id]
         case .moodPickedBeforeLabel, .mutualDisclosureBlurShown,
              .mutualDisclosureBlurConverted, .weeklyColorStoryViewed,
              .passButtonTapped, .milestoneCardShared:

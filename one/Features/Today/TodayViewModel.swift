@@ -141,7 +141,6 @@ class TodayViewModel: ObservableObject {
         // onu yalnızca şarkı seçildiğinde çağırıyordu. Yani şarkısız kaydeden
         // kullanıcı — v3'ün varsayılan akışı — hiç rozet kazanmıyor, puan
         // istemi de hiç görmüyordu. Tek yazma yoluna inince buraya taşındı.
-        BadgeManager.shared.evaluateEntryCount(totalEntryCount)
         AppReviewManager.shared.evaluateAfterSave(
             totalEntryCount: totalEntryCount,
             uniqueDayCount: uniqueEntryDayCount()

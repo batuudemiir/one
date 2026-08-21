@@ -269,9 +269,22 @@ enum V3Tokens {
     /// blok oluyordu ve üstteki ~350pt sıfır bilgi taşıyordu.
     static let momentColorCanvasHeight: CGFloat = 200
 
-    /// Kart tuvalinin köşesi. Referansta yuvarlatma yok — `radiusTile`'dan
-    /// bilinçli sapma, tek yerde dursun ki tartışması da tek yerde olsun.
-    static let momentCanvasRadius: CGFloat = 0
+    /// Kart tuvalinin köşesi. Bir dönem 0'dı — o zamanki referans kare köşe
+    /// istiyordu. BeReal kompozisyonuna geçince kare köşe yanlış okunuyor:
+    /// kart kağıdın üstünde duran bir baskı değil, ekrana yapıştırılmış bir
+    /// blok gibi görünüyor. `radiusTile`, gün detayındaki hero şeritle
+    /// (`radiusPanel`) aynı ailede, ondan bir kademe yumuşak.
+    static let momentCanvasRadius: CGFloat = radiusTile
+
+    // BeReal'ın "ikinci kamera" kutucuğu — bizde fotoğrafın üstündeki mood
+    // rengi. Oran fotoğrafla aynı (4:5), bu yüzden yalnız genişlik token.
+
+    /// Kutucuğun genişliği; yüksekliği `width / momentCanvasAspect`.
+    static let momentChipWidth: CGFloat = 66
+    /// Kutucuğun köşesi — tuvalden bir kademe küçük, iç içe okunuyor.
+    static let momentChipRadius: CGFloat = radiusInner
+    /// Kağıt çerçevenin kalınlığı. Kutucuğu her fotoğraftan ayıran şey bu.
+    static let momentChipBorder: CGFloat = 3
 
     // Hareket burada değil — `ONEAnimation`'da.
     //

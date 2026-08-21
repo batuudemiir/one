@@ -137,13 +137,14 @@ struct V3DayDetailView: View {
                         .padding(.horizontal, V3Tokens.spacingXL2)
                         .padding(.top, V3Tokens.spacingXL4)
                 } else {
-                    // Kartlar arası 56pt. Ayrımı kenarlık değil boşluk
+                    // Kartlar arası 48pt. Ayrımı kenarlık değil boşluk
                     // yapıyor (bkz. V3MomentCard — çerçevesiz kart kararı).
-                    // 40 değil 56: kartın kendi altyazısı artık kağıtta
-                    // yaşıyor, iki kart arasındaki boşluk kart İÇİ boşluktan
-                    // belirgin şekilde büyük olmazsa altyazı bir sonraki
-                    // fotoğrafa ait gibi okunuyor.
-                    VStack(alignment: .leading, spacing: 56) {
+                    // 56'ydı: altyazının bir sonraki fotoğrafa ait gibi
+                    // okunmaması için gereken paydı. Kart artık kendi başlık
+                    // satırıyla (mood + saat) başlıyor — üstü işaretli olduğu
+                    // için o kadar paya ihtiyacı kalmadı; ölçek dışı 56 yerine
+                    // `spacingXL5`.
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingXL5) {
                         ForEach(day.moments) { moment in
                             V3MomentCard(
                                 moment: moment,

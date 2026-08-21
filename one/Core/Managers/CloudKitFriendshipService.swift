@@ -463,7 +463,6 @@ extension CloudKitManager {
                 self.cachedFriendIDs = Set(ids)
                 self.cachedFriendIDsTimestamp = Date()
                 DispatchQueue.main.async {
-                    BadgeManager.shared.evaluateFriendCount(count)
                     // B4 — Day-4 circle invite push'unu doğru gate'lemek için.
                     EngagementTracker.lastKnownFriendCount = count
                     completion(.success(Array(friends)))

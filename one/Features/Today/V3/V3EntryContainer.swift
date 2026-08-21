@@ -307,7 +307,6 @@ struct V3EntryContainer: View {
                     mood: mood,
                     note: note.isEmpty ? nil : note,
                     photo: pickedPhoto,
-                    streakDays: vm.streakDays,
                     last7Days: [],
                     onArchive: { onArchive?() },
                     onRestart: { restart() },

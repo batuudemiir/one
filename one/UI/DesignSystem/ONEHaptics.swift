@@ -291,10 +291,6 @@ enum ONEHaptics {
     }
 
     /// Rozet açıldı — başarı bildirimi.
-    static func badgeUnlocked() {
-        guard isEnabled else { return }
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
-    }
 
     /// Streak sayacının ara tık'ı — her basamakta bir kez.
     ///

@@ -22,7 +22,6 @@ struct FriendDetailView: View {
     @ObservedObject private var previewer = SongPreviewPlayer.shared
     @State private var stableSong: SongResult? = nil   // UUID'si sabit, playingID karşılaştırması için
     @State private var appeared        = false
-    @State private var sentEmoji: String? = nil
     @State private var showPhotoViewer = false
     @State private var showRemoveAlert = false
     @State private var showBlockAlert  = false
@@ -97,8 +96,6 @@ struct FriendDetailView: View {
                             .padding(.horizontal, V3Tokens.spacingXL)
                             .padding(.top, V3Tokens.spacingLG)
                             .padding(.bottom, V3Tokens.spacingSM)
-                        } else if friendMoodHistoryVisible {
-                            emojiRow
                         }
                     } else {
                         waitingSection
@@ -158,7 +155,6 @@ struct FriendDetailView: View {
         .onAppear {
             share = friendData.share
             withAnimation(ONEAnimation.screenTransition) { appeared = true }
-            loadSentEmoji()
             markShareAsSeen()
             // Eğer şarkı henüz seçilmemişse polling başlat
             if !hasSong { startPolling() }
@@ -554,33 +550,6 @@ struct FriendDetailView: View {
         }
     }
 
-    // MARK: - Emoji row
-
-    private var emojiRow: some View {
-        HStack(spacing: V3Tokens.spacingSM) {
-            ForEach(["🤍", "🌊", "✨", "🫶", "🔥"], id: \.self) { emoji in
-                let moodColor = Color(hex: share?["moodColor"] as? String ?? "#888888")
-                Button { sendEmoji(emoji) } label: {
-                    Text(emoji).bodyLG()
-                        .frame(width: 42, height: 42)
-                        .background(
-                            Circle().fill(sentEmoji == emoji ? moodColor.opacity(0.15) : V3Tokens.wash)
-                                .overlay(Circle().stroke(sentEmoji == emoji ? moodColor.opacity(0.3) : Color.clear, lineWidth: 1))
-                        )
-                }
-                .disabled(sentEmoji != nil && sentEmoji != emoji)
-                .scaleEffect(sentEmoji == emoji ? 1.1 : 1.0)
-                .animation(ONEAnimation.micro, value: sentEmoji)
-            }
-            Spacer()
-            Text(NSLocalizedString("circle.heard", comment: ""))
-                .monoSM(tracking: 1.4)
-                .foregroundColor(V3Tokens.faintText)
-        }
-        .padding(.horizontal, V3Tokens.spacingXL).padding(.top, V3Tokens.spacingXL)
-        .opacity(appeared ? 1 : 0)
-        .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.3), value: appeared)
-    }
 
     // MARK: - Privacy placeholder
 
@@ -658,23 +627,6 @@ struct FriendDetailView: View {
         }
     }
 
-    // MARK: - Emoji
-
-    private func sendEmoji(_ emoji: String) {
-        guard sentEmoji == nil, let s = share else { return }
-        withAnimation(ONEAnimation.micro) { sentEmoji = emoji }
-        let key = "emoji_\(s.recordID.recordName)_\(dateKey())"
-        UserDefaults.standard.set(emoji, forKey: key)
-        ONEHaptics.moodSelected()
-        // CloudKit sync removed — legacy emoji path; comment system is the active path.
-    }
-
-    private func loadSentEmoji() {
-        guard let s = share else { return }
-        let key = "emoji_\(s.recordID.recordName)_\(dateKey())"
-        if let local = UserDefaults.standard.string(forKey: key) { sentEmoji = local }
-        // CloudKit fetch removed — legacy path only reads local cache.
-    }
 
     private func dateKey() -> String {
         let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"; return f.string(from: Date())

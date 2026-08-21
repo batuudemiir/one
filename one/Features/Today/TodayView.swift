@@ -12,10 +12,6 @@ struct TodayView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var vm: TodayViewModel
 
-    // Streak milestone kutlaması
-    @State private var showMilestone:    Bool    = false
-    @State private var milestoneScale:   CGFloat = 0.8
-    @State private var milestoneOpacity: Double  = 0
 
     // A4 — İlk entry sonrası Çevre davet kancası
     @State private var showContactsInvite: Bool  = false
@@ -55,19 +51,6 @@ struct TodayView: View {
                     .transition(.opacity)
             }
             .animation(ONEAnimation.screenTransition, value: vm.todayState == .completed)
-
-            // Streak milestone kutlaması
-            if showMilestone, let milestone = vm.streakMilestone {
-                VStack {
-                    Spacer()
-                    StreakMilestoneCard(days: milestone)
-                        .padding(.horizontal, V3Tokens.spacingXL2)
-                        .padding(.bottom, 130)
-                        .scaleEffect(milestoneScale)
-                        .opacity(milestoneOpacity)
-                        .allowsHitTesting(false)
-                }
-            }
 
             // Kayıt anı — tek imza. Eskiden burada üç katman (zemin tint +
             // iki sonar halka + parçacıklar) `CompletionCelebrationView`'ın
@@ -144,26 +127,6 @@ struct TodayView: View {
                 argument: NSLocalizedString("today.moodSaved.a11y", comment: "Mood kaydedildi anonsu")
             )
         }
-        .onChange(of: vm.streakMilestone) { _, milestone in
-            guard milestone != nil else { return }
-            showMilestone = true
-            withAnimation(.spring(response: 0.45, dampingFraction: 0.68)) {
-                milestoneScale   = 1.0
-                milestoneOpacity = 1.0
-            }
-            Task { @MainActor in
-                try? await Task.sleep(for: .seconds(3.5))
-                guard !Task.isCancelled else { return }
-                withAnimation(.easeOut(duration: 0.4)) {
-                    milestoneOpacity = 0
-                    milestoneScale   = 0.92
-                }
-                try? await Task.sleep(for: .milliseconds(400))
-                guard !Task.isCancelled else { return }
-                showMilestone = false
-                vm.clearStreakMilestone()
-            }
-        }
         .sheet(isPresented: $vm.showFirstEntryInvite) {
             FirstEntryInviteSheet(
                 moodColor: vm.todayEntry?.moodColor ?? ONEBrand.kor,
@@ -231,65 +194,6 @@ struct TodayView: View {
     }
 }
 
-// MARK: - Streak Milestone Card
-
-struct StreakMilestoneCard: View {
-    let days: Int
-
-    private var emoji: String {
-        switch days {
-        case 3:   return "🌱"
-        case 7:   return "🔥"
-        case 14:  return "✨"
-        case 30:  return "⚡️"
-        case 100: return "💎"
-        default:  return "🌟"
-        }
-    }
-
-    private var title: String {
-        "\(days) günlük seri!"
-    }
-
-    private var subtitle: String {
-        switch days {
-        case 3:   return "İlk halkayı kapattın. Devam et."
-        case 7:   return "Bir haftadır her gün hissediyorsun."
-        case 14:  return "İki hafta — ritmin oturdu."
-        case 30:  return "Bir ay boyunca hiç bırakmadın."
-        case 100: return "100 gün. Bu bir alışkanlık artık."
-        default:  return "Bir yıl. Olağanüstü bir bağlılık."
-        }
-    }
-
-    var body: some View {
-        HStack(spacing: V3Tokens.spacingLG) {
-            Text(emoji)
-                .font(V3Typography.sans(32))
-                .accessibilityHidden(true) // emoji süs — title zaten gün sayısını söylüyor
-
-            VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
-                Text(title)
-                    .font(V3Typography.display(20, relativeTo: .title3))
-                    .foregroundColor(ONEBrand.bone)
-                Text(subtitle)
-                    .font(V3Typography.mono(11, weight: .medium))
-                    .foregroundColor(ONEBrand.bone.opacity(0.75))
-            }
-            Spacer()
-        }
-        .padding(.horizontal, V3Tokens.spacingXL)
-        .padding(.vertical, 18)
-        .background(
-            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel)
-                .fill(V3Tokens.ink)
-                .shadow(color: Color.black.opacity(0.18), radius: 20, x: 0, y: 8)
-        )
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title). \(subtitle)")
-        .accessibilityAddTraits(.isHeader)
-    }
-}
 
 // MARK: - Echo placeholder
 
