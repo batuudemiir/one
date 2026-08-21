@@ -15,6 +15,12 @@
 #   tooling/ui_guard.sh --update   # eşikleri bugünkü sayılara çek
 #   tooling/ui_guard.sh --report   # sayıları ve dosya kırılımını göster
 #
+# Font bütünlüğü (`tooling/font_guard.py`) buradan da çalışır ama eşiksizdir:
+# ikili bir değişmez, borç sayacı değil. "İki font eksik olabilir" diye bir
+# eşik yok — eksikse uygulama sessizce sistem yüzüne düşer. Bu repoda iki kez
+# oldu (bundle edilmemiş GeistMono; silinen DM Sans dosyaları), ikisi de
+# çökme üretmedi, ikisi de gözle bakılana dek fark edilmedi.
+#
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -100,6 +106,9 @@ if [[ "$MODE" == "report" ]]; then
     hits "${RULE_REGEX[$i]}" | awk -F: '{print $1}' | sort | uniq -c | sort -rn | head -8 | sed 's/^/     /'
   done
   echo
+  printf '\n── font bütünlüğü (eşiksiz)\n'
+  python3 "$ROOT/tooling/font_guard.py" | sed 's/^/     /'
+  echo
   exit 0
 fi
 
@@ -140,6 +149,24 @@ for i in "${!RULE_NAMES[@]}"; do
     echo "note: ui_guard — ${name}: ${now} (eşik ${want}). Eşiği düşür: tooling/ui_guard.sh --update"
   fi
 done
+
+# ── Font bütünlüğü ──────────────────────────────────────────────────────
+#
+# Eşiksiz, çünkü kuralın doğası farklı: yukarıdakiler "borç artmasın"
+# sayaçları, bu ise sağlanması zorunlu bir değişmez. Info.plist'te bildirilen
+# her font diskte olmalı ve koddaki her font adı bunlardan birinin PostScript
+# adıyla karşılanmalı.
+#
+# `python3` yoksa denetim ATLANMAZ, hata verir. Sessizce atlamak tam da bu
+# bekçinin engellemeye çalıştığı şey.
+
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "error: ui_guard — font denetimi için python3 gerekli, bulunamadı."
+  echo "note:  Atlanmadı: font eksikliği sessiz bir hata, denetimi de sessiz olamaz."
+  FAILED=1
+elif ! python3 "$ROOT/tooling/font_guard.py"; then
+  FAILED=1
+fi
 
 if (( FAILED )); then
   echo "error: Ekran Sözleşmesi ihlali. CLAUDE.md › Ekran Sözleşmesi."
