@@ -94,9 +94,9 @@ struct FriendDetailView: View {
                                 shareOwnerID: ownerID,
                                 friendDisplayName: displayName
                             )
-                            .padding(.horizontal, 20)
-                            .padding(.top, 16)
-                            .padding(.bottom, 8)
+                            .padding(.horizontal, V3Tokens.spacingXL)
+                            .padding(.top, V3Tokens.spacingLG)
+                            .padding(.bottom, V3Tokens.spacingSM)
                         } else if friendMoodHistoryVisible {
                             emojiRow
                         }
@@ -219,10 +219,10 @@ struct FriendDetailView: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {
             HStack(alignment: .top) {
                 // Avatar + isim
-                HStack(spacing: 12) {
+                HStack(spacing: V3Tokens.spacingMD) {
                     ZStack {
                         if let img = friendProfileImageCache {
                             Image(uiImage: img)
@@ -295,7 +295,7 @@ struct FriendDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, V3Tokens.spacingXL2)
         .padding(.top, V3Tokens.spacingXL5)
-        .padding(.bottom, 24)
+        .padding(.bottom, V3Tokens.spacingXL2)
         .opacity(appeared ? 1 : 0)
         .animation(ONEAnimation.panelSpring.delay(0.05), value: appeared)
     }
@@ -316,7 +316,7 @@ struct FriendDetailView: View {
         @State private var pulseOpacity: Double = 0.35
 
         var body: some View {
-            VStack(spacing: 24) {
+            VStack(spacing: V3Tokens.spacingXL2) {
                 // Avatar ile pulse halkaları
                 ZStack {
                     // Dış halka 2
@@ -343,9 +343,9 @@ struct FriendDetailView: View {
                         pulseOpacity = 0.8
                     }
                 }
-                .padding(.top, 8)
+                .padding(.top, V3Tokens.spacingSM)
 
-                VStack(spacing: 8) {
+                VStack(spacing: V3Tokens.spacingSM) {
                     Text(NSLocalizedString("circle.waitingPick", comment: ""))
                         .displayMD()
                         .foregroundColor(V3Tokens.mutedText)
@@ -365,15 +365,15 @@ struct FriendDetailView: View {
                     }
                 }
             }
-            .padding(.horizontal, 40)
-            .padding(.vertical, 36)
+            .padding(.horizontal, V3Tokens.spacingXL4)
+            .padding(.vertical, V3Tokens.spacingXL3)
             .frame(maxWidth: .infinity)
             .background(
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color.white.opacity(0.5))
                     .overlay(RoundedRectangle(cornerRadius: 20).stroke(V3Tokens.wash, lineWidth: 1))
             )
-            .padding(.horizontal, 20)
+            .padding(.horizontal, V3Tokens.spacingXL)
             .scaleEffect(appeared ? 1 : 0.94)
             .opacity(appeared ? 1 : 0)
             .animation(ONEAnimation.panelSpring.delay(0.15), value: appeared)
@@ -464,7 +464,7 @@ struct FriendDetailView: View {
             // Info
             VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
                 HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                         Text(songName)
                             .displayMD()
                             .foregroundColor(V3Tokens.ink).tracking(-0.8).lineLimit(2)
@@ -475,7 +475,7 @@ struct FriendDetailView: View {
                     Spacer()
                     // Platform rozeti
                     if !platform.isEmpty {
-                        HStack(spacing: 4) {
+                        HStack(spacing: V3Tokens.spacingXS) {
                             Image(systemName: platform.lowercased().contains("spotify")
                                   ? "music.note" : "music.note.list")
                                 .font(.system(size: 9, weight: .medium))
@@ -484,8 +484,8 @@ struct FriendDetailView: View {
                                 .tracking(0.3)
                         }
                         .foregroundColor(V3Tokens.mutedText)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, V3Tokens.spacingSM)
+                        .padding(.vertical, V3Tokens.spacingXS)
                         .background(
                             Capsule()
                                 .fill(V3Tokens.hairline.opacity(0.8))
@@ -498,7 +498,7 @@ struct FriendDetailView: View {
                         .foregroundColor(V3Tokens.mutedText)
                 }
 
-                Rectangle().fill(V3Tokens.wash).frame(height: 1).padding(.vertical, 4)
+                Rectangle().fill(V3Tokens.wash).frame(height: 1).padding(.vertical, V3Tokens.spacingXS)
 
                 if !moodWord.isEmpty {
                     HStack(spacing: 6) {
@@ -519,7 +519,7 @@ struct FriendDetailView: View {
                 }
 
                 if let note = dailyNote {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
                         Text(NSLocalizedString("circle.note", comment: "")).monoSM(tracking: 1.5).foregroundColor(V3Tokens.mutedText)
                         Text(note).bodySM().foregroundColor(V3Tokens.ink).lineSpacing(2)
                     }
@@ -529,12 +529,12 @@ struct FriendDetailView: View {
                     .padding(.top, V3Tokens.spacingLG)
                 }
             }
-            .padding(20).frame(maxWidth: .infinity, alignment: .leading)
+            .padding(V3Tokens.spacingXL).frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(V3Tokens.surface)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.06), radius: 20, x: 0, y: 8)
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
     }
 
     @ViewBuilder
@@ -548,9 +548,9 @@ struct FriendDetailView: View {
                     .monoSM(tracking: 1)
                     .foregroundColor(.white.opacity(0.85))
             }
-            .padding(.horizontal, 12).padding(.vertical, 6)
+            .padding(.horizontal, V3Tokens.spacingMD).padding(.vertical, 6)
             .background(Capsule().fill(Color.white.opacity(0.15)))
-            .padding(20)
+            .padding(V3Tokens.spacingXL)
         }
     }
 
@@ -577,7 +577,7 @@ struct FriendDetailView: View {
                 .monoSM(tracking: 1.4)
                 .foregroundColor(V3Tokens.faintText)
         }
-        .padding(.horizontal, 20).padding(.top, 20)
+        .padding(.horizontal, V3Tokens.spacingXL).padding(.top, V3Tokens.spacingXL)
         .opacity(appeared ? 1 : 0)
         .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.3), value: appeared)
     }
@@ -585,7 +585,7 @@ struct FriendDetailView: View {
     // MARK: - Privacy placeholder
 
     private func privacyPlaceholder(label: String) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: V3Tokens.spacingMD) {
             Image(systemName: "lock")
                 .font(.system(size: 14, weight: .light))
                 .foregroundColor(V3Tokens.mutedText)
@@ -595,23 +595,23 @@ struct FriendDetailView: View {
                 .lineLimit(2)
             Spacer()
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
+        .padding(.vertical, V3Tokens.spacingXL)
     }
 
     // MARK: - Close button
 
     private var closeBtn: some View {
         Button { dismiss() } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: V3Tokens.spacingSM) {
                 Image(systemName: "chevron.down").font(.system(size: 10))
                 Text(NSLocalizedString("general.close", comment: "")).monoSM(tracking: 1)
             }
             .foregroundColor(V3Tokens.mutedText)
-            .padding(.horizontal, 20).padding(.vertical, V3Tokens.spacingMD)
+            .padding(.horizontal, V3Tokens.spacingXL).padding(.vertical, V3Tokens.spacingMD)
             .background(Capsule().stroke(V3Tokens.faintText, lineWidth: 1.5))
         }
-        .padding(.top, 24).padding(.bottom, 40)
+        .padding(.top, V3Tokens.spacingXL2).padding(.bottom, V3Tokens.spacingXL4)
         .opacity(appeared ? 1 : 0)
         .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.4), value: appeared)
     }

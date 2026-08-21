@@ -1470,3 +1470,19 @@ one day.";
 "report.context.share" = "投稿";
 
 "circle.resonanceTitle" = "共鳴";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "設定";
+"settings.group.circle" = "サークル";
+"settings.group.about" = "アプリについて";
+"settings.group.developer" = "開発者";
+"settings.reminder" = "リマインダー";
+"settings.musicSource" = "音楽ソース";
+"settings.myFriends" = "友だち";
+"settings.deleteAccount" = "アカウントを削除";
+"settings.watchOnboarding" = "はじめかたを見る";
+"settings.sampleCircleData" = "サンプルデータ";
+"settings.sampleCircleDataNote" = "サークルタブをサンプルの友だちで埋めます。";
+"settings.appLock" = "アプリロック";
+"settings.appLockGeneric" = "デバイスパスコード";

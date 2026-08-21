@@ -145,15 +145,21 @@ enum V3Tokens {
     /// çalışıyor, ölçek ise 22/26'da. Ölçek tarif etmesi gereken şeyi
     /// tarif etmiyordu; kimse ona bakmadığı için de kimse fark etmiyordu.
     ///
-    /// Artık değerler koda uyduruldu:
-    ///   22 → 20   (87 çağrı noktası, 2pt)
-    ///   26 → 24   (22 çağrı noktası, 2pt)
-    ///   36 → 32   (8 çağrı noktası, 4pt)
-    ///   52 → 48   (5 çağrı noktası, 4pt)
+    /// Artık değerler koda uyduruldu. Eski → yeni:
+    ///   22 → 20   (2pt)
+    ///   26 → 24   (2pt)
+    ///   36 → 32   (4pt)
+    ///   52 → 48   (4pt — `spacingXL4` değil, `spacingXL5` oldu)
     ///   72 → kaldırıldı (hiç kullanılmıyordu)
     ///
-    /// Ölçeğe 40 eklendi: 23 yerde kullanılıyordu ama karşılığı yoktu —
-    /// tam da bu yüzden o 23 yer ham sayı yazmak zorundaydı.
+    /// Ölçeğe **40 eklendi** (`spacingXL4`): 23 yerde kullanılıyordu ama
+    /// karşılığı yoktu — tam da bu yüzden o 23 yer ham sayı yazmak
+    /// zorundaydı. Bir ölçekte eksik basamak, ham sayı üretir.
+    ///
+    /// Göç tamamlandı: ölçekte karşılığı olan **hiçbir** ham sayı kalmadı
+    /// (1137 ham → 578; token çağrısı 142 → 697). Kalan 578'in 107'si
+    /// açık `.padding(0)`, 282'si aşağıdaki yarım adımlar, 189'u ise
+    /// 2–15pt arası kıl payı düzeltmeler (ayırıcı kalınlığı, optik hizalama).
     ///
     /// **Kalan borç:** 6 / 10 / 14 / 18 hâlâ ham sayı olarak ~282 yerde
     /// geçiyor — sıkı iç boşluklar (ikon-metin arası, kapsül dolgusu).

@@ -1616,3 +1616,19 @@ bir gün.";
 "report.context.share" = "PAYLAŞIM";
 
 "circle.resonanceTitle" = "Uyum";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "AYARLAR";
+"settings.group.circle" = "ÇEVRE";
+"settings.group.about" = "HAKKINDA";
+"settings.group.developer" = "GELİŞTİRİCİ";
+"settings.reminder" = "Hatırlatma";
+"settings.musicSource" = "Müzik kaynağı";
+"settings.myFriends" = "Arkadaşlarım";
+"settings.deleteAccount" = "Hesabı sil";
+"settings.watchOnboarding" = "Onboarding'i izle";
+"settings.sampleCircleData" = "Örnek çevre verisi";
+"settings.sampleCircleDataNote" = "Çevre sekmesini örnek arkadaşlarla doldurur.";
+"settings.appLock" = "Uygulama kilidi";
+"settings.appLockGeneric" = "Cihaz parolası";

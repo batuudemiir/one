@@ -1470,3 +1470,19 @@ one day.";
 "report.context.share" = "PUBLICATION";
 
 "circle.resonanceTitle" = "Résonance";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "RÉGLAGES";
+"settings.group.circle" = "CERCLE";
+"settings.group.about" = "À PROPOS";
+"settings.group.developer" = "DÉVELOPPEUR";
+"settings.reminder" = "Rappel";
+"settings.musicSource" = "Source musicale";
+"settings.myFriends" = "Mes amis";
+"settings.deleteAccount" = "Supprimer le compte";
+"settings.watchOnboarding" = "Revoir l'intro";
+"settings.sampleCircleData" = "Données d'exemple";
+"settings.sampleCircleDataNote" = "Remplit l'onglet Cercle avec des amis d'exemple.";
+"settings.appLock" = "Verrouillage";
+"settings.appLockGeneric" = "Code de l'appareil";

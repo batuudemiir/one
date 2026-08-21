@@ -382,7 +382,7 @@ struct ONEColorPickerView: View {
         if let ns = splashHandoffNS {
             Color.clear
                 .frame(width: 40, height: 14)
-                .padding(.top, 8)
+                .padding(.top, V3Tokens.spacingSM)
                 .matchedGeometryEffect(
                     id: SplashHandoff.wordmarkID,
                     in: ns,

@@ -34,7 +34,7 @@ struct BadgeUnlockToast: ViewModifier {
     }
 
     private func toast(badge: Badge) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: V3Tokens.spacingMD) {
             Image(systemName: badge.iconSystemName)
                 .font(.system(size: 18, weight: .light))
                 .foregroundColor(V3Tokens.ink)
@@ -63,8 +63,8 @@ struct BadgeUnlockToast: ViewModifier {
             RoundedRectangle(cornerRadius: 2)
                 .strokeBorder(V3Tokens.ink.opacity(0.1), lineWidth: 1)
         )
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
+        .padding(.horizontal, V3Tokens.spacingLG)
+        .padding(.top, V3Tokens.spacingSM)
     }
 }
 

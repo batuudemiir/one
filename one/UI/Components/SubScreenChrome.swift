@@ -38,7 +38,7 @@ struct SubScreenNavBar: View {
                     Text(actionTitle)
                         .bodyXSSemibold()
                         .foregroundColor(ONEBrand.kor)
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, V3Tokens.spacingXS)
                         .frame(minHeight: 44)
                         .contentShape(Rectangle())
                 }
@@ -76,7 +76,7 @@ struct SubScreen<Content: View>: View {
                 // Üst çubukla aynı hat. Eskiden `V3Tokens.spacingXL` (22)
                 // idi ve başlık ile gövde her alt ekranda 2pt kaçıktı.
                 .padding(.horizontal, V3Tokens.channel)
-                .padding(.top, 8)
+                .padding(.top, V3Tokens.spacingSM)
                 .padding(.bottom, 116)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -195,53 +195,107 @@ struct SettingsGroup<Content: View>: View {
     }
 }
 
-struct SettingsRow: View {
-    let icon: String
+/// Ayar satırı — uygulamadaki **tek** ayar satırı.
+///
+/// Bir ara ikisi vardı: buradaki (14pt regular, 15/14 pay, 15pt içeriden
+/// ayraç, ink anahtar, ikonlu) ve `V3ProfileView`'ün kendi private
+/// `settingsRow`'u (16pt medium, 18/17 pay, tam genişlik ayraç, kor
+/// anahtar, ikonsuz). Kullanıcı Profil kökünden Gizlilik'e tek dokunuşla
+/// geçiyor ve o geçişte punto, satır yüksekliği, ayraç hizası ve vurgu
+/// rengi birden değişiyordu.
+///
+/// Birleşmede seçilen değerler ve gerekçeleri:
+/// - **Punto `bodyLGMedium` (16pt medium).** 14pt dokunulabilir bir gezinti
+///   satırı için iOS alışkanlığının altında; Profil kökü de uygulamanın en
+///   çok bakılan listesi. Aynı ekrandaki "Görünüm" bloğu zaten bu rolde.
+/// - **Pay `spacingLG` (16), ayraç aynı hizadan.** 15 ve 18 ölçekte yok;
+///   ikisinin de gittiği yer 16.
+/// - **Anahtar `V3Tokens.ink`.** `kor` ekran başına tek vurgu; Profil onu
+///   zaten "Hesabı sil" için harcıyor.
+///
+/// İkon opsiyonel: alt ekranlar SF Symbol'lü satır kullanıyor, kök liste
+/// kullanmıyor. İkon yoksa hizalama boşluğu da yok.
+struct SettingsRow<Trailing: View>: View {
+    var icon: String? = nil
     let title: String
+    /// Başlık rengi — yalnız yıkıcı eylem (`Hesabı sil`) için `ONEBrand.kor`.
+    var titleColor: Color = V3Tokens.ink
+    /// Sağda duran hazır metin (saat, dil adı). Serbest içerik gerekiyorsa
+    /// `trailing` closure'ını kullan.
     var value: String? = nil
     var showsChevron: Bool = true
     var isLast: Bool = false
     var action: (() -> Void)? = nil
+    @ViewBuilder var trailing: () -> Trailing
 
     var body: some View {
         Button { action?() } label: {
             VStack(spacing: 0) {
                 HStack(spacing: V3Tokens.spacingMD) {
-                    Image(systemName: icon)
-                        .font(.system(size: 15))
-                        .foregroundColor(V3Tokens.mutedText)
-                        .frame(width: 22)
+                    if let icon {
+                        Image(systemName: icon)
+                            .font(.system(size: 15))
+                            .foregroundColor(V3Tokens.mutedText)
+                            .frame(width: 22)
+                    }
 
                     Text(title)
-                        .bodySM()
-                        .foregroundColor(V3Tokens.ink)
+                        .bodyLGMedium()
+                        .foregroundColor(titleColor)
+                        .multilineTextAlignment(.leading)
 
-                    Spacer()
+                    Spacer(minLength: V3Tokens.spacingSM)
 
                     if let value {
                         Text(value)
-                            .bodyXS()
-                            .foregroundColor(V3Tokens.faintText)
+                            .font(V3Typography.mono(13))
+                            .foregroundColor(V3Tokens.mutedText)
                     }
+                    trailing()
                     if showsChevron {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12))
                             .foregroundColor(V3Tokens.faintText)
                     }
                 }
-                .padding(.horizontal, 15)
-                .padding(.vertical, 14)
+                .padding(.horizontal, V3Tokens.spacingLG)
+                .padding(.vertical, V3Tokens.spacingLG)
+                .frame(minHeight: V3Tokens.minTouchTarget)
+                // Dolgu olmayan yerde dokunma ölü kalmasın.
+                .contentShape(Rectangle())
 
                 if !isLast {
                     Rectangle()
                         .fill(V3Tokens.hairline)
                         .frame(height: 1)
-                        .padding(.leading, 15)
+                        .padding(.leading, V3Tokens.spacingLG)
                 }
             }
         }
         .buttonStyle(.onePressable)
         .disabled(action == nil)
+    }
+}
+
+extension SettingsRow where Trailing == EmptyView {
+    init(
+        icon: String? = nil,
+        title: String,
+        titleColor: Color = V3Tokens.ink,
+        value: String? = nil,
+        showsChevron: Bool = true,
+        isLast: Bool = false,
+        action: (() -> Void)? = nil
+    ) {
+        self.init(
+            icon: icon,
+            title: title,
+            titleColor: titleColor,
+            value: value,
+            showsChevron: showsChevron,
+            isLast: isLast,
+            action: action
+        ) { EmptyView() }
     }
 }
 
@@ -257,7 +311,7 @@ struct FilterChip: View {
             Text(title)
                 .bodyMicroSemibold()
                 .foregroundColor(isSelected ? ONEBrand.bone : V3Tokens.ink)
-                .padding(.horizontal, 12)
+                .padding(.horizontal, V3Tokens.spacingMD)
                 .padding(.vertical, 6)
                 .background(
                     Capsule(style: .continuous)
@@ -308,7 +362,7 @@ struct SubScreenState: View {
                     Text(actionTitle)
                         .bodySMMedium()
                         .foregroundColor(ONEBrand.bone)
-                        .padding(.horizontal, 22)
+                        .padding(.horizontal, V3Tokens.spacingXL)
                         .frame(minHeight: 44)
                         .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                 }
@@ -342,7 +396,7 @@ struct SettingsToggleRow: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 12) {
+            HStack(spacing: V3Tokens.spacingMD) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .bodySMSemibold()
@@ -365,6 +419,44 @@ struct SettingsToggleRow: View {
                     .fill(V3Tokens.hairline)
                     .frame(height: 1)
                     .padding(.leading, 15)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+// MARK: - Kullanılamayan ayar satırı
+
+/// Cihazın sunmadığı bir ayarın satırı — anahtar yerine tek satırlık neden.
+///
+/// Sahte kontrol koymamak için var: açılamayacak bir anahtar göstermek,
+/// kullanıcıya kapattığı bir şeyi kapattığını söylemek olurdu. Satır
+/// duruyor ki ayarın var olduğu ama burada çalışmadığı görülsün.
+struct SettingsUnavailableRow: View {
+    let title: String
+    let note: String
+    var isLast: Bool = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .bodyLGMedium()
+                    .foregroundColor(V3Tokens.ghostText)
+                Text(note)
+                    .bodyXS()
+                    .foregroundColor(V3Tokens.ghostText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, V3Tokens.spacingLG)
+            .padding(.vertical, V3Tokens.spacingLG)
+
+            if !isLast {
+                Rectangle()
+                    .fill(V3Tokens.hairline)
+                    .frame(height: 1)
+                    .padding(.leading, V3Tokens.spacingLG)
             }
         }
         .accessibilityElement(children: .combine)

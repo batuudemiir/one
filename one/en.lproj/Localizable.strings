@@ -1599,3 +1599,19 @@ one day.";
 "report.context.share" = "POST";
 
 "circle.resonanceTitle" = "Resonance";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "SETTINGS";
+"settings.group.circle" = "CIRCLE";
+"settings.group.about" = "ABOUT";
+"settings.group.developer" = "DEVELOPER";
+"settings.reminder" = "Reminder";
+"settings.musicSource" = "Music source";
+"settings.myFriends" = "My friends";
+"settings.deleteAccount" = "Delete account";
+"settings.watchOnboarding" = "Watch onboarding";
+"settings.sampleCircleData" = "Sample circle data";
+"settings.sampleCircleDataNote" = "Fills the Circle tab with sample friends.";
+"settings.appLock" = "App lock";
+"settings.appLockGeneric" = "Device passcode";

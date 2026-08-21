@@ -96,11 +96,11 @@ struct V3SheetScreen<Content: View>: View {
 
             content()
                 .oneScreenBody()
-                .padding(.top, 8)
+                .padding(.top, V3Tokens.spacingSM)
                 // Modalde alt sekme çubuğu yok; `SubScreen`'in 116pt'lik
                 // payı burada gereksiz. 32pt son satırın ekran kenarına
                 // yapışmasını engelliyor.
-                .padding(.bottom, 32)
+                .padding(.bottom, V3Tokens.spacingXL3)
         }
         .oneScreenGround()
         .topBarProgress($progress, spaceName: spaceName)
@@ -139,7 +139,7 @@ struct V3SheetAction: View {
             Text(title)
                 .bodyXSSemibold()
                 .foregroundColor(isEnabled ? ONEBrand.kor : V3Tokens.ghostText)
-                .padding(.horizontal, 4)
+                .padding(.horizontal, V3Tokens.spacingXS)
                 // Dokunma hedefi metnin kutusundan büyük: 13pt'lik bir
                 // etiketin kendi yüksekliği 16pt civarı, HIG asgarisi 44.
                 .frame(minHeight: V3Tokens.minTouchTarget)

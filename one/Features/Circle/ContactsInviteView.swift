@@ -101,7 +101,7 @@ struct ContactsInviteView: View {
                         .foregroundColor(V3Tokens.mutedText)
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, V3Tokens.spacingXL)
             .padding(.vertical, 14)
             .background(V3Tokens.surface)
 
@@ -125,7 +125,7 @@ struct ContactsInviteView: View {
             .padding(.vertical, 10)
             .background(V3Tokens.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10))
-            .padding(.horizontal, 16)
+            .padding(.horizontal, V3Tokens.spacingLG)
             .padding(.vertical, 10)
 
             if isLoading {
@@ -159,7 +159,7 @@ struct ContactsInviteView: View {
     // MARK: - Permission Denied
 
     private var permissionDeniedView: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: V3Tokens.spacingXL) {
             Spacer()
             Image(systemName: "lock.person.fill")
                 .font(.system(size: 48, weight: .ultraLight))
@@ -178,12 +178,12 @@ struct ContactsInviteView: View {
             }
             .monoSM(tracking: 0.8)
             .foregroundStyle(ONEBrand.bone)
-            .padding(.horizontal, 24)
-            .padding(.vertical, 12)
+            .padding(.horizontal, V3Tokens.spacingXL2)
+            .padding(.vertical, V3Tokens.spacingMD)
             .background(RoundedRectangle(cornerRadius: 12).fill(V3Tokens.ink))
             Spacer()
         }
-        .padding(.horizontal, 32)
+        .padding(.horizontal, V3Tokens.spacingXL3)
     }
 
     // MARK: - Loading
@@ -313,7 +313,7 @@ private struct ContactRow: View {
                 Text(NSLocalizedString("contacts.inviteButton", comment: ""))
                     .monoLabel(tracking: 0.6)
                     .foregroundStyle(ONEBrand.bone)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, V3Tokens.spacingMD)
                     .padding(.vertical, 6)
                     .background(Capsule().fill(V3Tokens.ink))
             }

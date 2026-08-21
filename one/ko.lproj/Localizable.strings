@@ -1471,3 +1471,19 @@ one day.";
 "report.context.share" = "게시물";
 
 "circle.resonanceTitle" = "공명";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "설정";
+"settings.group.circle" = "서클";
+"settings.group.about" = "정보";
+"settings.group.developer" = "개발자";
+"settings.reminder" = "알림";
+"settings.musicSource" = "음악 소스";
+"settings.myFriends" = "내 친구";
+"settings.deleteAccount" = "계정 삭제";
+"settings.watchOnboarding" = "온보딩 보기";
+"settings.sampleCircleData" = "샘플 데이터";
+"settings.sampleCircleDataNote" = "서클 탭을 샘플 친구로 채웁니다.";
+"settings.appLock" = "앱 잠금";
+"settings.appLockGeneric" = "기기 암호";

@@ -73,7 +73,7 @@ struct V3ProfileView: View {
                 //   SEN     — kimlik + arşivinin özeti (sıkı aralık, 20)
                 //   AYARLAR — kontroller (geniş aralık, 24)
                 // Aralık farkı, yatay çizgi çekmeden iki bölgeyi ayırıyor.
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
                     // Sekme re-tap anchor'ı + scroll-driven tab-bar sensörü.
                     Color.clear.frame(height: 0)
                         .id("profileTop")
@@ -105,13 +105,13 @@ struct V3ProfileView: View {
                     echoPreviewCard
 
                     settingsList
-                        .padding(.top, 12)   // "sen" bölgesinden ayrılma
+                        .padding(.top, V3Tokens.spacingMD)   // "sen" bölgesinden ayrılma
 
                     versionFooter
                     Color.clear.frame(height: 40)
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 12)
+                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.top, V3Tokens.spacingMD)
                 // Dinlenme pozisyonunun tek sahibi kabuk: `safeAreaInset`
                 // nav yüksekliği kadar pay bırakıyor. Buradaki fazladan 24pt
                 // o payın üstüne biniyordu — son satır çubuğun 16pt üstünde
@@ -178,7 +178,7 @@ struct V3ProfileView: View {
                     }
                     .contentShape(Rectangle())
                     .buttonStyle(.onePressable)
-                    .padding(.trailing, 12)
+                    .padding(.trailing, V3Tokens.spacingMD)
                     .padding(.top, 6)
                 }
                 .onChange(of: onboardingPreviewDone) { _, done in
@@ -206,9 +206,9 @@ struct V3ProfileView: View {
                             showReminder = false
                         }
                     )
-                    .padding(.horizontal, 24)
-                    .padding(.top, 26)
-                    .padding(.bottom, 24)
+                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.top, V3Tokens.spacingXL2)
+                    .padding(.bottom, V3Tokens.spacingXL2)
                 }
             }
         }
@@ -268,7 +268,7 @@ struct V3ProfileView: View {
                 .offset(x: 3, y: 3)
             }
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
                 Text(vm.displayName.isEmpty ? "Batu" : vm.displayName)
                     .font(ONEBrand.display(32))
                     .tracking(-0.9)
@@ -290,7 +290,7 @@ struct V3ProfileView: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(.top, 8)
+        .padding(.top, V3Tokens.spacingSM)
     }
 
     private var sinceLabel: String {
@@ -377,7 +377,7 @@ struct V3ProfileView: View {
             .padding(.top, 6)
         }
         .padding(.horizontal, 18)
-        .padding(.top, 20)
+        .padding(.top, V3Tokens.spacingXL)
         .padding(.bottom, 18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(panelBackground)
@@ -436,7 +436,7 @@ struct V3ProfileView: View {
         }
         .frame(maxWidth: .infinity, minHeight: 78, alignment: .leading)
         .padding(.horizontal, 14)
-        .padding(.vertical, 16)
+        .padding(.vertical, V3Tokens.spacingLG)
         .background(V3Tokens.surface)
     }
 
@@ -561,12 +561,12 @@ struct V3ProfileView: View {
             // 2-sütun legend. Bar 9 dilim gösterirken legend 6 satır
             // gösteriyordu; kalan renkler yüzdesiyle birlikte kayboluyor ve
             // toplam %100 etmiyordu. Artık barla aynı kümeyi listeliyor.
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 8) {
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: V3Tokens.spacingMD), GridItem(.flexible(), spacing: V3Tokens.spacingMD)], spacing: V3Tokens.spacingSM) {
                 ForEach(Array(distribution.prefix(9).enumerated()), id: \.offset) { index, item in
                     Button {
                         withAnimation(ONEAnimation.easingChip) { selectedDistributionIndex = index }
                     } label: {
-                        HStack(spacing: 8) {
+                        HStack(spacing: V3Tokens.spacingSM) {
                             RoundedRectangle(cornerRadius: 3)
                                 .fill(Color(hex: item.hex))
                                 .frame(width: 10, height: 10)
@@ -642,7 +642,7 @@ struct V3ProfileView: View {
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(month.mood.ink.opacity(0.6))
-                                .padding(.top, 4)
+                                .padding(.top, V3Tokens.spacingXS)
                         }
 
                         // Ayın mini mozaiği — 7 kolon, çok anlı gün için ilk an.
@@ -731,46 +731,22 @@ struct V3ProfileView: View {
     ///   HESAP    — kim erişebilir, nasıl çıkarım? (giriş, kilit, silme)
     ///   HAKKINDA — meraklısına                (onboarding'i izle)
     private var settingsList: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            settingsGroup("AYARLAR") {
-                Button { showReminder = true } label: {
-                    settingsRow(title: "Hatırlatma", trailing: {
-                        HStack(spacing: 8) {
-                            Text(reminderTimeLabel)
-                                .font(V3Typography.mono(13))
-                                .foregroundColor(V3Tokens.mutedText)
-                            chevron
-                        }
-                    }, showDivider: true)
-                }
-                .contentShape(Rectangle())
-                .buttonStyle(.onePressable)
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXL2) {
+            settingsGroup(NSLocalizedString("settings.group.settings", comment: "")) {
+                SettingsRow(
+                    title: NSLocalizedString("settings.reminder", comment: ""),
+                    value: reminderTimeLabel
+                ) { showReminder = true }
 
-                Button { showMusicSource = true } label: {
-                    settingsRow(title: "Müzik kaynağı", trailing: {
-                        HStack(spacing: 8) {
-                            Text(musicSourceLabel)
-                                .font(V3Typography.mono(13))
-                                .foregroundColor(V3Tokens.mutedText)
-                            chevron
-                        }
-                    }, showDivider: true)
-                }
-                .contentShape(Rectangle())
-                .buttonStyle(.onePressable)
+                SettingsRow(
+                    title: NSLocalizedString("settings.musicSource", comment: ""),
+                    value: musicSourceLabel
+                ) { showMusicSource = true }
 
-                Button { showLanguage = true } label: {
-                    settingsRow(title: "Dil", trailing: {
-                        HStack(spacing: 8) {
-                            Text(languageManager.currentLanguage.displayName)
-                                .font(V3Typography.mono(13))
-                                .foregroundColor(V3Tokens.mutedText)
-                            chevron
-                        }
-                    }, showDivider: true)
-                }
-                .contentShape(Rectangle())
-                .buttonStyle(.onePressable)
+                SettingsRow(
+                    title: NSLocalizedString("profile.language", comment: ""),
+                    value: languageManager.currentLanguage.displayName
+                ) { showLanguage = true }
 
                 // Görünüm — prototipte satırın altında iki kapsül.
                 VStack(alignment: .leading, spacing: 11) {
@@ -787,16 +763,15 @@ struct V3ProfileView: View {
                 .padding(.vertical, 15)
             }
 
-            settingsGroup("ÇEVRE") {
-                Button { showFriends = true } label: {
-                    settingsRow(title: "Arkadaşlarım", trailing: { chevron }, showDivider: true)
-                }
-                .buttonStyle(.onePressable)
+            settingsGroup(NSLocalizedString("settings.group.circle", comment: "")) {
+                SettingsRow(
+                    title: NSLocalizedString("settings.myFriends", comment: "")
+                ) { showFriends = true }
 
-                Button { showPrivacy = true } label: {
-                    settingsRow(title: "Gizlilik", trailing: { chevron }, showDivider: false)
-                }
-                .buttonStyle(.onePressable)
+                SettingsRow(
+                    title: NSLocalizedString("settings.privacy", comment: ""),
+                    isLast: true
+                ) { showPrivacy = true }
             }
 
             settingsGroup("HESAP") {
@@ -813,34 +788,32 @@ struct V3ProfileView: View {
                 // Touch ID / cihaz parolası ile perdeyi açıyor.
                 appLockRow
 
-                Button { showDeleteAccountAlert = true } label: {
-                    settingsRow(title: "Hesabı sil", titleColor: ONEBrand.kor, trailing: { chevron },
-                                showDivider: false)
-                }
-                .buttonStyle(.onePressable)
+                SettingsRow(
+                    title: NSLocalizedString("settings.deleteAccount", comment: ""),
+                    titleColor: ONEBrand.kor,
+                    isLast: true
+                ) { showDeleteAccountAlert = true }
             }
 
             // Meraklısına — ayar değil, gezinti. Prototip 43'teki
             // "Onboarding · 7 adım" satırı; önizleme modunda açılır, hiçbir
             // şey yazmaz. Ayarların arasında değil, en sonda.
-            settingsGroup("HAKKINDA") {
-                Button { showOnboardingPreview = true } label: {
-                    settingsRow(title: "Onboarding'i izle", trailing: {
-                        HStack(spacing: 8) {
-                            Text(NSLocalizedString("profile.sevenSteps", comment: ""))
-                                .font(V3Typography.mono(13))
-                                .foregroundColor(V3Tokens.mutedText)
-                            chevron
-                        }
-                    }, showDivider: false)
-                }
-                .contentShape(Rectangle())
-                .buttonStyle(.onePressable)
+            settingsGroup(NSLocalizedString("settings.group.about", comment: "")) {
+                SettingsRow(
+                    title: NSLocalizedString("settings.watchOnboarding", comment: ""),
+                    value: NSLocalizedString("profile.sevenSteps", comment: ""),
+                    isLast: true
+                ) { showOnboardingPreview = true }
             }
 
             #if DEBUG
-            settingsGroup("GELİŞTİRİCİ") {
-                settingsToggle(title: "Örnek çevre verisi", isOn: $sampleFriendsEnabled, showDivider: false)
+            settingsGroup(NSLocalizedString("settings.group.developer", comment: "")) {
+                SettingsToggleRow(
+                    title: NSLocalizedString("settings.sampleCircleData", comment: ""),
+                    subtitle: NSLocalizedString("settings.sampleCircleDataNote", comment: ""),
+                    isOn: $sampleFriendsEnabled,
+                    isLast: true
+                )
             }
             #endif
         }
@@ -851,48 +824,25 @@ struct V3ProfileView: View {
     /// kullanıcıyı yanıltırdı.
     @ViewBuilder
     private var appLockRow: some View {
-        if AppLockManager.isAvailable() {
-            VStack(spacing: 0) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Uygulama kilidi")
-                            .bodyLGMedium()
-                            .foregroundColor(V3Tokens.ink)
-                        if let biometry = AppLockManager.biometryLabel() {
-                            Text(biometry)
-                                .font(V3Typography.mono(11, weight: .regular))
-                                .tracking(1)
-                                .foregroundColor(V3Tokens.ghostText)
-                        }
-                    }
-                    Spacer()
-                    Toggle("", isOn: $appLockEnabled)
-                        .labelsHidden()
-                        .tint(ONEBrand.kor)
+        // Kilit satırı. Cihaz hiçbir doğrulama sunmuyorsa anahtar yerine tek
+        // satırlık bir açıklama gösterilir — açılamayacak bir anahtar sunmak
+        // sahte kontrol olurdu.
+        Group {
+            if AppLockManager.isAvailable() {
+                SettingsToggleRow(
+                    title: NSLocalizedString("settings.appLock", comment: ""),
+                    subtitle: AppLockManager.biometryLabel()
+                        ?? NSLocalizedString("settings.appLockGeneric", comment: ""),
+                    isOn: $appLockEnabled
+                )
+                .onChange(of: appLockEnabled) { _, enabled in
+                    AppLockManager.shared.settingChanged(to: enabled)
                 }
-                .padding(.horizontal, 18)
-                .padding(.vertical, 12)
-                Rectangle().fill(V3Tokens.hairline).frame(height: 1)
-            }
-            .onChange(of: appLockEnabled) { _, enabled in
-                AppLockManager.shared.settingChanged(to: enabled)
-            }
-        } else {
-            VStack(spacing: 0) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Uygulama kilidi")
-                            .bodyLGMedium()
-                            .foregroundColor(V3Tokens.ghostText)
-                        Text(NSLocalizedString("applock.noPasscode", comment: ""))
-                            .bodyXS()
-                            .foregroundColor(V3Tokens.ghostText)
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal, 18)
-                .padding(.vertical, 14)
-                Rectangle().fill(V3Tokens.hairline).frame(height: 1)
+            } else {
+                SettingsUnavailableRow(
+                    title: NSLocalizedString("settings.appLock", comment: ""),
+                    note: NSLocalizedString("applock.noPasscode", comment: "")
+                )
             }
         }
     }
@@ -923,12 +873,6 @@ struct V3ProfileView: View {
 
     private var reminderTimeLabel: String {
         V3ReminderSettings.load().formattedTime
-    }
-
-    private var chevron: some View {
-        Image(systemName: "chevron.right")
-            .font(.system(size: 12, weight: .semibold))
-            .foregroundColor(V3Tokens.ghostText)
     }
 
     /// Prototipteki `pillBtn` — seçili: ink dolgu + paper metin.
@@ -966,59 +910,17 @@ struct V3ProfileView: View {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "3.0"
     }
 
-    private func settingsRow<T: View>(
-        title: String,
-        titleColor: Color = V3Tokens.ink,
-        @ViewBuilder trailing: () -> T,
-        showDivider: Bool
-    ) -> some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 14) {
-                Text(title)
-                    .bodyLGMedium()
-                    .foregroundColor(titleColor)
-                Spacer(minLength: 8)
-                trailing()
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 17)
-            .contentShape(Rectangle())
-            if showDivider {
-                Rectangle().fill(V3Tokens.hairline).frame(height: 1)
-            }
-        }
-    }
-
-    private func settingsToggle(title: String, isOn: Binding<Bool>, showDivider: Bool) -> some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text(title)
-                    .bodyLGMedium()
-                    .foregroundColor(V3Tokens.ink)
-                Spacer()
-                Toggle("", isOn: isOn)
-                    .labelsHidden()
-                    .tint(ONEBrand.kor)
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 12)
-            if showDivider {
-                Rectangle().fill(V3Tokens.hairline).frame(height: 1)
-            }
-        }
-    }
-
     // MARK: - Avatar picker sheet
 
     private var avatarPickerSheet: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
                 Text(NSLocalizedString("profile.pickAvatar", comment: ""))
                     .font(ONEBrand.display(28))
                     .tracking(-0.7)
                     .foregroundColor(V3Tokens.ink)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 12)
+                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.top, V3Tokens.spacingMD)
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
@@ -1034,7 +936,7 @@ struct V3ProfileView: View {
                         // seçecek bir yer yoktu — kare kalıcı olarak boş
                         // yer tutucu kalıyordu. Seçici artık burada.
                         PhotosPicker(selection: $photoPickerItem, matching: .images) {
-                            HStack(spacing: 12) {
+                            HStack(spacing: V3Tokens.spacingMD) {
                                 Image(systemName: vm.profileImage == nil ? "photo.badge.plus" : "arrow.triangle.2.circlepath")
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundColor(V3Tokens.ink)
@@ -1047,7 +949,7 @@ struct V3ProfileView: View {
                                 }
                             }
                             .padding(.horizontal, 18)
-                            .padding(.vertical, 16)
+                            .padding(.vertical, V3Tokens.spacingLG)
                             .background(
                                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                                     .fill(V3Tokens.surface)
@@ -1062,10 +964,10 @@ struct V3ProfileView: View {
                         Text(NSLocalizedString("profile.photoVisibility", comment: ""))
                             .bodyXS()
                             .foregroundColor(V3Tokens.mutedText)
-                            .padding(.horizontal, 4)
+                            .padding(.horizontal, V3Tokens.spacingXS)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
+                    .padding(.horizontal, V3Tokens.spacingXL)
+                    .padding(.top, V3Tokens.spacingSM)
                 }
                 Spacer()
             }

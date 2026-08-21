@@ -142,12 +142,12 @@ struct FriendRequestsView: View {
                         if index < group.items.count - 1 {
                             Divider()
                                 .padding(.leading, 76)
-                                .padding(.trailing, 20)
+                                .padding(.trailing, V3Tokens.spacingXL)
                         }
                     }
                 }
             }
-            .padding(.bottom, 40)
+            .padding(.bottom, V3Tokens.spacingXL4)
         }
         .refreshable { load() }
     }
@@ -163,8 +163,8 @@ struct FriendRequestsView: View {
                 .fill(V3Tokens.hairline)
                 .frame(height: 1)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 24)
+        .padding(.horizontal, V3Tokens.spacingXL)
+        .padding(.top, V3Tokens.spacingXL2)
         .padding(.bottom, 6)
     }
 
@@ -180,7 +180,7 @@ struct FriendRequestsView: View {
                         .fill(accentColor(for: notif))
                         .frame(width: 3)
                         .padding(.vertical, 18)
-                        .padding(.leading, 8)
+                        .padding(.leading, V3Tokens.spacingSM)
                 } else {
                     Color.clear.frame(width: 11)
                 }
@@ -234,12 +234,12 @@ struct FriendRequestsView: View {
                     Circle()
                         .fill(accentColor(for: notif))
                         .frame(width: 8, height: 8)
-                        .padding(.top, 8)
+                        .padding(.top, V3Tokens.spacingSM)
                 }
             }
             .padding(.vertical, 15)
-            .padding(.trailing, 20)
-            .padding(.leading, 12)
+            .padding(.trailing, V3Tokens.spacingXL)
+            .padding(.leading, V3Tokens.spacingMD)
         }
         .background(notif.isRead ? Color.clear : V3Tokens.wash.opacity(0.45))
         .contentShape(Rectangle())
@@ -373,7 +373,7 @@ struct FriendRequestsView: View {
                 }
                 .padding(.top, 2)
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(name)
                         .bodyMD().fontWeight(.semibold)
@@ -386,9 +386,9 @@ struct FriendRequestsView: View {
                 if processing {
                     ProgressView()
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.vertical, 8)
+                        .padding(.vertical, V3Tokens.spacingSM)
                 } else {
-                    VStack(spacing: 8) {
+                    VStack(spacing: V3Tokens.spacingSM) {
                         Button(action: { accept(recName: recName) }) {
                             Text(NSLocalizedString("friendRequests.accept", comment: "Kabul Et"))
                                 .bodySM().fontWeight(.semibold)
@@ -419,7 +419,7 @@ struct FriendRequestsView: View {
             }
         }
         .padding(.vertical, 18)
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
         .background(V3Tokens.wash.opacity(0.4))
     }
 
@@ -445,7 +445,7 @@ struct FriendRequestsView: View {
                     .offset(x: 2, y: 2)
                 }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                 Text(name)
                     .bodyMD().fontWeight(.semibold)
                     .foregroundColor(V3Tokens.ink)
@@ -474,8 +474,8 @@ struct FriendRequestsView: View {
                 }
             }
         }
-        .padding(.vertical, 16)
-        .padding(.horizontal, 20)
+        .padding(.vertical, V3Tokens.spacingLG)
+        .padding(.horizontal, V3Tokens.spacingXL)
     }
 
     // MARK: - Skeleton
@@ -491,10 +491,10 @@ struct FriendRequestsView: View {
                             .easeInOut(duration: 0.8).delay(Double(i) * 0.1).repeatForever(autoreverses: true),
                             value: isLoading
                         )
-                    if i < 4 { Divider().padding(.leading, 76).padding(.trailing, 20) }
+                    if i < 4 { Divider().padding(.leading, 76).padding(.trailing, V3Tokens.spacingXL) }
                 }
             }
-            .padding(.top, 16)
+            .padding(.top, V3Tokens.spacingLG)
         }
     }
 
@@ -503,7 +503,7 @@ struct FriendRequestsView: View {
             Circle()
                 .fill(V3Tokens.surface)
                 .frame(width: 44, height: 44)
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
                 RoundedRectangle(cornerRadius: 4)
                     .fill(V3Tokens.surface)
                     .frame(width: Self.skeletonWidths[index % 5], height: 12)
@@ -514,7 +514,7 @@ struct FriendRequestsView: View {
             Spacer()
         }
         .padding(.vertical, 14)
-        .padding(.horizontal, 20)
+        .padding(.horizontal, V3Tokens.spacingXL)
         .shimmeringCircle()
     }
 
@@ -559,7 +559,7 @@ struct FriendRequestsView: View {
                 }
                 .frame(height: 100)
 
-                VStack(spacing: 8) {
+                VStack(spacing: V3Tokens.spacingSM) {
                     Text(NSLocalizedString("friendRequests.noNotifications", comment: ""))
                         .bodyLG().fontWeight(.semibold)
                         .foregroundColor(V3Tokens.ink)
@@ -569,10 +569,10 @@ struct FriendRequestsView: View {
                         .multilineTextAlignment(.center)
                         .foregroundColor(V3Tokens.mutedText)
                         .lineSpacing(4)
-                        .padding(.horizontal, 32)
+                        .padding(.horizontal, V3Tokens.spacingXL3)
                 }
             }
-            .padding(.horizontal, 40)
+            .padding(.horizontal, V3Tokens.spacingXL4)
             .transition(.opacity.combined(with: .scale(scale: 0.95)))
 
             Spacer()

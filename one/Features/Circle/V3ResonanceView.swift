@@ -67,13 +67,13 @@ struct V3ResonanceView: View {
                 .foregroundColor((myMood?.ink ?? V3Tokens.mutedText).opacity(0.85))
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(20)
+        .padding(V3Tokens.spacingXL)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 26, style: .continuous)
                 .fill(myMood?.color ?? V3Tokens.wash)
         )
-        .padding(.top, 16)
+        .padding(.top, V3Tokens.spacingLG)
     }
 
     private var matchLine: String {
@@ -105,11 +105,11 @@ struct V3ResonanceView: View {
                         .tracking(1)
                         .foregroundColor(V3Tokens.ghostText)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, V3Tokens.spacingLG)
                 .padding(.vertical, 14)
 
                 if index != matches.count - 1 {
-                    Rectangle().fill(V3Tokens.hairline).frame(height: 1).padding(.leading, 16)
+                    Rectangle().fill(V3Tokens.hairline).frame(height: 1).padding(.leading, V3Tokens.spacingLG)
                 }
             }
         }
@@ -126,9 +126,9 @@ struct V3ResonanceView: View {
     // MARK: - Distribution
 
     private var distributionList: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {
             ForEach(Array(distribution.enumerated()), id: \.offset) { _, row in
-                HStack(spacing: 12) {
+                HStack(spacing: V3Tokens.spacingMD) {
                     Text(row.mood.label)
                         .bodySM()
                         .foregroundColor(V3Tokens.ink)

@@ -1468,3 +1468,19 @@ one day.";
 "report.context.share" = "动态";
 
 "circle.resonanceTitle" = "共鸣";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "设置";
+"settings.group.circle" = "圈子";
+"settings.group.about" = "关于";
+"settings.group.developer" = "开发者";
+"settings.reminder" = "提醒";
+"settings.musicSource" = "音乐来源";
+"settings.myFriends" = "我的好友";
+"settings.deleteAccount" = "删除账户";
+"settings.watchOnboarding" = "查看引导";
+"settings.sampleCircleData" = "示例数据";
+"settings.sampleCircleDataNote" = "用示例好友填充圈子标签页。";
+"settings.appLock" = "应用锁";
+"settings.appLockGeneric" = "设备密码";

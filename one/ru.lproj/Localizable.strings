@@ -1471,3 +1471,19 @@ one day.";
 "report.context.share" = "ЗАПИСЬ";
 
 "circle.resonanceTitle" = "Созвучие";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "НАСТРОЙКИ";
+"settings.group.circle" = "КРУГ";
+"settings.group.about" = "О ПРИЛОЖЕНИИ";
+"settings.group.developer" = "РАЗРАБОТЧИК";
+"settings.reminder" = "Напоминание";
+"settings.musicSource" = "Источник музыки";
+"settings.myFriends" = "Мои друзья";
+"settings.deleteAccount" = "Удалить аккаунт";
+"settings.watchOnboarding" = "Посмотреть введение";
+"settings.sampleCircleData" = "Тестовые данные";
+"settings.sampleCircleDataNote" = "Заполняет вкладку «Круг» тестовыми друзьями.";
+"settings.appLock" = "Блокировка";
+"settings.appLockGeneric" = "Код устройства";

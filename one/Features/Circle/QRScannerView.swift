@@ -57,7 +57,7 @@ struct QRScannerView: View {
                     }
 
                 } else if permissionDenied {
-                    VStack(spacing: 20) {
+                    VStack(spacing: V3Tokens.spacingXL) {
                         Image(systemName: "camera.slash")
                             .displayXXL()
                             .fontWeight(.ultraLight)
@@ -72,7 +72,7 @@ struct QRScannerView: View {
                         }
                         .monoSM(tracking: 0)
                         .foregroundColor(.white)
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, V3Tokens.spacingXL)
                         .padding(.vertical, 10)
                         .background(Capsule().stroke(Color.white.opacity(0.5), lineWidth: 1))
                     }
