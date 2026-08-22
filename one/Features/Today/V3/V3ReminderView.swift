@@ -112,7 +112,9 @@ struct V3ReminderView: View {
         }) {
             Text(symbol)
                 .font(V3Typography.sans(20, weight: .regular))
-                .foregroundColor(Color(hex: "#5A5A66"))
+                // Adaptive: ham #5A5A66 açık zemine göre seçilmişti, koyu
+                // temada koyu zeminin üstünde okunmuyordu.
+                .foregroundColor(V3Tokens.mutedText)
                 .frame(width: 44, height: 44)
                 .background(
                     RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
@@ -282,7 +284,11 @@ struct V3ReminderView: View {
                             Spacer()
                             Text(NSLocalizedString("general.now", comment: ""))
                                 .font(V3Typography.mono(10, weight: .regular))
-                                .foregroundColor(Color(hex: "#6E6E7C"))
+                                // Aynı satırdaki kardeşi zaten `darkMuted`.
+                                // Ham #6E6E7C, `ghostText`in erişilebilirlik
+                                // düzeltmesi öncesi değeriydi — koyu bildirim
+                                // zemininde 3.89:1, AA altı.
+                                .foregroundColor(V3Tokens.darkMuted)
                         }
                         Text(previewNotification.title)
                             .bodyMDSemibold()

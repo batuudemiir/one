@@ -87,6 +87,14 @@ enum V3Tokens {
     static let darkGround = Color(hex: "#0C0C10")
     static let darkText   = Color(hex: "#F2F1EE")
     static let darkMuted  = Color(hex: "#9A9AA6")
+    /// Koyu temanın `wash` ve `hairline` değerlerinin tema-bağımsız ikizleri.
+    ///
+    /// Kamera vizörünün zemin degradesi bunları göz kararı yaklaşıklarıyla
+    /// yazıyordu (#1A1A20 ve #23232B) — yani koyu paletin *yanından* geçen
+    /// ama ona ait olmayan iki ton. Değerler artık koyu temanınkilerle
+    /// birebir; fark gözle ayırt edilmiyordu zaten, ama palet tek oldu.
+    static let darkWash     = Color(hex: "#1D1D24")
+    static let darkHairline = Color(hex: "#24242C")
 
     // MARK: - Dışa aktarılan yüzeyler (Export)
 
@@ -131,6 +139,15 @@ enum V3Tokens {
     static let success = Color(hex: "#4CAF82")
     static let info    = Color(hex: "#5B8DEF")
     static let danger  = Color(hex: "#E84040")
+    /// Tehlike **zemini** — üstünde `bone` metin taşıyan dolu yüzeyler
+    /// (hata şeridi, yıkıcı eylem düğmesi).
+    ///
+    /// `danger` neden yetmiyor: #E84040 paper üstünde metin/ikon olarak
+    /// doğru, ama zemin olarak kullanıldığında `bone` ile arası 3.84:1 —
+    /// AA'nın altında. Bu yüzden hata şeridi kendi ham #CC3333'ünü
+    /// yazıyordu (4.92:1) ve token ailesinden kaçmış görünüyordu; aslında
+    /// eksik olan token'dı, kaçan çağrı değil.
+    static let dangerGround = Color(hex: "#CC3333")
     static let warning = Color(hex: "#FB6F3B")
 
     // MARK: - Boşluk ölçeği
@@ -187,12 +204,18 @@ enum V3Tokens {
 
     /// İçerik kanalı — ekranın sol/sağ kenar payı.
     ///
-    /// Tek sayı olarak duruyor çünkü hizalanması gereken şey bir "boşluk
-    /// adımı" değil, **dikey bir hat**: kök sekmeler bu hattı kullanıyor
-    /// (24), üst çubuk kendi 4pt düğme boşluğunu telafi ederek aynı hatta
-    /// oturuyor, alt ekranların gövdesi ise `spacingXL`'den (22)
-    /// besleniyordu — yani her alt ekranda başlık ile altındaki içerik 2pt
-    /// kaymış duruyordu.
+    /// Ölçekten ayrı duruyor çünkü hizalanması gereken şey bir "boşluk
+    /// adımı" değil, **dikey bir hat**: ekranın başlığı, gövdesi ve üst
+    /// çubuğu aynı çizgiye oturmalı. Üst çubuk kendi 4pt düğme boşluğunu
+    /// `barInset` ile telafi ederek aynı hatta geliyor.
+    ///
+    /// Değeri `spacingXL2` ile aynı (24) ama anlamı değil: kart **içi** bir
+    /// boşluk ölçekten seçilir, ekranın **kenarı** buradan. `oneScreenBody()`
+    /// bunu sarıyor — gövdeye onu uygula, sayıyı değil.
+    ///
+    /// (Tarihçe: alt ekranların gövdesi bir ara 22'den besleniyordu ve
+    /// başlıkla içerik her alt ekranda 2pt kaymış duruyordu. Ölçek 4pt
+    /// ızgaraya oturunca o fark kapandı.)
     static let channel: CGFloat = 24
 
     /// Üst çubuk satırının kenar payı.

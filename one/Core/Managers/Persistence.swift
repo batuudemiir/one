@@ -111,6 +111,7 @@ final class PersistenceController: ObservableObject {
                     // ise yalnızca tazeleme tetikleyicisi. Geç abone olan
                     // tüketici zaten uzlaşmış veriyi okuyor.
                     self?.setupRemoteChangeNotifications()
+                    self?.schedulePersistentHistoryPurge()
                 }
             }
 
@@ -183,6 +184,34 @@ final class PersistenceController: ObservableObject {
         }
     }
 
+    // MARK: - Persistent history budama
+
+    /// `NSPersistentHistoryTrackingKey` açık ve geçmiş hiç budanmıyordu.
+    ///
+    /// Transaction tablosu her yazımda büyüyor, WAL onunla birlikte şişiyor
+    /// (açılışta 1000+ frame'lik checkpoint) ve `loadPersistentStores` her
+    /// açılışta biraz daha uzuyor. Ölçülen 5079ms'lik store açılışının
+    /// büyüyen kısmı bu.
+    ///
+    /// 7 gün, CloudKit mirroring için güvenli pencere: importer işlenmemiş
+    /// transaction'ları bu süreden çok daha hızlı tüketiyor. Daha agresif bir
+    /// eşik henüz export edilmemiş değişiklikleri silme riski taşır.
+    private func schedulePersistentHistoryPurge() {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date().addingTimeInterval(-7 * 86_400)
+        let context = container.newBackgroundContext()
+        context.perform {
+            let request = NSPersistentHistoryChangeRequest.deleteHistory(before: cutoff)
+            do {
+                try context.execute(request)
+                ONELogger.debug("Persistent history budandı (<\(cutoff))", category: .persistence)
+            } catch {
+                // Budama başarısızlığı veri kaybı değil, yalnız açılış biraz
+                // daha yavaş kalır — sessizce geç.
+                ONELogger.warning("Persistent history budanamadı: \(error.localizedDescription)", category: .persistence)
+            }
+        }
+    }
+
     /// Uzak değişiklik uzlaştırması için debounce penceresi.
     ///
     /// CloudKit ilk sync'te tek tek değil, salvo hâlinde bildirim yolluyor.
@@ -234,7 +263,7 @@ final class PersistenceController: ObservableObject {
         }
     }
     
-    // #10 — Pas günü: renk/şarkı yok, streak korunur
+    // #10 — Pas günü: renk/şarkı yok
     func savePassedDay(date: Date, context: NSManagedObjectContext) {
         let normalizedDate = Calendar.current.startOfDay(for: date)
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
@@ -579,9 +608,19 @@ extension Color {
 extension Notification.Name {
     /// CloudKit'ten gelen değişiklik indi ve uzlaştırıldı.
     ///
-    /// `@FetchRequest` kullanan ekranlar `automaticallyMergesChangesFromParent`
-    /// sayesinde zaten tazeleniyor. Bu bildirim, background context'ten
-    /// `@Published` dizilere kopyalayan tüketiciler için — `ArchiveStore`,
-    /// `ProfileViewModel`, `TodayViewModel`. Onlar merge'i görmüyor.
+    /// Bu bildirim, fetch sonucunu `@Published` / `@State` dizilere kopyalayan
+    /// tüketiciler için: merge context'e işlense de kopya bayat kalıyor.
+    /// Projede `@FetchRequest` kullanan ekran yok, yani
+    /// `automaticallyMergesChangesFromParent` tek başına hiçbir ekranı
+    /// tazelemiyor.
+    ///
+    /// Aboneler:
+    /// - `ArchiveStore.reloadAfterRemoteChange()`
+    /// - `TodayViewModel.refreshAfterRemoteChange()`
+    /// - `V3ProfileView` — `.onReceive` -> `loadMoments()`
+    /// - `EchoViewModel.refreshAfterRemoteChange()`
+    ///
+    /// `ProfileViewModel` abone değil ve olmamalı: moment okumuyor, yalnızca
+    /// `deleteAccount()` içinde toplu siliyor.
     static let momentsDidChangeRemotely = Notification.Name("momentsDidChangeRemotely")
 }

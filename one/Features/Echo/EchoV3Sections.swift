@@ -484,6 +484,6 @@ private extension Color {
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         ui.getRed(&r, green: &g, blue: &b, alpha: &a)
         let luma = 0.2126 * r + 0.7152 * g + 0.0722 * b
-        return luma > 0.62 ? Color(hex: "#14141A") : Color(hex: "#FBFAF7")
+        return luma > 0.62 ? ONEBrand.ink : ONEBrand.bone
     }
 }

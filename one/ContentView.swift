@@ -56,6 +56,25 @@ struct ContentView: View {
 
     /// Kabuk en az bir kez çizildi mi.
     @State private var shellDidMount = false
+
+    /// CoreData kapısı zaman aşımına uğradı mı.
+    ///
+    /// Splash'in tek çıkış kapısı `persistence.isReady`'ydi ve o kapının
+    /// timeout'u yoktu: `loadPersistentStores` CloudKit mirroring kurulumu +
+    /// birikmiş persistent history yüzünden uzarsa (ölçülen: 5079ms) kullanıcı
+    /// o kadar süre kor ekrana bakıyor; iCloud'a hiç erişilemezse kilitleniyor.
+    ///
+    /// Süre dolduğunda kabuk store olmadan kurulur. Bu güvenli değil ama
+    /// *görünür*: hiçbir ekran `isReady`'yi dinlemiyor ve
+    /// `momentsDidChangeRemotely` yalnızca store yüklendikten *sonra*
+    /// atılıyor, yani zaman aşımıyla kurulan kabuğu kurtarmıyor. Bu yüzden
+    /// store sonradan geldiğinde kabuk `.id()` ile bir kez yeniden
+    /// kuruluyor. Normal açılışta `isReady` zaten mount anında true —
+    /// `.id` hiç değişmiyor, yeniden kurulum maliyeti yok.
+    @State private var storeGateExpired = false
+
+    /// Store'un splash'i tutabileceği en uzun süre.
+    private let storeGateTimeout: TimeInterval = 2.0
     
     var body: some View {
         ZStack {
@@ -82,8 +101,11 @@ struct ContentView: View {
                 //
                 // Splash'in kapanma kararı hâlâ `effectiveAppReady`'de —
                 // erken mount, erken kapanma demek değil.
-                if persistence.isReady {
+                if persistence.isReady || storeGateExpired {
                     ONEColorPickerView(splashHandoffNS: splashHandoffNS)
+                        // Yalnız zaman aşımı yolunda değişir: store geç
+                        // geldiğinde kabuğu bir kez yeniden kurar.
+                        .id(persistence.isReady)
                         .opacity(isActive ? 1 : 0)
                         // Kabuk 0.99'dan açılıyor: splash kalkarken uygulama
                         // "yerine oturuyor" hissi. 0.985 fazla yumuşaktı ve
@@ -235,6 +257,15 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            // CoreData kapısının emniyet zamanlayıcısı — splash'i store'a
+            // süresiz bağlamamak için.
+            DispatchQueue.main.asyncAfter(deadline: .now() + storeGateTimeout) {
+                guard !persistence.isReady else { return }
+                ONELaunchSignpost.event("coredata.gate.timeout")
+                ONELogger.warning("CoreData store \(Int(storeGateTimeout * 1000))ms'de açılmadı — kabuk store'suz kuruluyor", category: .persistence)
+                storeGateExpired = true
+            }
+
             // Apple ID credential state doğrulaması — Keychain'de userID varsa
             // status init'te `.signedIn`, burada async olarak revoked/notFound
             // kontrolü yapıp gerekirse gate'i geri aç.

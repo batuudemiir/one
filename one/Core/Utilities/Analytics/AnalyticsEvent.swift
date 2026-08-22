@@ -30,7 +30,6 @@ enum AnalyticsEvent {
     /// Faz 4 — `entryIndex` aktivasyon eşiği ("ilk 3 günde ≥2 entry") için şart:
     /// event bazında kaçıncı kayıt olduğu bilinmeden eşik hesaplanamıyordu.
     case entrySaved(hasPhoto: Bool, hasNote: Bool, entryIndex: Int)
-    case streakFreezeConsumed                        // B1 — soft streak freeze devreye girdi
     case entryBackfilled(daysAgo: Int)               // Faz 3 — geri tarihli (telafi) giriş
     /// Faz 4 — izin prompt'unun NE ZAMAN çıktığını ölçen tek şey. Prompt'u
     /// cold start'tan onboarding'e taşımanın işe yarayıp yaramadığı ancak
@@ -92,7 +91,6 @@ enum AnalyticsEvent {
         case .photoAdded:                return "photo_added"
         case .noteAdded:                 return "note_added"
         case .entrySaved:                return "entry_saved"
-        case .streakFreezeConsumed:      return "streak_freeze_consumed"
         case .entryBackfilled:           return "entry_backfilled"
         case .notifPermissionPrompted:   return "notif_permission_prompted"
         case .notifPermissionResult:     return "notif_permission_result"
@@ -132,7 +130,6 @@ enum AnalyticsEvent {
              .monthlyPosterShared, .songSelected,
              .userBlocked, .userUnblocked,
              .firstEntryInviteHookShown,
-             .streakFreezeConsumed,
              .notifPermissionPrompted:
             return [:]
         case .firstEntryInviteHookAction(let action):

@@ -41,9 +41,6 @@ enum TimeOfDay {
 
 enum NotificationKind: String, CaseIterable {
     case dailyReminder
-    case streakWarning
-    case streakEscalation
-    case streakMilestone
     case weeklySummary
     case monthEndSummary
     case circleActivity
@@ -68,8 +65,7 @@ enum NotificationKind: String, CaseIterable {
 
     var priority: NotificationPriority {
         switch self {
-        case .streakWarning, .streakEscalation, .streakMilestone,
-             .friendRequest, .friendAccepted:
+        case .friendRequest, .friendAccepted:
             return .critical
         case .friendShared:
             return .critical
@@ -100,8 +96,6 @@ enum NotificationKind: String, CaseIterable {
 
     var categoryIdentifier: String {
         switch self {
-        case .streakWarning, .streakEscalation, .streakMilestone:
-            return "STREAK_WARNING"
         case .weeklySummary:          return "WEEKLY_SUMMARY"
         case .friendShared, .circleActivity: return "FRIEND_SHARED"
         case .friendRequest:          return "FRIEND_REQUEST"

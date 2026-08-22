@@ -65,14 +65,6 @@ enum WidgetDataWriter {
         ONELogger.debug("WidgetDataWriter: \(capped.count) friend shares written", category: .general)
     }
 
-    // MARK: - Streak
-
-    /// Write current streak count so widgets can display it.
-    static func writeStreak(_ streak: Int) {
-        guard let defaults = sharedDefaults else { return }
-        defaults.set(streak, forKey: "widget_streak")
-        WidgetCenter.shared.reloadAllTimelines()
-    }
 
     // MARK: - Clear (call on midnight reset or sign-out)
 
@@ -90,7 +82,7 @@ enum WidgetDataWriter {
             }
         }
 
-        // Clear today's keys (streak persists — it survives midnight resets)
+        // Clear today's keys
         ["widget_songName", "widget_artistName", "widget_moodLabel",
          "widget_moodColorHex", "widget_savedAt", "widget_note",
          "widget_entryCount", "widget_friendShares",

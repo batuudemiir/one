@@ -2,7 +2,7 @@
 // NotificationMessageBuilder.swift
 // one
 //
-// title/body üretimi. TimeOfDay + NotificationKind + son mood + streak +
+// title/body üretimi. TimeOfDay + NotificationKind + son mood +
 // A/B bucket girdilerine göre deterministik seçim yapar (aynı seed → aynı
 // mesaj). Varyantlar arası eşit dağılım için `seed % count` kullanılır.
 //
@@ -21,7 +21,6 @@ struct MessageContext {
  let timeOfDay: TimeOfDay
  let lastMoodLabel: String?
  let recentMoodLabels: [String] // B6 — son 3 mood (en yenisi başta)
- let streakDays: Int
  let friendName: String?
  let friendCount: Int
  let emoji: String?
@@ -35,9 +34,10 @@ struct MessageContext {
  return wd == 1 || wd == 7 // 1=Pazar, 7=Cumartesi
  }
 
- /// B6 — Son 3 entry'de"ağır" mood serisi var mı? Birikmiş yoğunluğu
+ /// B6 — Son 3 entry'de "ağır" mood dizisi var mı? (seri sayacıyla
+    /// ilgisi yok — mood tonuna bakıyor.) Birikmiş yoğunluğu
  /// yumuşak bir tonda kabul eden push tetikler.
- var isHeavyMoodStreak: Bool {
+ var isHeavyMoodRun: Bool {
  let heavySet: Set<String> = [
 "yorgun", "kırgın", "üzgün", "kaygılı", "stresli", "öfkeli", "boş", "bunalmış",
 "tired", "anxious", "sad", "stressed", "angry", "empty", "overwhelmed"
@@ -52,7 +52,6 @@ struct MessageContext {
  now: Date = Date(),
  lastMoodLabel: String? = EngagementTracker.lastMoodLabel,
  recentMoodLabels: [String]? = nil,
- streakDays: Int = 0,
  friendName: String? = nil,
  friendCount: Int = 1,
  emoji: String? = nil,
@@ -65,7 +64,6 @@ struct MessageContext {
  self.timeOfDay = TimeOfDay.from(now)
  self.lastMoodLabel = lastMoodLabel
  self.recentMoodLabels = recentMoodLabels ?? EngagementTracker.recentMoodLabels(limit: 3)
- self.streakDays = streakDays
  self.friendName = friendName
  self.friendCount = friendCount
  self.emoji = emoji
@@ -101,9 +99,6 @@ enum NotificationMessageBuilder {
  private static func variants(for ctx: MessageContext) -> [(title: String, body: String)] {
  switch ctx.kind {
  case .dailyReminder: return dailyReminderVariants(ctx)
- case .streakWarning: return streakWarningVariants(ctx)
- case .streakEscalation: return streakEscalationVariants(ctx)
- case .streakMilestone: return streakMilestoneVariants(ctx)
  case .weeklySummary: return weeklySummaryVariants(ctx)
  case .monthEndSummary: return monthlyPortraitVariants(ctx)
  case .circleActivity: return circleActivityVariants(ctx)
@@ -222,24 +217,14 @@ enum NotificationMessageBuilder {
 
  // MARK: - Nurture Day 3 — ilk haftan başladı (B3)
 
- /// Day-3 push'u kullanıcıya ilerlemesini ve ilk rozete kalan mesafeyi
- /// somutlaştırır. Loss aversion + görünür ilerleme = D7 habit loop.
- private static func nurtureDay3Variants(_ ctx: MessageContext) -> [(String, String)] {
- // 3 gün üst üste tamamladıysa kalan 4 gün → 7-gün rozeti çekiminde.
- let streak = max(0, ctx.streakDays)
- if streak >= 3 {
- let remainingTo7 = max(1, 7 - streak)
- return [
- ("İlk haftan başladı", "\(streak) gün arka arkaya. \(remainingTo7) gün daha = ilk rozet."),
- ("Üç gün, sağlam bir ritim", "\(remainingTo7) gün daha streak'ini taçlandırır.")
- ]
- }
- // Streak 3'ten azsa (kayıp olmuş): kibar geri davet
- return [
- ("Alışkanlık 3. günde kök salar", "Bugün de bir şarkı bırak, seri başlasın."),
- ("İlk haftan seni bekliyor", "Tek bir entry yeter, streak yeniden başlasın.")
- ]
- }
+ /// Day-3 push'u yeni kullanıcıyı üçüncü gün geri çağırır.
+    private static func nurtureDay3Variants(_ ctx: MessageContext) -> [(String, String)] {
+        // Davet sayıya değil eyleme bakıyor.
+        [
+            ("Alışkanlık 3. günde kök salar", "Bugün de bir renk bırak."),
+            ("İlk haftan seni bekliyor", "Tek bir an yeter.")
+        ]
+    }
 
  // MARK: - Nurture Day 2 — widget kurulumu (B5)
 
@@ -282,7 +267,7 @@ enum NotificationMessageBuilder {
  let mood = ctx.lastMoodLabel
 
  // B6 — Ağır mood serisi: yumuşak, dayatmasız, soft aesthetic ton
- if ctx.isHeavyMoodStreak {
+ if ctx.isHeavyMoodRun {
  return [
  ("Birkaç gündür yoğunsun", "Küçük bir nefes ve tek bir kelime — kendine zaman tanı."),
  ("Yavaş bir gün için", "Bugünkü hissini ONE'a bırak, üzerinde durma.")
@@ -338,39 +323,6 @@ enum NotificationMessageBuilder {
  }
  }
 
- // MARK: - Streak
-
- private static func streakWarningVariants(_ ctx: MessageContext) -> [(String, String)] {
- [("Serin kırılmak üzere",
-"\(ctx.streakDays) günlük serin var. Bugün şarkını seç!")]
- }
-
- private static func streakEscalationVariants(_ ctx: MessageContext) -> [(String, String)] {
- let d = ctx.streakDays
- if d >= 30 {
- return [("30+ günlük serin tehlikede", "Hemen bir şarkı seç, bu kadar yolu bırakma.")]
- } else if d >= 7 {
- return [("Serin kırılmak üzere", "\(d) günlük serini kaybetme. Bugün seçimini yap!")]
- } else if d >= 2 {
- return [("Bugün seçim yapmayı unuttun mu? ", "\(d) günlük serin devam ediyor. Kapatma!")]
- } else {
- return [("Serini başlatmak ister misin? ", "Bugün bir şarkı seç ve streake başla.")]
- }
- }
-
- private static func streakMilestoneVariants(_ ctx: MessageContext) -> [(String, String)] {
- let d = ctx.streakDays
- switch d {
- case 7: return [("7 gün seri!", "Bir hafta boyunca kendine sadık kaldın. Paylaşmak ister misin? ")]
- case 14: return [("2 hafta!", "14 gün, 14 mood. Posterini paylaş.")]
- case 30: return [("30 gün, tam bir ay!", "Bu serinin posterini hazırlayalım mı? ")]
- case 50: return [("50 gün", "Yarısı 100'e kaldı. Çevren gurur duyacak.")]
- case 100: return [("100 GÜN!", "Nadir hissedilen bir süreklilik. Paylaşmak için mükemmel gün.")]
- case 200: return [("200 gün", "Bu ritim sana ait. Posterine bir göz at.")]
- case 365: return [("BİR YIL!", "365 mood, 365 şarkı. Efsanesin.")]
- default: return [("\(d) gün seri!", "Paylaşmak ister misin? ")]
- }
- }
 
  // MARK: - Circle
 

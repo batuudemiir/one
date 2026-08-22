@@ -76,46 +76,17 @@ struct TodayModelsTests {
         #expect(result.artworkURLString == nil)
     }
 
-    // MARK: - MoodOption
-
-    @Test("MoodOption.all has exactly 8 moods")
-    func testMoodOptionCount() {
-        #expect(MoodOption.all.count == 8)
-    }
-
-    @Test("MoodOption.all contains all expected keys")
-    func testMoodOptionKeys() {
-        let expectedKeys = ["tutkulu", "enerjik", "isikli", "sakin", "derin", "gizemli", "bos", "temiz"]
-        let actualKeys = MoodOption.all.map { $0.key }
-
-        for key in expectedKeys {
-            #expect(actualKeys.contains(key), "MoodOption.all should contain key '\(key)'")
-        }
-    }
-
-    @Test("MoodOption.all contains all expected labels")
-    func testMoodOptionLabels() {
-        let expectedLabels = ["Tutkulu", "Enerjik", "Işıklı", "Sakin", "Derin", "Gizemli", "Boş", "Temiz"]
-        let actualLabels = MoodOption.all.map { $0.label }
-
-        for label in expectedLabels {
-            #expect(actualLabels.contains(label), "MoodOption.all should contain label '\(label)'")
-        }
-    }
-
-    @Test("MoodOption.all has unique ids")
-    func testMoodOptionUniqueIds() {
-        let ids = MoodOption.all.map { $0.id }
-        let uniqueIds = Set(ids)
-        #expect(ids.count == uniqueIds.count, "All MoodOption ids should be unique")
-    }
-
-    @Test("MoodOption.all has unique keys")
-    func testMoodOptionUniqueKeys() {
-        let keys = MoodOption.all.map { $0.key }
-        let uniqueKeys = Set(keys)
-        #expect(keys.count == uniqueKeys.count, "All MoodOption keys should be unique")
-    }
+    // `MoodOption` testleri kaldırıldı.
+    //
+    // Tip üründen çıktı: 12-mood `ONEMood` ile 9-mood `V3Mood` yanında
+    // duran **üçüncü** bir liste, üstelik kendi kelime dağarcığıyla
+    // ("tutkulu", "gizemli", "boş", "temiz") ve 8 elemanla — ne ONEMood'un
+    // on ikisiyle ne V3Mood'un dokuzuyla örtüşüyordu. Hiçbir ekran
+    // okumuyordu.
+    //
+    // Aynı kapsam artık `MoodCompletenessTests` içinde, kanonik enum
+    // (`V3Mood`) üstünde: sayı, benzersizlik, etiket/anlam bütünlüğü ve
+    // hex roundtrip.
 
     // MARK: - FeelingOption
 

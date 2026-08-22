@@ -37,7 +37,7 @@ extension TodayViewModel {
         ) else { return }
 
         // vm'nin published state'ini yenile — bir sonraki render'da Kaydedildi
-        // ekranı, son 7 gün şeridi ve streak count doğru veriyle gelir.
+        // ekranı ve son 7 gün şeridi doğru veriyle gelir.
         reloadAfterV3Save()
     }
 }

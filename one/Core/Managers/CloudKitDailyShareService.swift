@@ -607,8 +607,14 @@ extension CloudKitManager {
     /// Kullanıcının tüm geçmiş girişleriyle arkadaşların DailyShare'lerini karşılaştırır.
     /// Aynı gün aynı şarkıyı (songName + artistName, büyük/küçük harf duyarsız) seçtikleri
     /// günleri döndürür.
+    ///
+    /// `myEntries` bilerek `DailySong` değil: aşağıdaki karşılaştırma CloudKit
+    /// tamamlama bloklarının içinde, yani rastgele bir kuyrukta koşuyor.
+    /// `NSManagedObject` property'lerini oradan okumak viewContext'i kendi
+    /// kuyruğu dışında kullanmak olurdu. Alanlar çağıran tarafta, ana aktörde
+    /// çıkarılıyor — bkz. `CircleSyncCandidate`.
     func fetchCircleSyncMatches(
-        myEntries: [DailySong],
+        myEntries: [CircleSyncCandidate],
         completion: @escaping (Result<[CircleSyncMatch], Error>) -> Void
     ) {
         guard !myEntries.isEmpty else {
@@ -660,7 +666,7 @@ extension CloudKitManager {
 
                     // 3. Kendi girişlerimin tarih aralığını belirle
                     let calendar = Calendar.current
-                    let myDates = myEntries.compactMap { $0.date }.map { calendar.startOfDay(for: $0) }
+                    let myDates = myEntries.map { calendar.startOfDay(for: $0.date) }
                     guard let minDate = myDates.min(),
                           let maxDateBase = myDates.max(),
                           let maxDate = calendar.date(byAdding: .day, value: 1, to: maxDateBase)
@@ -700,11 +706,12 @@ extension CloudKitManager {
                         var seen = Set<String>() // deduplicate: aynı gün+şarkı+arkadaş
 
                         for myEntry in myEntries {
-                            guard let myDate = myEntry.date,
-                                  let mySong = myEntry.songName?.trimmingCharacters(in: .whitespaces).lowercased(),
-                                  let myArtist = myEntry.artistName?.trimmingCharacters(in: .whitespaces).lowercased(),
-                                  !mySong.isEmpty
-                            else { continue }
+                            let myDate = myEntry.date
+                            let mySong = myEntry.songName
+                                .trimmingCharacters(in: .whitespaces).lowercased()
+                            let myArtist = myEntry.artistName
+                                .trimmingCharacters(in: .whitespaces).lowercased()
+                            guard !mySong.isEmpty else { continue }
 
                             let dayStart = calendar.startOfDay(for: myDate)
                             guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else { continue }
@@ -730,10 +737,10 @@ extension CloudKitManager {
                                     id: UUID(),
                                     date: myDate,
                                     dateLabel: dateFmt.string(from: myDate),
-                                    songName: myEntry.songName ?? "",
-                                    artistName: myEntry.artistName ?? "",
+                                    songName: myEntry.songName,
+                                    artistName: myEntry.artistName,
                                     friendDisplayName: friendUsers[friendID] ?? "Arkadaş",
-                                    moodColorHex: myEntry.moodColorHex ?? "#888888"
+                                    moodColorHex: myEntry.moodColorHex
                                 )
                                 matches.append(match)
                             }

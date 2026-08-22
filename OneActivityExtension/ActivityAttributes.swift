@@ -18,7 +18,6 @@ struct DailySongActivityAttributes: ActivityAttributes {
         var moodColorHex: String
         var moodIsDark: Bool
         var moodSFSymbol: String
-        var streakCount: Int
         /// true → kutlama fazı (ilk 5 sn), false → normal compact
         var isCelebrating: Bool
         /// "energetic" | "calm" | "deep" — ikonun görsel stilini seçer

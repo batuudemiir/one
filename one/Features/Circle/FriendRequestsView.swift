@@ -294,11 +294,13 @@ struct FriendRequestsView: View {
 
     private func activityIconColor(_ notif: CircleNotification) -> Color {
         switch notif.type {
-        case .friendAccepted:  return Color(hex: "#4CAF82")
-        case .friendShare:     return Color(hex: "#5B8DEF")
-        case .emojiReaction:   return Color(hex: "#FF8C42")
+        case .friendAccepted:  return V3Tokens.success
+        case .friendShare:     return V3Tokens.info
+        // Bu fonksiyon zaten mood paletinden besleniyor (`.moodResonance`
+        // aşağıda `notif.moodColorHex` okuyor); vurgular da oradan gelsin.
+        case .emojiReaction:   return V3Mood.coskulu.color
         case .friendRequest:   return V3Tokens.ink
-        case .comment:         return Color(hex: "#9B7FD4")
+        case .comment:         return V3Mood.gergin.color
         case .moodResonance, .resonance:
             if let hex = notif.moodColorHex, hex.isValidHexColor { return Color(hex: hex) }
             return V3Tokens.mutedText
@@ -387,11 +389,17 @@ struct FriendRequestsView: View {
                         Button(action: { accept(recName: recName) }) {
                             Text(NSLocalizedString("friendRequests.accept", comment: "Kabul Et"))
                                 .bodySM().fontWeight(.semibold)
-                                .foregroundColor(.white)
+                                // `.white` değil `paper`. Zemin `V3Tokens.ink`
+                                // ve o adaptif: koyu temada #F2F1EE'ye dönüyor.
+                                // Yani "Kabul Et" düğmesi koyu temada beyaz
+                                // üstüne beyaz yazıyordu — okunmuyordu.
+                                // `paper` zeminle birlikte ters çevriliyor;
+                                // `V3PrimaryButton` da bu çifti kullanıyor.
+                                .foregroundColor(V3Tokens.paper)
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 44)
+                                .frame(height: V3Tokens.minTouchTarget)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                                         .fill(V3Tokens.ink)
                                 )
                         }
@@ -524,12 +532,12 @@ struct FriendRequestsView: View {
                     // Background mood dots
                     HStack(spacing: 0) {
                         Circle()
-                            .fill(Color(hex: "#FFB5A7").opacity(0.5))
+                            .fill(V3Mood.atesli.pastelColor)
                             .frame(width: 48, height: 48)
                             .offset(x: 12, y: 10)
                         Spacer()
                         Circle()
-                            .fill(Color(hex: "#A8D5B5").opacity(0.5))
+                            .fill(V3Mood.huzurlu.pastelColor)
                             .frame(width: 36, height: 36)
                             .offset(x: -12, y: -8)
                     }
@@ -547,7 +555,7 @@ struct FriendRequestsView: View {
 
                     // Small accent dot
                     Circle()
-                        .fill(Color(hex: "#B8C5F0").opacity(0.7))
+                        .fill(V3Mood.huzunlu.pastelColor)
                         .frame(width: 20, height: 20)
                         .offset(x: 42, y: -24)
                 }

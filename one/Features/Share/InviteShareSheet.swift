@@ -150,7 +150,7 @@ struct InviteShareSheet: View {
                 ShareAppIcon(
                     iconName: "camera.viewfinder",
                     title: "Instagram",
-                    color: Color(hex: "#E1306C"),
+                    color: ExternalBrand.instagram,
                     isEnabled: generatedImage != nil && instaInstalled,
                     action: shareToInstagramStory
                 )

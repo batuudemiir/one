@@ -198,7 +198,15 @@ struct MonthPosterView: View {
                     }
                 }
             }
-            .padding(V3Tokens.spacingXL2)
+            // Tuval payı **sabit** — ekran boşluk ölçeğine bağlı değil.
+            //
+            // Bir süre `V3Tokens.spacingXL2` yazıyordu; ölçek yeniden
+            // ayarlanınca (26 → 24) posterin kompozisyonu haber vermeden
+            // değişti. Bu yüzey 1080×1920 sabit bir tuvale çizilip dışarı
+            // paylaşılıyor: rengi (`V3Tokens.Export`) ve tipografisi
+            // (`sansFixed` / `monoFixed`) zaten tema ve Dynamic Type'tan
+            // bağımsız; geometrisi de ekran ölçeğinden bağımsız olmalı.
+            .padding(26)
         }
     }
 

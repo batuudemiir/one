@@ -31,7 +31,6 @@ struct MonthlySummaryData {
     let topTracks: [TrackEntry]
     let totalEntries: Int                          // Tüm DailySong kayıtları (multi-entry dahil)
     let daysLogged: Int                            // Giriş yapılan benzersiz gün sayısı
-    let monthStreak: Int                           // Ay içindeki en uzun ardışık gün serisi
     let storyTitle: String                         // Hikayeleştirilmiş başlık
     let storySubtitle: String                      // Hikayeleştirilmiş alt metin
 }
@@ -88,7 +87,6 @@ extension MonthlySummaryData {
             ],
             totalEntries: 28,
             daysLogged:   22,
-            monthStreak:  9,
             storyTitle: "Enerjik Müziklerin Ayı",
             storySubtitle: "En çok akşam 20:00'de düşüncelere daldın."
         )

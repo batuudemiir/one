@@ -138,9 +138,9 @@ struct V3CameraView: View {
                 .background(
                     LinearGradient(
                         stops: [
-                            .init(color: Color(hex: "#23232B"), location: 0),
-                            .init(color: Color(hex: "#0C0C10"), location: 0.62),
-                            .init(color: Color(hex: "#1A1A20"), location: 1)
+                            .init(color: V3Tokens.darkHairline, location: 0),
+                            .init(color: V3Tokens.darkGround, location: 0.62),
+                            .init(color: V3Tokens.darkWash, location: 1)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing

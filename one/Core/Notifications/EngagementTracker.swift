@@ -22,7 +22,6 @@ enum EngagementTracker {
         static let lastMoodLabel        = "engagement.lastMoodLabel"
         static let lastMoodColorHex     = "engagement.lastMoodColorHex"
         static let recentMoodLabels     = "engagement.recentMoodLabels"
-        static let lastKnownStreak      = "engagement.lastKnownStreak"
         static let lastKnownFriendCount = "engagement.lastKnownFriendCount"
         static let nurtureStartedAt     = "engagement.nurtureStartedAt"
         static let abBucket             = "engagement.abBucket"
@@ -174,11 +173,6 @@ enum EngagementTracker {
         return Array(arr.prefix(limit))
     }
 
-    /// B3 — Son hesaplanmış streak (push planlama anında okunur).
-    static var lastKnownStreak: Int {
-        get { defaults.integer(forKey: Key.lastKnownStreak) }
-        set { defaults.set(newValue, forKey: Key.lastKnownStreak) }
-    }
 
     /// B4 — Son bilinen arkadaş sayısı (Day-4 circle invite push'unu gate'ler).
     static var lastKnownFriendCount: Int {

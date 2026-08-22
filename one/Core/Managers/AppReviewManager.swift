@@ -3,7 +3,7 @@
 //  one
 //
 //  Puan isteme: 3. gün, 2. giriş, müzik anı sonrasında (tek seferlik).
-//  Diğer triggerlar (streak, arkadaş) için de 60 gün cooldown uygulanır.
+//  Diğer triggerlar (arkadaş) için de 60 gün cooldown uygulanır.
 //
 
 import StoreKit
@@ -30,12 +30,8 @@ final class AppReviewManager {
         requestReview(delay: 1.5)
     }
 
-    // MARK: - Secondary triggers (streak milestone, first friend)
+    // MARK: - Secondary triggers (first friend)
 
-    func logStreakMilestone(_ days: Int) {
-        guard days == 7 || days == 14 || days == 30 else { return }
-        requestReviewIfCooldownPassed()
-    }
 
     func logFirstFriendAdded() {
         requestReviewIfCooldownPassed()

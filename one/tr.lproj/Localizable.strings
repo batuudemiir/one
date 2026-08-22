@@ -1012,7 +1012,6 @@
 "discover.emptyCta" = "Bugünkü mood'unu seç";
 
 /* B1 — Streak / freeze (soft streak) */
-"streak.freezeUsed.toast" = "Bir gün geçti, sorun değil.";
 "badges.streak3.title" = "3 Gün";
 "badges.streak3.desc" = "İlk halka kapandı";
 "badges.streak14.title" = "14 Gün";

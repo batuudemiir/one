@@ -430,10 +430,10 @@ private struct V3DetailsPhotoSourceSheet: View {
                         Text(NSLocalizedString("entry.removePhoto", comment: ""))
                             .bodyMDSemibold()
                     }
-                    .foregroundColor(Color(hex: "#FF3B1F"))
+                    .foregroundColor(V3Tokens.kor)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(Capsule().stroke(Color(hex: "#FF3B1F").opacity(0.5), lineWidth: 1.5))
+                    .background(Capsule().stroke(V3Tokens.kor.opacity(0.5), lineWidth: 1.5))
                 }
                 .buttonStyle(.onePressable)
             }
@@ -580,6 +580,6 @@ private extension Color {
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         ui.getRed(&r, green: &g, blue: &b, alpha: &a)
         let luma = 0.2126 * r + 0.7152 * g + 0.0722 * b
-        return luma > 0.62 ? Color(hex: "#14141A") : Color(hex: "#FBFAF7")
+        return luma > 0.62 ? ONEBrand.ink : ONEBrand.bone
     }
 }

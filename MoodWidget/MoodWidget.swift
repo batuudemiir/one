@@ -53,7 +53,6 @@ struct MoodEntry: TimelineEntry {
     let moodColorHex: String
     let note: String
     let entryCount: Int
-    let streak: Int
     var isYesterday: Bool = false
     let friends: [FriendShareItem]
 
@@ -63,7 +62,7 @@ struct MoodEntry: TimelineEntry {
     static let empty = MoodEntry(
         date: Date(), songName: "", artistName: "", moodLabel: "",
         moodColorHex: "#5B8DEF", note: "", entryCount: 0,
-        streak: 0, friends: []
+        friends: []
     )
 }
 
@@ -77,7 +76,7 @@ struct MoodWidgetProvider: TimelineProvider {
         MoodEntry(
             date: Date(), songName: "Sycamore", artistName: "The National",
             moodLabel: "Nostaljik", moodColorHex: "#8B6FA8",
-            note: "bugün biraz böyle hissettim", entryCount: 1, streak: 5,
+            note: "bugün biraz böyle hissettim", entryCount: 1,
             friends: [
                 FriendShareItem(name: "Elif", songName: "Sycamore", artistName: "The National", moodColorHex: "#8B6FA8", moodWord: "Nostaljik"),
                 FriendShareItem(name: "Can", songName: "Redbone", artistName: "Childish Gambino", moodColorHex: "#E07A5F", moodWord: "Enerjik"),
@@ -121,7 +120,6 @@ struct MoodWidgetProvider: TimelineProvider {
         let d = shared
         let todaySong = d?.string(forKey: "widget_songName") ?? ""
         let friends = decodeFriends(from: d)
-        let streak = d?.integer(forKey: "widget_streak") ?? 0
 
         if !todaySong.isEmpty {
             return MoodEntry(
@@ -132,7 +130,6 @@ struct MoodWidgetProvider: TimelineProvider {
                 moodColorHex: d?.string(forKey: "widget_moodColorHex") ?? "#5B8DEF",
                 note:         d?.string(forKey: "widget_note")         ?? "",
                 entryCount:   d?.integer(forKey: "widget_entryCount")  ?? 0,
-                streak:       streak,
                 isYesterday:  false,
                 friends:      friends
             )
@@ -148,7 +145,6 @@ struct MoodWidgetProvider: TimelineProvider {
                 moodColorHex: d?.string(forKey: "widget_prev_moodColorHex") ?? "#5B8DEF",
                 note:         "",
                 entryCount:   0,
-                streak:       streak,
                 isYesterday:  true,
                 friends:      friends
             )
@@ -156,8 +152,7 @@ struct MoodWidgetProvider: TimelineProvider {
 
         return MoodEntry(
             date: Date(), songName: "", artistName: "", moodLabel: "",
-            moodColorHex: "#5B8DEF", note: "", entryCount: 0,
-            streak: streak, friends: friends
+            moodColorHex: "#5B8DEF", note: "", entryCount: 0, friends: friends
         )
     }
 
@@ -203,23 +198,6 @@ struct MoodBubble: View {
     }
 }
 
-struct StreakPill: View {
-    let streak: Int
-    var tint: Bool = false
-
-    var body: some View {
-        HStack(spacing: 3) {
-            Image(systemName: "flame.fill")
-                .font(.system(size: 7, weight: .semibold))
-            Text("\(streak)")
-                .font(.system(size: 8, weight: .bold, design: .rounded))
-        }
-        .foregroundStyle(tint ? .white.opacity(0.9) : WToken.ember)
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(Capsule().fill(tint ? Color.white.opacity(0.18) : WToken.ember.opacity(0.1)))
-    }
-}
 
 // MARK: - Lock Screen: Inline
 
@@ -359,7 +337,6 @@ struct SmallView: View {
         if !entry.songName.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    if entry.streak > 0 { StreakPill(streak: entry.streak, tint: true) }
                     Spacer()
                     if !entry.sharedFriends.isEmpty {
                         friendHintBadge
@@ -537,12 +514,10 @@ struct MediumView: View {
                             )
                         }
                         Spacer()
-                        if entry.streak > 0 { StreakPill(streak: entry.streak) }
                     }
                 } else {
                     HStack {
                         Spacer()
-                        if entry.streak > 0 { StreakPill(streak: entry.streak) }
                     }
                 }
             }
@@ -567,7 +542,6 @@ struct LargeView: View {
                     .tracking(1.6)
                     .foregroundStyle(WToken.accent)
                 Spacer()
-                if entry.streak > 0 { StreakPill(streak: entry.streak) }
                 if !entry.friends.isEmpty {
                     Text("\(entry.sharedFriends.count)/\(entry.friends.count)")
                         .font(.system(size: 9, weight: .medium, design: .rounded))
@@ -740,7 +714,7 @@ extension Color {
     MoodEntry(
         date: .now, songName: "Sycamore", artistName: "The National",
         moodLabel: "Nostaljik", moodColorHex: "#8B6FA8",
-        note: "bugün biraz böyle hissettim", entryCount: 1, streak: 7,
+        note: "bugün biraz böyle hissettim", entryCount: 1,
         friends: [
             FriendShareItem(name: "Elif", songName: "Sycamore", artistName: "The National", moodColorHex: "#8B6FA8", moodWord: "Nostaljik"),
             FriendShareItem(name: "Can", songName: "Redbone", artistName: "Childish Gambino", moodColorHex: "#E07A5F", moodWord: "Enerjik"),

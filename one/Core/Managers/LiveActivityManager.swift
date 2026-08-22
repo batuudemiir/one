@@ -53,7 +53,6 @@ final class LiveActivityManager {
         moodColorHex: String,
         moodIsDark: Bool,
         moodSFSymbol: String,
-        streakCount: Int
     ) async {
         // v3: Live Activity + Dynamic Island şimdilik iptal (Features.liveActivitiesEnabled).
         guard Features.liveActivitiesEnabled else { return }
@@ -83,7 +82,6 @@ final class LiveActivityManager {
             moodColorHex: moodColorHex,
             moodIsDark: moodIsDark,
             moodSFSymbol: moodSFSymbol,
-            streakCount: streakCount,
             isCelebrating: true,
             moodAnimationStyle: animStyle
         )
@@ -112,7 +110,6 @@ final class LiveActivityManager {
                     moodColorHex: moodColorHex,
                     moodIsDark: moodIsDark,
                     moodSFSymbol: moodSFSymbol,
-                    streakCount: streakCount,
                     isCelebrating: false,
                     moodAnimationStyle: animStyle
                 )

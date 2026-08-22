@@ -137,16 +137,6 @@ struct CelebrationExpandedView: View {
                         .font(.system(size: 12))
                         .foregroundStyle(.white.opacity(0.55))
                         .lineLimit(1)
-
-                    if state.streakCount > 1 {
-                        HStack(spacing: 3) {
-                            Text("🔥")
-                                .font(.system(size: 11))
-                            Text("\(state.streakCount) günlük seri")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundStyle(.white.opacity(0.7))
-                        }
-                    }
                 }
                 .frame(maxWidth: 160, alignment: .leading)
 
@@ -179,11 +169,6 @@ struct NormalExpandedView: View {
                     Text(state.moodLabel)
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(mood)
-                    if state.streakCount > 1 {
-                        Text("· 🔥\(state.streakCount)")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.white.opacity(0.45))
-                    }
                 }
                 Text(state.songName)
                     .font(.system(size: 14, weight: .bold))
@@ -261,11 +246,6 @@ struct DailySongLiveActivity: Widget {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 16))
                                 .foregroundStyle(Color(hex: context.state.moodColorHex))
-                            if context.state.streakCount > 1 {
-                                Text("🔥\(context.state.streakCount)")
-                                    .font(.system(size: 10, weight: .semibold))
-                                    .foregroundStyle(.white.opacity(0.6))
-                            }
                         }
                         .padding(.trailing, 4)
                     }

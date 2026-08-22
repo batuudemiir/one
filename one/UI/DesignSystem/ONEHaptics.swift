@@ -292,17 +292,6 @@ enum ONEHaptics {
 
     /// Rozet açıldı — başarı bildirimi.
 
-    /// Streak sayacının ara tık'ı — her basamakta bir kez.
-    ///
-    /// Kasıtlı olarak çok hafif: sayaç 20 basamak sayabiliyor, tam güçte
-    /// olsaydı kutlama değil rahatsızlık olurdu. Final vuruş
-    /// `streakRevealed`.
-    static func streakTick() {
-        guard isEnabled else { return }
-        let gen = UIImpactFeedbackGenerator(style: .light)
-        gen.prepare()
-        gen.impactOccurred(intensity: 0.4)
-    }
 
     /// Splash kapanıp uygulama açıldığında — yumuşak bir "hazır".
     static func appReady() {
@@ -337,16 +326,5 @@ enum ONEHaptics {
     static func saveRitualPeak() {
         guard isEnabled else { return }
         UISelectionFeedbackGenerator().selectionChanged()
-    }
-
-    /// Fired when the streak count-up reveals the new number.
-    /// Milestone (e.g. 7, 30, 100 days) gets a stronger success notification.
-    static func streakRevealed(isMilestone: Bool) {
-        guard isEnabled else { return }
-        if isMilestone {
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-        } else {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        }
     }
 }

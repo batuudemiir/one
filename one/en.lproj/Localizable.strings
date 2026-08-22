@@ -952,7 +952,6 @@
 "discover.emptyCta" = "Pick today's mood";
 
 /* B1 — Streak / freeze (soft streak) */
-"streak.freezeUsed.toast" = "You missed a day, but your streak held — 1 freeze per week ❄️";
 "badges.streak3.title" = "3 Days";
 "badges.streak3.desc" = "First loop closed";
 "badges.streak14.title" = "14 Days";

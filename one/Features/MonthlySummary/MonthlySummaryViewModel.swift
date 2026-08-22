@@ -98,15 +98,6 @@ class MonthlySummaryViewModel: ObservableObject {
         })
         let daysLogged = loggedDayNumbers.count
 
-        // Ay içindeki en uzun ardışık seri (monthStreak)
-        let monthStreak: Int = {
-            var streak = 0, current = 0
-            for day in 1...totalDays {
-                if loggedDayNumbers.contains(day) { current += 1; streak = max(streak, current) }
-                else { current = 0 }
-            }
-            return streak
-        }()
 
         // Baskın mood (en çok tekrar eden moodWord)
         var moodCount: [String: (count: Int, hex: String)] = [:]
@@ -205,7 +196,6 @@ class MonthlySummaryViewModel: ObservableObject {
             topTracks:          topTracks,
             totalEntries:       songs.count,
             daysLogged:         daysLogged,
-            monthStreak:        monthStreak,
             storyTitle:         storyTitle,
             storySubtitle:      storySubtitle
         )

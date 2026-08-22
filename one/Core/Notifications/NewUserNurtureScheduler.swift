@@ -58,7 +58,6 @@ enum NewUserNurtureScheduler {
                 MessageContext(
                     kind: kind,
                     now: fire,
-                    streakDays: EngagementTracker.lastKnownStreak,
                     abBucket: EngagementTracker.abBucket(userID: nil)
                 ),
                 seed: offset

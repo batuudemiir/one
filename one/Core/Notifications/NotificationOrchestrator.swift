@@ -13,6 +13,21 @@ import Foundation
 import UserNotifications
 import UIKit
 
+extension UserDefaults {
+    /// Bildirim ana anahtarı. **Yazılmamışsa açık kabul edilir.**
+    ///
+    /// Eskiden her okuma `bool(forKey:)` idi; hiç dokunulmamış ayar için
+    /// `false` dönüyordu, yani kullanıcı hiçbir zaman kapatmadığı halde
+    /// Orchestrator her kind'ı "master off" ile düşürüyordu. Komşu ayarlar
+    /// (`weeklySummaryEnabled`) zaten
+    /// `object(...) == nil ? true` ile açık geliyordu — bu onlarla hizalıyor.
+    ///
+    /// Açıkça `false` yazılmış olan (kullanıcının kapattığı) durum korunur.
+    var oneNotificationsEnabled: Bool {
+        object(forKey: "notificationsEnabled") as? Bool ?? true
+    }
+}
+
 final class NotificationOrchestrator: NSObject {
 
     static let shared = NotificationOrchestrator()
@@ -20,7 +35,6 @@ final class NotificationOrchestrator: NSObject {
     // MARK: - Settings (AppStorage-compatible keys)
 
     private enum Key {
-        static let notificationsEnabled       = "notificationsEnabled"
         static let quietHoursEnabled          = "quietHoursEnabled"
         static let quietHoursStart            = "quietHoursStart"
         static let quietHoursEnd              = "quietHoursEnd"
@@ -85,7 +99,7 @@ final class NotificationOrchestrator: NSObject {
 
     /// Bir kind için scheduled fireDate göz önünde bulundurularak karar ver.
     func decide(for kind: NotificationKind, at fireDate: Date) -> ScheduleDecision {
-        guard defaults.bool(forKey: Key.notificationsEnabled) else {
+        guard defaults.oneNotificationsEnabled else {
             return .drop(reason: "master off")
         }
 
@@ -222,18 +236,18 @@ final class NotificationOrchestrator: NSObject {
     }
 
     /// Kullanıcı mood kaydettiğinde çağrılır. Günün daily_reminder'ı iptal
-    /// edilir, streak uyarıları temizlenir, yarının daily_reminder'ı
+    /// edilir, yarının daily_reminder'ı
     /// deterministik seed ile tekrar kurulur — 1sn asyncAfter race'i gider.
     func onSongSaved(moodLabel: String?, moodColorHex: String?) {
         EngagementTracker.markMoodSaved(label: moodLabel, colorHex: moodColorHex)
 
         // Bugünün daily reminder'ı geçersiz — iptal et.
-        cancel(identifiers: ["daily_reminder", "streak_warning", "streak_escalation"])
+        cancel(identifiers: ["daily_reminder"])
 
         // Yarın için yeni variant seed ile yeniden kur.
         rescheduleDailyReminderForTomorrow()
 
-        // B3 — Nurture push'larını taze streak ile yeniden kur (Day-3 ilerleme metni
+        // B3 — Nurture push'larını yeniden kur (Day-3 metni
         // güncellensin diye). Idempotent: aynı identifier'lar ile re-register eder.
         NewUserNurtureScheduler.rescheduleAll()
     }
@@ -251,7 +265,7 @@ final class NotificationOrchestrator: NSObject {
     /// daily_reminder'ı yeniden programlar. Yalnızca mevcut ayardan ≥1 saat
     /// fark varsa güncelleme yapar; gereksiz reschedule önlenir.
     func applySmartReminderIfReady() {
-        guard defaults.bool(forKey: Key.notificationsEnabled) else { return }
+        guard defaults.oneNotificationsEnabled else { return }
         guard let smartHour = EngagementTracker.computeSmartReminderHour() else { return }
 
         let storedHour = defaults.integer(forKey: Key.dailyReminderHour)
@@ -279,7 +293,7 @@ final class NotificationOrchestrator: NSObject {
     // MARK: - Daily reminder helpers
 
     private func rescheduleDailyReminderForTomorrow() {
-        guard defaults.bool(forKey: Key.notificationsEnabled) else { return }
+        guard defaults.oneNotificationsEnabled else { return }
 
         let hourSetting = defaults.integer(forKey: "dailyReminderHour")
         let minuteSetting = defaults.integer(forKey: "dailyReminderMinute")
@@ -469,7 +483,7 @@ extension NotificationOrchestrator {
     // MARK: - Echo hazır (Cumartesi 10:00)
 
     private func scheduleEchoReadyIfNeeded() {
-        guard defaults.bool(forKey: Key.notificationsEnabled) else { return }
+        guard defaults.oneNotificationsEnabled else { return }
         let identifier = "echo_ready_saturday"
         center.getPendingNotificationRequests { [weak self] pending in
             guard let self else { return }

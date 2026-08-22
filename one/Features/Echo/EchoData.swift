@@ -44,8 +44,6 @@ struct EchoData {
     let repeatedSongs: [RepeatedSong]
     let silentDays: Int
     let silentDates: [String]
-    let longestStreak: StreakInfo
-    let currentStreak: Int
     let hourDistribution: [Int: Int]    // saat: seçim sayısı (0-23)
     let circleSyncMatches: [CircleSyncMatch]   // CloudKit'ten gelen gerçek eşleşmeler
     let last30DaysColors: [Color?]
@@ -66,8 +64,6 @@ struct EchoData {
         repeatedSongs: [],
         silentDays: 0,
         silentDates: [],
-        longestStreak: StreakInfo(days: 0, startDate: "—", endDate: "—", colors: []),
-        currentStreak: 0,
         hourDistribution: [:],
         circleSyncMatches: [],
         last30DaysColors: Array(repeating: nil, count: 30),
@@ -95,19 +91,6 @@ struct EchoData {
             silentDays: 12,
             silentDates: ["3 Şub", "7 Şub", "14 Şub", "1 Mar", "5 Mar",
                           "11 Mar", "20 Mar", "2 Nis", "8 Nis", "15 Nis", "22 Nis", "28 Nis"],
-            longestStreak: StreakInfo(
-                days: 14,
-                startDate: "3 Oca",
-                endDate: "16 Oca",
-                colors: [
-                    ONEBrand.kor, V3Mood.coskulu.color, V3Mood.mutlu.color,
-                    V3Tokens.success, V3Tokens.info, V3Mood.gergin.color,
-                    ONEBrand.kor, V3Tokens.success, V3Tokens.info,
-                    V3Mood.coskulu.color, V3Mood.mutlu.color, V3Mood.gergin.color,
-                    ONEBrand.kor, V3Tokens.info
-                ]
-            ),
-            currentStreak: 5,
             hourDistribution: [
                 7: 2, 8: 5, 9: 3, 10: 2, 12: 4, 13: 6, 14: 3,
                 17: 2, 18: 4, 19: 8, 20: 12, 21: 9, 22: 6, 23: 3
@@ -149,9 +132,3 @@ struct RepeatedSong: Identifiable {
     let count: Int
 }
 
-struct StreakInfo {
-    let days: Int
-    let startDate: String
-    let endDate: String
-    let colors: [Color]
-}

@@ -86,7 +86,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
 
     /// Belirtilen sayıda arkadaş bugün paylaşım yaptıysa kullanıcıyı haberdar eder.
     func scheduleCircleActivityNotification(activeCount: Int, firstFriendName: String) {
-        guard UserDefaults.standard.bool(forKey: "notificationsEnabled") else { return }
+        guard UserDefaults.standard.oneNotificationsEnabled else { return }
         let center = UNUserNotificationCenter.current()
         let identifier = "circle_activity_\(Self.todayDateKey())"
         // Zaten gönderilmişse tekrarlama
@@ -114,45 +114,6 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         return fmt.string(from: Date())
     }
 
-    // MARK: - Streak Escalation (Duolingo-style kademeli uyarılar)
-
-    /// Bugün kayıt yok + streak sürüyor → saat 21:00'de uyarı gönderir.
-    /// `daysOnStreak` parametresine göre mesaj tonu değişir.
-    func scheduleStreakEscalationIfNeeded(streakDays: Int) {
-        guard UserDefaults.standard.bool(forKey: "streakNotificationsEnabled") else { return }
-        let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: ["streak_escalation"])
-
-        let content = UNMutableNotificationContent()
-        if streakDays >= 30 {
-            content.title = "30+ günlük serin tehlikede! 😱"
-            content.body  = "Hemen bir şarkı seç, bu kadarda olmaz!"
-        } else if streakDays >= 7 {
-            content.title = "Seriniz kırılmak üzere 🔥"
-            content.body  = "\(streakDays) günlük serinizi kaybetmeyin. Bugün seçin!"
-        } else if streakDays >= 2 {
-            content.title = "Bugün seçim yapmayı unuttun mu? 🤔"
-            content.body  = "\(streakDays) günlük seriniz devam ediyor. Kapatmayın!"
-        } else {
-            content.title = "Serinizi başlatmak ister misin? ✨"
-            content.body  = "Bugün bir şarkı seç ve streake başla."
-        }
-        content.sound = .default
-        content.categoryIdentifier = "STREAK_WARNING"
-        content.userInfo = ["type": "streak_escalation"]
-
-        var comps = DateComponents()
-        comps.hour   = 21
-        comps.minute = 0
-        let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
-        let request = UNNotificationRequest(identifier: "streak_escalation", content: content, trigger: trigger)
-        center.add(request) { _ in }
-    }
-
-    func cancelStreakEscalation() {
-        UNUserNotificationCenter.current()
-            .removePendingNotificationRequests(withIdentifiers: ["streak_escalation"])
-    }
 
     func scheduleDailyReminder(at time: Date, completion: ((Bool) -> Void)? = nil) {
         let center = UNUserNotificationCenter.current()
@@ -219,41 +180,6 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         ONELogger.debug("Daily reminder disabled", category: .notification)
     }
 
-    // MARK: - Streak Warning
-
-    /// Bugün kayıt yoksa ve önceki günün kaydı varsa 20:30'da streak uyarısı gönderir.
-    func scheduleStreakWarning(streakDays: Int) {
-        guard UserDefaults.standard.bool(forKey: "streakNotificationsEnabled") else { return }
-        let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: ["streak_warning"])
-
-        let content = UNMutableNotificationContent()
-        content.title = "Seriniz kırılmak üzere 🔥"
-        content.body  = "\(streakDays) günlük seriniz var. Bugün şarkını seç!"
-        content.sound = .default
-        content.categoryIdentifier = "STREAK_WARNING"
-        content.userInfo = ["type": "streak_warning"]
-
-        var dateComponents = DateComponents()
-        dateComponents.hour   = 20
-        dateComponents.minute = 0
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-        let request = UNNotificationRequest(identifier: "streak_warning", content: content, trigger: trigger)
-
-        center.add(request) { error in
-            if let error {
-                ONELogger.error("Failed to schedule streak warning", error: error, category: .notification)
-            } else {
-                ONELogger.success("Streak warning scheduled", category: .notification)
-            }
-        }
-    }
-
-    /// Bugün kayıt kaydedilince streak uyarısını iptal et.
-    func cancelStreakWarning() {
-        UNUserNotificationCenter.current()
-            .removePendingNotificationRequests(withIdentifiers: ["streak_warning"])
-    }
 
     // MARK: - Weekly Summary (her Pazar 18:00)
 
@@ -295,7 +221,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     /// Son 30 günün kayıt saatlerine bakarak hatırlatıcıyı kullanıcının en aktif olduğu
     /// saate göre ayarlar. En az 5 kayıt gerekir; aksi hâlde değişiklik yapılmaz.
     func scheduleSmartDailyReminder(context: NSManagedObjectContext) {
-        guard UserDefaults.standard.bool(forKey: "notificationsEnabled") else { return }
+        guard UserDefaults.standard.oneNotificationsEnabled else { return }
 
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
         guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) else { return }

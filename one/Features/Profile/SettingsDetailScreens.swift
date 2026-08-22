@@ -39,7 +39,7 @@ struct MusicSourceSettingsView: View {
                 SettingsGroup {
                     serviceRow(
                         logo: "music.note",
-                        logoColor: Color(hex: "#FA243C"),
+                        logoColor: ExternalBrand.appleMusic,
                         name: "Apple Music",
                         status: appleMusicStatusText,
                         isActive: preferred == "AppleMusic",
@@ -50,7 +50,7 @@ struct MusicSourceSettingsView: View {
                     )
                     serviceRow(
                         logo: "waveform.circle.fill",
-                        logoColor: Color(hex: "#1DB954"),
+                        logoColor: ExternalBrand.spotify,
                         name: "Spotify",
                         status: spotify.isAuthenticated
                             ? NSLocalizedString("music.connected", comment: "")

@@ -41,7 +41,13 @@ struct ReactionComposer: View {
                 Button { send(kind: .color, colorHex: myColorHex) } label: {
                     Text(DailyReaction.Kind.color.glyph)
                         .bodyMDMedium()
-                        .foregroundColor(.white)
+                        // Zemin kullanıcının **kendi** mood rengi. Beyaz glif
+                        // dokuz rengin ikisinde kayboluyordu: `enerjik`
+                        // (#C8F135 lime) ve `mutlu` (#FFC300 sarı). Yani en
+                        // parlak duyguyu seçen kullanıcı kendi tepki
+                        // düğmesini göremiyordu. `ink` her mood için
+                        // okunabilir eşi taşıyor.
+                        .foregroundColor(V3Mood.closest(toHex: myColorHex)?.ink ?? V3Tokens.paper)
                         .frame(width: 38, height: 38)
                         .background(Circle().fill(Color(hex: myColorHex)))
                         .overlay(Circle().strokeBorder(Color.white.opacity(0.4), lineWidth: 2))

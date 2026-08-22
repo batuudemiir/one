@@ -119,8 +119,6 @@ class EchoViewModel: ObservableObject {
                             repeatedSongs: self.data.repeatedSongs,
                             silentDays: self.data.silentDays,
                             silentDates: self.data.silentDates,
-                            longestStreak: self.data.longestStreak,
-                            currentStreak: self.data.currentStreak,
                             hourDistribution: self.data.hourDistribution,
                             circleSyncMatches: matches,
                             last30DaysColors: self.data.last30DaysColors,
@@ -242,70 +240,6 @@ class EchoViewModel: ObservableObject {
             }
         }
 
-        // ── Longest streak ──────────────────────────────────────
-        let sortedFilled = filledDates.sorted()
-        var longestDays = 0, currentDays = 0
-        var longestStart = now, longestEnd = now
-        var streakStart = sortedFilled.first ?? now
-
-        for i in 0..<sortedFilled.count {
-            if i == 0 {
-                currentDays = 1
-                streakStart = sortedFilled[0]
-            } else {
-                let diff = calendar.dateComponents([.day], from: sortedFilled[i-1], to: sortedFilled[i]).day ?? 0
-                if diff == 1 {
-                    currentDays += 1
-                } else {
-                    currentDays = 1
-                    streakStart = sortedFilled[i]
-                }
-            }
-            if currentDays > longestDays {
-                longestDays = currentDays
-                longestStart = streakStart
-                longestEnd = sortedFilled[i]
-            }
-        }
-
-        let streakColors = songs
-            .filter { s in
-                guard let d = s.date else { return false }
-                return d >= longestStart && d <= longestEnd
-            }
-            .sorted { ($0.date ?? Date()) < ($1.date ?? Date()) }
-            .compactMap { s -> Color? in
-                guard let hex = s.moodColorHex else { return nil }
-                return Color(hex: hex)
-            }
-
-        let dateFmt = DateFormatter()
-        dateFmt.locale = LanguageManager.shared.currentLocale
-        dateFmt.dateFormat = "d MMM"
-
-        let streak = StreakInfo(
-            days: longestDays,
-            startDate: longestDays > 0 ? dateFmt.string(from: longestStart) : "—",
-            endDate: longestDays > 0 ? dateFmt.string(from: longestEnd) : "—",
-            colors: streakColors
-        )
-
-        // ── Current streak (active streak ending today or yesterday) ──
-        let yesterdayStart = calendar.date(byAdding: .day, value: -1, to: todayStartOfDay) ?? todayStartOfDay
-
-        // Anchor: if user has an entry today, count back from today; otherwise from yesterday.
-        // If neither today nor yesterday has an entry, current streak is 0.
-        var currentStreak = 0
-        if filledDates.contains(todayStartOfDay) || filledDates.contains(yesterdayStart) {
-            let anchor = filledDates.contains(todayStartOfDay) ? todayStartOfDay : yesterdayStart
-            var checkDay = anchor
-            while filledDates.contains(checkDay) {
-                currentStreak += 1
-                guard let prev = calendar.date(byAdding: .day, value: -1, to: checkDay) else { break }
-                checkDay = prev
-            }
-        }
-
         // ── Hour distribution ──────────────────────────────────
         let hourDist = songs.reduce(into: [Int: Int]()) { d, s in
             guard let date = s.createdAt ?? s.date else { return }
@@ -396,8 +330,6 @@ class EchoViewModel: ObservableObject {
             repeatedSongs: repeatedSongs,
             silentDays: silentDates.count,
             silentDates: silentDates,
-            longestStreak: streak,
-            currentStreak: currentStreak,
             hourDistribution: hourDist,
             circleSyncMatches: circleSyncMatches,
             last30DaysColors: thirtyDayColors,

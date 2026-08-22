@@ -294,7 +294,7 @@ private struct PhotoMorph: ViewModifier {
             V3MomentCard(moment: .previewWithNote)
             V3MomentCard(moment: .previewColorOnly)
         }
-        .padding(.horizontal, V3Tokens.spacingXL2)
+        .padding(.horizontal, V3Tokens.channel)
         .padding(.vertical, V3Tokens.spacingXL3)
     }
     .background(V3Tokens.paper)

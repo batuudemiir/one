@@ -100,7 +100,7 @@ struct TodayView: View {
                 .padding(.vertical, V3Tokens.spacingMD)
                 .background(
                     RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
-                        .fill(Color(hex: "#CC3333"))
+                        .fill(V3Tokens.dangerGround)
                 )
                 .padding(.horizontal, V3Tokens.channel)
                 .padding(.bottom, 130)

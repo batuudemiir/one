@@ -196,7 +196,14 @@ struct SaveRitualMoment: View {
             .overlay(
                 Image(systemName: "checkmark")
                     .font(.system(size: 38, weight: .medium))
-                    .foregroundColor(.white)
+                    // `.white` değil `mood.ink`. Mühür `mood.color` ile
+                    // dolduruluyor ve dokuz rengin ikisi çok açık:
+                    // `enerjik` (#C8F135 lime) ve `mutlu` (#FFC300 sarı).
+                    // Onların üstünde beyaz tik neredeyse görünmüyordu —
+                    // yani kaydın onaylandığını gösteren işaret, tam da
+                    // parlak renk seçen kullanıcıda kayboluyordu.
+                    // `ink` her mood için okunabilir eşi taşıyor.
+                    .foregroundColor(mood.ink)
             )
             .shadow(color: mood.color.opacity(0.45), radius: 24, y: 10)
             .scaleEffect(sealScale)

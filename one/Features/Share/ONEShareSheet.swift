@@ -134,7 +134,7 @@ struct ONEShareSheet: View {
                 ShareAppButton(
                     title: "Instagram",
                     icon: "camera.viewfinder",
-                    gradient: [Color(hex: "#F58529"), Color(hex: "#DD2A7B"), Color(hex: "#8134AF")],
+                    gradient: ExternalBrand.instagramGradient,
                     isEnabled: storyImage != nil && instaInstalled,
                     action: shareToInstagramStory
                 )

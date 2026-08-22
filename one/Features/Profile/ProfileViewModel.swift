@@ -77,12 +77,6 @@ final class ProfileViewModel: ObservableObject {
             writeSettingToICloud(key: "notificationsEnabled", value: notificationsEnabled)
         }
     }
-    @Published var streakNotificationsEnabled: Bool {
-        didSet {
-            UserDefaults.standard.set(streakNotificationsEnabled, forKey: "streakNotificationsEnabled")
-            writeSettingToICloud(key: "streakNotificationsEnabled", value: streakNotificationsEnabled)
-        }
-    }
     @Published var weeklySummaryEnabled: Bool {
         didSet {
             UserDefaults.standard.set(weeklySummaryEnabled, forKey: "weeklySummaryEnabled")
@@ -129,7 +123,6 @@ final class ProfileViewModel: ObservableObject {
         dailyReminderHour = ud.integer(forKey: "dailyReminderHour") == 0 ? 20 : ud.integer(forKey: "dailyReminderHour")
         dailyReminderMinute = ud.integer(forKey: "dailyReminderMinute")
         notificationsEnabled = ud.oneNotificationsEnabled
-        streakNotificationsEnabled = ud.object(forKey: "streakNotificationsEnabled") == nil ? true : ud.bool(forKey: "streakNotificationsEnabled")
         weeklySummaryEnabled = ud.object(forKey: "weeklySummaryEnabled") == nil ? true : ud.bool(forKey: "weeklySummaryEnabled")
         hapticFeedbackEnabled = ud.object(forKey: "hapticFeedbackEnabled") == nil ? true : ud.bool(forKey: "hapticFeedbackEnabled")
         isDarkMode = ud.bool(forKey: "isDarkMode")
@@ -483,7 +476,7 @@ final class ProfileViewModel: ObservableObject {
 
     private static let icloudKeys: [String] = [
         "dailyReminderHour", "dailyReminderMinute",
-        "notificationsEnabled", "streakNotificationsEnabled",
+        "notificationsEnabled",
         "weeklySummaryEnabled",
         "hapticFeedbackEnabled", "isDarkMode",
         "privacy.musicTasteVisible", "privacy.moodHistoryVisible"

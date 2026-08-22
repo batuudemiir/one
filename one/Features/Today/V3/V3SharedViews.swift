@@ -162,7 +162,7 @@ struct V3BackButton: View {
         }) {
             Text(title)
                 .bodySMMedium()
-                .foregroundColor(Color(hex: "#5A5A66"))
+                .foregroundColor(V3Tokens.mutedText)
                 .padding(.vertical, 9)
                 .padding(.leading, V3Tokens.spacingMD)
                 .padding(.trailing, V3Tokens.spacingLG)

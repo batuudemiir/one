@@ -18,7 +18,10 @@ struct PublicUserProfile: Identifiable, Equatable {
     let isPublic: Bool
     let joinedAt: Date?
     let totalShareDays: Int?   // isPublic true ise populated
-    let currentStreak: Int?    // isPublic true ise populated
+    /// CloudKit şemasında duran alan. Seri motoru kaldırıldı ve hiçbir
+    /// yüzey bunu okumuyor; alan mevcut kayıtlar bozulmasın diye duruyor.
+    /// Yeni kayıtlarda 0 yazılıyor. Şemadan düşürmek migration ister.
+    let currentStreak: Int?
     
     // v2.6 Aggregate Stats
     let dominantMoodColor: String?

@@ -210,9 +210,6 @@ struct FriendDetailView: View {
 
     // MARK: - Header
 
-    private var friendStreak: Int {
-        friendData.share?["currentStreak"] as? Int ?? 0
-    }
 
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {

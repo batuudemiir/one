@@ -86,7 +86,6 @@ class MidnightResetManager {
     private func runReset(task: BGAppRefreshTask, context: NSManagedObjectContext) {
         context.perform {
             self.resetExpiredShares(context: context)
-            self.scheduleStreakNotificationsIfNeeded()
 
             // Ayın son günüyse ay-sonu özet bildirimi planla
             let cal = Calendar.current
@@ -117,65 +116,32 @@ class MidnightResetManager {
                 }
             }
 
+            let saved: Bool
             do {
                 try context.save()
-                task.setTaskCompleted(success: true)
+                saved = true
                 ONELogger.success("Midnight reset completed successfully", category: .calendar)
             } catch {
+                saved = false
                 ONELogger.error("Midnight reset failed: \(error)", category: .calendar)
-                task.setTaskCompleted(success: false)
             }
 
-            // Cache invalidation main thread'de — property mutation thread safety için
-            DispatchQueue.main.async {
+            // Buradan sonrası ana aktörde.
+            //
+            // `setTaskCompleted` buraya indi: BGTask tamamlandı denince
+            // sistem uygulamayı askıya alabiliyor. Bildirim planlaması ondan
+            // sonraya kalsaydı hiç kurulmayabilirdi.
+            //
+            // Cache invalidation zaten main gerektiriyordu (property mutation).
+            Task { @MainActor in
+                NotificationOrchestrator.shared.onMidnight()
                 CloudKitManager.shared.invalidateCircleCache()
                 CloudKitManager.shared.invalidateWeeklyCircleCache()
+                task.setTaskCompleted(success: saved)
             }
         }
     }
 
-    // MARK: - Streak Notifications
-
-    private func scheduleStreakNotificationsIfNeeded() {
-        let context  = PersistenceController.shared.container.viewContext
-        let calendar = Calendar.current
-        let today    = calendar.startOfDay(for: Date())
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
-
-        let todayEntry     = PersistenceController.shared.fetchDailySong(for: today, context: context)
-        let yesterdayEntry = PersistenceController.shared.fetchDailySong(for: yesterday, context: context)
-
-        if todayEntry == nil, yesterdayEntry != nil {
-            // Streak tehlikede — ardışık gün sayısını hesapla
-            let streak = calculateStreakCount(context: context, upTo: yesterday)
-            if streak > 1 {
-                NotificationManager.shared.scheduleStreakWarning(streakDays: streak)
-            }
-        } else {
-            NotificationManager.shared.cancelStreakWarning()
-        }
-
-        // Milestone kutlama — bugün kayıt yapıldıysa güncel streak'i hesapla.
-        if todayEntry != nil {
-            let currentStreak = calculateStreakCount(context: context, upTo: today)
-            StreakMilestoneScheduler.evaluate(streak: currentStreak)
-        }
-
-        NotificationOrchestrator.shared.onMidnight()
-    }
-
-    private func calculateStreakCount(context: NSManagedObjectContext, upTo date: Date) -> Int {
-        let calendar = Calendar.current
-        var streak = 0
-        var checkDay = calendar.startOfDay(for: date)
-        while true {
-            guard PersistenceController.shared.fetchDailySong(for: checkDay, context: context) != nil else { break }
-            streak += 1
-            guard let prev = calendar.date(byAdding: .day, value: -1, to: checkDay) else { break }
-            checkDay = prev
-        }
-        return streak
-    }
     
     // MARK: - Reset Logic
     

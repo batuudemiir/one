@@ -22,37 +22,31 @@ struct WhatsNewView: View {
     private let features: [WhatsNewFeature] = [
         .init(
             icon: "dot.radiowaves.left.and.right",
-            color: Color(hex: "#26A69A"),
             title: "Çevre artık açılışta",
             body: "Uygulamayı açtığında önce arkadaşlarının\nbugünkü rengini görüyorsun."
         ),
         .init(
             icon: "circle.hexagongrid.fill",
-            color: Color(hex: "#E63946"),
             title: "İki adımda bitiyor",
             body: "Renk seç, şarkı seç, bırak.\nFotoğraf ve not artık isteğe bağlı."
         ),
         .init(
             icon: "chart.dots.scatter",
-            color: Color(hex: "#5B8DEF"),
             title: "Haftalık ritim",
             body: "Hedef her gün değil, haftada dört gün.\nKaçırdığın günü sonradan doldurabilirsin."
         ),
         .init(
             icon: "waveform.circle.fill",
-            color: Color(hex: "#7C5CBF"),
             title: "Yeni kayıt anı",
             body: "Rengini bıraktığında ekran\nbir dalgayla karşılık veriyor."
         ),
         .init(
             icon: "square.grid.3x3.fill",
-            color: Color(hex: "#F4A228"),
             title: "Arşiv mozaiği",
             body: "Aylar tek akışta, renk renk.\nGeçen yıl bugün ne hissettiğini de görüyorsun."
         ),
         .init(
             icon: "flag.fill",
-            color: Color(hex: "#4CAF82"),
             title: "Kilometre taşları",
             body: "Neyi açtığını ve sırada ne olduğunu\nprofilinden görebilirsin."
         ),
@@ -158,16 +152,16 @@ private struct FeaturePage: View {
             // Icon
             ZStack {
                 Circle()
-                    .fill(feature.color.opacity(0.12))
+                    .fill(V3Tokens.kor.opacity(0.12))
                     .frame(width: 120, height: 120)
 
                 Circle()
-                    .strokeBorder(feature.color.opacity(0.2), lineWidth: 1.5)
+                    .strokeBorder(V3Tokens.kor.opacity(0.2), lineWidth: 1.5)
                     .frame(width: 120, height: 120)
 
                 Image(systemName: feature.icon)
                     .font(.system(size: 44, weight: .medium))
-                    .foregroundStyle(feature.color)
+                    .foregroundStyle(V3Tokens.kor)
             }
             .scaleEffect(iconScale)
             .opacity(iconOpacity)
@@ -211,9 +205,19 @@ private struct FeaturePage: View {
 
 // MARK: - Model
 
+/// Vurgu rengi **yok** — bilerek.
+///
+/// Her kartın kendi rengi vardı (altı ayrı ham hex: teal, kırmızı, mavi,
+/// mor, kehribar, yeşil). ONE'ın yazılı kuralı bunun tersi:
+/// "Tek marka rengi: Kor. Duygu renkleri üründe yaşar, markada değil."
+/// (`ONEBrand`). Yenilikler ekranı bir **marka** yüzeyi — kullanıcının
+/// duygusunu değil, uygulamanın kendisini anlatıyor; dolayısıyla ONE'ın
+/// dokuz duygu renginden birini ödünç alması da doğru değil, çünkü o
+/// renklerin üründe bir anlamı var ("ateşli", "huzurlu").
+///
+/// Alan tamamen kaldırıldı ki yedinci bir renk eklenemesin.
 private struct WhatsNewFeature {
     let icon: String
-    let color: Color
     let title: String
     let body: String
 }

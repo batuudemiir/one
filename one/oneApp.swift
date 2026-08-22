@@ -87,19 +87,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             options: []
         )
 
-        // Streak tehlikede
-        let openTodayAction = UNNotificationAction(
-            identifier: "OPEN_TODAY",
-            title: NSLocalizedString("notification.openToday", comment: ""),
-            options: [.foreground]
-        )
-        let streakCategory = UNNotificationCategory(
-            identifier: "STREAK_WARNING",
-            actions: [openTodayAction],
-            intentIdentifiers: [],
-            options: []
-        )
-
         // Haftalık özet
         let openEchoAction = UNNotificationAction(
             identifier: "OPEN_ECHO",
@@ -155,7 +142,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         UNUserNotificationCenter.current().setNotificationCategories([
             friendRequestCategory,
-            streakCategory,
             weeklySummaryCategory,
             friendSharedCategory,
             moodResonanceCategory,
@@ -196,11 +182,21 @@ struct oneApp: App {
 
         // One-time migration: notificationsEnabled was written to UserDefaults.standard
         // but NotificationOrchestrator reads from the App Group container. Sync once.
-        let migrationKey = "notificationsEnabled_appGroupMigrated_v1"
+        //
+        // v2 — v1 bu değeri `bool(forKey:)` ile okuyordu: hiç dokunulmamış ayar
+        // için `false` dönüyor ve bu `false` app group'a **açıkça** yazılıyordu.
+        // Böylece `oneNotificationsEnabled`'ın "yazılmamışsa açık" varsayılanı
+        // devreye giremiyor, kullanıcı hiçbir zaman kapatmadığı halde her kind
+        // "master off" ile düşüyordu. Yalnız açıkça yazılmış değeri taşı;
+        // yoksa app group'taki anahtarı temizle ki varsayılan geçerli olsun.
+        let migrationKey = "notificationsEnabled_appGroupMigrated_v2"
         if !UserDefaults.standard.bool(forKey: migrationKey) {
             let appGroup = UserDefaults(suiteName: "group.com.batudemir.ones") ?? .standard
-            let value = UserDefaults.standard.bool(forKey: "notificationsEnabled")
-            appGroup.set(value, forKey: "notificationsEnabled")
+            if let explicit = UserDefaults.standard.object(forKey: "notificationsEnabled") as? Bool {
+                appGroup.set(explicit, forKey: "notificationsEnabled")
+            } else {
+                appGroup.removeObject(forKey: "notificationsEnabled")
+            }
             UserDefaults.standard.set(true, forKey: migrationKey)
         }
 

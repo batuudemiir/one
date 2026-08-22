@@ -81,7 +81,7 @@ enum MomentWriter {
             return false
         }
 
-        applySideEffects(mood: mood, note: note, song: song, isBackfill: isBackfill)
+        applySideEffects(mood: mood, note: note, isBackfill: isBackfill, context: context)
         if isBackfill {
             let daysAgo = calendar.dateComponents([.day], from: normalized, to: today).day ?? 0
             AppAnalytics.shared.track(.entryBackfilled(daysAgo: daysAgo))
@@ -95,6 +95,10 @@ enum MomentWriter {
     /// bildirim sonra (bugün kayıt var → bugünün hatırlatması iptal), widget
     /// en sonda (okuyacağı veri artık yerinde).
     ///
+    /// `song` parametresi kalktı: tek kullanıcısı elle yazılan widget
+    /// çağrısıydı, o da `refreshTodaySurfaces`'a taşındı — orası şarkıyı
+    /// diskten okuyor.
+    ///
     /// `isBackfill` olduğunda **yalnız analitik** çalışır. Geriye kalan her şey
     /// "bugün" kavramına bağlı: geçmiş bir günün rengi bugünün widget'ına
     /// düşemez, bugünün hatırlatmasını iptal edemez ve Echo önbelleğini
@@ -103,8 +107,8 @@ enum MomentWriter {
     private static func applySideEffects(
         mood: V3Mood,
         note: String,
-        song: SongResult?,
-        isBackfill: Bool
+        isBackfill: Bool,
+        context: NSManagedObjectContext
     ) {
         // v3 mood'unun **kendi** rawValue'su gönderiliyor.
         //
@@ -127,23 +131,67 @@ enum MomentWriter {
             return
         }
 
-        TodayViewModel.writeCachedEchoMood(hex: mood.hex, label: mood.label.lowercased())
-
         NotificationOrchestrator.shared.onSongSaved(
             moodLabel: mood.label.lowercased(),
             moodColorHex: mood.hex
         )
         V3ReminderScheduler.reschedule(yesterdayMood: mood)
 
-        WidgetDataWriter.writeTodayEntry(
-            songName: song?.name ?? "",
-            artistName: song?.artist ?? "",
-            moodLabel: mood.label.lowercased(),
-            moodColorHex: mood.hex,
-            note: note.isEmpty ? nil : note,
-            entryCount: 1
-        )
+        // Widget, Echo önbelleği ve arşiv sinyali `refreshTodaySurfaces`'tan.
+        //
+        // Burada elle yazılıyordu ve iki şeyi yanlış yapıyordu:
+        //  • `entryCount: 1` sabitti — v3 günde çoklu an destekliyor, yani
+        //    kullanıcının beşinci anı da widget'a "1 an" diye düşüyordu.
+        //  • yalnız *yeni yazılanı* biliyordu; günün gerçek son anı bu
+        //    olmayabilir (geçmiş güne değil ama aynı güne daha geç saatli
+        //    bir an eklenmişse).
+        //
+        // Tek bir yer diski okuyup türetilmiş durumu hesaplıyor; oluşturma da
+        // silme de aynı kapıdan geçiyor.
+        refreshTodaySurfaces(context: context)
+    }
 
+    /// Bugünden **türetilen** yüzeyleri diskteki gerçek duruma göre yeniden
+    /// yazar: widget, Echo önbelleği, arşiv tazeleme sinyali.
+    ///
+    /// Neden ayrı bir giriş noktası: `write` yalnızca *oluşturma* yolu.
+    /// Silme (`clearToday`, `clearEntry`) ve güncelleme (`attachPhotoAndNote`)
+    /// bu tipten geçmiyordu ve yan etkilerin hiçbirini çalıştırmıyordu —
+    /// yani kullanıcı bir anı sildiğinde **widget o anı göstermeye devam
+    /// ediyordu**, gece yarısı sıfırlaması gelene kadar. Aynı şey Echo
+    /// önbelleği için de geçerliydi.
+    ///
+    /// `write`'ın yaptığı gibi "ne yazdığımı biliyorum" varsayımıyla değil,
+    /// **diski okuyarak** çalışıyor. Böylece ne olduğu (ekleme / silme /
+    /// düzenleme) önemli değil; sonuç her hâlükârda doğru ve çağrı
+    /// idempotent.
+    static func refreshTodaySurfaces(
+        context: NSManagedObjectContext = PersistenceController.shared.container.viewContext
+    ) {
+        let today = Calendar.current.startOfDay(for: Date())
+        let moments = PersistenceController.shared
+            .fetchMoments(for: today, context: context)
+            .filter { !$0.passed }
+
+        // Widget ve Echo günün **son** anını gösteriyor.
+        guard let latest = moments.max(by: { $0.time < $1.time }) else {
+            // Bugün hiç an kalmadı — türetilmiş her şey temizlenmeli.
+            WidgetDataWriter.clear()
+            TodayViewModel.clearCachedEchoMood()
+            NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
+            return
+        }
+
+        let label = V3Mood.closest(toHex: latest.moodColorHex)?.label.lowercased() ?? ""
+        TodayViewModel.writeCachedEchoMood(hex: latest.moodColorHex, label: label)
+        WidgetDataWriter.writeTodayEntry(
+            songName: latest.songName ?? "",
+            artistName: latest.songArtist ?? "",
+            moodLabel: label,
+            moodColorHex: latest.moodColorHex,
+            note: latest.note,
+            entryCount: moments.count
+        )
         NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
     }
 }

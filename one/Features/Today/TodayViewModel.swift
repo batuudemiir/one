@@ -21,7 +21,6 @@ class TodayViewModel: ObservableObject {
     @Published var searchError: String? = nil
     @Published var showLiveActivityAlert: Bool = false
     @Published var circleShareFailed: Bool = false
-    @Published var streakMilestone: Int? = nil
     @Published var lastYearEntry: DailyEntry? = nil
     /// C3 — "1 hafta önce bugün" mini Echo (D14+ daha anlamlı, ama her zaman göster).
     @Published var lastWeekEntry: DailyEntry? = nil
@@ -29,14 +28,7 @@ class TodayViewModel: ObservableObject {
     private var hasShownLastWeekReflectionThisSession: Bool = false
     /// A4 — Çevre davet kancası: yalnızca ilk kayıttan sonra bir kez tetiklenir.
     @Published var showFirstEntryInvite: Bool = false
-    /// B1 — Streak freeze son hesaplamada devreye girdi mi?
-    @Published var streakFreezeUsedRecently: Bool = false
     /// B1 — Şu an kullanıcının taze bir freeze hakkı var mı?
-    @Published var streakFreezeAvailable: Bool = true
-    /// Mevcut streak gün sayısı — UI bileşenlerine doğrudan açılır.
-    @Published var streakDays: Int = 0
-    /// Son kırılan streak gün sayısı (kırılma ≥ 7 gün ise empati kartı göster).
-    @Published var lastBrokenStreakDays: Int = 0
     /// This week's logged entries for WeeklyProgressDots.
     @Published var thisWeekEntries: [(date: Date, moodColorHex: String)] = []
     /// Total entry count ever (for milestone insights).
@@ -88,8 +80,6 @@ class TodayViewModel: ObservableObject {
         d.removeObject(forKey: echoMoodLabelKey)
     }
 
-    /// B1 — Tek kaynak: StreakEngine.milestones ile hizalı.
-    private static let streakMilestones: Set<Int> = Set(StreakEngine.milestones)
 
     /// Primary (last) entry for today — used by existing views
     var todayEntry: DailyEntry? { todayEntries.last }
@@ -166,7 +156,7 @@ class TodayViewModel: ObservableObject {
         loadLastYearEntry()
     }
 
-    /// v3 kayıt sonrası ViewModel'in `todayEntries`/`thisWeekEntries`/streak
+    /// v3 kayıt sonrası ViewModel'in `todayEntries`/`thisWeekEntries`
     /// state'ini yeniden yükler. Sonraki view render'ında Kaydedildi ekranı ve
     /// son 7 gün şeridi doğru veriyle boyanır.
     func reloadAfterV3Save() {
@@ -205,49 +195,8 @@ class TodayViewModel: ObservableObject {
         } catch {
             ONELogger.debug("TodayViewModel: fetch error \(error)", category: .general)
         }
-        refreshStreakDays()
     }
 
-    /// Streak gün sayısını hesaplar, published property'leri günceller.
-    private func refreshStreakDays() {
-        let todayHasEntry = !todayEntries.isEmpty
-        let current = computeCurrentStreak(includingToday: todayHasEntry)
-        streakDays = current
-
-        // Empati kartı: dün entry vardı ama bugün yoksa kırılma tespiti.
-        if !todayHasEntry {
-            let cal = Calendar.current
-            let yesterday = cal.startOfDay(for: cal.date(byAdding: .day, value: -1, to: Date()) ?? Date())
-            let fetchReq: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-            fetchReq.predicate = NSPredicate(format: "date == %@", yesterday as NSDate)
-            fetchReq.fetchLimit = 1
-            let hasYesterday = ((try? context.fetch(fetchReq))?.count ?? 0) > 0
-
-            if hasYesterday {
-                // Dün giriş yapılmış → streak henüz kırılmamış (bugün yapılırsa devam eder)
-                // Bu durumda yesterdayStreak'i dünün hesabıyla bul
-                let filledDates = fetchFilledDates()
-                let yesterdayStreak = StreakEngine.compute(
-                    filledDates: filledDates,
-                    today: yesterday,
-                    includeToday: true
-                ).count
-                if yesterdayStreak >= 7 {
-                    let key = "lastBrokenStreakDays"
-                    UserDefaults.standard.set(yesterdayStreak, forKey: key)
-                    lastBrokenStreakDays = yesterdayStreak
-                }
-            } else {
-                // Dün de boş — daha önce kaydedilmiş kırılma değerini oku
-                let key = "lastBrokenStreakDays"
-                lastBrokenStreakDays = UserDefaults.standard.integer(forKey: key)
-            }
-        } else {
-            // Bugün entry var — kırılma yok, sıfırla
-            UserDefaults.standard.removeObject(forKey: "lastBrokenStreakDays")
-            lastBrokenStreakDays = 0
-        }
-    }
 
     // MARK: - Load recent artists from archive
     func loadRecentArtists() {
@@ -436,7 +385,7 @@ class TodayViewModel: ObservableObject {
     /// Kaydedilmiş bugünkü entry'ye sonradan fotoğraf ve/veya not ekler.
     ///
     /// `saveEntry` de bir upsert ama onu tekrar çağırmak `createdAt`'i sıfırlar ve
-    /// analytics / rozet / streak / CloudKit / Live Activity yan etkilerini yeniden
+    /// analytics / CloudKit / Live Activity yan etkilerini yeniden
     /// tetikler. Bu metod bilerek dar: sadece iki alanı yazar.
     /// `TodayCompletedView`'daki yıkıcı "Değiştir" (`clearToday`) ile karıştırılmamalı.
     func attachPhotoAndNote(photo: UIImage? = nil, note: String? = nil) {
@@ -530,10 +479,6 @@ class TodayViewModel: ObservableObject {
 
     // MARK: - Milestone & Memory
 
-    func clearStreakMilestone() {
-        streakMilestone = nil
-    }
-
     // MARK: - A4 — First-entry Circle invite hook
 
     /// Onboarding kendi davet adımını gösterdiğinde bu anahtarı `saveEntry`'den
@@ -607,12 +552,9 @@ class TodayViewModel: ObservableObject {
         showLastWeekReflection = false
     }
 
-    // MARK: - Streak Calculation
-    /// Counts consecutive days ending at today, applying StreakEngine's
-    /// soft-streak rules (1 freeze per 7-day window). Returns 1 on first save.
     /// Kayıt bulunan günlerin kümesi.
     ///
-    /// Streak hesabı yalnızca **tarihlere** bakıyor, ama eskiden iki ayrı
+    /// Gün kümesi yalnızca **tarihlere** bakıyor, ama eskiden iki ayrı
     /// yerde predicate'siz `DailySong.fetchRequest()` ile tablonun tamamı
     /// `NSManagedObject` olarak materialize ediliyordu. `loadTodayEntry()`
     /// on ayrı yerden çağrılıyor (açılış, kayıt, silme, güncelleme…) ve her
@@ -635,44 +577,6 @@ class TodayViewModel: ObservableObject {
         })
     }
 
-    private func computeCurrentStreak(includingToday: Bool = true) -> Int {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-
-        let filledDates = fetchFilledDates()
-        guard !filledDates.isEmpty else { return 1 }
-
-        // Önceki gün entry yoksa freeze köprüsüne gerek yok — sadece 1.
-        let hasPriorEntry = filledDates.contains { $0 < today }
-        guard hasPriorEntry else {
-            streakFreezeUsedRecently = false
-            streakFreezeAvailable = StreakEngine.isFreezeAvailable(today: today)
-            return 1
-        }
-
-        let result = StreakEngine.compute(
-            filledDates: filledDates,
-            today: today,
-            includeToday: includingToday
-        )
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
-        streakFreezeUsedRecently = result.frozenDates.contains(yesterday)
-        streakFreezeAvailable = result.freezeAvailable
-        if !result.newlyConsumedFreezes.isEmpty {
-            // Bir tick ertele. Bu fonksiyon `init` → `loadTodayEntry` →
-            // `refreshStreakDays` zinciriyle view güncellemesinin İÇİNDE
-            // çalışıyor; toast'ı oradan yayınlamak
-            // "Publishing changes from within view updates" uyarısını
-            // veriyordu — SwiftUI'da tanımsız davranış.
-            DispatchQueue.main.async {
-                ErrorHandler.shared.showInfo(
-                    NSLocalizedString("streak.freezeUsed.toast", comment: "")
-                )
-                AppAnalytics.shared.track(.streakFreezeConsumed)
-            }
-        }
-        return result.count
-    }
 
     private func loadThisWeekEntries() {
         let cal = Calendar.current
@@ -796,7 +700,6 @@ class TodayViewModel: ObservableObject {
         let doSync: () -> Void = { [weak self] in
             guard let self else { return }
             let photoData = item.shareWithCircle ? item.photoData : nil
-            let syncStreak = self.computeCurrentStreak(includingToday: true)
             CloudKitManager.shared.shareDailySong(
                 songName: item.songName ?? "",
                 artistName: item.artistName ?? "",
@@ -814,7 +717,9 @@ class TodayViewModel: ObservableObject {
                 feelingLabel: item.feelingLabel,
                 weatherIcon: item.weatherIcon,
                 weatherDesc: item.weatherDesc,
-                currentStreak: syncStreak,
+                // Seri motoru kalktı. Alan CloudKit şemasında duruyor
+                // (mevcut kayıtlar bozulmasın), ama artık hesaplanmıyor.
+                currentStreak: 0,
                 entryIndex: itemEntryIndex
             ) { res in
                 switch res {
