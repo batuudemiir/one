@@ -386,19 +386,21 @@ struct V3OnboardingView: View {
 
         // 2) Seçilen ilk mood → gerçek Moment olarak kaydedilir. Böylece
         //    kullanıcı "ilk kare" ödülünü gördüğünde arşiv de aynı kareyi taşır.
+        //
+        // `MomentWriter` üzerinden yazılıyor. Eskiden burada doğrudan
+        // `insertNewMoment` + `context.save()` vardı — satır diske iniyordu
+        // ama **yan etkilerin hiçbiri çalışmıyordu**. Kullanıcının ilk anı
+        // özellikle bunlara muhtaç:
+        //   • widget onboarding'den sonra boş kalıyordu
+        //   • bugünün hatırlatması iptal edilmiyordu — kullanıcı renk
+        //     seçtikten saatler sonra "bugün nasılsın?" bildirimi alıyordu
+        //   • Echo önbelleği ve arşiv tazeleme sinyali hiç gitmiyordu
+        //   • ilk mood analitiğe hiç düşmüyordu
+        //
+        // Yazma yolu tek olsun diye bu tip var; onu atlayan her yol
+        // yan etkilerden birini unutuyor.
         if let mood = selectedMood {
-            _ = PersistenceController.shared.insertNewMoment(
-                for: Date(),
-                moodColorHex: mood.hex,
-                moodWord: mood.label.lowercased(),
-                note: nil,
-                songName: nil,
-                songArtist: nil,
-                photoData: nil,
-                scope: .private,
-                context: context
-            )
-            try? context.save()
+            MomentWriter.write(mood: mood, scope: .private, context: context)
         }
 
         // 3) Hatırlatma tercihi → V3ReminderSettings (persist edilir + schedule).
@@ -406,10 +408,19 @@ struct V3OnboardingView: View {
         settings.enabled = reminderOn
         settings.save()
         if reminderOn {
+            // İzin verildikten *sonra* planlama gerekiyor: `MomentWriter` bir
+            // adım önce planladı ama o sırada bildirim izni henüz yoktu.
+            //
+            // `yesterdayMood` olarak az önce seçilen mood geçiliyor. Eskiden
+            // burada `nil` yazıyordu ve bu, bir adım önce doğru mood'la
+            // kurulan planı **eziyordu** — ertesi günün "meraklı" hatırlatması
+            // dünü anamıyor, jenerik metne düşüyordu. Tam da onboarding'den
+            // gelen kullanıcıda, yani hatırlatmanın en çok işe yaradığı yerde.
+            let firstMood = selectedMood
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, _ in
                 if granted {
                     DispatchQueue.main.async {
-                        V3ReminderScheduler.reschedule(yesterdayMood: nil)
+                        V3ReminderScheduler.reschedule(yesterdayMood: firstMood)
                     }
                 }
             }

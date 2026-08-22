@@ -42,30 +42,29 @@ struct ContactsInviteView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                V3Tokens.paper.ignoresSafeArea()
+        ZStack {
+            V3Tokens.paper.ignoresSafeArea()
 
-                Group {
-                    switch permissionStatus {
-                    case .authorized:
-                        contactList
-                    case .denied, .restricted:
-                        permissionDeniedView
-                    default:
-                        loadingView
-                    }
+            Group {
+                switch permissionStatus {
+                case .authorized:
+                    contactList
+                case .denied, .restricted:
+                    permissionDeniedView
+                default:
+                    loadingView
                 }
             }
-            .navigationTitle(NSLocalizedString("contacts.navTitle", comment: ""))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(NSLocalizedString("general.close", comment: "")) { dismiss() }
-                        .monoSM(tracking: 0)
-                        .foregroundColor(V3Tokens.ink)
-                }
-            }
+        }
+        // Kapat sağdaki metin düğmesinden sol üstteki dairesel xmark'a geçti.
+        .safeAreaInset(edge: .top, spacing: 0) {
+            V3TopBar(
+                leading: .close { dismiss() },
+                title: NSLocalizedString("contacts.navTitle", comment: ""),
+                titleMode: .always,
+                progress: 1
+            )
+        }
             .sheet(isPresented: $showMessageCompose) {
                 MessageComposeView(
                     recipients: [smsRecipient],
@@ -79,8 +78,7 @@ struct ContactsInviteView: View {
             } message: {
                 Text(NSLocalizedString("contacts.smsNotAvailable", comment: ""))
             }
-            .onAppear { requestContactsPermission() }
-        }
+        .onAppear { requestContactsPermission() }
     }
 
     // MARK: - Contact List

@@ -66,47 +66,43 @@ struct FriendRequestsView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                V3Tokens.paper.ignoresSafeArea()
+        // Kabuk `V3TopBar`'a geçti. Sistem toolbar'ında kapat SAĞDA metin
+        // düğmesiydi; uygulamanın geri kalanında SOLDA dairesel xmark.
+        // "Tümünü okundu işaretle" sağ yuvaya geçti — orası eylem yuvası.
+        ZStack {
+            V3Tokens.paper.ignoresSafeArea()
 
-                if isLoading && items.isEmpty && notificationStore.notifications.isEmpty {
-                    skeletonList
-                } else if groupedFeed.isEmpty {
-                    emptyState
-                } else {
-                    unifiedList
-                }
+            if isLoading && items.isEmpty && notificationStore.notifications.isEmpty {
+                skeletonList
+            } else if groupedFeed.isEmpty {
+                emptyState
+            } else {
+                unifiedList
             }
-            .navigationTitle(NSLocalizedString("friendRequests.title", comment: ""))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    if notificationStore.unreadCount > 0 {
-                        Button {
-                            withAnimation(ONEAnimation.micro) { notificationStore.markAllRead() }
-                        } label: {
-                            Text(NSLocalizedString("friendRequests.markAllRead", comment: ""))
-                                .monoSM(tracking: 0)
-                                .foregroundColor(V3Tokens.mutedText)
-                        }
-                        .contentShape(Rectangle())
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            V3TopBar(
+                leading: .close { dismiss() },
+                title: NSLocalizedString("friendRequests.title", comment: ""),
+                titleMode: .always,
+                progress: 1
+            ) {
+                if notificationStore.unreadCount > 0 {
+                    V3SheetAction(
+                        title: NSLocalizedString("friendRequests.markAllRead", comment: "")
+                    ) {
+                        withAnimation(ONEAnimation.micro) { notificationStore.markAllRead() }
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(NSLocalizedString("general.close", comment: "")) { dismiss() }
-                        .monoSM(tracking: 0)
-                        .foregroundColor(V3Tokens.ink)
-                }
             }
-            .onAppear {
-                load()
-                notificationStore.markAllRead()
-            }
-            .sheet(item: $fetchedFriendShare) { item in
-                FriendShareDetailView(share: item.record, friendDisplayName: item.friendDisplayName)
-                    .v3Sheet(detents: [.large])
-            }
+        }
+        .onAppear {
+            load()
+            notificationStore.markAllRead()
+        }
+        .sheet(item: $fetchedFriendShare) { item in
+            FriendShareDetailView(share: item.record, friendDisplayName: item.friendDisplayName)
+                .v3Sheet(detents: [.large])
         }
     }
 
