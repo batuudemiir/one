@@ -25,7 +25,7 @@ struct V3HubStepView: View {
 
     private var count: Int { day.moments.count }
     private var countLabel: String {
-        count == 1 ? "Bugün bir an var" : "Bugün \(count) an var"
+        String(format: NSLocalizedString("hub.momentCount", comment: ""), count)
     }
 
     var body: some View {
@@ -68,7 +68,7 @@ struct V3HubStepView: View {
             // Ghost (outline) — mevcut anların üstünde "ekleme" niyeti nazik
             // görünsün, ink dolgu butonu ekranı ezmesin.
             Button(action: onAddNew) {
-                Text("Yeni an ekle")
+                Text(NSLocalizedString("hub.addMoment", comment: ""))
                     .displayXS()
                     .foregroundColor(V3Tokens.ink)
                     .frame(maxWidth: .infinity)
@@ -80,12 +80,16 @@ struct V3HubStepView: View {
             }
             .buttonStyle(.onePressable)
         }
-        // Sekme kökünün marka işareti. Hub kaydırılmıyor (iç ScrollView
-        // başlığın altında), o yüzden çubuk hep durağan halinde: şeffaf
-        // zemin, yalnız işaret. An akışının adımlarında çubuk yok —
-        // renk seçerken tuval boş kalmalı.
+        // Diğer üç kök gibi çubuk bağlam taşıyor. Eskiden yalnız `.mark`
+        // vardı: dört sekmeden üçünde çubuk bir şey söylerken An'da boş
+        // duruyordu — `V3TopBar`'ın kendi belgesi "durağan halde bile çubuk
+        // bir şey söylüyor" derken.
+        //
+        // Tarih başlıktan buraya taşındı, kopyalanmadı: hub kaydırılmadığı
+        // için (iç ScrollView başlığın altında) gövde başlığı hiç kaybolmuyor
+        // ve ikisi aynı anda görünseydi aynı bilgi iki kez yazılmış olurdu.
         .safeAreaInset(edge: .top, spacing: 0) {
-            V3TopBar(leading: .mark)
+            V3TopBar(leading: .mark, context: V3DateFormatter.headerLabel())
         }
     }
 
@@ -96,17 +100,10 @@ struct V3HubStepView: View {
             DayFill(day: day, cornerRadius: V3Tokens.radiusInner)
                 .frame(width: 46, height: 46)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(V3DateFormatter.headerLabel())
-                    .font(V3Typography.mono(11, weight: .regular))
-                    .tracking(1.4)
-                    .textCase(.uppercase)
-                    .foregroundColor(V3Tokens.faintText)
-                Text(countLabel)
-                    .font(V3Typography.display(22, weight: .semibold))
-                    .tracking(-0.5)
-                    .foregroundColor(V3Tokens.ink)
-            }
+            Text(countLabel)
+                .font(V3Typography.display(22, weight: .semibold))
+                .tracking(-0.5)
+                .foregroundColor(V3Tokens.ink)
             Spacer()
         }
     }
@@ -140,7 +137,7 @@ struct V3HubStepView: View {
                         .foregroundColor(V3Tokens.ink)
                         .lineLimit(3)
                 } else if moment.hasSong {
-                    Text("Şarkı: \(moment.songName ?? "—")")
+                    Text(String(format: NSLocalizedString("hub.songLine", comment: ""), moment.songName ?? "—"))
                         .bodyXS()
                         .foregroundColor(V3Tokens.mutedText)
                 }

@@ -83,7 +83,7 @@ struct EchoView: View {
 
                         Color.clear.frame(height: 100)
                     }
-                    .padding(.top, onDismiss != nil ? 90 : 24)
+                    .padding(.top, V3Tokens.spacingXL2)
                 }
             }
 
@@ -144,30 +144,23 @@ struct EchoView: View {
                     }
                 }
 
-            // Fixed back button (outside ScrollView)
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            // Yankı bir katman: Profil'den modal olarak açılıyor. Kapatma
+            // dairesel `xmark`, uygulamanın geri kalanıyla aynı. Eskiden üç
+            // ayrı dil vardı — çağrı yerinde sistem toolbar'ının "Kapat"
+            // metni, burada yüzen bir kapsül düğme ("Profile dön"), ve o
+            // kapsülü aşmak için 90pt'lik elle yazılmış bir üst pay.
             if let onDismiss {
-                Button(action: onDismiss) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 15, weight: .semibold))
-                        Text(NSLocalizedString("echo.backToProfile", comment: ""))
-                            .bodySMMedium()
-                    }
-                    .foregroundColor(V3Tokens.ink)
-                    .padding(.horizontal, V3Tokens.spacingLG)
-                    .padding(.vertical, 10)
-                    .background(
-                        Capsule()
-                            .fill(V3Tokens.surface.opacity(0.9))
-                            .overlay(Capsule().stroke(V3Tokens.hairline, lineWidth: 1))
-                            .shadow(color: Color.black.opacity(0.06), radius: 8, y: 2)
-                    )
-                }
-                .padding(.top, 54)
-                .padding(.leading, V3Tokens.spacingXL)
+                V3TopBar(
+                    leading: .close(onDismiss),
+                    context: currentMonthName.uppercased(),
+                    title: NSLocalizedString("nav.echo", comment: ""),
+                    titleMode: .always,
+                    progress: 1
+                )
             }
         }
-        .navigationBarHidden(true)
         .onAppear {
             withAnimation(.easeOut(duration: ONEAnimation.durationLong).delay(0.15)) { appeared = true }
         }

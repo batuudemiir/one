@@ -170,17 +170,12 @@ struct ONEColorPickerView: View {
             showingEchoSheet = true
         }
         .sheet(isPresented: $showingEchoSheet) {
-            NavigationStack {
-                EchoView(context: viewContext)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarLeading) {
-                            Button(NSLocalizedString("general.close", comment: "")) {
-                                showingEchoSheet = false
-                            }
-                            .tint(V3Tokens.ink)
-                        }
-                    }
-            }
+            // Kabuk `EchoView`'ün kendisinde: `onDismiss` verildiğinde ekran
+            // kendi `V3TopBar(leading: .close)`'unu çiziyor. Buradaki
+            // `NavigationStack` + sistem toolbar'ı yalnız bir kapat düğmesi
+            // için duruyordu ve o düğme uygulamanın geri kalanındaki dairesel
+            // xmark'a benzemiyordu.
+            EchoView(context: viewContext, onDismiss: { showingEchoSheet = false })
         }
         .v3Sheet()
         .onChange(of: showingEchoSheet) { _, isShown in
