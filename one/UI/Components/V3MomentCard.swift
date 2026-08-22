@@ -252,10 +252,18 @@ struct V3MomentCard: View {
     private var accessibilityText: String {
         var parts = [ONEFormatters.time.string(from: moment.time)]
         if !moodLabel.isEmpty { parts.append(moodLabel) }
-        if hasVisualPhoto { parts.append("Fotoğraflı") }
-        if !songText.isEmpty { parts.append("Şarkı: \(songText)") }
-        if let note = moment.note, !note.isEmpty { parts.append("Not: \(note)") }
-        if moment.scope == .private { parts.append("Arşivde, çevrede görünmüyor") }
+        if hasVisualPhoto {
+            parts.append(NSLocalizedString("moment.a11y.hasPhoto", comment: ""))
+        }
+        if !songText.isEmpty {
+            parts.append(String(format: NSLocalizedString("moment.a11y.song", comment: ""), songText))
+        }
+        if let note = moment.note, !note.isEmpty {
+            parts.append(String(format: NSLocalizedString("moment.a11y.note", comment: ""), note))
+        }
+        if moment.scope == .private {
+            parts.append(NSLocalizedString("moment.a11y.privateScope", comment: ""))
+        }
         return parts.joined(separator: ", ")
     }
 }

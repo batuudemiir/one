@@ -61,17 +61,17 @@ struct QRScannerView: View {
                         Image(systemName: "camera.slash")
                             .displayXXL()
                             .fontWeight(.ultraLight)
-                            .foregroundColor(.white)
+                            .foregroundColor(V3Tokens.darkText)
                         Text(NSLocalizedString("addFriend.cameraRequired", comment: ""))
                             .displaySM()
-                            .foregroundColor(.white)
+                            .foregroundColor(V3Tokens.darkText)
                         Button(NSLocalizedString("circle.goToSettings", comment: "")) {
                             if let url = URL(string: UIApplication.openSettingsURLString) {
                                 UIApplication.shared.open(url)
                             }
                         }
                         .monoSM(tracking: 0)
-                        .foregroundColor(.white)
+                        .foregroundColor(V3Tokens.darkText)
                         .padding(.horizontal, V3Tokens.spacingXL)
                         .padding(.vertical, 10)
                         .background(Capsule().stroke(Color.white.opacity(0.5), lineWidth: 1))

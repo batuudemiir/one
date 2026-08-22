@@ -137,6 +137,11 @@ struct V3ProfileView: View {
             .onReceive(NotificationCenter.default.publisher(for: .init("todaySongSaved"))) { _ in
                 loadMoments()
             }
+            // Başka cihazdan inen kayıt: dağılım ve sayaçlar bayat kalmasın.
+            // Ekran açıkken sync inerse `.task` bir daha koşmuyor.
+            .onReceive(NotificationCenter.default.publisher(for: .momentsDidChangeRemotely)) { _ in
+                loadMoments()
+            }
             .onReceive(NotificationCenter.default.publisher(for: .profileTabRetapped)) { _ in
                 withAnimation(ONEAnimation.screenTransition) {
                     proxy.scrollTo("profileTop", anchor: .top)

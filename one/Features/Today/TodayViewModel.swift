@@ -58,6 +58,8 @@ class TodayViewModel: ObservableObject {
     let context: NSManagedObjectContext
     private var searchTask: Task<Void, Never>? = nil
     private var syncTask: Task<Void, Never>? = nil
+    /// `.momentsDidChangeRemotely` aboneliği — bkz. `refreshAfterRemoteChange()`.
+    private var remoteChangeSubscription: AnyCancellable?
 
     // MARK: - Echo mood cache (fastest possible first frame)
     private static let echoMoodHexKey   = "todayEchoMoodHex"
@@ -124,6 +126,34 @@ class TodayViewModel: ObservableObject {
         loadTotalEntryCount()
         loadYesterdayMood()
         loadRecommendedSongs()
+
+        remoteChangeSubscription = NotificationCenter.default
+            .publisher(for: .momentsDidChangeRemotely)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.refreshAfterRemoteChange() }
+            }
+    }
+
+    /// Başka bir cihazdan inen kayıttan sonra CoreData türevi state'i tazeler.
+    ///
+    /// `reloadAfterV3Save()` kullanılmıyor: o AppReviewManager'ı tetikliyor
+    /// ve puan istemi kullanıcının *kendi* kaydına ait bir ödül — uzaktan
+    /// inen bir satır onu hak etmiyor.
+    ///
+    /// `loadLastWeekEntry()` de bilerek dışarıda: `showLastWeekReflection`'ı
+    /// kaldırıyor, yani arka planda inen sync kullanıcının ortasında bir
+    /// yansıma kartı açardı. O açılış ritüeli, sync tepkisi değil.
+    private func refreshAfterRemoteChange() {
+        // CloudKit'e geri yazmadan tazele. `syncLocalEntryToCloudKitIfNeeded`
+        // `entryIndex > 0` olan anlarda upsert guard'ını atlayıp koşulsuz
+        // YENİ kayıt açıyor; indirmeye cevaben çağırmak her bildirimde bir
+        // kopya üretir ve kopya kendi remote-change'ini doğurur.
+        loadTodayEntry(syncingToCloudKit: false)
+        loadThisWeekEntries()
+        loadTotalEntryCount()
+        loadYesterdayMood()
+        loadLastYearEntry()
     }
 
     /// v3 kayıt sonrası ViewModel'in `todayEntries`/`thisWeekEntries`/streak
@@ -148,7 +178,7 @@ class TodayViewModel: ObservableObject {
     }
 
     // MARK: - Load today's entries from CoreData
-    private func loadTodayEntry() {
+    private func loadTodayEntry(syncingToCloudKit: Bool = true) {
         let today = Calendar.current.startOfDay(for: Date())
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "date == %@", today as NSDate)
@@ -159,7 +189,7 @@ class TodayViewModel: ObservableObject {
             todayEntries = items.map { dailyEntryFrom($0) }
 
             // Sync the latest entry to CloudKit if needed
-            if let lastItem = items.last {
+            if syncingToCloudKit, let lastItem = items.last {
                 syncLocalEntryToCloudKitIfNeeded(item: lastItem)
             }
         } catch {

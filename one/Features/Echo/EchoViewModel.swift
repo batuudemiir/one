@@ -17,35 +17,96 @@ class EchoViewModel: ObservableObject {
     private let context: NSManagedObjectContext
     private let cloudKit = CloudKitManager.shared
 
+    /// `.momentsDidChangeRemotely` aboneliği — bkz. `refreshAfterRemoteChange()`.
+    ///
+    /// Echo yalnızca `init` içinde bir kez hesaplıyordu; sayfa açıkken başka
+    /// cihazdan inen kayıt, sheet kapanıp yeniden açılana kadar sayılara
+    /// yansımıyordu.
+    private var remoteChangeSubscription: AnyCancellable?
+
     init(context: NSManagedObjectContext) {
         self.context = context
         Task {
             await compute()
         }
+
+        remoteChangeSubscription = NotificationCenter.default
+            .publisher(for: .momentsDidChangeRemotely)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.refreshAfterRemoteChange() }
+            }
     }
 
+    /// Uzaktan inen kayıttan sonra yerel istatistikleri tazeler.
+    ///
+    /// `compute()` çağrılmıyor: o yerel hesabın ardından `fetchCircleSyncMatches`
+    /// ile CloudKit'e gidiyor. Sync bir salvo hâlinde iniyor, yani bildirim
+    /// başına bir çevre sorgusu demek olurdu — `CloudKitManager.isThrottled`
+    /// bu uygulamada gerçek bir durum. Eşleşmeler zaten elde; yeniden kurulan
+    /// `EchoData`'ya olduğu gibi taşınıyor.
+    ///
+    /// `MainActor` üzerinde: `fetchAllSongs()` viewContext okuyor.
+    @MainActor
+    private func refreshAfterRemoteChange() {
+        let songs = fetchAllSongs()
+        data = EchoViewModel.buildEchoData(
+            from: songs,
+            circleSyncMatches: data.circleSyncMatches
+        )
+        // İlk `compute()` bitmeden bildirim indiyse ekran yükleniyor'da
+        // asılı kalmasın — veriyi az önce doldurduk.
+        isLoading = false
+    }
+
+    /// `MainActor` üzerinde: `fetchAllSongs()` ve `buildEchoData()` ikisi de
+    /// viewContext'e bağlı `DailySong` nesnelerine dokunuyor. Eskiden fetch
+    /// izolasyonsuz koşuyor, yalnız `buildEchoData` `MainActor.run` ile
+    /// sarılıyordu — yani okuma zaten ana aktördeydi, *fetch'in kendisi*
+    /// değildi. Hesabın ağırlığı değişmiyor, yalnız kuyruk doğrulanıyor.
+    @MainActor
     func compute() async {
         let songs = fetchAllSongs()
 
         // Yerel veriden temel istatistikleri hesapla
-        let result = await MainActor.run {
-            EchoViewModel.buildEchoData(from: songs, circleSyncMatches: [])
-        }
+        data = EchoViewModel.buildEchoData(from: songs, circleSyncMatches: [])
+        isLoading = false
 
-        await MainActor.run {
-            self.data = result
-            self.isLoading = false
-        }
-
-        // CloudKit'ten çevre eşleşmelerini çek
-        await fetchCircleSyncMatches(songs: songs)
+        // CloudKit'ten çevre eşleşmelerini çek. Alanlar burada, ana aktörde
+        // çıkarılıyor; sınırın ötesine `DailySong` geçmiyor.
+        await fetchCircleSyncMatches(candidates: Self.syncCandidates(from: songs))
     }
 
-    private func fetchCircleSyncMatches(songs: [DailySong]) async {
-        await MainActor.run { self.isSyncLoading = true }
+    /// Eşleştirme için gereken alanları `DailySong`'dan çıkarır.
+    ///
+    /// Filtre eski davranışı koruyor: tarihsiz, şarkısız veya sanatçısız
+    /// satır zaten eşleşemiyordu. Yan etkisi, arkadaş sorgusunun tarih
+    /// aralığının artık yalnız şarkılı günlere göre kurulması — dışarıda
+    /// kalan günlerde eşleşme mümkün olmadığı için sonuç aynı, çekilen
+    /// kayıt daha az.
+    @MainActor
+    private static func syncCandidates(from songs: [DailySong]) -> [CircleSyncCandidate] {
+        songs.compactMap { song in
+            guard let date = song.date,
+                  let name = song.songName,
+                  let artist = song.artistName,
+                  !name.trimmingCharacters(in: .whitespaces).isEmpty
+            else { return nil }
+            return CircleSyncCandidate(
+                date: date,
+                songName: name,
+                artistName: artist,
+                moodColorHex: song.moodColorHex ?? "#888888"
+            )
+        }
+    }
+
+    @MainActor
+    private func fetchCircleSyncMatches(candidates: [CircleSyncCandidate]) async {
+        isSyncLoading = true
 
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            cloudKit.fetchCircleSyncMatches(myEntries: songs) { [weak self] result in
+            cloudKit.fetchCircleSyncMatches(myEntries: candidates) { [weak self] result in
                 guard let self else { continuation.resume(); return }
                 switch result {
                 case .success(let matches):
@@ -84,6 +145,8 @@ class EchoViewModel: ObservableObject {
         }
     }
 
+    /// viewContext okuyor — çağıranlar ana aktörde olmak zorunda.
+    @MainActor
     private func fetchAllSongs() -> [DailySong] {
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
         // Sinirsiz tarama: kayit sayisi buyudukce bellek dogrusal artiyordu.

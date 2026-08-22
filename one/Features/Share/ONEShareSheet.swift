@@ -459,7 +459,7 @@ private struct ShareAppButton: View {
                     
                     Image(systemName: icon)
                         .font(.system(size: 26, weight: .medium))
-                        .foregroundColor(.white)
+                        .foregroundColor(V3Tokens.darkText)
                 }
                 
                 Text(title)

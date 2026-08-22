@@ -1,11 +1,11 @@
-# ui_guard eşikleri — 2026-08-21
+# ui_guard eşikleri — 2026-08-22
 # Bu sayılar yalnız AZALIR. Artıran değişiklik build'i kırar.
-system_nav=19
-system_font=89
+system_nav=18
+system_font=88
 raw_screen_padding=42
-hardcoded_tr=1
-white_on_color=20
+hardcoded_tr=0
+white_on_color=10
 plain_button=0
 raw_hex=39
 adhoc_card=32
-raw_type_scale=101
+raw_type_scale=100

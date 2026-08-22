@@ -279,6 +279,11 @@ struct EchoTopTracksSection: View {
 
 struct EchoStatsBreakdownSection: View {
     let data: EchoData
+    /// Çevre eşleşmeleri hâlâ CloudKit'ten geliyor mu.
+    ///
+    /// Varsayılan `false`: hikâye/poster sayfaları dondurulmuş bir `EchoData`
+    /// gösteriyor, orada bekleyen bir sorgu yok.
+    var isSyncLoading: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -294,7 +299,10 @@ struct EchoStatsBreakdownSection: View {
                     divider
                     statRow(label: "En aktif gün", value: day)
                 }
-                if data.syncCount > 0 {
+                if isSyncLoading {
+                    divider
+                    syncPendingRow
+                } else if data.syncCount > 0 {
                     divider
                     statRow(label: "Rezonans", value: "\(data.syncCount)")
                 }
@@ -323,6 +331,22 @@ struct EchoStatsBreakdownSection: View {
                 .font(V3Typography.display(22, weight: .semibold))
                 .tracking(-0.4)
                 .foregroundColor(V3Tokens.ink)
+        }
+        .padding(.vertical, V3Tokens.spacingMD)
+    }
+
+    /// Rezonans sayısı yalnız CloudKit sorgusu dönünce geliyor. Satır o ana
+    /// kadar hiç çizilmiyordu: kullanıcı "henüz yüklenmedi" ile "eşleşme yok"u
+    /// ayırt edemiyor, sonra sayı habersiz beliriyordu.
+    private var syncPendingRow: some View {
+        HStack {
+            Text("Rezonans")
+                .bodySM()
+                .foregroundColor(V3Tokens.mutedText)
+            Spacer()
+            ProgressView()
+                .controlSize(.small)
+                .tint(V3Tokens.mutedText)
         }
         .padding(.vertical, V3Tokens.spacingMD)
     }

@@ -408,7 +408,7 @@ struct FriendShareDetailView: View {
                                 } else {
                                     Image(systemName: "play.fill")
                                         .font(.system(size: 13, weight: .medium))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(V3Tokens.darkText)
                                         .frame(width: 36, height: 36)
                                         .background(Circle().fill(Color.black.opacity(0.35)))
                                 }
@@ -707,7 +707,7 @@ struct PhotoDataViewerSheet: View {
                             Image(systemName: "xmark")
                                 .bodyLG()
                                 .fontWeight(.semibold)
-                                .foregroundColor(.white)
+                                .foregroundColor(V3Tokens.darkText)
                                 .frame(width: 44, height: 44)
                                 .background(
                                     Circle()

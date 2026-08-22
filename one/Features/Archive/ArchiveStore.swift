@@ -17,10 +17,53 @@ class ArchiveStore: ObservableObject {
 
     private let context: NSManagedObjectContext
 
+    /// `.momentsDidChangeRemotely` aboneliği.
+    ///
+    /// Arşiv yalnızca `.task` / `todaySongSaved` ile fetch ediyordu; başka
+    /// cihazdan inen kayıt, kullanıcı sekmeden çıkıp dönene kadar takvimde
+    /// görünmüyordu.
+    private var remoteChangeSubscription: AnyCancellable?
+
     init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
         self.context = context
         self.currentMonth = MonthSummary(year: 2025, month: 2, entries: [:], totalDays: 28)
         self.yearData = []
+
+        remoteChangeSubscription = NotificationCenter.default
+            .publisher(for: .momentsDidChangeRemotely)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                Task { @MainActor in await self.reloadAfterRemoteChange() }
+            }
+    }
+
+    /// CloudKit'ten inen değişikliği ekrana yansıtır.
+    ///
+    /// `loadDataAsync()` çağrılmıyor: o her zaman *bu* aya/yıla dönüyor.
+    /// Kullanıcı geçmiş bir ayı gezerken arka planda sync inerse onu
+    /// takvimden dışarı fırlatmak yerine görüntülenen dönem korunuyor.
+    /// `isLoading` da bilerek kıpırdatılmıyor — sessiz tazeleme, spinner yok.
+    @MainActor
+    private func reloadAfterRemoteChange() async {
+        // İlk yükleme henüz olmadıysa geç: `currentMonth` hâlâ init'teki
+        // yer tutucu (2025/02) ve onu tazelemek yanlış dönemi doldurur.
+        // `ArchiveView.task` zaten `yearData.isEmpty` iken fetch ediyor.
+        guard !yearData.isEmpty else { return }
+
+        let year = currentMonth.year
+        let month = currentMonth.month
+        let now = Date()
+        let bg = PersistenceController.shared.container.newBackgroundContext()
+        let (newMonth, newYear, lastYear) = await bg.perform {
+            (self.loadMonth(year: year, month: month, context: bg),
+             (1...12).map { self.loadMonth(year: year, month: $0, context: bg) },
+             self.loadLastYearToday(now: now, context: bg))
+        }
+
+        currentMonth = newMonth
+        yearData = newYear
+        lastYearToday = lastYear
     }
 
     func loadData() {

@@ -58,7 +58,10 @@ struct EchoView: View {
 
                         EchoTopTracksSection(data: vm.data)
 
-                        EchoStatsBreakdownSection(data: vm.data)
+                        EchoStatsBreakdownSection(
+                            data: vm.data,
+                            isSyncLoading: vm.isSyncLoading
+                        )
 
                         // Poster girişi — ayın renk mozaiği.
                         Button {

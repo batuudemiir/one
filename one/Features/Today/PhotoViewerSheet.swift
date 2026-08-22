@@ -152,7 +152,7 @@ struct PhotoViewerSheet: View {
                 Button(action: dismiss) {
                     Image(systemName: "xmark")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(V3Tokens.darkText)
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()

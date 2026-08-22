@@ -75,7 +75,7 @@ struct PublicProfilePinnedSongCard: View {
             Text(NSLocalizedString("profile.pinned", comment: ""))
                 .monoLabel(tracking: 0.3)
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(V3Tokens.darkText)
         .padding(.horizontal, V3Tokens.spacingSM)
         .padding(.vertical, V3Tokens.spacingXS)
         .background(Capsule().fill(.black.opacity(0.22)))

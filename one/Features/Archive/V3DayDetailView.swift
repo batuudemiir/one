@@ -34,7 +34,11 @@ struct V3DayDetailView: View {
     @State private var scrollOffset: CGFloat = 0
 
     private var count: Int { day.moments.count }
-    private var countLabel: String { count == 1 ? "1 an" : "\(count) an" }
+    private var countLabel: String {
+        count == 1
+            ? NSLocalizedString("archive.momentCount.one", comment: "")
+            : String(format: NSLocalizedString("circle.momentCount", comment: ""), count)
+    }
     /// Çubuğun tek satırı: tarih + an sayısı. İkisi de başka hiçbir yerde
     /// tekrar etmiyor.
     private var barContext: String {
@@ -63,6 +67,20 @@ struct V3DayDetailView: View {
     /// bir şey belirip kaybolmuyor. O yüzden eşik düşük: hero çubuğun altına
     /// girmeye başlar başlamaz zemin kapanmalı ki metin okunur kalsın.
     private static let collapseThreshold: CGFloat = 56
+
+    /// `V3TopBar`'ın kapladığı yükseklik (44pt satır + 6pt alt pay) + nefes payı.
+    ///
+    /// 44'tü ve şeridin üst 6pt'si çubuğun altında kalıyordu: durağan halde
+    /// çubuk şeffaf olduğu için renk kompozisyonu geri düğmesinin hizasından
+    /// başlıyor, ekranın tek başlık öğesi kırpılmış görünüyordu.
+    private static let barClearance: CGFloat = 50 + V3Tokens.spacingLG
+
+    /// Yüzen CTA yalnız **dolu** günde. Boş günde ekranın kendi CTA'sı var
+    /// (`emptyDayContent`) — ikisi birden çizilince aynı eylem için iki
+    /// birebir aynı kapsül alt alta duruyordu.
+    private var showsFloatingCTA: Bool {
+        canAddMoment && !day.isEmpty
+    }
     /// 0 → header genişletilmiş, 1 → tamamen kollapse.
     private var collapseProgress: CGFloat {
         let scrolled = max(0, -scrollOffset)
@@ -77,24 +95,41 @@ struct V3DayDetailView: View {
 
             stickyTopBar
 
-            if canAddMoment, let onAddMoment {
-                VStack {
-                    Spacer()
-                    Button(action: onAddMoment) {
-                        Text(NSLocalizedString("archive.addMomentToDay", comment: ""))
-                            .bodyLGSemibold()
-                            .foregroundColor(V3Tokens.paper)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 18)
-                            .background(
-                                Capsule(style: .continuous).fill(V3Tokens.ink)
-                            )
-                    }
-                    .buttonStyle(.onePressable)
-                    .padding(.horizontal, V3Tokens.spacingXL2)
-                    .padding(.bottom, V3Tokens.spacingXL2)
-                }
+            if showsFloatingCTA, let onAddMoment {
+                floatingCTA(onAddMoment)
             }
+        }
+    }
+
+    // MARK: - Yüzen CTA
+
+    /// Kartların üstünde duruyor. Altında `paper`'dan şeffafa bir geçiş var:
+    /// düz bir kapsül kayan fotoğrafların üstünde kesik gibi duruyordu, şimdi
+    /// içerik çubuğa girerken soluyor (Apple'ın scroll edge effect'i — sert
+    /// bir ayraç yerine yumuşak bir maske).
+    private func floatingCTA(_ action: @escaping () -> Void) -> some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            V3PrimaryButton(
+                title: NSLocalizedString("archive.addMomentToDay", comment: ""),
+                isFullWidth: true,
+                action: action
+            )
+            .padding(.horizontal, V3Tokens.spacingXL2)
+            .padding(.bottom, V3Tokens.spacingXL2)
+        }
+        .background(alignment: .bottom) {
+            LinearGradient(
+                colors: [V3Tokens.paper.opacity(0), V3Tokens.paper],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 132)
+            // Alt güvenli alana da uzanmalı: yoksa home indicator şeridinde
+            // kartlar maskesiz kayıyor ve kapsülün altından çıkıyor.
+            .ignoresSafeArea(edges: .bottom)
+            .allowsHitTesting(false)
         }
     }
 
@@ -130,7 +165,7 @@ struct V3DayDetailView: View {
                         isSource: true
                     )
                     .padding(.horizontal, V3Tokens.spacingXL2)
-                    .padding(.top, 44)
+                    .padding(.top, Self.barClearance)
 
                 if day.isEmpty {
                     emptyDayContent
@@ -169,7 +204,7 @@ struct V3DayDetailView: View {
                     .padding(.top, V3Tokens.spacingXL2)
                 }
             }
-            .padding(.bottom, canAddMoment ? 110 : 32)
+            .padding(.bottom, showsFloatingCTA ? 110 : V3Tokens.spacingXL3)
         }
         .coordinateSpace(name: "dayDetailScroll")
         .onPreferenceChange(DayDetailScrollOffsetKey.self) { offset in
@@ -200,49 +235,47 @@ struct V3DayDetailView: View {
 
     private var emptyDayContent: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
+            // Kesikli çerçeve `dashed` token'ıyla çiziliyor. `hairline`
+            // kullanılıyordu — o token dolu ayraç hattı için ölçüldü,
+            // kesikli çerçevede tırtıklar zeminde kayboluyordu.
             ZStack {
                 RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
-                    .strokeBorder(V3Tokens.hairline, style: StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
+                    .strokeBorder(V3Tokens.dashed, style: StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
                 RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
-                    .strokeBorder(V3Tokens.hairline, style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
+                    .strokeBorder(V3Tokens.dashed, style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
                     .frame(width: 60, height: 60)
             }
             .frame(height: 140)
+            .accessibilityHidden(true)
 
+            // Tek cümle. Önce üç kopya vardı ve üçü de aynı şeyi söylüyordu:
+            // başlık "Bugün henüz bir an yok.", altyazı "İlk anını şimdi
+            // bırak.", düğme "Şimdi ekle". Başlık ne yapılamayacağını
+            // yazıyordu (kopya kuralına ters), altyazı düğmenin tekrarıydı.
             Text(emptyTitle)
-                .font(ONEBrand.display(30))
-                .tracking(-0.8)
+                .displayLG()
                 .foregroundColor(V3Tokens.ink)
-
-            if let subtitle = emptySubtitle {
-                Text(subtitle)
-                    .bodyMD()
-                    .foregroundColor(V3Tokens.mutedText)
-            }
+                .fixedSize(horizontal: false, vertical: true)
 
             if canAddMoment {
-                Button {
+                V3PrimaryButton(
+                    title: NSLocalizedString("archive.addNow", comment: ""),
+                    isFullWidth: true
+                ) {
                     onAddMoment?()
-                } label: {
-                    Text(NSLocalizedString("archive.addNow", comment: ""))
-                        .bodyLGSemibold()
-                        .foregroundColor(V3Tokens.paper)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
-                        .background(Capsule(style: .continuous).fill(V3Tokens.ink))
                 }
-                .buttonStyle(.onePressable)
-                .padding(.top, 10)
+                .padding(.top, V3Tokens.spacingSM)
             }
         }
     }
 
+    /// Bugün → ne yapılacağını yazar. Geçmiş gün → retroaktif an eklenmediği
+    /// için yapılacak bir şey yok; durum olduğu gibi söyleniyor.
     private var emptyTitle: String {
-        isToday ? "Bugün henüz bir an yok." : "O gün boş."
-    }
-
-    private var emptySubtitle: String? {
-        isToday ? "İlk anını şimdi bırak." : nil
+        NSLocalizedString(
+            isToday ? "archive.dayEmpty.today" : "archive.dayEmpty.past",
+            comment: ""
+        )
     }
 
     private var dateLabel: String {

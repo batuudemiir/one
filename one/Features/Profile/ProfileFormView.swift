@@ -97,13 +97,13 @@ struct ProfileFormView: View {
                              ? NSLocalizedString("profile.editProfile", comment: "")
                              : NSLocalizedString("profile.createProfile", comment: ""))
                             .monoLabel(tracking: 1.6)
-                            .foregroundColor(.white.opacity(0.78))
+                            .foregroundColor(V3Tokens.darkText.opacity(0.78))
                         Text(vm.displayName.isEmpty
                              ? NSLocalizedString("profile.namePlaceholder", comment: "")
                              : vm.displayName)
                             .font(.system(size: 28, weight: .semibold))
                             .tracking(-0.4)
-                            .foregroundColor(.white)
+                            .foregroundColor(V3Tokens.darkText)
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
                             .shadow(color: .black.opacity(0.30), radius: 8, x: 0, y: 2)
@@ -119,7 +119,7 @@ struct ProfileFormView: View {
                             Text(NSLocalizedString("profile.changePhoto", comment: ""))
                                 .monoLabel(tracking: 0.6)
                         }
-                        .foregroundColor(.white)
+                        .foregroundColor(V3Tokens.darkText)
                         .padding(.horizontal, V3Tokens.spacingMD)
                         .padding(.vertical, 9)
                         .liquidGlass(

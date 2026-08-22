@@ -128,7 +128,7 @@ final class ProfileViewModel: ObservableObject {
         let ud = UserDefaults.standard
         dailyReminderHour = ud.integer(forKey: "dailyReminderHour") == 0 ? 20 : ud.integer(forKey: "dailyReminderHour")
         dailyReminderMinute = ud.integer(forKey: "dailyReminderMinute")
-        notificationsEnabled = ud.bool(forKey: "notificationsEnabled")
+        notificationsEnabled = ud.oneNotificationsEnabled
         streakNotificationsEnabled = ud.object(forKey: "streakNotificationsEnabled") == nil ? true : ud.bool(forKey: "streakNotificationsEnabled")
         weeklySummaryEnabled = ud.object(forKey: "weeklySummaryEnabled") == nil ? true : ud.bool(forKey: "weeklySummaryEnabled")
         hapticFeedbackEnabled = ud.object(forKey: "hapticFeedbackEnabled") == nil ? true : ud.bool(forKey: "hapticFeedbackEnabled")

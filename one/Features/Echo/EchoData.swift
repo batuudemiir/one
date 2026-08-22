@@ -18,6 +18,19 @@ struct CircleSyncMatch: Identifiable {
     let moodColorHex: String    // kendi mood rengi
 }
 
+/// `fetchCircleSyncMatches` sınırından geçen düz kopya.
+///
+/// CloudKit tamamlama blokları rastgele kuyrukta koşuyor. Oraya `DailySong`
+/// (viewContext'e bağlı bir `NSManagedObject`) geçerse property okumaları
+/// off-main olur. Eşleştirme yalnız şu dört alana bakıyor, o yüzden sınırdan
+/// yalnız bu değer tipi geçiyor — alanlar ana aktörde bir kez çıkarılıyor.
+struct CircleSyncCandidate: Sendable {
+    let date: Date
+    let songName: String
+    let artistName: String
+    let moodColorHex: String
+}
+
 struct MoodStat: Identifiable {
     let id = UUID()
     let label: String
