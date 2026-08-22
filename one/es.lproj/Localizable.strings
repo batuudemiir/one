@@ -672,7 +672,7 @@
 
 /* --- GENRE FALLBACK --- */
 "genre.music" = "Música";
-"notification.appUpdate.title" = "Nueva versión disponible 🚀";
+"notification.appUpdate.title" = "Nueva versión disponible";
 "notification.appUpdate.body" = "¡ONE %@ ya está aquí! Toca para actualizar ahora.";
 
 /* Badges */
@@ -834,7 +834,7 @@
 "nav.expandBarA11y" = "Expand tab bar";
 "nav.todayHint" = "Log today's mood";
 "notification.monthEnd.body" = "Ready to see what this month sounded like?";
-"notification.monthEnd.title" = "Your monthly summary is ready 🎵";
+"notification.monthEnd.title" = "Your monthly summary is ready";
 "notification.openCircle" = "Open Circle";
 "onboarding.continueShort" = "CONTINUE";
 "onboarding.moodPick.continue" = "CONTINUE";
@@ -1498,3 +1498,5 @@ one day.";
 
 "hub.addMoment" = "Añadir un momento";
 "hub.songLine" = "Canción: %@";
+
+"songPicker.noSuggestions" = "No se encontraron sugerencias.";

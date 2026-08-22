@@ -131,7 +131,7 @@ struct V3SongPicker: View {
             } else if let msg = engine.errorMessage {
                 emptyState(text: msg)
             } else {
-                emptyState(text: "Öneri bulunamadı.")
+                emptyState(text: NSLocalizedString("songPicker.noSuggestions", comment: ""))
             }
         } else {
             ScrollView(showsIndicators: false) {
@@ -177,17 +177,7 @@ struct V3SongPicker: View {
     }
 
     private func emptyState(text: String) -> some View {
-        VStack(spacing: 10) {
-            Image(systemName: "music.note")
-                .font(.system(size: 24, weight: .light))
-                .foregroundColor(V3Tokens.faintText)
-            Text(text)
-                .bodySM()
-                .foregroundColor(V3Tokens.mutedText)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, V3Tokens.spacingXL4)
+        SubScreenState(systemImage: "music.note", message: text)
     }
 
     // MARK: - Row

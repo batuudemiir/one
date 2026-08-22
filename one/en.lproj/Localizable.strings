@@ -900,7 +900,7 @@
 "premium.firstMultiEntry" = "✦ Your first multi-entry day!";
 
 /* Month-End Summary Notification */
-"notification.monthEnd.title" = "Your monthly summary is ready 🎵";
+"notification.monthEnd.title" = "Your monthly summary is ready";
 "notification.monthEnd.body" = "Ready to see what this month sounded like?";
 
 /* Badges */
@@ -935,7 +935,7 @@
 "yearly.uniqueSongs" = "UNIQUE SONGS";
 "yearly.longestStreak" = "LONGEST STREAK";
 "yearly.dominantMood" = "DOMINANT MOOD";
-"notification.appUpdate.title" = "New version available 🚀";
+"notification.appUpdate.title" = "New version available";
 "notification.appUpdate.body" = "ONE %@ is here! Tap to update now.";
 
 /* First entry — Circle invite hook (A4) */
@@ -1627,3 +1627,5 @@ one day.";
 
 "hub.addMoment" = "Add a moment";
 "hub.songLine" = "Song: %@";
+
+"songPicker.noSuggestions" = "No suggestions found.";

@@ -960,7 +960,7 @@
 "premium.firstMultiEntry" = "✦ İlk çoklu gün kaydın!";
 
 /* Month-End Summary Notification */
-"notification.monthEnd.title" = "Bu ayın özeti hazır 🎵";
+"notification.monthEnd.title" = "Bu ayın özeti hazır";
 "notification.monthEnd.body" = "Bu ay kaydettiklerini görmeye hazır mısın?";
 
 /* Badges */
@@ -995,7 +995,7 @@
 "yearly.uniqueSongs" = "BENZERSİZ ŞARKI";
 "yearly.longestStreak" = "EN UZUN SERİ";
 "yearly.dominantMood" = "BASKIN MOOD";
-"notification.appUpdate.title" = "Yeni sürüm mevcut 🚀";
+"notification.appUpdate.title" = "Yeni sürüm mevcut";
 "notification.appUpdate.body" = "ONE %@ yayında! Güncellemek için dokun.";
 
 /* First entry — Çevre davet kancası (A4) */
@@ -1644,3 +1644,5 @@ bir gün.";
 
 "hub.addMoment" = "Yeni an ekle";
 "hub.songLine" = "Şarkı: %@";
+
+"songPicker.noSuggestions" = "Öneri bulunamadı.";

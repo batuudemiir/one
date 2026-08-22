@@ -334,7 +334,11 @@ struct FilterChip: View {
 
 struct SubScreenState: View {
     let systemImage: String
-    let title: String
+    /// Kısa başlık — 24pt Archivo. **Cümle koyma:** Archivo ExtraBold
+    /// Expanded o punto ve genişlikte bir başlık yüzü, gövde yüzü değil;
+    /// tam cümle orada duvar gibi okunuyor. Cümlelik metin `message`'a
+    /// gider, `title` nil bırakılır.
+    var title: String? = nil
     var message: String? = nil
     var actionTitle: String? = nil
     var action: (() -> Void)? = nil
@@ -345,10 +349,12 @@ struct SubScreenState: View {
                 .font(.system(size: 38, weight: .light))
                 .foregroundColor(V3Tokens.faintText)
 
-            Text(title)
-                .displayMD()
-                .multilineTextAlignment(.center)
-                .foregroundColor(V3Tokens.ink)
+            if let title {
+                Text(title)
+                    .displayMD()
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(V3Tokens.ink)
+            }
 
             if let message {
                 Text(message)

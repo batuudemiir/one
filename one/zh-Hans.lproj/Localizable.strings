@@ -670,7 +670,7 @@
 
 /* --- GENRE FALLBACK --- */
 "genre.music" = "音乐";
-"notification.appUpdate.title" = "新版本可用 🚀";
+"notification.appUpdate.title" = "新版本可用";
 "notification.appUpdate.body" = "ONE %@ 已上线！点击立即更新。";
 
 /* Badges */
@@ -832,7 +832,7 @@
 "nav.expandBarA11y" = "Expand tab bar";
 "nav.todayHint" = "Log today's mood";
 "notification.monthEnd.body" = "Ready to see what this month sounded like?";
-"notification.monthEnd.title" = "Your monthly summary is ready 🎵";
+"notification.monthEnd.title" = "Your monthly summary is ready";
 "notification.openCircle" = "Open Circle";
 "onboarding.continueShort" = "CONTINUE";
 "onboarding.moodPick.continue" = "CONTINUE";
@@ -1496,3 +1496,5 @@ one day.";
 
 "hub.addMoment" = "添加瞬间";
 "hub.songLine" = "歌曲：%@";
+
+"songPicker.noSuggestions" = "未找到推荐。";

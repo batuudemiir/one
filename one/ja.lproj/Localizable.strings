@@ -673,7 +673,7 @@
 
 /* --- GENRE FALLBACK --- */
 "genre.music" = "音楽";
-"notification.appUpdate.title" = "新しいバージョンが利用可能 🚀";
+"notification.appUpdate.title" = "新しいバージョンが利用可能";
 "notification.appUpdate.body" = "ONE %@ が公開されました！タップして今すぐ更新。";
 
 /* Badges */
@@ -835,7 +835,7 @@
 "nav.expandBarA11y" = "Expand tab bar";
 "nav.todayHint" = "Log today's mood";
 "notification.monthEnd.body" = "Ready to see what this month sounded like?";
-"notification.monthEnd.title" = "Your monthly summary is ready 🎵";
+"notification.monthEnd.title" = "Your monthly summary is ready";
 "notification.openCircle" = "Open Circle";
 "onboarding.continueShort" = "CONTINUE";
 "onboarding.moodPick.continue" = "CONTINUE";
@@ -1498,3 +1498,5 @@ one day.";
 
 "hub.addMoment" = "記録を追加";
 "hub.songLine" = "曲: %@";
+
+"songPicker.noSuggestions" = "候補が見つかりません。";

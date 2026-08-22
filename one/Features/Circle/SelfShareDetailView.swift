@@ -227,7 +227,9 @@ struct SelfShareDetailView: View {
                         }
                     }
                     HStack(spacing: 5) {
-                        Text("🎵").bodyMicro()
+                        Image(systemName: "music.note")
+                            .font(.system(size: 10))
+                            .foregroundColor(V3Tokens.mutedText)
                         Text(platform).monoLabel().foregroundColor(V3Tokens.mutedText)
                     }
                 }

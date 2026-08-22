@@ -128,20 +128,14 @@ struct IncomingReactionsView: View {
         .padding(.bottom, V3Tokens.spacingMD)
     }
 
+    /// Boş durum — paylaşılan `SubScreenState`. Eskiden burada 34pt ikon +
+    /// 11pt aralık vardı; Şarkı seçicide 24pt + 10, Yankı'da 28pt + 18.
+    /// Dört ekran, dört ölçü.
     private var emptyState: some View {
-        VStack(spacing: 11) {
-            Spacer()
-            Image(systemName: "dot.radiowaves.left.and.right")
-                .font(.system(size: 34, weight: .light))
-                .foregroundColor(V3Tokens.faintText)
-            Text(NSLocalizedString("echoes.empty", comment: ""))
-                .bodySM()
-                .multilineTextAlignment(.center)
-                .foregroundColor(V3Tokens.mutedText)
-                .padding(.horizontal, V3Tokens.spacingXL4)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity)
+        SubScreenState(
+            systemImage: "dot.radiowaves.left.and.right",
+            message: NSLocalizedString("echoes.empty", comment: "")
+        )
     }
 
     // MARK: Karşılık verenler
