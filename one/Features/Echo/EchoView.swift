@@ -228,7 +228,7 @@ struct EchoView: View {
             Spacer().frame(height: 100)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, V3Tokens.spacingXL2)
+        .padding(.horizontal, V3Tokens.channel)
     }
 
     private var currentMonthName: String {

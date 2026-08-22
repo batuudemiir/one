@@ -176,7 +176,7 @@ struct ContactsInviteView: View {
             }
             .monoSM(tracking: 0.8)
             .foregroundStyle(ONEBrand.bone)
-            .padding(.horizontal, V3Tokens.spacingXL2)
+            .padding(.horizontal, V3Tokens.channel)
             .padding(.vertical, V3Tokens.spacingMD)
             .background(RoundedRectangle(cornerRadius: 12).fill(V3Tokens.ink))
             Spacer()

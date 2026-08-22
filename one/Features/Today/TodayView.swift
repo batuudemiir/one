@@ -102,7 +102,7 @@ struct TodayView: View {
                     RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
                         .fill(Color(hex: "#CC3333"))
                 )
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.bottom, 130)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .animation(ONEAnimation.panelSpring, value: vm.circleShareFailed)

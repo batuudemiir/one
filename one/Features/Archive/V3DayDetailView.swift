@@ -116,7 +116,7 @@ struct V3DayDetailView: View {
                 isFullWidth: true,
                 action: action
             )
-            .padding(.horizontal, V3Tokens.spacingXL2)
+            .padding(.horizontal, V3Tokens.channel)
             .padding(.bottom, V3Tokens.spacingXL2)
         }
         .background(alignment: .bottom) {
@@ -164,12 +164,12 @@ struct V3DayDetailView: View {
                         in: dayNS,
                         isSource: true
                     )
-                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.horizontal, V3Tokens.channel)
                     .padding(.top, Self.barClearance)
 
                 if day.isEmpty {
                     emptyDayContent
-                        .padding(.horizontal, V3Tokens.spacingXL2)
+                        .padding(.horizontal, V3Tokens.channel)
                         .padding(.top, V3Tokens.spacingXL4)
                 } else {
                     // Kartlar arası 48pt. Ayrımı kenarlık değil boşluk
@@ -200,7 +200,7 @@ struct V3DayDetailView: View {
                             )
                         }
                     }
-                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.horizontal, V3Tokens.channel)
                     .padding(.top, V3Tokens.spacingXL2)
                 }
             }

@@ -37,7 +37,7 @@ struct EchoCoverSection: View {
                 Spacer()
             }
             .padding(.top, V3Tokens.spacingXL2)
-            .padding(.horizontal, V3Tokens.spacingXL2)
+            .padding(.horizontal, V3Tokens.channel)
 
             Spacer(minLength: 0)
 
@@ -77,7 +77,7 @@ struct EchoCoverSection: View {
                 .buttonStyle(.onePressable)
                 .padding(.top, 6)
             }
-            .padding(.horizontal, V3Tokens.spacingXL2)
+            .padding(.horizontal, V3Tokens.channel)
             .padding(.bottom, V3Tokens.spacingXL2)
         }
         .frame(maxWidth: .infinity)

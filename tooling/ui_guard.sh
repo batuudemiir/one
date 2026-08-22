@@ -71,7 +71,7 @@ RULE_NAMES=(
 
 RULE_DESC=(
   "Sistem NavigationStack / navigationTitle / toolbar"
-  ".font(.system(size:)) — anlamsal rol kullan"
+  ".font(.system(size:)) — Text alıcısında anlamsal rol kullan (Image ikonlarında meşru)"
   "Ham ekran kenar payı — V3Tokens.channel kullan"
   "Sabit Türkçe dize — NSLocalizedString kullan"
   "Renk zemin üstünde .white / .black — mood ink eşi kullan"

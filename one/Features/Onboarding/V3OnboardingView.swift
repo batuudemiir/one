@@ -92,7 +92,7 @@ struct V3OnboardingView: View {
 
                 footer
             }
-            .padding(.horizontal, V3Tokens.spacingXL2)
+            .padding(.horizontal, V3Tokens.channel)
             .padding(.top, V3Tokens.spacingXL4)
             .padding(.bottom, 28)
         }

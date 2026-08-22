@@ -52,7 +52,7 @@ struct InviteShareSheet: View {
                         .padding(.top, V3Tokens.spacingMD)
                     
                     shareLinkView
-                        .padding(.horizontal, V3Tokens.spacingXL2)
+                        .padding(.horizontal, V3Tokens.channel)
                         .padding(.bottom, V3Tokens.spacingXL4)
                 }
             }
@@ -100,7 +100,7 @@ struct InviteShareSheet: View {
                 label: NSLocalizedString("general.close", comment: "")
             ) { dismiss() }
         }
-        .padding(.horizontal, V3Tokens.spacingXL2)
+        .padding(.horizontal, V3Tokens.channel)
         .padding(.bottom, V3Tokens.spacingLG)
     }
     

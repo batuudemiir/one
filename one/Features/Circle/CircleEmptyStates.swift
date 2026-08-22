@@ -66,7 +66,7 @@ struct CircleEmptyState: View {
 
                 if requiredFriends > 0 {
                     progressRow
-                        .padding(.horizontal, V3Tokens.spacingXL2)
+                        .padding(.horizontal, V3Tokens.channel)
                         .padding(.bottom, V3Tokens.spacingSM)
                 }
 
@@ -94,7 +94,7 @@ struct CircleEmptyState: View {
                         .contentShape(Rectangle())
                     }
                 }
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
 
                 // Kapanış: davetin neden işe yaradığını söyleyen tek cümle.
                 VStack(spacing: V3Tokens.spacingXL) {
@@ -108,7 +108,7 @@ struct CircleEmptyState: View {
                         .foregroundColor(V3Tokens.mutedText)
                         .padding(.horizontal, V3Tokens.spacingXL)
                 }
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
             }
             .padding(.top, V3Tokens.spacingLG)
             // Sekme çubuğu içeriği kesmesin — ekran görüntüsünde "şimdilik tek

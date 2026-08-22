@@ -148,7 +148,7 @@ struct V3CircleView: View {
                         mainContent
                     }
                 }
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 // Dinlenme pozisyonunun tek sahibi kabuk: `safeAreaInset`
                 // nav yüksekliği kadar pay bırakıyor. Buradaki fazladan 24pt
                 // o payın üstüne biniyordu — son satır çubuğun 16pt üstünde

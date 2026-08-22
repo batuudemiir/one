@@ -110,7 +110,7 @@ struct V3ProfileView: View {
                     versionFooter
                     Color.clear.frame(height: 40)
                 }
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.top, V3Tokens.spacingMD)
                 // Dinlenme pozisyonunun tek sahibi kabuk: `safeAreaInset`
                 // nav yüksekliği kadar pay bırakıyor. Buradaki fazladan 24pt
@@ -211,7 +211,7 @@ struct V3ProfileView: View {
                             showReminder = false
                         }
                     )
-                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.horizontal, V3Tokens.channel)
                     .padding(.top, V3Tokens.spacingXL2)
                     .padding(.bottom, V3Tokens.spacingXL2)
                 }
@@ -924,7 +924,7 @@ struct V3ProfileView: View {
                     .font(ONEBrand.display(28))
                     .tracking(-0.7)
                     .foregroundColor(V3Tokens.ink)
-                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.horizontal, V3Tokens.channel)
                     .padding(.top, V3Tokens.spacingMD)
 
                 ScrollView {

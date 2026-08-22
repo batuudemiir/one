@@ -63,7 +63,7 @@ struct ReactionComposer: View {
                     text: $replyText
                 )
                 .textFieldStyle(.plain)
-                .font(.system(size: 14))
+                .bodySM()
                 .foregroundColor(V3Tokens.ink)
                 .submitLabel(.send)
                 .onSubmit { sendReply() }

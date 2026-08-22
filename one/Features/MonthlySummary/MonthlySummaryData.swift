@@ -14,7 +14,6 @@ struct TrackEntry: Identifiable {
     let name: String
     let artist: String
     let days: Int
-    let gradientColors: [Color]
     let emoji: String
 }
 
@@ -40,16 +39,17 @@ struct MonthlySummaryData {
 // MARK: - Mock Data
 extension MonthlySummaryData {
     static var mock: MonthlySummaryData {
-        // Önizleme paleti — bunlar ürün rengi değil, SwiftUI preview için
-        // sahte veri. `ONETokens` içinde `summaryMock*` adıyla duruyorlardı;
-        // token dosyasında mock renk tutmak "hangi renk gerçek" sorusunu
-        // bulanıklaştırıyordu.
-        let orange  = Color(hex: "#C97840")
-        let red     = Color(hex: "#C94040")
-        let yellow  = Color(hex: "#C9A840")
-        let teal    = Color(hex: "#40A89C")
-        let blue    = Color(hex: "#4070C9")
-        let purple  = Color(hex: "#7840C9")
+        // Önizleme paleti. Sahte **veri**, ama sahte **renk** değil: altı
+        // ham hex duruyordu (#C97840, #C94040, …) ve ONE'ın dokuz mood
+        // renginin hiçbiri değildi. Önizleme, ürünün asla çizmediği bir
+        // paleti gösteriyordu — yani tasarımı önizlemeden değerlendiren
+        // herkes yanlış rengi görüyordu.
+        let orange  = V3Mood.coskulu.color
+        let red     = V3Mood.atesli.color
+        let yellow  = V3Mood.mutlu.color
+        let teal    = V3Mood.huzurlu.color
+        let blue    = V3Mood.odakli.color
+        let purple  = V3Mood.gergin.color
 
         let moodPattern: [Color] = [
             orange, orange, yellow, teal,   blue,   orange,
@@ -76,15 +76,15 @@ extension MonthlySummaryData {
             ],
             topTracks: [
                 TrackEntry(rank: 1, name: "Neredesin Sen", artist: "Fazıl Say",
-                           days: 6, gradientColors: [orange, yellow], emoji: "🎹"),
+                           days: 6, emoji: "🎹"),
                 TrackEntry(rank: 2, name: "Huzur", artist: "Jakuzi",
-                           days: 5, gradientColors: [blue, teal], emoji: "🌊"),
+                           days: 5, emoji: "🌊"),
                 TrackEntry(rank: 3, name: "Gece Yarısı", artist: "Ceza",
-                           days: 4, gradientColors: [purple, red], emoji: "🌙"),
+                           days: 4, emoji: "🌙"),
                 TrackEntry(rank: 4, name: "Elveda", artist: "Teoman",
-                           days: 3, gradientColors: [red, orange], emoji: "🔥"),
+                           days: 3, emoji: "🔥"),
                 TrackEntry(rank: 5, name: "Yüksek Sadakat", artist: "Yüksek Sadakat",
-                           days: 2, gradientColors: [teal, blue], emoji: "⚡️")
+                           days: 2, emoji: "⚡️")
             ],
             totalEntries: 28,
             daysLogged:   22,

@@ -30,11 +30,11 @@ struct V3SongPicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.top, V3Tokens.spacingXL2)
 
             searchField
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.top, V3Tokens.spacingLG)
 
             if isQueryEmpty {
@@ -143,7 +143,7 @@ struct V3SongPicker: View {
                         sectionBlock(section)
                     }
                 }
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.top, V3Tokens.spacingXL)
                 .padding(.bottom, V3Tokens.spacingXL4)
             }

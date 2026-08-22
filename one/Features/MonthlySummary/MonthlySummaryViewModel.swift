@@ -143,15 +143,12 @@ class MonthlySummaryViewModel: ObservableObject {
             }
 
         // Top parçalar (en fazla tekrar eden, max 5) — eşitlikte en yakın tarihe göre
-        // Top parça kartlarının dekoratif gradyanları. Mood paletiyle ilgisi
-        // yok — sıraya göre dönüyorlar; o yüzden token değil, yerel sabit.
-        let gradientPairs: [[Color]] = [
-            [Color(hex: "#D85A1A"), Color(hex: "#E6A61A")],
-            [Color(hex: "#4070C9"), Color(hex: "#40A89C")],
-            [Color(hex: "#7840C9"), Color(hex: "#C94040")],
-            [Color(hex: "#C94040"), Color(hex: "#D8801A")],
-            [Color(hex: "#40A89C"), Color(hex: "#4070C9")],
-        ]
+        //
+        // Burada `gradientPairs` diye on ham hex'lik ikinci bir palet vardı
+        // ("mood paletiyle ilgisi yok" diye de savunuluyordu). İki sorunu
+        // birden vardı: ONE'ın dokuz renginde karşılığı olmayan sekiz renk
+        // uyduruyordu, **ve** beslediği `TrackEntry.gradientColors` alanını
+        // hiçbir view okumuyordu. Ölü alanı besleyen ölü bir palet.
         // Build recency map for tie-breaking
         var recencyMap: [String: Date] = [:]
         for s in songs {
@@ -176,7 +173,6 @@ class MonthlySummaryViewModel: ObservableObject {
                     name:           name,
                     artist:         artist,
                     days:           pair.value,
-                    gradientColors: gradientPairs[idx % gradientPairs.count],
                     emoji:          emoji
                 )
             }

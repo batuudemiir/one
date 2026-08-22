@@ -78,6 +78,16 @@ class TodayViewModel: ObservableObject {
         d.set(label, forKey: echoMoodLabelKey)
     }
 
+    /// Önbelleği boşaltır — bugüne ait hiç an kalmadığında.
+    ///
+    /// Karşılığı yoktu: yalnız *yazan* bir önbellek, kullanıcı günün tek
+    /// anını sildiğinde eski mood'u tutmaya devam ediyordu.
+    static func clearCachedEchoMood() {
+        let d = UserDefaults.standard
+        d.removeObject(forKey: echoMoodHexKey)
+        d.removeObject(forKey: echoMoodLabelKey)
+    }
+
     /// B1 — Tek kaynak: StreakEngine.milestones ile hizalı.
     private static let streakMilestones: Set<Int> = Set(StreakEngine.milestones)
 
@@ -454,6 +464,9 @@ class TodayViewModel: ObservableObject {
         do {
             try context.save()
             loadTodayEntry()
+            // Not ve fotoğraf widget'ta görünüyor — türetilmiş yüzeyler
+            // diskteki yeni duruma göre yeniden yazılmalı.
+            MomentWriter.refreshTodaySurfaces(context: context)
         } catch {
             ONELogger.error("attachPhotoAndNote kaydedilemedi: \(error.localizedDescription)", category: .general)
             ErrorHandler.shared.handle(error, context: "attachPhotoAndNote")
@@ -481,6 +494,10 @@ class TodayViewModel: ObservableObject {
             items.forEach { context.delete($0) }
             do {
                 try context.save()
+                // Bugün boşaldı — widget ve Echo önbelleği de boşalmalı.
+                // Bu çağrı olmadan widget silinen mood'u gece yarısına kadar
+                // göstermeye devam ediyordu.
+                MomentWriter.refreshTodaySurfaces(context: context)
             } catch {
                 ErrorHandler.shared.handle(error, context: "clearToday")
             }
@@ -500,6 +517,10 @@ class TodayViewModel: ObservableObject {
             context.delete(item)
             do {
                 try context.save()
+                // Günün son anı silindiyse widget temizlenir, değilse bir
+                // önceki ana düşer. `refreshTodaySurfaces` diski okuduğu için
+                // hangisi olduğunu burada bilmek gerekmiyor.
+                MomentWriter.refreshTodaySurfaces(context: context)
             } catch {
                 ErrorHandler.shared.handle(error, context: "clearEntry")
             }

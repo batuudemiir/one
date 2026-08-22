@@ -330,7 +330,7 @@ struct MyFriendsListView: View {
                     Text(hasSong
                          ? "\(song) — \(artist)"
                          : NSLocalizedString("circle.notSharedYet", comment: ""))
-                        .font(.system(size: 12.5))
+                        .bodyMicro()
                         .foregroundColor(V3Tokens.mutedText)
                         .lineLimit(1)
                 }

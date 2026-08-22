@@ -76,7 +76,7 @@ struct V3EntryContainer: View {
                         showReminder = false
                     }
                 )
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.top, V3Tokens.spacingXL2)
                 .padding(.bottom, V3Tokens.spacingXL2)
                 .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .trailing)).combined(with: .opacity))
@@ -92,7 +92,7 @@ struct V3EntryContainer: View {
 
                     Spacer(minLength: 0)
                 }
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.top, V3Tokens.spacingXL2)
                 .padding(.bottom, V3Tokens.spacingXL2)
                 .transition(.opacity)

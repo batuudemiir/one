@@ -188,7 +188,7 @@ struct V3DetailsStepView: View {
                         .foregroundColor(mood.ink.opacity(0.7))
                         .accessibilityLabel("Tarih: \(dateLabelSpoken)")
                 }
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.top, 18)
                 Spacer()
             }
@@ -202,7 +202,7 @@ struct V3DetailsStepView: View {
                 .foregroundColor(mood.ink)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.bottom, 44)   // Kart bindirmesi için ekstra boşluk
                 .accessibilityLabel("Bugünün rengi: \(mood.label)")
                 .accessibilityAddTraits(.isHeader)

@@ -86,7 +86,7 @@ struct SplashScreen: View {
                     .foregroundColor(ONEBrand.bone)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
-                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.horizontal, V3Tokens.channel)
                     .opacity(captionOpacity)
                     .offset(y: captionOffset)
             }

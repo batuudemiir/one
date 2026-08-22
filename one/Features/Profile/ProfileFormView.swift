@@ -101,8 +101,10 @@ struct ProfileFormView: View {
                         Text(vm.displayName.isEmpty
                              ? NSLocalizedString("profile.namePlaceholder", comment: "")
                              : vm.displayName)
-                            .font(.system(size: 28, weight: .semibold))
-                            .tracking(-0.4)
+                            // Kullanıcının kendi adı — marka yüzü. V3ProfileView
+                            // de adı Archivo ile çiziyor; burada 28pt sistem
+                            // sans'tı, yani aynı kişi iki ekranda iki yüzle.
+                            .displayHero()
                             .foregroundColor(V3Tokens.darkText)
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)

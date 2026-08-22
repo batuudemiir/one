@@ -84,7 +84,7 @@ struct V3ArchiveView: View {
                         }
                     }
                 }
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.top, 6)
                 // Dinlenme pozisyonunun tek sahibi kabuk: `safeAreaInset`
                 // nav yüksekliği kadar pay bırakıyor. Buradaki fazladan 24pt

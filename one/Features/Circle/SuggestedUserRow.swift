@@ -70,7 +70,7 @@ struct QuickSuggestCard: View {
             Text(user.mutualFriendCount > 0
                  ? String(format: NSLocalizedString("addFriend.mutualCount", comment: ""), user.mutualFriendCount)
                  : " ")
-                .font(.system(size: 10))
+                .bodyMicro()
                 .foregroundColor(V3Tokens.faintText)
                 .lineLimit(1)
 

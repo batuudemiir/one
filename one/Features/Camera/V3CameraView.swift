@@ -37,7 +37,7 @@ struct V3CameraView: View {
 
             VStack(spacing: 0) {
                 topBar
-                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.horizontal, V3Tokens.channel)
                     .padding(.top, V3Tokens.spacingXL)
 
                 content
@@ -101,11 +101,11 @@ struct V3CameraView: View {
             if showPreview, let raw = captured {
                 previewScreen(raw)
                     .transition(.opacity)
-                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.horizontal, V3Tokens.channel)
                     .padding(.top, V3Tokens.spacingXL)
             } else {
                 captureScreen
-                    .padding(.horizontal, V3Tokens.spacingXL2)
+                    .padding(.horizontal, V3Tokens.channel)
                     .padding(.top, V3Tokens.spacingXL)
             }
         case .checking:
@@ -113,7 +113,7 @@ struct V3CameraView: View {
                 .padding(.top, 120)
         case .denied:
             deniedScreen
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.top, 60)
         }
     }

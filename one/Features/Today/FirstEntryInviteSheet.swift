@@ -94,7 +94,7 @@ struct FirstEntryInviteSheet: View {
                     }
                     .contentShape(Rectangle())
                 }
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.bottom, V3Tokens.spacingXL2)
                 .opacity(appeared ? 1 : 0)
                 .offset(y: appeared ? 0 : 16)

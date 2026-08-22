@@ -47,7 +47,7 @@ struct ONEShareSheet: View {
             Spacer(minLength: 24)
 
             actionButtons
-                .padding(.horizontal, V3Tokens.spacingXL2)
+                .padding(.horizontal, V3Tokens.channel)
                 .padding(.bottom, V3Tokens.spacingXL2)
         }
         .background(V3Tokens.paper.ignoresSafeArea())
@@ -91,7 +91,7 @@ struct ONEShareSheet: View {
                     .background(Circle().fill(V3Tokens.hairline))
             }
         }
-        .padding(.horizontal, V3Tokens.spacingXL2)
+        .padding(.horizontal, V3Tokens.channel)
         .padding(.bottom, V3Tokens.spacingLG)
     }
 

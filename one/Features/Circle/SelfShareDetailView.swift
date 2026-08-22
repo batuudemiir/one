@@ -123,7 +123,7 @@ struct SelfShareDetailView: View {
                 .lineSpacing(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, V3Tokens.spacingXL2)
+        .padding(.horizontal, V3Tokens.channel)
         .padding(.top, V3Tokens.spacingXL5)
         .padding(.bottom, V3Tokens.spacingXL2)
         .opacity(appeared ? 1 : 0)
