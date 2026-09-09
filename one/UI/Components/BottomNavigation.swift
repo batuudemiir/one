@@ -88,7 +88,7 @@ struct BottomNavigation: View {
                 // nasılsın) VoiceOver kullanıcısı için custom action olarak
                 // rotor'dan tetiklenebilir hale geliyor. Ternary'ler
                 // type-inference'ı zorluyordu, explicit local'lar.
-                let customTitle: String? = tab == .entry ? "Bugünkü anları göster" : nil
+                let customTitle: String? = tab == .entry ? NSLocalizedString("nav.a11y.showTodayMoments", comment: "") : nil
                 let customAction: (() -> Void)? = tab == .entry
                     ? { NotificationCenter.default.post(name: .startNewMomentRequested, object: nil) }
                     : nil

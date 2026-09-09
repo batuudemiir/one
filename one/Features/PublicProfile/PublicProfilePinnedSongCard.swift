@@ -21,13 +21,13 @@ struct PublicProfilePinnedSongCard: View {
         }
         .background(V3Tokens.surface)
         .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard))
-        .shadow(color: .black.opacity(0.05), radius: 16, y: 6)
+        .elevation(.paperLift)
         .overlay(
             RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
                 .stroke(V3Tokens.hairline, lineWidth: 0.5)
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Sabitlenmiş şarkı: \(song.songName), \(song.artistName)")
+        .accessibilityLabel(String(format: NSLocalizedString("publicProfile.a11y.pinnedSong", comment: ""), song.songName, song.artistName))
     }
 
     // MARK: - Artwork strip

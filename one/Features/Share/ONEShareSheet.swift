@@ -32,7 +32,9 @@ struct ONEShareSheet: View {
         VStack(spacing: 0) {
             dragHandle
 
-            titleRow
+            topBar
+
+            songLine
 
             // Card preview or loading indicator
             Group {
@@ -71,28 +73,35 @@ struct ONEShareSheet: View {
             .padding(.bottom, 14)
     }
 
-    private var titleRow: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
-                Text(NSLocalizedString("share.title", comment: ""))
-                    .monoLabel(tracking: 2.0)
-                    .foregroundColor(V3Tokens.mutedText)
-                Text(entry.songName)
-                    .displaySM()
-                    .foregroundColor(V3Tokens.ink)
-                    .lineLimit(1)
-            }
-            Spacer()
-            Button(action: { dismiss() }) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(V3Tokens.mutedText)
-                    .frame(width: 32, height: 32)
-                    .background(Circle().fill(V3Tokens.hairline))
-            }
-        }
-        .padding(.horizontal, V3Tokens.channel)
-        .padding(.bottom, V3Tokens.spacingLG)
+    /// Sheet'in başlık çubuğu.
+    ///
+    /// Eskiden elle çizilmiş bir satırdı ve üç şeyi birden yanlış yapıyordu:
+    /// kapat düğmesi SAĞDA (uygulamanın geri kalanında sol), 32pt dokunma
+    /// hedefiyle (HIG asgarisi 44) ve `accessibilityLabel`'sız — VoiceOver'da
+    /// adsız, basınca geri bildirimsiz, parmakla ıskalanabilir bir düğme.
+    ///
+    /// Ekranın adı da all-caps bir dizeydi (`share.title` = "PAYLAŞ"). O dize
+    /// mono göz-kaşı etiketi olarak ölçülmüştü; 17pt sans başlık yuvasında
+    /// bağırıyordu. Yerine cümle düzeninde `screen.share.title` geldi.
+    private var topBar: some View {
+        V3TopBar(
+            leading: .close { dismiss() },
+            title: NSLocalizedString("screen.share.title", comment: ""),
+            progress: 0
+        )
+    }
+
+    /// Paylaşılan parçanın adı. Çubuğun `context` yuvasına değil gövdeye
+    /// gidiyor: orada uppercase'e çevrilir ve bir şarkı adının yazımı
+    /// bozulur ("Bohemian Rhapsody" → "BOHEMIAN RHAPSODY").
+    private var songLine: some View {
+        Text(entry.songName)
+            .displaySM()
+            .foregroundColor(V3Tokens.ink)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, V3Tokens.channel)
+            .padding(.bottom, V3Tokens.spacingLG)
     }
 
     private var loadingView: some View {
@@ -342,7 +351,7 @@ struct ONEShareSheet: View {
         guard let photoURL = entry.photoURL,
               let data = try? Data(contentsOf: photoURL),
               let image = UIImage(data: data) else {
-            errorMessage = "Fotoğraf yüklenemedi"
+            errorMessage = NSLocalizedString("share.photoLoadFailed", comment: "")
             showError = true
             return
         }
@@ -381,7 +390,7 @@ private struct ActionRow: View {
         Button(action: action) {
             HStack(spacing: 14) {
                 Image(systemName: icon)
-                    .font(.system(size: 15, weight: .medium))
+                    .iconMD(weight: .medium)
                     .foregroundColor(iconColor)
                     .frame(width: 22)
 
@@ -397,13 +406,14 @@ private struct ActionRow: View {
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .medium))
+                    .iconXS(weight: .medium)
                     .foregroundColor(labelColor.opacity(0.35))
             }
             .padding(.horizontal, V3Tokens.spacingLG)
             .padding(.vertical, 13)
             .background(background)
         }
+        .buttonStyle(.onePressable)
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1.0 : 0.38)
     }

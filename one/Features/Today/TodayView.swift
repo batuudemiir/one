@@ -82,7 +82,7 @@ struct TodayView: View {
             if vm.circleShareFailed {
                 HStack(spacing: V3Tokens.spacingSM) {
                     Image(systemName: "wifi.slash")
-                        .font(.system(size: 13, weight: .medium))
+                        .iconSM(weight: .medium)
                     Text(NSLocalizedString("circle.shareFailed", comment: ""))
                         .font(V3Typography.sans(13, relativeTo: .footnote))
                         .multilineTextAlignment(.leading)
@@ -91,7 +91,7 @@ struct TodayView: View {
                         vm.circleShareFailed = false
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 11, weight: .semibold))
+                            .iconXS(weight: .semibold)
                     }
                     .contentShape(Rectangle())
                 }
@@ -107,7 +107,7 @@ struct TodayView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .animation(ONEAnimation.panelSpring, value: vm.circleShareFailed)
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("Çevre paylaşımı başarısız. İnternet bağlantını kontrol et.")
+                .accessibilityLabel(NSLocalizedString("today.shareFailed", comment: ""))
             }
         }
         .onChange(of: vm.todayEntry) { _, newEntry in
@@ -169,8 +169,8 @@ struct TodayView: View {
             }
             .v3Sheet(detents: [.height(300)])
         }
-        .alert("Dynamic Island Kapalı", isPresented: $vm.showLiveActivityAlert) {
-            Button("Ayarları Aç") {
+        .alert(NSLocalizedString("today.liveActivityOff", comment: ""), isPresented: $vm.showLiveActivityAlert) {
+            Button(NSLocalizedString("common.openSettings", comment: "")) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
@@ -232,7 +232,7 @@ private struct TodayEchoPlaceholder: View {
                     .blur(radius: 8)
 
                 Text(label)
-                    .font(V3Typography.mono(11, weight: .medium))
+                    .monoSM(tracking: 0)
                     .foregroundColor(V3Tokens.ink)
             }
             .opacity(0.35)

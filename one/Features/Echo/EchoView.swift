@@ -74,12 +74,12 @@ struct EchoView: View {
                                     .foregroundColor(V3Tokens.paper)
                                 Spacer()
                                 Image(systemName: "arrow.up.right")
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .iconSM(weight: .semibold)
                                     .foregroundColor(V3Tokens.paper)
                             }
                             .padding(.horizontal, V3Tokens.spacingXL)
                             .padding(.vertical, 18)
-                            .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(V3Tokens.ink))
+                            .background(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous).fill(V3Tokens.ink))
                         }
                         .buttonStyle(.onePressable)
                         .padding(.horizontal, V3Tokens.spacingXL)
@@ -126,14 +126,16 @@ struct EchoView: View {
                                 posterVM.load()
                                 startPosterLoadTimeout()
                             } label: {
-                                Text("Tekrar dene")
+                                Text(NSLocalizedString("common.retry", comment: ""))
                                     .monoSM(tracking: 0.8)
                                     .foregroundColor(ONEBrand.bone)
                                     .padding(.horizontal, V3Tokens.spacingXL)
                                     .padding(.vertical, V3Tokens.spacingMD)
                                     .background(Capsule().fill(V3Tokens.ink))
                             }
+                            .buttonStyle(.onePressable)
                             Button("Kapat") { showPoster = false }
+                                .buttonStyle(.onePressable)
                                 .foregroundColor(V3Tokens.mutedText)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -157,9 +159,11 @@ struct EchoView: View {
             if let onDismiss {
                 V3TopBar(
                     leading: .close(onDismiss),
+                    // `nav.echo` küçük harf ("yankı") — alt gezinme dili.
+                    // 17pt sans başlık yuvasında küçük harf stil değil hata
+                    // gibi okunuyordu; `screen.echo.title` cümle düzeninde.
+                    title: NSLocalizedString("screen.echo.title", comment: ""),
                     context: currentMonthName.uppercased(),
-                    title: NSLocalizedString("nav.echo", comment: ""),
-                    titleMode: .always,
                     progress: 1
                 )
             }
@@ -222,6 +226,7 @@ struct EchoView: View {
                     .padding(.vertical, 13)
                     .background(Capsule().fill(V3Tokens.ink))
             }
+            .buttonStyle(.onePressable)
             .padding(.top, 6)
 
             Spacer()

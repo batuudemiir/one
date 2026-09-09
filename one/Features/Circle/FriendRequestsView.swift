@@ -13,9 +13,14 @@ import UIKit
 // MARK: - Feed Grouping
 
 private enum FeedSection: String {
-    case today    = "Bugün"
-    case thisWeek = "Bu Hafta"
-    case earlier  = "Daha Önce"
+    case today    = "today"
+    case thisWeek = "thisWeek"
+    case earlier  = "earlier"
+
+    /// Başlık katalogdan; `rawValue` kimlik olarak kalıyor (gruplama anahtarı).
+    var title: String {
+        NSLocalizedString("circle.feed.\(rawValue)", comment: "")
+    }
 }
 
 // MARK: - FriendRequestsView
@@ -84,7 +89,6 @@ struct FriendRequestsView: View {
             V3TopBar(
                 leading: .close { dismiss() },
                 title: NSLocalizedString("friendRequests.title", comment: ""),
-                titleMode: .always,
                 progress: 1
             ) {
                 if notificationStore.unreadCount > 0 {
@@ -152,7 +156,7 @@ struct FriendRequestsView: View {
 
     private func sectionHeader(_ section: FeedSection) -> some View {
         HStack(spacing: 10) {
-            Text(section.rawValue.uppercased())
+            Text(section.title.localizedUppercase)
                 .monoSM(tracking: 1.5)
                 .foregroundColor(V3Tokens.mutedText)
             Rectangle()
@@ -172,7 +176,7 @@ struct FriendRequestsView: View {
             // Unread accent bar
             Group {
                 if !notif.isRead {
-                    RoundedRectangle(cornerRadius: 2)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusMicro)
                         .fill(accentColor(for: notif))
                         .frame(width: 3)
                         .padding(.vertical, 18)
@@ -258,7 +262,7 @@ struct FriendRequestsView: View {
     @ViewBuilder
     private func commentExcerptView(_ text: String, moodHex: String?) -> some View {
         HStack(spacing: 0) {
-            RoundedRectangle(cornerRadius: 2)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusMicro)
                 .fill(
                     moodHex.flatMap { h in h.isValidHexColor ? Color(hex: h) : nil }
                     ?? V3Tokens.mutedText.opacity(0.5)
@@ -274,7 +278,7 @@ struct FriendRequestsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(V3Tokens.wash.opacity(0.7))
         }
-        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusSwatch, style: .continuous))
     }
 
     // MARK: - Activity Icon Helpers
@@ -336,9 +340,10 @@ struct FriendRequestsView: View {
                     DispatchQueue.main.async {
                         self.isFetchingShare = false
                         guard let record else { return }
-                        let displayName = notif.relatedUserID.flatMap { _ in
-                            notif.title.components(separatedBy: " paylaşım").first
-                        } ?? ""
+                        // v4: başlık artık kişinin adının kendisi ("Deniz"),
+                        // gövde olay. Eskiden başlık "Deniz paylaşım yaptı 🎵"
+                        // olduğu için adı ayrıştırmak gerekiyordu.
+                        let displayName = notif.title
                         self.fetchedFriendShare = IdentifiableCKRecord(record, displayName: displayName)
                     }
                 }
@@ -403,6 +408,7 @@ struct FriendRequestsView: View {
                                         .fill(V3Tokens.ink)
                                 )
                         }
+                        .buttonStyle(.onePressable)
                         .accessibilityLabel(NSLocalizedString("friendRequests.accept", comment: "") + " " + name)
 
                         Button(action: { decline(recName: recName) }) {
@@ -412,10 +418,11 @@ struct FriendRequestsView: View {
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 40)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                                         .stroke(V3Tokens.hairline, lineWidth: 1)
                                 )
                         }
+                        .buttonStyle(.onePressable)
                         .accessibilityLabel(NSLocalizedString("friendRequests.decline", comment: "") + " " + name)
                     }
                 }
@@ -474,6 +481,7 @@ struct FriendRequestsView: View {
                                 .stroke(V3Tokens.hairline, lineWidth: 1)
                         )
                 }
+                .buttonStyle(.onePressable)
             }
         }
         .padding(.vertical, V3Tokens.spacingLG)

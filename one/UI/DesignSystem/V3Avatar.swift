@@ -206,10 +206,10 @@ struct V3AvatarPicker: View {
                     Group {
                         if isSelected {
                             // Çift halka — outer ink, inner paper spacer.
-                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                                 .strokeBorder(V3Tokens.paper, lineWidth: 3)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
                                         .strokeBorder(V3Tokens.ink, lineWidth: 2)
                                         .padding(3)
                                 )
@@ -226,13 +226,13 @@ struct V3AvatarPicker: View {
 
     private func a11y(_ kind: V3AvatarKind) -> String {
         switch kind {
-        case .mosaic:        return "Mozaik avatar"
-        case .photo:         return "Fotoğraf avatar"
-        case .markKor:       return "Kor işaret"
-        case .markKorInvert: return "Ters kor işaret"
-        case .markInk:       return "Mürekkep işaret"
-        case .markPaper:     return "Kağıt işaret"
-        case .band:          return "Renk bandı"
+        case .mosaic:        return NSLocalizedString("avatar.a11y.mosaic", comment: "")
+        case .photo:         return NSLocalizedString("avatar.a11y.photo", comment: "")
+        case .markKor:       return NSLocalizedString("avatar.a11y.markKor", comment: "")
+        case .markKorInvert: return NSLocalizedString("avatar.a11y.markKorInvert", comment: "")
+        case .markInk:       return NSLocalizedString("avatar.a11y.markInk", comment: "")
+        case .markPaper:     return NSLocalizedString("avatar.a11y.markPaper", comment: "")
+        case .band:          return NSLocalizedString("avatar.a11y.band", comment: "")
         }
     }
 }

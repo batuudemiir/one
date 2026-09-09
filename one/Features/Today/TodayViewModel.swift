@@ -280,7 +280,7 @@ class TodayViewModel: ObservableObject {
                         id: UUID(),
                         name: s.title,
                         artist: s.artistName,
-                        genre: s.genreNames.first ?? "Müzik",
+                        genre: s.genreNames.first ?? NSLocalizedString("common.music", comment: ""),
                         coverURL: s.artwork?.url(width: 200, height: 200),
                         spotifyURL: nil,
                         artworkURLString: s.artwork?.url(width: 600, height: 600)?.absoluteString,
@@ -398,7 +398,7 @@ class TodayViewModel: ObservableObject {
 
         guard let item = (try? context.fetch(request))?.first else {
             ONELogger.error("attachPhotoAndNote: bugüne ait entry bulunamadı", category: .general)
-            ErrorHandler.shared.handle(AppError.unknown(message: "Bugünkü kaydın bulunamadı."))
+            ErrorHandler.shared.handle(AppError.unknown(message: NSLocalizedString("today.entryNotFound", comment: "")))
             return
         }
 
@@ -697,8 +697,15 @@ class TodayViewModel: ObservableObject {
         // YENİ CloudKit kaydı ekle — upsert guard'ını atla. entryIndex == 0
         // olan ilk an için upsert (idempotent tekrar yükleme).
         let itemEntryIndex = Int(item.entryIndex)
-        let doSync: () -> Void = { [weak self] in
-            guard let self else { return }
+        // `[weak self]` + `guard let self` kalktı: gövde `self`'e hiç
+        // dokunmuyor. Eskiden `self.computeCurrentStreak(...)` çağırıyordu;
+        // seri motoru sökülünce o satır gitti, yakalama kaldı.
+        //
+        // Kaldırmak davranışı değiştirmiyor — iki çağrı yolu da zaten
+        // korumalı: `entryIndex > 0` dalı bu metodun içinden senkron
+        // çağrılıyor, diğeri `self?.syncTask` üzerinden geçiyor (self nil ise
+        // `Task` hiç kurulmuyor).
+        let doSync: () -> Void = {
             let photoData = item.shareWithCircle ? item.photoData : nil
             CloudKitManager.shared.shareDailySong(
                 songName: item.songName ?? "",

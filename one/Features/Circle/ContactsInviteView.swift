@@ -29,7 +29,7 @@ struct ContactsInviteView: View {
     }
 
     private var inviteBody: String {
-        "ONE uygulamasında mood ve müzik paylaşıyorum. Seni de davet ediyorum! Kodumu kullan: \(myInviteCode)\n\nhttps://one.forvibe.app"
+        String(format: NSLocalizedString("invite.messageBody", comment: ""), myInviteCode, "https://one.forvibe.app")
     }
 
     private var filtered: [CNContact] {
@@ -61,7 +61,6 @@ struct ContactsInviteView: View {
             V3TopBar(
                 leading: .close { dismiss() },
                 title: NSLocalizedString("contacts.navTitle", comment: ""),
-                titleMode: .always,
                 progress: 1
             )
         }
@@ -89,7 +88,7 @@ struct ContactsInviteView: View {
             HStack(spacing: 10) {
                 Image(systemName: "link.circle.fill")
                     .foregroundColor(ONEBrand.kor)
-                    .font(.system(size: 18))
+                    .iconLG()
                 VStack(alignment: .leading, spacing: 1) {
                     Text(String(format: NSLocalizedString("contacts.inviteCodeText", comment: ""), myInviteCode))
                         .monoBase(tracking: 0.5)
@@ -107,7 +106,7 @@ struct ContactsInviteView: View {
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(V3Tokens.mutedText)
-                    .font(.system(size: 15))
+                    .iconMD()
                 TextField(NSLocalizedString("contacts.searchPlaceholder", comment: ""), text: $searchText)
                     .monoBase()
                     .foregroundColor(V3Tokens.ink)
@@ -169,16 +168,21 @@ struct ContactsInviteView: View {
                 .monoSM(tracking: 0)
                 .multilineTextAlignment(.center)
                 .foregroundColor(V3Tokens.mutedText)
-            Button(NSLocalizedString("contacts.openSettings", comment: "")) {
+            // Pay ve zemin etiketin *içinde*: dışarıda olduğunda görünen
+            // kapsül butondan büyük kalıyor ve yalnız yazı dokunulabiliyordu.
+            Button {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
+            } label: {
+                Text(NSLocalizedString("contacts.openSettings", comment: ""))
+                    .monoSM(tracking: 0.8)
+                    .foregroundStyle(ONEBrand.bone)
+                    .padding(.horizontal, V3Tokens.channel)
+                    .padding(.vertical, V3Tokens.spacingMD)
+                    .background(RoundedRectangle(cornerRadius: V3Tokens.radiusInner).fill(V3Tokens.ink))
             }
-            .monoSM(tracking: 0.8)
-            .foregroundStyle(ONEBrand.bone)
-            .padding(.horizontal, V3Tokens.channel)
-            .padding(.vertical, V3Tokens.spacingMD)
-            .background(RoundedRectangle(cornerRadius: 12).fill(V3Tokens.ink))
+            .buttonStyle(.onePressable)
             Spacer()
         }
         .padding(.horizontal, V3Tokens.spacingXL3)
@@ -315,6 +319,7 @@ private struct ContactRow: View {
                     .padding(.vertical, 6)
                     .background(Capsule().fill(V3Tokens.ink))
             }
+            .buttonStyle(.onePressable)
         }
         .padding(.vertical, 6)
     }

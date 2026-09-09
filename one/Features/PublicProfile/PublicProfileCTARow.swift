@@ -33,7 +33,7 @@ struct PublicProfileCTARow: View {
         switch relationship {
         case .none:
             ctaButton(
-                title: "Çevrene ekle",
+                title: NSLocalizedString("circle.cta.add", comment: ""),
                 foreground: ONEBrand.kor,
                 background: ONEBrand.kor.opacity(0.10),
                 action: onAdd
@@ -41,7 +41,7 @@ struct PublicProfileCTARow: View {
 
         case .pendingOutgoing:
             ctaButton(
-                title: "İstek gönderildi",
+                title: NSLocalizedString("circle.toast.requestSent", comment: ""),
                 foreground: V3Tokens.mutedText,
                 background: V3Tokens.hairline,
                 action: onCancelRequest
@@ -50,13 +50,13 @@ struct PublicProfileCTARow: View {
         case .pendingIncoming:
             HStack(spacing: 10) {
                 ctaButton(
-                    title: "Kabul et",
+                    title: NSLocalizedString("circle.cta.accept", comment: ""),
                     foreground: V3Tokens.success,
                     background: V3Tokens.success.opacity(0.10),
                     action: onAccept
                 )
                 ctaButton(
-                    title: "Reddet",
+                    title: NSLocalizedString("circle.cta.decline", comment: ""),
                     foreground: V3Tokens.mutedText,
                     background: V3Tokens.hairline,
                     action: onDecline
@@ -87,7 +87,7 @@ struct PublicProfileCTARow: View {
         if let count = mutualFriendCount, count > 0 {
             HStack(spacing: 5) {
                 Image(systemName: "person.2.fill")
-                    .font(.system(size: 11))
+                    .iconXS()
                 Text(String(format: NSLocalizedString("publicProfile.mutualFriends", comment: ""), count))
                     .monoSM(tracking: 0)
             }

@@ -25,7 +25,8 @@ struct V3GreetingHeader: View {
     /// Gündüz kısmı — genellikle "Bugün nasılsın?" veya "Bir an daha?".
     let prompt: String
 
-    init(name: String? = nil, prompt: String = "Bugün nasılsın?") {
+    init(name: String? = nil,
+         prompt: String = NSLocalizedString("entry.prompt.today", comment: "")) {
         self.name = name
         self.prompt = prompt
     }
@@ -61,10 +62,10 @@ enum V3GreetingHeaderCopy {
         let hour = Calendar.current.component(.hour, from: Date())
         let base: String
         switch hour {
-        case ..<6:   base = "İyi geceler"
-        case ..<12:  base = "Günaydın"
-        case ..<18:  base = "İyi günler"
-        default:     base = "İyi akşamlar"
+        case ..<6:   base = NSLocalizedString("greeting.night", comment: "")
+        case ..<12:  base = NSLocalizedString("greeting.morning", comment: "")
+        case ..<18:  base = NSLocalizedString("greeting.day", comment: "")
+        default:     base = NSLocalizedString("greeting.evening", comment: "")
         }
         // Spec zaten "Günaydın, Batu" diyor — selam samimi bir hitap, kimlik
         // doğrulaması değil. Çağıran `displayName`'i olduğu gibi veriyor

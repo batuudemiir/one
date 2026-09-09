@@ -20,15 +20,12 @@ struct V3ArchiveView: View {
     @State private var monthIndex: Int = Calendar.current.component(.month, from: Date()) - 1
     @State private var year: Int = Calendar.current.component(.year, from: Date())
     @State private var view: ArchiveViewMode = .month
-    @State private var selectedDay: Date? = nil
     /// Üst çubuğun 0→1 zemin/başlık ilerlemesi. Scroll offset'inden geliyor.
     @State private var topBarProgress: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Bir güne dokunulduğunda parent'a haber.
     var onDayTap: ((Date, [Moment]) -> Void)? = nil
-    /// "Poster" butonu — Faz 7 (Yankı) tarafından bağlanacak.
-    var onPoster: (() -> Void)? = nil
     /// Parent'ın full-detail overlay'de gösterdiği tarih. Bu tarihe eşit
     /// grid hücresi hero morph'un kaynağı; başkaları normal görünüyor.
     var heroDate: Date? = nil
@@ -96,16 +93,32 @@ struct V3ArchiveView: View {
             .hidesTabBarOnScroll(tab: .archive, spaceName: "one.scroll.archive")
             .topBarProgress($topBarProgress, spaceName: "one.scroll.archive")
             .safeAreaInset(edge: .top, spacing: 0) {
-                // Başlık sekmenin adı. Bir ara "bakılan dönem" yazıyordu
-                // ama gövdedeki damga İngilizce ("August"), çubuk
-                // yerelleştirilmiş ("Ağustos") — aralarında ~50pt vardı ve
-                // aynı ekranda iki dilde aynı kelime hata gibi okunuyordu.
-                // Damga kullanıcı kararı, çakışmayı çubuk taraftan çözüyoruz.
+                // Başlık sekmenin adı ve artık **her zaman** görünüyor.
+                // Kaydırınca beliren başlık burada özellikle kötüydü: Arşiv'in
+                // gövdesi segment kontrolüyle başlıyor, yani ekran durağan
+                // haldeyken adı hiçbir yerde yazmıyordu.
+                //
+                // Bağlam yok — bakılan ay gövdedeki damgada duruyor. Çubuğa
+                // da yazılsaydı aynı kelime ~50pt arayla iki kez okunurdu ve
+                // damga İngilizce ("August"), çubuk yerelleştirilmiş
+                // ("Ağustos") olduğu için iki dilde.
+                //
+                // Sağdaki eylem Yankı: arşiv geriye bakma yüzeyi, aylık özet
+                // de öyle. Eskiden yalnız Profil'in ortasındaki bir kartın
+                // arkasındaydı.
                 V3TopBar(
-                    leading: .mark,
-                    title: PrimaryTab.archive.title,
+                    style: .root,
+                    title: PrimaryTab.archive.screenTitle,
                     progress: topBarProgress
-                )
+                ) {
+                    V3TopBarIconButton(
+                        systemName: "sparkles",
+                        label: NSLocalizedString("topbar.monthlyEcho", comment: "")
+                    ) {
+                        ONEHaptics.tabSwitch()
+                        NotificationCenter.default.post(name: .init("switchToEchoTab"), object: nil)
+                    }
+                }
             }
             .onReceive(NotificationCenter.default.publisher(for: .archiveTabRetapped)) { _ in
                 withAnimation(ONEAnimation.easing) {
@@ -151,7 +164,7 @@ struct V3ArchiveView: View {
             Button {
                 NotificationCenter.default.post(name: .init("switchToTodayTab"), object: nil)
             } label: {
-                Text("An ekle")
+                Text(NSLocalizedString("archive.addMoment", comment: ""))
                     .bodyLGSemibold()
                     .foregroundColor(V3Tokens.paper)
                     .frame(maxWidth: .infinity)
@@ -167,13 +180,13 @@ struct V3ArchiveView: View {
 
     private var segmentControl: some View {
         HStack(spacing: 6) {
-            segButton("Ay", isOn: view == .month) {
+            segButton(NSLocalizedString("archive.seg.month", comment: ""), isOn: view == .month) {
                 ONEHaptics.toggle()
                 withAnimation(ONEAnimation.easing) { view = .month }
             }
-            segButton("Yıl", isOn: view == .year) {
+            segButton(NSLocalizedString("archive.seg.year", comment: ""), isOn: view == .year) {
                 ONEHaptics.toggle()
-                withAnimation(ONEAnimation.easing) { view = .year; selectedDay = nil }
+                withAnimation(ONEAnimation.easing) { view = .year }
             }
         }
         .padding(5)
@@ -216,18 +229,8 @@ struct V3ArchiveView: View {
 
     private var monthContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                navButton(symbol: "chevron.left", label: NSLocalizedString("archive.previousMonth", comment: ""), action: prevMonth)
-                Spacer()
-                // El yazısı damga — her dilde İngilizce, VoiceOver'dan gizli.
-                // Okunacak ay adı bu satırın label'ında, kullanıcının dilinde.
-                V3HandText.month(monthDate, size: 40, alignment: .leading)
-                Spacer()
-                navButton(symbol: "chevron.right", label: NSLocalizedString("archive.nextMonth", comment: ""), action: nextMonth)
-            }
-            .padding(.top, V3Tokens.spacingXL)
-            .accessibilityElement(children: .contain)
-            .accessibilityLabel(monthName)
+            monthHeader
+                .padding(.top, V3Tokens.spacingXL)
 
             metaRow
                 .padding(.top, V3Tokens.spacingLG)
@@ -238,11 +241,69 @@ struct V3ArchiveView: View {
             mosaicGrid
                 .padding(.top, 10)
 
-            if let selectedDay {
-                dayDetailInline(selectedDay)
-                    .padding(.top, V3Tokens.spacingXL2)
+        }
+    }
+
+    /// Ayın masthead'i — ekranın en iri öğesi.
+    ///
+    /// Burada `V3HandText.month(monthDate, size: 40)` vardı: Caveat Brush
+    /// ile, her dilde İngilizce ("August"), iki chevron'un ortasında. Üç
+    /// ayrı sorun:
+    ///
+    ///  1. **Yüz.** `V3Typography.hand`'in kendi belgesi el yazısını
+    ///     "gövde metni, buton, **ekran başlığı**: asla" diye sınırlıyor —
+    ///     ve uygulamada o role kalan tek çağrı buydu. Arşiv'in en iri
+    ///     öğesi, başka hiçbir ekranda geçmeyen bir yüzle çiziliyordu.
+    ///     Damga kuralı bir *fotoğrafa basılan tarih* için yazılmıştı;
+    ///     ekranın kendi adı damga değil.
+    ///  2. **Dil.** Türkçe arayüzde "August". Üstelik damga VoiceOver'dan
+    ///     gizli olduğu için ay adı yalnız satırın `accessibilityLabel`'ında
+    ///     duruyordu — görsel metin ile okunan metin iki ayrı dildeydi.
+    ///  3. **Yıl hiç yoktu.** Ocak'tan geriye gidince `year` azalıyor ama ay
+    ///     görünümünde yılı söyleyen tek bir işaret yok: 2025 Ağustos'u
+    ///     2026 Ağustos'undan ayırt edilemiyordu. "Neredeyim?" sorusunun
+    ///     cevabı eksikti.
+    ///
+    /// Yüz artık `displayHero()` — Arşiv'in `emptyArchive` ve `yearContent`
+    /// başlıkları da bu ailede, gün detayının büyük başlığı da aynı kademe.
+    /// Yıl `display` değil mono: aynı satırda iki masthead olmasın, ve yıl
+    /// okunan bir ad değil bir **veri** — mono zaten o register.
+    ///
+    /// Chevron'lar sağda yan yana. Ekranın iki ucuna dağılmış hâlleri ne bir
+    /// grup olarak okunuyordu ne de tek elle erişiliyordu; başlığı da
+    /// ortada sıkıştırıyorlardı.
+    private var monthHeader: some View {
+        HStack(spacing: V3Tokens.spacingMD) {
+            HStack(alignment: .firstTextBaseline, spacing: V3Tokens.spacingSM) {
+                Text(monthName)
+                    .displayHero()
+                    .foregroundColor(V3Tokens.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+
+                Text(verbatim: String(year))
+                    .monoSM(weight: .regular)
+                    .monospacedDigit()
+                    .foregroundColor(V3Tokens.faintText)
+            }
+
+            Spacer(minLength: V3Tokens.spacingSM)
+
+            HStack(spacing: 0) {
+                navButton(
+                    symbol: "chevron.left",
+                    label: NSLocalizedString("archive.previousMonth", comment: ""),
+                    action: prevMonth
+                )
+                navButton(
+                    symbol: "chevron.right",
+                    label: NSLocalizedString("archive.nextMonth", comment: ""),
+                    action: nextMonth
+                )
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("\(monthName) \(year)")
     }
 
     /// Ay ileri/geri. `label` zorunlu: SF Symbol'ün kendi tanımı VoiceOver'da
@@ -257,7 +318,7 @@ struct V3ArchiveView: View {
     ) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 14, weight: .medium))
+                .iconMD(weight: .medium)
                 .foregroundColor(V3Tokens.mutedText)
                 .frame(width: 40, height: 40)
                 .overlay(
@@ -281,10 +342,12 @@ struct V3ArchiveView: View {
         return Calendar.current.date(from: comps) ?? Date()
     }
 
-    /// Kullanıcının dilinde ay adı — üst çubuk başlığı ve VoiceOver.
-    /// Ekrandaki iri başlık İngilizce damga; bu ikisi bilinçli farklı.
+    /// Kullanıcının dilinde ay adı — masthead ve VoiceOver aynı dizeyi
+    /// okuyor. `monthName` (MMMM) değil `monthStandalone` (LLLL): burada ay
+    /// bir tarihin içinde çekimlenmiyor, tek başına duruyor ve bazı diller
+    /// bu iki durumu farklı yazıyor.
     private var monthName: String {
-        ONEFormatters.monthName.string(from: monthDate)
+        ONEFormatters.monthStandalone.string(from: monthDate)
     }
 
     private var currentSummary: MonthSummary? {
@@ -306,7 +369,7 @@ struct V3ArchiveView: View {
             }
             Spacer()
         }
-        .font(V3Typography.mono(11, weight: .regular))
+        .monoSM(weight: .regular)
         .tracking(1.2)
         .textCase(.uppercase)
         .foregroundColor(V3Tokens.faintText)
@@ -319,8 +382,8 @@ struct V3ArchiveView: View {
     private var metaRowA11y: String {
         let filled = currentSummary?.filledDays ?? 0
         let entryCount = currentSummary?.entries.values.reduce(0) { $0 + $1.count } ?? 0
-        var text = "\(filled) gün, \(entryCount) an"
-        if let topMood = topMoodLabel { text += ", en çok \(topMood)" }
+        var text = String(format: NSLocalizedString("archive.a11y.meta", comment: ""), filled, entryCount)
+        if let topMood = topMoodLabel { text += String(format: NSLocalizedString("archive.a11y.metaTop", comment: ""), topMood) }
         return text
     }
 
@@ -331,11 +394,20 @@ struct V3ArchiveView: View {
         return mood.label.lowercased()
     }
 
+    /// Gün başlıkları takvimden — dokuz dile elle kısaltma yazmak yerine
+    /// `Calendar` locale'i veriyor. Pazartesi başlangıçlı.
+    private static var weekHeaderSymbols: [String] {
+        var cal = Calendar.current
+        cal.locale = LanguageManager.shared.currentLocale
+        let symbols = cal.veryShortWeekdaySymbols      // Pazar başlangıçlı
+        return (0..<7).map { symbols[($0 + 1) % 7] }
+    }
+
     private var weekHeaders: some View {
         HStack(spacing: 6) {
-            ForEach(["Pt","Sa","Ça","Pe","Cu","Ct","Pz"], id: \.self) { label in
+            ForEach(Array(Self.weekHeaderSymbols.enumerated()), id: \.offset) { _, label in
                 Text(label)
-                    .font(V3Typography.mono(10, weight: .regular))
+                    .monoLabel(weight: .regular)
                     .tracking(1.0)
                     .textCase(.uppercase)
                     .foregroundColor(V3Tokens.faintText)
@@ -393,31 +465,21 @@ struct V3ArchiveView: View {
         case .empty:
             Color.clear
         case .day(let date, let hexes):
-            let isSelected = selectedDay == date
             let isHero = heroDate == date
             let cellID = V3ArchiveView.cellMorphID(for: date)
             let isEmpty = hexes.isEmpty
+            // Dokunmak günü **açar**. Eskiden hücre yalnız `selectedDay`'i
+            // kilitliyor, mozaiğin altında tarih + "N an" yazan bir özet kartı
+            // beliriyordu; gerçek gün detayına ancak o kartın içindeki soluk
+            // "Detay" çipinden geçiliyordu. Yani iki dokunuş ve bir ara ekran,
+            // ve ara ekran detayın gösterdiğinin sıkı bir alt kümesini
+            // gösteriyordu. Ara adım kalktı — hero morph zaten bu yol için
+            // kurulmuştu (`heroDate` kaynağı gizler, detay hedefi çizer).
             Button {
                 ONEHaptics.pick()
-                withAnimation(ONEAnimation.easingChip) {
-                    if selectedDay == date { selectedDay = nil }
-                    else { selectedDay = date }
-                }
+                onDayTap?(date, [])
             } label: {
                 DayFill(hexes: hexes, cornerRadius: V3Tokens.radiusMosaic)
-                    .overlay(
-                        Group {
-                            if isSelected {
-                                RoundedRectangle(cornerRadius: V3Tokens.radiusMosaic, style: .continuous)
-                                    .strokeBorder(V3Tokens.paper, lineWidth: 2)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: V3Tokens.radiusMosaic, style: .continuous)
-                                            .strokeBorder(V3Tokens.ink, lineWidth: 2)
-                                            .padding(2)
-                                    )
-                            }
-                        }
-                    )
                     // Her hücreye tarih-bazlı UNIQUE ID veriyoruz. Detay hero'su
                     // aynı ID ile geldiğinde SwiftUI eşleştirip morph ediyor.
                     // Aynı ID'yi birden fazla kaynağa vermek belirsiz davranış
@@ -431,23 +493,22 @@ struct V3ArchiveView: View {
             .contentShape(Rectangle())
             .buttonStyle(.onePressable)
             .accessibilityLabel(cellA11y(date, hexes: hexes))
-            .accessibilityAddTraits(isSelected ? .isSelected : [])
+            // Menüde "Detay" maddesi vardı; dokunmanın kendisi artık aynı
+            // şeyi yaptığı için kalktı. Geriye menünün tek gerçek işi kaldı:
+            // o güne an eklemek — dokunmayla ulaşılamayan ayrı bir eylem.
             .contextMenu {
-                if !isEmpty {
-                    Button {
-                        // "Detay" — parent'a delegasyon (bugüne hero morph).
-                        onDayTap?(date, [])
-                    } label: {
-                        Label("Detay", systemImage: "square.split.bottomrightquarter")
-                    }
-                }
                 Button {
                     // v3 spec: geçmiş gün için An akışı past-day mode.
                     GlobalUIState.shared.pendingEntryDate = Calendar.current.startOfDay(for: date)
                     NotificationCenter.default.post(name: .init("switchToTodayTab"), object: nil)
                 } label: {
-                    Label(isEmpty ? "Bu güne an ekle" : "Yeni an ekle",
-                          systemImage: "plus.circle")
+                    Label(
+                        NSLocalizedString(
+                            isEmpty ? "archive.addMomentToDay" : "hub.addMoment",
+                            comment: ""
+                        ),
+                        systemImage: "plus.circle"
+                    )
                 }
             }
         }
@@ -465,70 +526,13 @@ struct V3ArchiveView: View {
     /// tek başına günün nasıl geçtiğini anlatmıyor.
     private func cellA11y(_ date: Date, hexes: [String]) -> String {
         let day = Calendar.current.component(.day, from: date)
-        if hexes.isEmpty { return "\(day), boş" }
+        if hexes.isEmpty { return String(format: NSLocalizedString("archive.a11y.cellEmpty", comment: ""), day) }
 
         let moods = hexes.compactMap { V3Mood.fromHex($0)?.label }
-        if moods.isEmpty { return "\(day), \(hexes.count) an" }
-        if moods.count == 1 { return "\(day), \(moods[0])" }
+        if moods.isEmpty { return String(format: NSLocalizedString("archive.a11y.cellCount", comment: ""), day, hexes.count) }
+        if moods.count == 1 { return String(format: NSLocalizedString("archive.a11y.cellOne", comment: ""), day, moods[0]) }
         // "14, 3 an: enerjik, odaklı, huzurlu"
-        return "\(day), \(hexes.count) an: \(moods.joined(separator: ", "))"
-    }
-
-    // MARK: - Inline day detail
-
-    private func dayDetailInline(_ date: Date) -> some View {
-        // Container'daki full V3DayDetailView'e delegate et — inline özet.
-        let entries = currentSummary?.allEntries(for: date) ?? []
-        let moments = entries.compactMap { entry -> Moment? in
-            // DailyEntry → Moment shim (Persistence çevirimi yerine inline)
-            // Note: for now just pass to onDayTap; full inline expansion is polish.
-            _ = entry
-            return nil
-        }
-        return VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {
-            HStack {
-                Text(fullDateLabel(date))
-                    .font(V3Typography.display(20, weight: .semibold))
-                    .tracking(-0.4)
-                    .foregroundColor(V3Tokens.ink)
-                Spacer()
-                Button {
-                    // Full detay ekranını aç.
-                    onDayTap?(date, moments)
-                } label: {
-                    Text("Detay")
-                        .bodyXSSemibold()
-                        .foregroundColor(V3Tokens.mutedText)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
-                        .overlay(
-                            Capsule().stroke(V3Tokens.hairline, lineWidth: 1)
-                        )
-                        .frame(minHeight: 44)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.onePressable)
-            }
-            Text(String(format: NSLocalizedString("archive.momentsOnDay", comment: ""), entries.count))
-                .bodySM()
-                .foregroundColor(V3Tokens.mutedText)
-                .contentTransition(.numericText())
-                .animation(ONEAnimation.easingChip, value: entries.count)
-        }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(V3Tokens.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(V3Tokens.hairline, lineWidth: 1)
-                )
-        )
-    }
-
-    private func fullDateLabel(_ date: Date) -> String {
-        let f = ONEFormatters.dayMonth
-        return f.string(from: date)
+        return String(format: NSLocalizedString("archive.a11y.cellMany", comment: ""), day, hexes.count, moods.joined(separator: ", "))
     }
 
     // MARK: - Year content
@@ -562,7 +566,7 @@ struct V3ArchiveView: View {
         let cells = miniCells(year: year, monthIdx: m, summary: summary)
         return VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
             Text(shortMonthName(m))
-                .font(V3Typography.mono(10, weight: .regular))
+                .monoLabel(weight: .regular)
                 .tracking(1.2)
                 .textCase(.uppercase)
                 .foregroundColor(V3Tokens.faintText)
@@ -612,7 +616,6 @@ struct V3ArchiveView: View {
             } else {
                 monthIndex -= 1
             }
-            selectedDay = nil
         }
     }
 
@@ -625,7 +628,6 @@ struct V3ArchiveView: View {
             } else {
                 monthIndex += 1
             }
-            selectedDay = nil
         }
     }
 }

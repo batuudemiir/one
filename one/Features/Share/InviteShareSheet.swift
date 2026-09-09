@@ -28,12 +28,14 @@ struct InviteShareSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             dragHandle
-            
-            titleRow
-            
+
+            topBar
+
             ScrollView(showsIndicators: false) {
                 VStack(spacing: V3Tokens.spacingXL2) {
-                    
+
+                    subtitle
+
                     formatPicker
                         .padding(.horizontal, V3Tokens.spacingXL4)
                         .padding(.top, V3Tokens.spacingSM)
@@ -81,27 +83,31 @@ struct InviteShareSheet: View {
             .padding(.bottom, 14)
     }
     
-    private var titleRow: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
-                Text(NSLocalizedString("invite.sendInvite", comment: "Profili Paylaş"))
-                    // Sheet başlığı — Archivo. Kardeş sheet (`V3StoryComposer`)
-                    // zaten display çiziyordu; bu ikisi aynı registerda iki
-                    // farklı yüzle duruyordu.
-                    .displayMD()
-                    .foregroundColor(V3Tokens.ink)
-                Text(NSLocalizedString("invite.shareSubtitle", comment: "Davet kodun veya link ile seni ekleyebilirler"))
-                    .bodySM()
-                    .foregroundColor(V3Tokens.mutedText)
-            }
-            Spacer()
-            V3TopBarIconButton(
-                systemName: "xmark",
-                label: NSLocalizedString("general.close", comment: "")
-            ) { dismiss() }
-        }
-        .padding(.horizontal, V3Tokens.channel)
-        .padding(.bottom, V3Tokens.spacingLG)
+    /// Sheet'in başlık çubuğu.
+    ///
+    /// Elle çizilmiş bir satırdı: 24pt Archivo başlık ve kapat SAĞDA. Kardeş
+    /// sheet (`V3StoryComposer`) 22pt çiziyordu, `IncomingReactions` 16pt —
+    /// üç modal, üç punto. Artık ortak çubuk: 17pt, kapat solda.
+    ///
+    /// Zemin şeffaf (`progress: 0`): gövde kendi `ScrollView`'ünde, çubuğun
+    /// altından geçmiyor — cam ancak arkasından bir şey geçerse cam okunur.
+    private var topBar: some View {
+        V3TopBar(
+            leading: .close { dismiss() },
+            title: NSLocalizedString("invite.sendInvite", comment: "Profili Paylaş"),
+            progress: 0
+        )
+    }
+
+    /// Başlığın alt satırı. Çubuğa sığmıyor (çubuk tek satır) ve sığmamalı da:
+    /// bir cümlelik açıklama gövdenin işi.
+    private var subtitle: some View {
+        Text(NSLocalizedString("invite.shareSubtitle", comment: "Davet kodun veya link ile seni ekleyebilirler"))
+            .bodySM()
+            .foregroundColor(V3Tokens.mutedText)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, V3Tokens.channel)
     }
     
     private var formatPicker: some View {
@@ -157,7 +163,7 @@ struct InviteShareSheet: View {
                 
                 ShareAppIcon(
                     iconName: "square.and.arrow.up",
-                    title: "Diğer",
+                    title: NSLocalizedString("share.other", comment: ""),
                     color: V3Tokens.ink,
                     isEnabled: generatedImage != nil,
                     action: shareViaSystem
@@ -201,6 +207,7 @@ struct InviteShareSheet: View {
                     .padding(.vertical, V3Tokens.spacingSM)
                     .background(RoundedRectangle(cornerRadius: V3Tokens.radiusInner).fill(isCopied ? V3Tokens.success : V3Tokens.hairline.opacity(0.8)))
             }
+            .buttonStyle(.onePressable)
         }
         .padding(V3Tokens.spacingMD)
         .background(RoundedRectangle(cornerRadius: V3Tokens.radiusCard).fill(V3Tokens.hairline.opacity(0.3)))
@@ -313,6 +320,7 @@ private struct ShareAppIcon: View {
                     .foregroundColor(V3Tokens.ink)
             }
         }
+        .buttonStyle(.onePressable)
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1.0 : 0.4)
     }

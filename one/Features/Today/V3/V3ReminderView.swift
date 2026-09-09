@@ -14,14 +14,21 @@ struct V3ReminderView: View {
         self.onSave = onSave
     }
 
-    private let weekdayLabels = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
+    /// Gün kısaltmaları takvimden gelir — dokuz dile elle çeviri yazmak
+    /// yerine `Calendar` locale'i veriyor. Pazartesi başlangıçlı.
+    private var weekdayLabels: [String] {
+        var cal = Calendar.current
+        cal.locale = LanguageManager.shared.currentLocale
+        let symbols = cal.shortWeekdaySymbols          // Pazar başlangıçlı
+        return (0..<7).map { symbols[($0 + 1) % 7] }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             V3Header(dateLabel: "AYARLAR · HATIRLATMA")
                 .padding(.bottom, V3Tokens.spacingMD)
 
-            V3BackButton(title: "← Geri", action: onBack)
+            V3BackButton(title: NSLocalizedString("common.back", comment: ""), action: onBack)
                 .padding(.top, V3Tokens.spacingSM)
 
             ScrollView(showsIndicators: false) {
@@ -95,14 +102,7 @@ struct V3ReminderView: View {
             }
         }
         .padding(V3Tokens.spacingXL)
-        .background(
-            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
-                .fill(V3Tokens.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
-                        .stroke(V3Tokens.hairline, lineWidth: 1)
-                )
-        )
+        .oneCardBackground(radius: V3Tokens.radiusPanel)
     }
 
     private func stepperButton(symbol: String, action: @escaping () -> Void) -> some View {
@@ -132,7 +132,9 @@ struct V3ReminderView: View {
                 Text(NSLocalizedString("reminder.daily", comment: ""))
                     .bodyLGSemibold()
                     .foregroundColor(V3Tokens.ink)
-                Text(settings.enabled ? "Açık · her gün \(settings.formattedTime)" : "Kapalı · bildirim gelmez")
+                Text(settings.enabled
+                     ? String(format: NSLocalizedString("reminder.state.on", comment: ""), settings.formattedTime)
+                     : NSLocalizedString("reminder.state.off", comment: ""))
                     .bodyXS()
                     .foregroundColor(V3Tokens.faintText)
             }
@@ -143,14 +145,7 @@ struct V3ReminderView: View {
         }
         .padding(.horizontal, V3Tokens.spacingXL)
         .padding(.vertical, 18)
-        .background(
-            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
-                .fill(V3Tokens.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
-                        .stroke(V3Tokens.hairline, lineWidth: 1)
-                )
-        )
+        .oneCardBackground(radius: V3Tokens.radiusPanel)
     }
 
     // MARK: - Weekday chips
@@ -158,7 +153,7 @@ struct V3ReminderView: View {
     private var weekdayChips: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(NSLocalizedString("reminder.days", comment: ""))
-                .font(V3Typography.mono(11, weight: .regular))
+                .monoSM(weight: .regular)
                 .tracking(1.4)
                 .foregroundColor(V3Tokens.faintText)
 
@@ -194,7 +189,7 @@ struct V3ReminderView: View {
     private var tonePicker: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(NSLocalizedString("reminder.tone", comment: ""))
-                .font(V3Typography.mono(11, weight: .regular))
+                .monoSM(weight: .regular)
                 .tracking(1.4)
                 .foregroundColor(V3Tokens.faintText)
 
@@ -254,7 +249,7 @@ struct V3ReminderView: View {
     private var lockScreenPreview: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(NSLocalizedString("reminder.lockPreview", comment: ""))
-                .font(V3Typography.mono(11, weight: .regular))
+                .monoSM(weight: .regular)
                 .tracking(1.4)
                 .foregroundColor(V3Tokens.faintText)
 
@@ -267,7 +262,7 @@ struct V3ReminderView: View {
                     .padding(.top, V3Tokens.spacingXS)
 
                 Text(V3DateFormatter.headerLabel())
-                    .font(V3Typography.mono(10, weight: .regular))
+                    .monoLabel(weight: .regular)
                     .tracking(1.4)
                     .foregroundColor(V3Tokens.darkMuted)
                     .padding(.top, 6)
@@ -278,12 +273,12 @@ struct V3ReminderView: View {
                     VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                         HStack {
                             Text("ONE")
-                                .font(V3Typography.mono(10, weight: .regular))
+                                .monoLabel(weight: .regular)
                                 .tracking(1.2)
                                 .foregroundColor(V3Tokens.darkMuted)
                             Spacer()
                             Text(NSLocalizedString("general.now", comment: ""))
-                                .font(V3Typography.mono(10, weight: .regular))
+                                .monoLabel(weight: .regular, tracking: 0)
                                 // Aynı satırdaki kardeşi zaten `darkMuted`.
                                 // Ham #6E6E7C, `ghostText`in erişilebilirlik
                                 // düzeltmesi öncesi değeriydi — koyu bildirim
@@ -317,15 +312,11 @@ struct V3ReminderView: View {
         }
     }
 
+    /// Kilit ekranı önizlemesi. Metin **gerçekten gönderilecek olanla aynı
+    /// yerden** gelir (`V3ReminderTone` → `NotificationMessageBuilder`);
+    /// burada ayrı bir örnek tablo tutuluyordu ve v3 sesinde kalmıştı.
     private var previewNotification: (title: String, body: String) {
-        // Preview'da "yesterdayMood" için gösterim amaçlı sabit örnek: sample body zaten
-        // handoff'ta seçili tonun taglinei; canlı kayıt planlamasında gerçek data'yı
-        // NotificationManager doldurur.
-        switch settings.tone {
-        case .quiet:   return ("Bugün.", "Tek kelime, tek renk.")
-        case .short:   return ("Bugün nasılsın?", "On saniye sürer.")
-        case .curious: return ("Dün maviydin.", "Bugün hangi renk?")
-        }
+        settings.tone.notification(yesterdayMood: nil)
     }
 }
 

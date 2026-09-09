@@ -53,13 +53,13 @@ struct V3OnboardingView: View {
         var id: String { rawValue }
         var label: String {
             switch self {
-            case .intent:  return "Niyet"
-            case .mood:    return "İlk renk"
-            case .auth:    return "Giriş"
-            case .song:    return "Şarkı"
-            case .reward:  return "İlk kare"
-            case .circle: return "Çevre"
-            case .notif:   return "Hatırlatma"
+            case .intent:  return NSLocalizedString("onboarding.v3.step.intent", comment: "")
+            case .mood:    return NSLocalizedString("onboarding.v3.step.mood", comment: "")
+            case .auth:    return NSLocalizedString("onboarding.v3.step.auth", comment: "")
+            case .song:    return NSLocalizedString("onboarding.v3.step.song", comment: "")
+            case .reward:  return NSLocalizedString("onboarding.v3.step.reward", comment: "")
+            case .circle:  return NSLocalizedString("onboarding.v3.step.circle", comment: "")
+            case .notif:   return NSLocalizedString("onboarding.v3.step.notif", comment: "")
             }
         }
     }
@@ -119,14 +119,14 @@ struct V3OnboardingView: View {
 
     private var stepLabel: some View {
         Text(stepLabelText)
-            .font(V3Typography.mono(11, weight: .regular))
+            .monoSM(weight: .regular)
             .tracking(1.4)
             .textCase(.uppercase)
             .foregroundColor(V3Tokens.faintText)
     }
 
     private var stepLabelText: String {
-        guard let cur = current else { return "Hazırsın" }
+        guard let cur = current else { return NSLocalizedString("onboarding.v3.ready", comment: "") }
         return "\(pos + 1) / \(Step.allCases.count) · \(cur.label)"
     }
 
@@ -150,14 +150,14 @@ struct V3OnboardingView: View {
 
     private var intentStep: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
-            heading("Neden buradasın?")
-            lead("Bir cümle yeter. Sonra değişebilir.")
+            heading(NSLocalizedString("onboarding.v3.intent.title", comment: ""))
+            lead(NSLocalizedString("onboarding.v3.intent.lead", comment: ""))
 
             VStack(spacing: 10) {
-                intentPill("Kendimi tanımak")
-                intentPill("Duygularımı takip etmek")
-                intentPill("Şarkılarla eşleştirmek")
-                intentPill("Sadece merak ettim")
+                intentPill(NSLocalizedString("onboarding.v3.intent.self", comment: ""))
+                intentPill(NSLocalizedString("onboarding.v3.intent.track", comment: ""))
+                intentPill(NSLocalizedString("onboarding.v3.intent.music", comment: ""))
+                intentPill(NSLocalizedString("onboarding.v3.intent.curious", comment: ""))
             }
             .padding(.top, V3Tokens.spacingSM)
         }
@@ -175,7 +175,7 @@ struct V3OnboardingView: View {
                 Spacer()
                 if selectedIntent == title {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 13, weight: .semibold))
+                        .iconSM(weight: .semibold)
                         .foregroundColor(ONEBrand.kor)
                 }
             }
@@ -195,8 +195,8 @@ struct V3OnboardingView: View {
 
     private var authStep: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
-            heading("Apple ile\ngiriş yap.")
-            lead("iCloud'da saklanır. Şifre yok.")
+            heading(NSLocalizedString("onboarding.v3.auth.title", comment: ""))
+            lead(NSLocalizedString("onboarding.v3.auth.lead", comment: ""))
 
             SignInWithAppleButton(
                 onRequest: { req in req.requestedScopes = [.fullName, .email] },
@@ -214,8 +214,8 @@ struct V3OnboardingView: View {
 
     private var moodStep: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
-            heading("Bugün\nnasılsın?")
-            lead("Bir renk seç. Yeter.")
+            heading(NSLocalizedString("onboarding.v3.mood.title", comment: ""))
+            lead(NSLocalizedString("onboarding.v3.mood.lead", comment: ""))
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                 ForEach(V3Mood.allCases) { mood in
@@ -246,8 +246,8 @@ struct V3OnboardingView: View {
 
     private var songStep: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
-            heading("Bir şarkı\nekle mi?")
-            lead("Sonra da ekleyebilirsin.")
+            heading(NSLocalizedString("onboarding.v3.song.title", comment: ""))
+            lead(NSLocalizedString("onboarding.v3.song.lead", comment: ""))
             // Simplified — bu adımda picker yerine sadece "Sonra ekle" seçeneği.
             // Gerçek şarkı seçimi ilk kayıt akışında olur.
         }
@@ -255,8 +255,8 @@ struct V3OnboardingView: View {
 
     private var rewardStep: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
-            heading("İlk karen\nhazır.")
-            lead("Her an bir renk daha ekler.")
+            heading(NSLocalizedString("onboarding.v3.reward.title", comment: ""))
+            lead(NSLocalizedString("onboarding.v3.reward.lead", comment: ""))
             if let mood = selectedMood {
                 DayFill(hexes: [mood.hex], cornerRadius: V3Tokens.radiusTile)
                     .frame(width: 140, height: 140)
@@ -267,15 +267,15 @@ struct V3OnboardingView: View {
 
     private var circleStep: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
-            heading("Çevrene\nkim girsin?")
-            lead("Sonra da davet edebilirsin.")
+            heading(NSLocalizedString("onboarding.v3.circle.title", comment: ""))
+            lead(NSLocalizedString("onboarding.v3.circle.lead", comment: ""))
         }
     }
 
     private var notifStep: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
-            heading("Küçük bir\nhatırlatma?")
-            lead("İstediğin saatte, bir kez.")
+            heading(NSLocalizedString("onboarding.v3.notif.title", comment: ""))
+            lead(NSLocalizedString("onboarding.v3.notif.lead", comment: ""))
 
             Toggle(isOn: $reminderOn) {
                 Text(NSLocalizedString("reminder.daily", comment: ""))
@@ -285,21 +285,14 @@ struct V3OnboardingView: View {
             .tint(ONEBrand.kor)
             .padding(.horizontal, 18)
             .padding(.vertical, V3Tokens.spacingMD)
-            .background(
-                RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
-                    .fill(V3Tokens.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
-                            .stroke(V3Tokens.hairline, lineWidth: 1)
-                    )
-            )
+            .oneCardBackground(radius: V3Tokens.radiusPanel)
         }
     }
 
     private var doneStep: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
-            heading("Hazırsın.")
-            lead("İlk anın seni bekliyor.")
+            heading(NSLocalizedString("onboarding.v3.done.title", comment: ""))
+            lead(NSLocalizedString("onboarding.v3.done.lead", comment: ""))
         }
     }
 
@@ -348,9 +341,9 @@ struct V3OnboardingView: View {
     }
 
     private var primaryLabel: String {
-        if current == nil { return "Başla" }
-        if current == .notif { return "Bitir" }
-        return "Devam"
+        if current == nil { return NSLocalizedString("onboarding.v3.cta.start", comment: "") }
+        if current == .notif { return NSLocalizedString("onboarding.v3.cta.finish", comment: "") }
+        return NSLocalizedString("onboarding.v3.cta.next", comment: "")
     }
 
     private var canProceed: Bool {

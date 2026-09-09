@@ -27,7 +27,7 @@ struct SuggestedUserRow: View {
                         .foregroundColor(V3Tokens.mutedText)
                 }
                 if user.mutualFriendCount > 0 {
-                    Text("• \(user.mutualFriendCount) ortak")
+                    Text(String(format: NSLocalizedString("circle.mutualCount", comment: ""), user.mutualFriendCount))
                         .monoLabel(tracking: 0.3)
                         .foregroundColor(V3Tokens.mutedText)
                 }
@@ -36,7 +36,7 @@ struct SuggestedUserRow: View {
             Spacer()
 
             Button(action: onAdd) {
-                Text("+ Ekle")
+                Text(NSLocalizedString("circle.addShort", comment: ""))
                     .monoLabel(tracking: 0.5)
                     .foregroundColor(ONEBrand.bone)
                     .padding(.horizontal, 14)

@@ -50,7 +50,7 @@ struct V3SavedStepView: View {
             hero
 
             Text(ordinalLabel)
-                .font(V3Typography.mono(10, weight: .regular))
+                .monoLabel(weight: .regular)
                 .tracking(1.4)
                 .textCase(.uppercase)
                 .foregroundColor(V3Tokens.faintText)
@@ -74,7 +74,7 @@ struct V3SavedStepView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             Text(scopeText)
-                .font(V3Typography.mono(11, weight: .regular))
+                .monoSM(weight: .regular)
                 .tracking(1.2)
                 .textCase(.uppercase)
                 .foregroundColor(V3Tokens.faintText)
@@ -164,15 +164,15 @@ struct V3SavedStepView: View {
     private var descriptionText: String {
         if totalMomentsToday > 1 {
             let day = momentDateLabel ?? currentDateLabel()
-            return "\(day.capitalized) için \(totalMomentsToday) an var. Kare renklere bölündü."
+            return String(format: NSLocalizedString("saved.manyMoments", comment: ""), day.capitalized, totalMomentsToday)
         }
-        return "Arşivde bugünün karesi doldu."
+        return NSLocalizedString("saved.oneMoment", comment: "")
     }
 
     private var scopeText: String {
         scope == .private
-            ? "Yalnızca senin arşivinde."
-            : "Çevrendeki arkadaşlar görebilir."
+            ? NSLocalizedString("saved.scope.private", comment: "")
+            : NSLocalizedString("saved.scope.circle", comment: "")
     }
 
     // MARK: - Footer

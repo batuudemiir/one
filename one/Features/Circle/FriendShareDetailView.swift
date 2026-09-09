@@ -138,7 +138,7 @@ struct FriendShareDetailView: View {
                         .background(
                             RoundedRectangle(cornerRadius: V3Tokens.radiusCard, style: .continuous)
                                 .fill(V3Tokens.surface)
-                                .shadow(color: .black.opacity(0.06), radius: 12, y: 4)
+                                .elevation(.paperLift)
                         )
                 }
                 .transition(.opacity)
@@ -407,7 +407,7 @@ struct FriendShareDetailView: View {
                                         .background(Circle().fill(Color.black.opacity(0.35)))
                                 } else {
                                     Image(systemName: "play.fill")
-                                        .font(.system(size: 13, weight: .medium))
+                                        .iconSM(weight: .medium)
                                         .foregroundStyle(V3Tokens.darkText)
                                         .frame(width: 36, height: 36)
                                         .background(Circle().fill(Color.black.opacity(0.35)))
@@ -480,7 +480,7 @@ struct FriendShareDetailView: View {
                     
                     HStack(spacing: 5) {
                         Image(systemName: "music.note")
-                            .font(.system(size: 10))
+                            .iconXS()
                             .foregroundColor(V3Tokens.mutedText)
                         Text(platform)
                             .monoLabel()
@@ -516,7 +516,7 @@ struct FriendShareDetailView: View {
         }
         .background(V3Tokens.surface)
         .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel))
-        .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
+        .elevation(.cardRest)
         .padding(.horizontal, V3Tokens.spacingXL)
         .scaleEffect(appeared ? 1 : 0.94)
         .opacity(appeared ? 1 : 0)
@@ -556,6 +556,7 @@ struct FriendShareDetailView: View {
                     .stroke(V3Tokens.faintText, lineWidth: 1.5)
             )
         }
+        .buttonStyle(.onePressable)
         .padding(.top, V3Tokens.spacingXL2)
         .padding(.bottom, V3Tokens.spacingXL4)
         .opacity(appeared ? 1 : 0)
@@ -572,7 +573,7 @@ struct FriendShareDetailView: View {
     private func getUserDisplayName() -> String {
         if !friendDisplayName.isEmpty { return friendDisplayName }
         if let displayName = share["displayName"] as? String, !displayName.isEmpty { return displayName }
-        return "Arkadaş"
+        return NSLocalizedString("common.friend", comment: "")
     }
     
     private func getRelativeTime() -> String {
@@ -715,6 +716,7 @@ struct PhotoDataViewerSheet: View {
                                         .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
                                 )
                         }
+                        .buttonStyle(.onePressable)
                         .padding(V3Tokens.spacingXL)
                     }
                     Spacer()

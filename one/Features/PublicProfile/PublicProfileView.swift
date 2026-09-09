@@ -87,7 +87,7 @@ final class PublicProfileViewModel: ObservableObject {
             if let snap = UserProfileStore.shared.snapshot(for: userID) {
                 profile = snap
             } else {
-                errorMessage = "Profil yüklenemedi."
+                errorMessage = NSLocalizedString("publicProfile.loadFailed", comment: "")
             }
         }
     }
@@ -256,8 +256,6 @@ struct PublicProfileView: View {
             // Top bar — kendi ProfileTopBarOverlay gibi sticky, hero üzerinde gezer
             if vm.relationship != .blockedMe {
                 topBar
-                    .padding(.horizontal, V3Tokens.spacingLG)
-                    .padding(.top, V3Tokens.spacingSM)
                     .zIndex(10)
             }
         }
@@ -291,12 +289,12 @@ struct PublicProfileView: View {
         }
         .v3Sheet()
         .confirmationDialog(
-            "Bu kullanıcıyı engelle?",
+            NSLocalizedString("circle.blockConfirmTitle", comment: ""),
             isPresented: $showBlockConfirm,
             titleVisibility: .visible
         ) {
-            Button("Engelle", role: .destructive) { blockAction() }
-            Button("Vazgeç", role: .cancel) {}
+            Button(NSLocalizedString("circle.blockAction", comment: ""), role: .destructive) { blockAction() }
+            Button(NSLocalizedString("common.cancel", comment: ""), role: .cancel) {}
         } message: {
             Text(NSLocalizedString("block.confirmBody", comment: ""))
         }
@@ -364,15 +362,18 @@ struct PublicProfileView: View {
     // Hero foto/gradient üzerinde gezer — Liquid Glass tarzı hafif blur kapsül.
 
     private var topBar: some View {
-        HStack {
-            V3TopBarIconButton(
-                systemName: "xmark",
-                label: NSLocalizedString("general.close", comment: ""),
-                ground: .media
-            ) { dismiss() }
-
-            Spacer()
-
+        // Ortak `V3TopBar`, `.media` zeminiyle: kapat zaten doğru köşedeydi
+        // ama satır elle kuruluyordu — kendi yatay payı (16pt), kendi
+        // yüksekliği. Artık diğer on bir ekranla aynı 44pt satır ve aynı
+        // `barInset` hizası.
+        //
+        // Başlık yuvası boş: ekranın adı kişinin kendisi ve o, hemen
+        // altındaki hero'da duruyor.
+        V3TopBar(
+            leading: .close { dismiss() },
+            leadingGround: .media,
+            progress: 0
+        ) {
             moreMenu
         }
     }
@@ -381,13 +382,19 @@ struct PublicProfileView: View {
     private var moreMenu: some View {
         if vm.relationship != .self_ {
             Menu {
-                Button("Rapor et", systemImage: "flag") { showReport = true }
+                Button(NSLocalizedString("report.title", comment: ""), systemImage: "flag") {
+                    showReport = true
+                }
                 if case .blockedByMe = vm.relationship {
-                    Button("Engeli kaldır", systemImage: "lock.open") { unblockAction() }
-                } else {
-                    Button("Engelle", systemImage: "hand.raised", role: .destructive) {
-                        showBlockConfirm = true
+                    Button(NSLocalizedString("circle.unblockAction", comment: ""), systemImage: "lock.open") {
+                        unblockAction()
                     }
+                } else {
+                    Button(
+                        NSLocalizedString("circle.blockAction", comment: ""),
+                        systemImage: "hand.raised",
+                        role: .destructive
+                    ) { showBlockConfirm = true }
                 }
             } label: {
                 Image(systemName: "ellipsis")
@@ -457,9 +464,7 @@ struct PublicProfileView: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 14)
-                .background(V3Tokens.surface)
-                .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel))
-                .overlay(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel).stroke(V3Tokens.hairline, lineWidth: 1))
+                .oneCardBackground(radius: V3Tokens.radiusPanel)
             }
         }
     }
@@ -489,8 +494,9 @@ struct PublicProfileView: View {
             Text(NSLocalizedString("publicProfile.unavailable", comment: ""))
                 .bodySM()
                 .foregroundStyle(V3Tokens.mutedText)
-            Button("Kapat") { dismiss() }
-                .foregroundStyle(ONEBrand.kor)
+            Button(NSLocalizedString("general.close", comment: "")) { dismiss() }
+            .buttonStyle(.onePressable)
+                .foregroundStyle(V3Tokens.korText)
             Spacer()
         }
     }
@@ -501,7 +507,7 @@ struct PublicProfileView: View {
         isWorking = true
         vm.sendRequest { result in
             isWorking = false
-            handle(result, successToast: "İstek gönderildi")
+            handle(result, successToast: NSLocalizedString("circle.toast.requestSent", comment: ""))
         }
     }
 
@@ -509,7 +515,7 @@ struct PublicProfileView: View {
         isWorking = true
         vm.cancelRequest { result in
             isWorking = false
-            handle(result, successToast: "İstek iptal edildi")
+            handle(result, successToast: NSLocalizedString("circle.toast.requestCancelled", comment: ""))
         }
     }
 
@@ -517,7 +523,7 @@ struct PublicProfileView: View {
         isWorking = true
         vm.acceptIncoming { result in
             isWorking = false
-            handle(result, successToast: "Artık çevrende")
+            handle(result, successToast: NSLocalizedString("circle.toast.nowInCircle", comment: ""))
         }
     }
 
@@ -525,7 +531,7 @@ struct PublicProfileView: View {
         isWorking = true
         vm.declineIncoming { result in
             isWorking = false
-            handle(result, successToast: "Reddedildi")
+            handle(result, successToast: NSLocalizedString("circle.toast.declined", comment: ""))
         }
     }
 
@@ -533,7 +539,7 @@ struct PublicProfileView: View {
         isWorking = true
         vm.block { result in
             isWorking = false
-            handle(result, successToast: "Engellendi")
+            handle(result, successToast: NSLocalizedString("circle.toast.blocked", comment: ""))
         }
     }
 
@@ -541,7 +547,7 @@ struct PublicProfileView: View {
         isWorking = true
         vm.unblock { result in
             isWorking = false
-            handle(result, successToast: "Engel kaldırıldı")
+            handle(result, successToast: NSLocalizedString("circle.toast.unblocked", comment: ""))
         }
     }
 

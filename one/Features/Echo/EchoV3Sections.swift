@@ -31,7 +31,7 @@ struct EchoCoverSection: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: V3Tokens.spacingSM) {
                 Text(String(format: NSLocalizedString("echo.monthColour", comment: ""), monthName.uppercased()))
-                    .font(V3Typography.mono(10, weight: .regular))
+                    .monoLabel(weight: .regular)
                     .tracking(1.5)
                     .foregroundColor(ink.opacity(0.68))
                 Spacer()
@@ -64,10 +64,10 @@ struct EchoCoverSection: View {
                     onStory()
                 }) {
                     HStack(spacing: V3Tokens.spacingSM) {
-                        Text("Ay hikayesini izle")
+                        Text(NSLocalizedString("echo.watchStory", comment: ""))
                             .bodySMSemibold()
                         Image(systemName: "arrow.right")
-                            .font(.system(size: 12, weight: .semibold))
+                            .iconSM(weight: .semibold)
                     }
                     .foregroundColor(accent)
                     .padding(.horizontal, 18)
@@ -92,9 +92,8 @@ struct EchoCoverSection: View {
     private var factualLine: String {
         let entries = data.thisMonthSongs
         let mood = (top?.label ?? "—").lowercased()
-        if entries == 0 { return "Bu ay henüz an bırakmadın." }
-        let anStr = entries == 1 ? "1 an" : "\(entries) an"
-        return "\(anStr) · en sık \(mood)"
+        if entries == 0 { return NSLocalizedString("echo.noMomentsThisMonth", comment: "") }
+        return String(format: NSLocalizedString("echo.factualLine", comment: ""), entries, mood)
     }
 }
 
@@ -110,7 +109,7 @@ struct EchoMoodMapSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            EchoSectionHeader(eyebrow: "MOOD HARİTASI", title: "Son 30 gün")
+            EchoSectionHeader(eyebrow: NSLocalizedString("echo.section.moodMap", comment: ""), title: NSLocalizedString("echo.section.last30", comment: ""))
 
             heatmap
                 .padding(.top, V3Tokens.spacingXS)
@@ -122,14 +121,7 @@ struct EchoMoodMapSection: View {
         }
         .padding(V3Tokens.spacingXL)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
-                .fill(V3Tokens.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
-                        .stroke(V3Tokens.hairline, lineWidth: 1)
-                )
-        )
+        .oneCardBackground(radius: V3Tokens.radiusTile)
         .padding(.horizontal, V3Tokens.spacingXL)
     }
 
@@ -190,7 +182,7 @@ struct EchoMoodMapSection: View {
                             .foregroundColor(V3Tokens.ink)
                         Spacer(minLength: 0)
                         Text("\(m.count)")
-                            .font(V3Typography.mono(11, weight: .regular))
+                            .monoSM(weight: .regular, tracking: 0)
                             .foregroundColor(V3Tokens.mutedText)
                             .contentTransition(.numericText())
                             .animation(.snappy, value: m.count)
@@ -210,7 +202,7 @@ struct EchoTopTracksSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            EchoSectionHeader(eyebrow: "EN ÇOK DİNLENENLER", title: "Bu ayın tekrarları")
+            EchoSectionHeader(eyebrow: NSLocalizedString("echo.section.topTracks", comment: ""), title: NSLocalizedString("echo.section.repeats", comment: ""))
 
             if tracks.isEmpty {
                 Text(NSLocalizedString("echo.noRepeatSong", comment: ""))
@@ -227,14 +219,7 @@ struct EchoTopTracksSection: View {
         }
         .padding(V3Tokens.spacingXL)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
-                .fill(V3Tokens.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
-                        .stroke(V3Tokens.hairline, lineWidth: 1)
-                )
-        )
+        .oneCardBackground(radius: V3Tokens.radiusTile)
         .padding(.horizontal, V3Tokens.spacingXL)
     }
 
@@ -251,7 +236,7 @@ struct EchoTopTracksSection: View {
                 .frame(width: 44, height: 44)
                 .overlay(
                     Image(systemName: "music.note")
-                        .font(.system(size: 15, weight: .medium))
+                        .iconMD(weight: .medium)
                         .foregroundColor(Color(hex: track.moodColorHex).readableInk())
                 )
 
@@ -267,8 +252,8 @@ struct EchoTopTracksSection: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text("\(track.count) kez")
-                .font(V3Typography.mono(11, weight: .regular))
+            Text(String(format: NSLocalizedString("echo.playCount", comment: ""), track.count))
+                .monoSM(weight: .regular)
                 .tracking(0.8)
                 .foregroundColor(V3Tokens.mutedText)
         }
@@ -287,37 +272,30 @@ struct EchoStatsBreakdownSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            EchoSectionHeader(eyebrow: "SAYISAL", title: "Kısa özet")
+            EchoSectionHeader(eyebrow: NSLocalizedString("echo.section.numbers", comment: ""), title: NSLocalizedString("echo.section.summary", comment: ""))
 
             VStack(spacing: 0) {
-                statRow(label: "Toplam an", value: "\(data.totalSongs)")
+                statRow(label: NSLocalizedString("echo.stat.totalMoments", comment: ""), value: "\(data.totalSongs)")
                 divider
-                statRow(label: "Bu ay", value: "\(data.thisMonthSongs)")
+                statRow(label: NSLocalizedString("echo.stat.thisMonth", comment: ""), value: "\(data.thisMonthSongs)")
                 divider
-                statRow(label: "Sessiz gün", value: "\(data.silentDays)")
+                statRow(label: NSLocalizedString("echo.stat.silentDays", comment: ""), value: "\(data.silentDays)")
                 if let day = data.mostActiveDayOfWeek {
                     divider
-                    statRow(label: "En aktif gün", value: day)
+                    statRow(label: NSLocalizedString("echo.stat.mostActiveDay", comment: ""), value: day)
                 }
                 if isSyncLoading {
                     divider
-                    syncPendingRow
+                    pendingRow(label: NSLocalizedString("echo.stat.resonance", comment: ""))
                 } else if data.syncCount > 0 {
                     divider
-                    statRow(label: "Rezonans", value: "\(data.syncCount)")
+                    statRow(label: NSLocalizedString("echo.stat.resonance", comment: ""), value: "\(data.syncCount)")
                 }
             }
         }
         .padding(V3Tokens.spacingXL)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
-                .fill(V3Tokens.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: V3Tokens.radiusTile, style: .continuous)
-                        .stroke(V3Tokens.hairline, lineWidth: 1)
-                )
-        )
+        .oneCardBackground(radius: V3Tokens.radiusTile)
         .padding(.horizontal, V3Tokens.spacingXL)
     }
 
@@ -338,9 +316,9 @@ struct EchoStatsBreakdownSection: View {
     /// Rezonans sayısı yalnız CloudKit sorgusu dönünce geliyor. Satır o ana
     /// kadar hiç çizilmiyordu: kullanıcı "henüz yüklenmedi" ile "eşleşme yok"u
     /// ayırt edemiyor, sonra sayı habersiz beliriyordu.
-    private var syncPendingRow: some View {
+    private func pendingRow(label: String) -> some View {
         HStack {
-            Text("Rezonans")
+            Text(label)
                 .bodySM()
                 .foregroundColor(V3Tokens.mutedText)
             Spacer()
@@ -365,7 +343,7 @@ struct EchoSectionHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
             Text(eyebrow)
-                .font(V3Typography.mono(10, weight: .regular))
+                .monoLabel(weight: .regular)
                 .tracking(1.5)
                 .foregroundColor(V3Tokens.faintText)
             Text(title)
@@ -401,12 +379,13 @@ struct EchoMonthStoryView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea(edges: .bottom)
 
-            VStack(spacing: V3Tokens.spacingMD) {
+            VStack(spacing: V3Tokens.spacingSM) {
                 progressBars
+                    .padding(.horizontal, V3Tokens.barInset)
                 topBar
             }
             .padding(.top, V3Tokens.spacingMD)
-            .padding(.horizontal, V3Tokens.spacingXL)
+            .frame(height: Self.chromeHeight, alignment: .top)
         }
     }
 
@@ -422,24 +401,35 @@ struct EchoMonthStoryView: View {
         }
     }
 
+    /// Hikaye görüntüleyicinin çubuğu.
+    ///
+    /// Elle çizilmiş bir satırdı ve kapat SAĞDAYDI — uygulamanın geri
+    /// kalanında sol. Artık ortak `V3TopBar`: aynı 44pt satır, aynı
+    /// `barInset` hizası, aynı köşe.
+    ///
+    /// Başlık yuvası bilerek boş. Bu bir hikaye görüntüleyici (ilerleme
+    /// çubukları + tam ekran sayfalar); 17pt'lik bir ad Instagram-story
+    /// kalıbıyla çatışırdı. Ayın adı zaten mono bağlam etiketinde.
     private var topBar: some View {
-        HStack {
-            Text(String(format: NSLocalizedString("echo.monthStory", comment: ""), monthName.uppercased()))
-                .font(V3Typography.mono(10, weight: .regular))
-                .tracking(1.4)
-                .foregroundColor(V3Tokens.faintText)
-            Spacer()
-            V3TopBarIconButton(
-                systemName: "xmark",
-                label: NSLocalizedString("general.close", comment: "")
-            ) { onClose() }
-        }
+        V3TopBar(
+            leading: .close { onClose() },
+            context: String(format: NSLocalizedString("echo.monthStory", comment: ""), monthName.uppercased()),
+            progress: 0
+        )
     }
+
+    /// İlerleme çubukları + üst çubuğun kapladığı yükseklik.
+    ///
+    /// Elle yazılmış bir 72 vardı ve parçaların toplamı değildi — chrome'a
+    /// dokunan herkesin yeniden ölçmesi gereken bir sayı. Artık türetiliyor:
+    /// üst pay + ilerleme çubuğu + aralık + çubuk satırı (44 + 6 alt pay).
+    static let chromeHeight: CGFloat =
+        V3Tokens.spacingMD + 3 + V3Tokens.spacingSM + V3Tokens.minTouchTarget + 6
 
     /// TabView içinde her sayfa 82% width kart görüntüsü verecek şekilde padd.
     private func storyPage<Content: View>(index: Int, @ViewBuilder content: () -> Content) -> some View {
         content()
-            .padding(.top, 72)
+            .padding(.top, Self.chromeHeight)
             .padding(.horizontal, V3Tokens.spacingSM)
             .padding(.bottom, V3Tokens.spacingXL3)
             .tag(index)

@@ -29,9 +29,9 @@ enum V3StoryBackground: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .color: return "Renk"
-        case .paper: return "Kağıt"
-        case .photo: return "Fotoğraf"
+        case .color: return NSLocalizedString("story.bg.color", comment: "")
+        case .paper: return NSLocalizedString("story.bg.paper", comment: "")
+        case .photo: return NSLocalizedString("story.bg.photo", comment: "")
         }
     }
 }
@@ -40,7 +40,7 @@ enum V3StoryContent: String, CaseIterable, Identifiable {
     case note
     case song
     var id: String { rawValue }
-    var label: String { self == .note ? "Not" : "Şarkı" }
+    var label: String { self == .note ? NSLocalizedString("story.content.note", comment: "") : NSLocalizedString("story.content.song", comment: "") }
 }
 
 // MARK: - Composer
@@ -124,7 +124,7 @@ struct V3StoryComposerView: View {
                             RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                                 .stroke(V3Tokens.hairline, lineWidth: 1)
                         )
-                        .shadow(color: Color.black.opacity(0.10), radius: 22, x: 0, y: 10)
+                        .elevation(.sheetFloat)
                         .animation(.timingCurve(0.2, 0.9, 0.25, 1, duration: 0.32), value: ratio)
                         .animation(.timingCurve(0.2, 0.9, 0.25, 1, duration: 0.22), value: background)
                         .animation(.timingCurve(0.2, 0.9, 0.25, 1, duration: 0.22), value: content)
@@ -153,27 +153,30 @@ struct V3StoryComposerView: View {
 
     // MARK: - Header
 
+    /// Bestecinin başlık çubuğu.
+    ///
+    /// Elle çizilmiş bir satırdı ve üç kuralı birden deliyordu: kapat SAĞDA
+    /// (uygulamanın geri kalanında sol), başlık ham `display(22)` (tip
+    /// ölçeğinde olmayan bir punto — kardeş sheet'ler 16 ve 24 çiziyordu) ve
+    /// **yerelleştirilmemiş** bir dize ("Story kart"), yani dokuz dilin
+    /// sekizinde Türkçe kalıyordu.
+    ///
+    /// Alt satır ("ya da kaydet") çubuktan gövdeye indi: çubuk tek satır ve
+    /// bir cümlelik açıklama zaten gövdenin işi.
     private var header: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Story kart")
-                    .font(V3Typography.display(22, weight: .semibold))
-                    .tracking(-0.5)
-                    .foregroundColor(V3Tokens.ink)
-                Text(NSLocalizedString("share.orSave", comment: ""))
-                    .bodyMicro()
-                    .foregroundColor(V3Tokens.mutedText)
-            }
-            Spacer()
-            V3TopBarIconButton(
-                systemName: "xmark",
-                label: NSLocalizedString("general.close", comment: "")
-            ) { onClose() }
+        VStack(spacing: V3Tokens.spacingXS) {
+            V3TopBar(
+                leading: .close { onClose() },
+                title: NSLocalizedString("screen.story.title", comment: ""),
+                progress: 0
+            )
+            Text(NSLocalizedString("share.orSave", comment: ""))
+                .bodyMicro()
+                .foregroundColor(V3Tokens.mutedText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, V3Tokens.barInset)
         }
-        .padding(.horizontal, V3Tokens.spacingXL)
-        .padding(.top, 10)
         .padding(.bottom, V3Tokens.spacingXS)
-        .frame(height: 62, alignment: .center)
     }
 
     // MARK: - Card (aynı view hem preview hem export'ta kullanılır)
@@ -336,13 +339,13 @@ struct V3StoryComposerView: View {
 
     private var togglesGroup: some View {
         VStack(spacing: V3Tokens.spacingMD) {
-            toggleRow(title: "ORAN") {
+            toggleRow(title: NSLocalizedString("story.row.ratio", comment: "")) {
                 segmented(V3StoryRatio.allCases, selection: $ratio) { $0.label }
             }
-            toggleRow(title: "ZEMİN") {
+            toggleRow(title: NSLocalizedString("story.row.background", comment: "")) {
                 segmented(availableBackgrounds, selection: $background) { $0.label }
             }
-            toggleRow(title: "İÇERİK") {
+            toggleRow(title: NSLocalizedString("story.row.content", comment: "")) {
                 segmented(V3StoryContent.allCases, selection: $content) { $0.label }
             }
         }
@@ -351,7 +354,7 @@ struct V3StoryComposerView: View {
     private func toggleRow<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         HStack(alignment: .center, spacing: V3Tokens.spacingMD) {
             Text(title)
-                .font(V3Typography.mono(10))
+                .monoLabel(weight: .regular)
                 .tracking(1.5)
                 .foregroundColor(V3Tokens.faintText)
                 .frame(width: 60, alignment: .leading)
@@ -401,7 +404,7 @@ struct V3StoryComposerView: View {
             } label: {
                 HStack(spacing: V3Tokens.spacingSM) {
                     Image(systemName: "arrow.down.to.line")
-                        .font(.system(size: 14, weight: .semibold))
+                        .iconMD(weight: .semibold)
                     Text("Kaydet")
                         .bodyLGSemibold()
                 }
@@ -417,7 +420,7 @@ struct V3StoryComposerView: View {
             } label: {
                 HStack(spacing: V3Tokens.spacingSM) {
                     Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 14, weight: .semibold))
+                        .iconMD(weight: .semibold)
                     Text(NSLocalizedString("general.share", comment: ""))
                         .bodyLGSemibold()
                 }
@@ -435,7 +438,7 @@ struct V3StoryComposerView: View {
 
     private func toastView(_ text: String) -> some View {
         Text(text)
-            .font(V3Typography.mono(11))
+            .monoSM(weight: .regular)
             .tracking(1.2)
             .foregroundColor(V3Tokens.paper)
             .padding(.horizontal, 14)
@@ -473,16 +476,16 @@ struct V3StoryComposerView: View {
     private func saveToPhotos() {
         ONEHaptics.feelingSelected()
         guard let img = renderImage() else {
-            showToast("Kart oluşturulamadı"); return
+            showToast(NSLocalizedString("story.toast.renderFailed", comment: "")); return
         }
         UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
-        showToast("Fotoğraflara kaydedildi")
+        showToast(NSLocalizedString("story.toast.saved", comment: ""))
     }
 
     private func sharePhoto() {
         ONEHaptics.feelingSelected()
         guard let img = renderImage() else {
-            showToast("Kart oluşturulamadı"); return
+            showToast(NSLocalizedString("story.toast.renderFailed", comment: "")); return
         }
         isSharing = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {

@@ -31,7 +31,7 @@ struct FriendDetailView: View {
     @State private var cardPhotoCache: UIImage? = nil  // sync I/O'yu pre-load eder; tap anında jank olmaz
 
     private var displayName: String {
-        friendData.user["displayName"] as? String ?? "Arkadaş"
+        friendData.user["displayName"] as? String ?? NSLocalizedString("common.friend", comment: "")
     }
     /// An ekranında yalnız ad görünür — soyad kimlik kartı bilgisi gibi
     /// duruyor ve başlığı gereksiz uzatıyor. Profil ve liste ekranlarında
@@ -84,7 +84,7 @@ struct FriendDetailView: View {
                         if friendMusicTasteVisible {
                             songCard
                         } else {
-                            privacyPlaceholder(label: "Müzik Paylaşımı")
+                            privacyPlaceholder(label: NSLocalizedString("circle.musicSharing", comment: ""))
                         }
                         if let ownerID = friendData.user["userID"] as? String,
                            let recordName = share?.recordID.recordName, !recordName.isEmpty {
@@ -256,7 +256,7 @@ struct FriendDetailView: View {
                         Button {
                             showFriendProfile = true
                         } label: {
-                            Label("Profili gör", systemImage: "person.crop.circle")
+                            Label(NSLocalizedString("circle.viewProfile", comment: ""), systemImage: "person.crop.circle")
                         }
                         Button(role: .destructive) { showRemoveAlert = true } label: {
                             Label(NSLocalizedString("circle.removeAction", comment: ""), systemImage: "person.fill.xmark")
@@ -266,7 +266,7 @@ struct FriendDetailView: View {
                         }
                     } label: {
                         Image(systemName: "ellipsis")
-                            .font(.system(size: 14, weight: .semibold))
+                            .iconMD(weight: .semibold)
                             .foregroundColor(V3Tokens.faintText)
                             .frame(width: 32, height: 32)
                             .contentShape(Rectangle())
@@ -362,9 +362,9 @@ struct FriendDetailView: View {
             .padding(.vertical, V3Tokens.spacingXL3)
             .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 20)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusPanel)
                     .fill(Color.white.opacity(0.5))
-                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(V3Tokens.wash, lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel).stroke(V3Tokens.wash, lineWidth: 1))
             )
             .padding(.horizontal, V3Tokens.spacingXL)
             .scaleEffect(appeared ? 1 : 0.94)
@@ -438,7 +438,7 @@ struct FriendDetailView: View {
                                         .background(Circle().fill(Color.black.opacity(0.35)))
                                 } else {
                                     Image(systemName: "play.fill")
-                                        .font(.system(size: 13, weight: .medium))
+                                        .iconSM(weight: .medium)
                                         .foregroundStyle(.white)
                                         .frame(width: 36, height: 36)
                                         .background(Circle().fill(Color.black.opacity(0.35)))
@@ -473,7 +473,7 @@ struct FriendDetailView: View {
                                   ? "music.note" : "music.note.list")
                                 .font(.system(size: 9, weight: .medium))
                             Text(platform.contains("Spotify") ? "Spotify" : "Apple")
-                                .font(V3Typography.mono(9, weight: .medium))
+                                .monoMicro(weight: .medium)
                                 .tracking(0.3)
                         }
                         .foregroundColor(V3Tokens.mutedText)
@@ -518,15 +518,15 @@ struct FriendDetailView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(V3Tokens.spacingLG)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(moodColor.opacity(0.08)))
+                    .background(RoundedRectangle(cornerRadius: V3Tokens.radiusInner).fill(moodColor.opacity(0.08)))
                     .padding(.top, V3Tokens.spacingLG)
                 }
             }
             .padding(V3Tokens.spacingXL).frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(V3Tokens.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: .black.opacity(0.06), radius: 20, x: 0, y: 8)
+        .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel))
+        .elevation(.cardRest)
         .padding(.horizontal, V3Tokens.spacingXL)
     }
 
@@ -553,7 +553,7 @@ struct FriendDetailView: View {
     private func privacyPlaceholder(label: String) -> some View {
         HStack(spacing: V3Tokens.spacingMD) {
             Image(systemName: "lock")
-                .font(.system(size: 14, weight: .light))
+                .iconMD(weight: .light)
                 .foregroundColor(V3Tokens.mutedText)
             Text(String(format: NSLocalizedString("privacy.hiddenField", comment: ""), label))
                 .monoSM(tracking: 0.3)
@@ -570,13 +570,14 @@ struct FriendDetailView: View {
     private var closeBtn: some View {
         Button { dismiss() } label: {
             HStack(spacing: V3Tokens.spacingSM) {
-                Image(systemName: "chevron.down").font(.system(size: 10))
+                Image(systemName: "chevron.down").iconXS()
                 Text(NSLocalizedString("general.close", comment: "")).monoSM(tracking: 1)
             }
             .foregroundColor(V3Tokens.mutedText)
             .padding(.horizontal, V3Tokens.spacingXL).padding(.vertical, V3Tokens.spacingMD)
             .background(Capsule().stroke(V3Tokens.faintText, lineWidth: 1.5))
         }
+        .buttonStyle(.onePressable)
         .padding(.top, V3Tokens.spacingXL2).padding(.bottom, V3Tokens.spacingXL4)
         .opacity(appeared ? 1 : 0)
         .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.4), value: appeared)

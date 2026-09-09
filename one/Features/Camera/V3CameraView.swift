@@ -37,8 +37,6 @@ struct V3CameraView: View {
 
             VStack(spacing: 0) {
                 topBar
-                    .padding(.horizontal, V3Tokens.channel)
-                    .padding(.top, V3Tokens.spacingXL)
 
                 content
 
@@ -62,34 +60,22 @@ struct V3CameraView: View {
         }
     }
 
-    // MARK: - Top bar (Kapat + "Kamera" başlık)
+    // MARK: - Üst çubuk
 
+    /// Uygulamadaki beşinci ve son "kendi çubuğunu çizen" ekrandı.
+    ///
+    /// Dördü birden yanlıştı: kapatma bir **metin kapsülüydü** ("← Kapat",
+    /// kendi ok karakteriyle) — her yerdeki dairesel xmark değil; başlık
+    /// **ortalanmıştı** — diğer her ekranda sola dayalı; iki dize de
+    /// **yerelleştirilmemişti**, yani dokuz dilin sekizinde Türkçe kalıyordu;
+    /// ve sağdaki boşluğu ortalamayı ayakta tutmak için 60×32'lik sahte bir
+    /// `Color.clear` dolduruyordu — düzen kendi kendini taşımıyordu.
     private var topBar: some View {
-        HStack {
-            Button(action: { dismiss() }) {
-                Text("← Kapat")
-                    .bodySMSemibold()
-                    .foregroundColor(V3Tokens.mutedText)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, V3Tokens.spacingSM)
-                    .overlay(Capsule().stroke(V3Tokens.hairline, lineWidth: 1))
-            }
-            .contentShape(Rectangle())
-            .buttonStyle(.onePressable)
-
-            Spacer()
-
-            Text("KAMERA")
-                .font(V3Typography.mono(11, weight: .regular))
-                .tracking(1.4)
-                .textCase(.uppercase)
-                .foregroundColor(V3Tokens.mutedText)
-
-            Spacer()
-
-            // Simetri için placeholder — sağ tarafta boşluk.
-            Color.clear.frame(width: 60, height: 32)
-        }
+        V3TopBar(
+            leading: .close { dismiss() },
+            title: NSLocalizedString("screen.camera.title", comment: ""),
+            progress: 0
+        )
     }
 
     // MARK: - Content router
@@ -158,10 +144,10 @@ struct V3CameraView: View {
                 // Top chips — flash + grid (vizör içinde).
                 VStack {
                     HStack(spacing: V3Tokens.spacingSM) {
-                        chip(active: state.flash != .off, label: state.flash == .off ? "Flaş kapalı" : "Flaş açık") {
+                        chip(active: state.flash != .off, label: state.flash == .off ? NSLocalizedString("camera.flashOff", comment: "") : NSLocalizedString("camera.flashOn", comment: "")) {
                             state.cycleFlash()
                         }
-                        chip(active: state.grid, label: state.grid ? "Izgara açık" : "Izgara kapalı") {
+                        chip(active: state.grid, label: state.grid ? NSLocalizedString("camera.gridOn", comment: "") : NSLocalizedString("camera.gridOff", comment: "")) {
                             state.toggleGrid()
                         }
                         Spacer()
@@ -194,8 +180,8 @@ struct V3CameraView: View {
                 }
             }
 
-            Text(state.isFront ? "ÖN KAMERA" : "ARKA KAMERA")
-                .font(V3Typography.mono(10, weight: .regular))
+            Text(state.isFront ? NSLocalizedString("camera.front", comment: "") : NSLocalizedString("camera.back", comment: ""))
+                .monoLabel(weight: .regular)
                 .tracking(1.3)
                 .textCase(.uppercase)
                 .foregroundColor(V3Tokens.faintText)
@@ -263,7 +249,7 @@ struct V3CameraView: View {
                 .font(ONEBrand.display(20))
                 .tracking(-0.4)
                 .foregroundColor(V3Tokens.ink)
-            Text("Ayarlardan izin verebilirsin.")
+            Text(NSLocalizedString("camera.grantInSettings", comment: ""))
                 .bodySM()
                 .foregroundColor(V3Tokens.mutedText)
             Button {
@@ -277,6 +263,7 @@ struct V3CameraView: View {
                     .padding(.horizontal, V3Tokens.spacingXL).padding(.vertical, V3Tokens.spacingMD)
                     .background(Capsule().fill(V3Tokens.ink))
             }
+            .buttonStyle(.onePressable)
         }
     }
 
@@ -302,7 +289,7 @@ struct V3CameraView: View {
     private func sideBtn(systemImage: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.system(size: 18, weight: .medium))
+                .iconLG(weight: .medium)
                 .foregroundColor(V3Tokens.mutedText)
                 .frame(width: 52, height: 52)
                 .overlay(
@@ -317,7 +304,7 @@ struct V3CameraView: View {
     private func chip(active: Bool, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(V3Typography.mono(11, weight: .semibold))
+                .monoSM(weight: .semibold)
                 .tracking(1.0)
                 .textCase(.uppercase)
                 .foregroundColor(active ? ONEBrand.ink : ONEBrand.bone)

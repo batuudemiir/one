@@ -166,7 +166,7 @@ struct V3DetailsStepView: View {
                     Button(action: onBack) {
                         HStack(spacing: 6) {
                             Image(systemName: "chevron.left")
-                                .font(.system(size: 13, weight: .semibold))
+                                .iconSM(weight: .semibold)
                             Text(NSLocalizedString("entry.changeColour", comment: ""))
                                 .bodyXSSemibold()
                         }
@@ -179,14 +179,14 @@ struct V3DetailsStepView: View {
                         )
                     }
                     .buttonStyle(.onePressable)
-                    .accessibilityLabel("Renk seçim ekranına dön")
+                    .accessibilityLabel(NSLocalizedString("entry.a11y.backToColor", comment: ""))
                     Spacer()
                     Text(dateLabel)
-                        .font(V3Typography.mono(10, weight: .regular))
+                        .monoLabel(weight: .regular)
                         .tracking(1.5)
                         .textCase(.uppercase)   // TR locale-safe uppercase
                         .foregroundColor(mood.ink.opacity(0.7))
-                        .accessibilityLabel("Tarih: \(dateLabelSpoken)")
+                        .accessibilityLabel(String(format: NSLocalizedString("entry.a11y.date", comment: ""), dateLabelSpoken))
                 }
                 .padding(.horizontal, V3Tokens.channel)
                 .padding(.top, 18)
@@ -204,7 +204,7 @@ struct V3DetailsStepView: View {
                 .minimumScaleFactor(0.6)
                 .padding(.horizontal, V3Tokens.channel)
                 .padding(.bottom, 44)   // Kart bindirmesi için ekstra boşluk
-                .accessibilityLabel("Bugünün rengi: \(mood.label)")
+                .accessibilityLabel(String(format: NSLocalizedString("entry.a11y.todayColor", comment: ""), mood.label))
                 .accessibilityAddTraits(.isHeader)
         }
         .frame(height: height)
@@ -250,22 +250,22 @@ struct V3DetailsStepView: View {
     private var noteBlock: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
             HStack(alignment: .firstTextBaseline) {
-                Text("Ne oldu?")
+                Text(NSLocalizedString("entry.note.title", comment: ""))
                     .font(V3Typography.display(22, weight: .semibold))
                     .tracking(-0.5)
                     .foregroundColor(V3Tokens.ink)
                     .accessibilityAddTraits(.isHeader)
                 Spacer()
                 Text("\(note.count)/\(maxNoteLength)")
-                    .font(V3Typography.mono(10, weight: .regular))
+                    .monoLabel(weight: .regular)
                     .tracking(1.0)
                     .foregroundColor(V3Tokens.ghostText)
-                    .accessibilityLabel("\(note.count) karakter, en fazla \(maxNoteLength)")
+                    .accessibilityLabel(String(format: NSLocalizedString("entry.a11y.noteCount", comment: ""), note.count, maxNoteLength))
             }
 
             // TextField axis:.vertical → iOS 16+ auto-height, 3-4 satır aralığı.
             // maxHeight cap küçük ekran (iPhone SE) taşmasını önler.
-            TextField("İki satır yeter. İstersen boş bırak.", text: $note, axis: .vertical)
+            TextField(NSLocalizedString("entry.note.placeholder", comment: ""), text: $note, axis: .vertical)
                 .lineLimit(3...4)
                 .bodyLG()
                 .foregroundColor(V3Tokens.ink)
@@ -282,7 +282,7 @@ struct V3DetailsStepView: View {
                 )
                 .focused($noteFocused)
                 .animation(ONEAnimation.easing, value: noteFocused)
-                .accessibilityLabel("Not, isteğe bağlı, en fazla \(maxNoteLength) karakter")
+                .accessibilityLabel(String(format: NSLocalizedString("entry.a11y.noteField", comment: ""), maxNoteLength))
         }
     }
 
@@ -292,9 +292,9 @@ struct V3DetailsStepView: View {
         HStack(spacing: V3Tokens.spacingSM) {
             actionChip(
                 systemImage: "camera",
-                label: "Foto",
+                label: NSLocalizedString("entry.chip.photo", comment: ""),
                 filled: pickedPhoto != nil,
-                a11yState: pickedPhoto != nil ? "seçili" : "boş",
+                a11yState: pickedPhoto != nil ? NSLocalizedString("entry.state.selected", comment: "") : NSLocalizedString("entry.state.empty", comment: ""),
                 accent: mood.color
             ) {
                 // Foto yoksa doğrudan vizör açılıyor — araya "Kamera mı,
@@ -313,9 +313,9 @@ struct V3DetailsStepView: View {
 
             actionChip(
                 systemImage: "music.note",
-                label: "Şarkı",
+                label: NSLocalizedString("entry.chip.song", comment: ""),
                 filled: pickedSong != nil,
-                a11yState: pickedSong != nil ? "seçili" : "boş",
+                a11yState: pickedSong != nil ? NSLocalizedString("entry.state.selected", comment: "") : NSLocalizedString("entry.state.empty", comment: ""),
                 accent: mood.color
             ) {
                 showSongSearch = true
@@ -323,9 +323,9 @@ struct V3DetailsStepView: View {
 
             actionChip(
                 systemImage: scope == .friends ? "person.2.fill" : "lock.fill",
-                label: scope == .friends ? "Çevre" : "Sadece sen",
+                label: scope == .friends ? NSLocalizedString("entry.chip.circle", comment: "") : NSLocalizedString("entry.chip.private", comment: ""),
                 filled: scope == .friends,
-                a11yState: scope == .friends ? "arkadaşlarınla paylaşılıyor" : "yalnızca sende",
+                a11yState: scope == .friends ? NSLocalizedString("entry.state.shared", comment: "") : NSLocalizedString("entry.state.onlyYou", comment: ""),
                 accent: mood.color
             ) {
                 showScopeSheet = true
@@ -340,7 +340,7 @@ struct V3DetailsStepView: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 12, weight: .semibold))
+                    .iconSM(weight: .semibold)
                 Text(label)
                     .bodyXSSemibold()
                     .lineLimit(1)
@@ -360,7 +360,7 @@ struct V3DetailsStepView: View {
         }
         .buttonStyle(.onePressable)
         .animation(.timingCurve(0.2, 0.9, 0.25, 1, duration: 0.22), value: filled)
-        .accessibilityLabel("\(label). \(a11yState). Değiştirmek için dokun.")
+        .accessibilityLabel(String(format: NSLocalizedString("entry.a11y.chip", comment: ""), label, a11yState))
     }
 
     // MARK: - Footer
@@ -370,7 +370,7 @@ struct V3DetailsStepView: View {
     /// gibi yanıltıcı geliyordu.
     private var footer: some View {
         Button(action: onSave) {
-            Text("Kaydet")
+            Text(NSLocalizedString("entry.save", comment: ""))
                 .displayXS()
                 .foregroundColor(V3Tokens.paper)
                 .frame(maxWidth: .infinity, minHeight: 24)
@@ -378,7 +378,7 @@ struct V3DetailsStepView: View {
                 .background(Capsule().fill(V3Tokens.ink))
         }
         .buttonStyle(.onePressable)
-        .accessibilityLabel("Anı kaydet")
+        .accessibilityLabel(NSLocalizedString("entry.a11y.save", comment: ""))
     }
 
     // MARK: - Helpers
@@ -409,16 +409,16 @@ private struct V3DetailsPhotoSourceSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXL) {
-            Text(hasPhoto ? "Fotoğrafı değiştir" : "Fotoğraf ekle")
+            Text(hasPhoto ? NSLocalizedString("entry.photo.change", comment: "") : NSLocalizedString("entry.photo.add", comment: ""))
                 .font(V3Typography.display(22, weight: .semibold))
                 .tracking(-0.5)
                 .foregroundColor(V3Tokens.ink)
                 .padding(.top, V3Tokens.spacingXL)
 
             HStack(spacing: V3Tokens.spacingMD) {
-                sourceCard(title: "Galeri", subtitle: "Var olan bir kareyi seç",
+                sourceCard(title: NSLocalizedString("entry.photo.gallery", comment: ""), subtitle: NSLocalizedString("entry.photo.gallerySub", comment: ""),
                            systemImage: "photo.on.rectangle.angled", action: onGallery)
-                sourceCard(title: "Kamera", subtitle: "Şimdi bir kare çek",
+                sourceCard(title: NSLocalizedString("entry.photo.camera", comment: ""), subtitle: NSLocalizedString("entry.photo.cameraSub", comment: ""),
                            systemImage: "camera.fill", action: onCamera)
             }
 
@@ -426,7 +426,7 @@ private struct V3DetailsPhotoSourceSheet: View {
                 Button(action: onRemove) {
                     HStack(spacing: V3Tokens.spacingSM) {
                         Image(systemName: "trash")
-                            .font(.system(size: 13, weight: .semibold))
+                            .iconSM(weight: .semibold)
                         Text(NSLocalizedString("entry.removePhoto", comment: ""))
                             .bodyMDSemibold()
                     }
@@ -471,11 +471,7 @@ private struct V3DetailsPhotoSourceSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(V3Tokens.spacingLG)
             .frame(height: 152)
-            .background(
-                RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
-                    .fill(V3Tokens.surface)
-                    .overlay(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous).stroke(V3Tokens.hairline, lineWidth: 1))
-            )
+            .oneCardBackground(radius: V3Tokens.radiusPanel)
         }
         .buttonStyle(.onePressable)
     }
@@ -504,8 +500,8 @@ private struct V3ScopeSheet: View {
 
             VStack(spacing: V3Tokens.spacingMD) {
                 choiceCard(
-                    title: "Arşivimde kalsın",
-                    subtitle: "Kimse görmez, sadece senin.",
+                    title: NSLocalizedString("entry.scope.privateTitle", comment: ""),
+                    subtitle: NSLocalizedString("entry.scope.privateSub", comment: ""),
                     systemImage: "lock.fill",
                     isOn: scope == .private
                 ) {
@@ -515,8 +511,8 @@ private struct V3ScopeSheet: View {
                 }
 
                 choiceCard(
-                    title: "Çevremle paylaş",
-                    subtitle: "Arkadaşların bugünün rengini görür.",
+                    title: NSLocalizedString("entry.scope.circleTitle", comment: ""),
+                    subtitle: NSLocalizedString("entry.scope.circleSub", comment: ""),
                     systemImage: "person.2.fill",
                     isOn: scope == .friends
                 ) {
@@ -539,7 +535,7 @@ private struct V3ScopeSheet: View {
                     RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
                         .fill(isOn ? moodColor : moodColor.opacity(0.14))
                     Image(systemName: systemImage)
-                        .font(.system(size: 16, weight: .semibold))
+                        .iconMD(weight: .semibold)
                         .foregroundColor(isOn ? moodColor.readableInk() : moodColor)
                 }
                 .frame(width: 44, height: 44)

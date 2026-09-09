@@ -82,10 +82,7 @@ struct V3EntryContainer: View {
                 .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .trailing)).combined(with: .opacity))
             } else {
                 VStack(alignment: .leading, spacing: 0) {
-                    V3Header(dateLabel: headerLabel)
-
                     V3ProgressBar(activeThrough: progressActiveThrough)
-                        .padding(.top, 14)
 
                     contentForStep
                         .padding(.top, V3Tokens.spacingSM)
@@ -93,9 +90,41 @@ struct V3EntryContainer: View {
                     Spacer(minLength: 0)
                 }
                 .padding(.horizontal, V3Tokens.channel)
-                .padding(.top, V3Tokens.spacingXL2)
+                .padding(.top, V3Tokens.spacingMD)
                 .padding(.bottom, V3Tokens.spacingXL2)
                 .transition(.opacity)
+            }
+        }
+        // An sekmesinin üst çubuğu artık **akışın tamamında** duruyor, tek
+        // yerde tanımlı.
+        //
+        // Eskiden iki farklı başlık vardı: hub adımı `V3TopBar`'ı kendi
+        // içinde çiziyordu (üstelik gövdenin 24pt payının içinde, yani diğer
+        // üç sekmenin çubuğuyla hizasız), pick/details/saved adımları ise
+        // `V3Header`'ı — tarih + marka işareti. Aynı sekmede iki başlık
+        // dili, ve ikisi de ekranın adını hiç söylemiyordu.
+        //
+        // Hatırlatma düğmesi yalnız dinlenme adımlarında: `.details`'te
+        // kullanıcı yazıyor, `.saved`'da kaydı yeni bitirdi — ikisinde de
+        // akıştan çıkaran bir düğme sunmak yarım kalmış bir kaydı terk
+        // ettirir.
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if !showReminder {
+                V3TopBar(
+                    style: .root,
+                    title: PrimaryTab.entry.screenTitle,
+                    context: headerLabel
+                ) {
+                    if showsReminderAction {
+                        V3TopBarIconButton(
+                            systemName: "alarm",
+                            label: NSLocalizedString("settings.reminder", comment: "")
+                        ) {
+                            ONEHaptics.tabSwitch()
+                            showReminder = true
+                        }
+                    }
+                }
             }
         }
         .animation(reduceMotion ? .none : ONEAnimation.easing, value: step)
@@ -442,10 +471,10 @@ struct V3EntryContainer: View {
         if let date = entryDate {
             // Past-day: "12 Temmuz\nnasıldı?"
             let f = ONEFormatters.dayMonth
-            return "\(f.string(from: date))\nnasıldı?"
+            return String(format: NSLocalizedString("entry.title.pastDay", comment: ""), f.string(from: date))
         }
-        if todayMoments.isEmpty { return "Bugün\nnasılsın?" }
-        return "Bir an\ndaha?"
+        if todayMoments.isEmpty { return NSLocalizedString("entry.title.today", comment: "") }
+        return NSLocalizedString("entry.title.another", comment: "")
     }
 
     /// Sadece günün ilk anı yazılırken selam gösterilir; geçmiş günde asla.
@@ -464,6 +493,12 @@ struct V3EntryContainer: View {
         case .hub, .pick, .details, .saved:
             return V3DateFormatter.headerLabel()
         }
+    }
+
+    /// Üst çubuğun hatırlatma düğmesi görünür mü? Yalnız akışın dinlenme
+    /// adımlarında — bkz. `safeAreaInset` yorumu.
+    private var showsReminderAction: Bool {
+        step == .hub || step == .pick
     }
 
     private var progressActiveThrough: Int {

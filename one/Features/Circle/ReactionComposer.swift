@@ -57,7 +57,7 @@ struct ReactionComposer: View {
                 }
                 .buttonStyle(.onePressable)
                 .disabled(isSending)
-                .accessibilityLabel(Text("\(DailyReaction.Kind.color.label) tepkisi"))
+                .accessibilityLabel(Text(String(format: NSLocalizedString("reaction.a11y.kind", comment: ""), DailyReaction.Kind.color.label)))
                 .accessibilityHint(Text(NSLocalizedString("general.a11y.toggle", comment: "")))
                 .accessibilityAddTraits(sentReaction == .color ? .isSelected : [])
             }
@@ -81,7 +81,7 @@ struct ReactionComposer: View {
 
                 Button(action: sendReply) {
                     Image(systemName: "arrow.up")
-                        .font(.system(size: 15, weight: .semibold))
+                        .iconMD(weight: .semibold)
                         .foregroundColor(ONEBrand.bone)
                         .frame(width: 34, height: 34)
                         .background(Circle().fill(V3Tokens.ink))
@@ -92,7 +92,7 @@ struct ReactionComposer: View {
                 .buttonStyle(.onePressable)
                 .disabled(replyText.trimmingCharacters(in: .whitespaces).isEmpty || isSending)
                 .opacity(replyText.trimmingCharacters(in: .whitespaces).isEmpty ? 0.3 : 1)
-                .accessibilityLabel("Yanıtı gönder")
+                .accessibilityLabel(NSLocalizedString("reaction.a11y.sendReply", comment: ""))
             }
             .padding(.leading, 15)
             .padding(.trailing, V3Tokens.spacingSM)
@@ -106,7 +106,7 @@ struct ReactionComposer: View {
 
             if replySent {
                 HStack(spacing: 6) {
-                    Image(systemName: "checkmark").font(.system(size: 11, weight: .semibold))
+                    Image(systemName: "checkmark").iconXS(weight: .semibold)
                     Text(NSLocalizedString("reaction.sent", comment: "")).bodyMicro()
                 }
                 .foregroundColor(V3Tokens.mutedText)
@@ -145,7 +145,7 @@ struct ReactionComposer: View {
         }
         .buttonStyle(.onePressable)
         .disabled(isSending)
-        .accessibilityLabel(Text("\(kind.label) tepkisi"))
+        .accessibilityLabel(Text(String(format: NSLocalizedString("reaction.a11y.kind", comment: ""), kind.label)))
         .accessibilityHint(Text(NSLocalizedString("general.a11y.toggle", comment: "")))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }

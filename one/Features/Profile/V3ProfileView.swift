@@ -22,11 +22,51 @@ import CoreData
 import AuthenticationServices
 import PhotosUI
 
+/// Profilin istatistik yüzeylerinin okuduğu **tek** şey: anın günü, saati,
+/// rengi ve pas bayrağı.
+///
+/// Ayrı bir tip olmasının sebebi `Moment`'ın taşıdığı `photoData`: Core
+/// Data'da `allowsExternalBinaryDataStorage` ile saklanan bir blob, yani her
+/// satır ayrı bir dosya. `Moment(from:)` onu her okumada belleğe alıyor —
+/// bugünün üç anı için sorun değil, arşivin tamamı için ekranı kilitleyen bir
+/// disk turu. Bu tip o alana hiç sahip olmayarak tuzağı kapatıyor.
+struct ProfileStatSlice: Sendable {
+    /// Günü normalize edilmiş tarih (00:00).
+    let date: Date
+    /// Anın gerçek saati — gün içi sıralama için.
+    let time: Date
+    let moodColorHex: String
+    let passed: Bool
+
+    /// `dictionaryResultType` satırından. Zorunlu alan `date`; yoksa satır
+    /// düşer (`Moment(from:)` da aynısını yapıyor).
+    init?(row: NSDictionary) {
+        guard let rawDate = row["date"] as? Date else { return nil }
+        let cal = Calendar.current
+        self.date = cal.startOfDay(for: rawDate)
+        // `createdAt` yoksa 12:00 — `Moment(from:)` ile aynı varsayım, ki iki
+        // yol aynı kaydı aynı saatte görsün.
+        self.time = (row["createdAt"] as? Date)
+            ?? cal.date(bySettingHour: 12, minute: 0, second: 0, of: rawDate)
+            ?? rawDate
+        self.moodColorHex = (row["moodColorHex"] as? String) ?? ""
+        self.passed = (row["passed"] as? Bool) ?? false
+    }
+
+    /// Örnek/enjekte veri yolu (`injectedMoments`) için köprü.
+    init(moment: Moment) {
+        self.date = moment.date
+        self.time = moment.time
+        self.moodColorHex = moment.moodColorHex
+        self.passed = moment.passed
+    }
+}
+
 struct V3ProfileView: View {
     @Environment(\.managedObjectContext) private var context
     @StateObject private var vm = ProfileViewModel()
     @StateObject private var appleSignIn = AppleSignInService.shared
-    @State private var moments: [Moment] = []
+    @State private var moments: [ProfileStatSlice] = []
     @StateObject private var languageManager = LanguageManager.shared
     @State private var showAvatarPicker: Bool = false
     @State private var showReminder: Bool = false
@@ -106,6 +146,8 @@ struct V3ProfileView: View {
 
                     settingsList
                         .padding(.top, V3Tokens.spacingMD)   // "sen" bölgesinden ayrılma
+                        // Üst çubuğun dişli düğmesinin hedefi.
+                        .id("profileSettings")
 
                     versionFooter
                     Color.clear.frame(height: 40)
@@ -122,13 +164,32 @@ struct V3ProfileView: View {
             .hidesTabBarOnScroll(tab: .profile, spaceName: "one.scroll.profile")
             .topBarProgress($topBarProgress, spaceName: "one.scroll.profile")
             .safeAreaInset(edge: .top, spacing: 0) {
-                // Başlık kullanıcının kendi adı: hero yukarı kayıp
-                // kaybolduğunda kimliğin çubukta karşılığı olsun.
+                // Başlık sekmenin adı, kullanıcının adı değil.
+                //
+                // Bir dönem `vm.displayName` yazıyordu ve gerekçesi "hero
+                // kayınca kimlik çubukta kalsın"dı. Başlık artık durağan
+                // halde de görünür olduğu için o gerekçe tersine döndü: ad
+                // hemen altındaki hero'da 32pt duruyorken çubukta ikinci kez
+                // yazılıyordu. Kimlik gövdenin işi, ad çubuğun.
+                //
+                // Sağdaki eylem ayarlara atlıyor: bu ekran uygulamanın en
+                // uzun listesi (hero + istatistik + dağılım + Yankı + dört
+                // ayar bloğu) ve ayarlar en altta.
                 V3TopBar(
-                    leading: .mark,
-                    title: vm.displayName.isEmpty ? PrimaryTab.profile.title : vm.displayName,
+                    style: .root,
+                    title: PrimaryTab.profile.screenTitle,
                     progress: topBarProgress
-                )
+                ) {
+                    V3TopBarIconButton(
+                        systemName: "gearshape",
+                        label: NSLocalizedString("topbar.settings", comment: "")
+                    ) {
+                        ONEHaptics.tabSwitch()
+                        withAnimation(ONEAnimation.screenTransition) {
+                            proxy.scrollTo("profileSettings", anchor: .top)
+                        }
+                    }
+                }
             }
             .task {
                 vm.loadExistingProfile()
@@ -174,7 +235,7 @@ struct V3ProfileView: View {
                         showOnboardingPreview = false
                     } label: {
                         Text("Kapat")
-                            .font(V3Typography.mono(11, weight: .regular))
+                            .monoSM(weight: .regular)
                             .tracking(1.2)
                             .textCase(.uppercase)
                             .foregroundColor(V3Tokens.mutedText)
@@ -223,31 +284,52 @@ struct V3ProfileView: View {
 
     private func loadMoments() {
         if let injected = injectedMoments {
-            moments = injected
-            refreshDerivedStats()
-            selectedDistributionIndex = 0
+            apply(injected.map(ProfileStatSlice.init(moment:)))
             return
         }
-        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        // Sinirsiz tarama: kayit sayisi buyudukce bellek dogrusal artiyordu.
-        // Batch faulting ile tepe bellek sabit kaliyor.
-        fetchRequest.fetchBatchSize = 100
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
-        if let rows = try? context.fetch(fetchRequest) {
-            moments = rows.compactMap { Moment(from: $0) }
-            refreshDerivedStats()
-            // Dağılım yeniden sıralanınca eski index başka bir rengi işaret
-            // ediyordu — okuma satırı sessizce yanlış kovayı gösteriyordu.
-            selectedDistributionIndex = 0
-        }
+        Task { await loadMomentsAsync() }
     }
 
-    /// `moments`'tan türeyen sayaçları tazeler. Tek çağrı noktası
-    /// `loadMoments()` — kaynak veri başka yerde değişmiyor.
-    private func refreshDerivedStats() {
-        let result = Self.computeDistribution(moments)
+    /// Arşivin tamamını **dilim** olarak okur — `Moment` olarak değil.
+    ///
+    /// Eskiden `context.fetch` + `Moment(from:)` idi ve ekran donuyordu. İki
+    /// ayrı sebepten:
+    ///
+    /// 1. `Moment(from:)` her satırda `photoData`'ya dokunuyor. O alan Core
+    ///    Data'da `allowsExternalBinaryDataStorage` ile saklanıyor, yani her
+    ///    fotoğraf ayrı bir dosya: N kayıt = N dosya okuması. Profil geçmişin
+    ///    **tamamını** çektiği için sekmeye girer girmez arşiv boyunca disk
+    ///    I/O'su başlıyordu. (`ArchiveStore.createEntry` bu tuzağı bilerek
+    ///    atlıyor — orada gerekçesi yazılı; profil atlamıyordu.)
+    /// 2. Hepsi main thread'deydi.
+    ///
+    /// `dictionaryResultType` + `propertiesToFetch` ile SQLite'tan yalnız dört
+    /// kolon geliyor; blob'a hiç dokunulmuyor, managed object hiç kurulmuyor.
+    /// Bu ekranın istatistik yüzeyleri (renk dağılımı, sayaçlar, aylık özet,
+    /// üyelik tarihi) zaten yalnız bu dördünü okuyor.
+    private func loadMomentsAsync() async {
+        let bg = PersistenceController.shared.container.newBackgroundContext()
+        let slices: [ProfileStatSlice] = await bg.perform {
+            let request = NSFetchRequest<NSDictionary>(entityName: "DailySong")
+            request.resultType = .dictionaryResultType
+            request.propertiesToFetch = ["date", "createdAt", "moodColorHex", "passed"]
+            request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+            let rows = (try? bg.fetch(request)) ?? []
+            return rows.compactMap(ProfileStatSlice.init(row:))
+        }
+        apply(slices)
+    }
+
+    /// Yeni dilimleri ve onlardan türeyen her şeyi tek geçişte yerleştirir.
+    private func apply(_ slices: [ProfileStatSlice]) {
+        moments = slices
+        let result = Self.computeDistribution(slices)
         distribution = result.items
         countedMomentCount = result.counted
+        currentMonth = Self.computeCurrentMonth(slices)
+        // Dağılım yeniden sıralanınca eski index başka bir rengi işaret
+        // ediyordu — okuma satırı sessizce yanlış kovayı gösteriyordu.
+        selectedDistributionIndex = 0
     }
 
     // MARK: - Hero
@@ -263,7 +345,7 @@ struct V3ProfileView: View {
                     showAvatarPicker = true
                 } label: {
                     Image(systemName: "pencil")
-                        .font(.system(size: 11, weight: .bold))
+                        .iconXS(weight: .bold)
                         .foregroundColor(V3Tokens.paper)
                         .frame(width: 22, height: 22)
                         .background(Circle().fill(V3Tokens.ink))
@@ -280,14 +362,14 @@ struct V3ProfileView: View {
                     .foregroundColor(V3Tokens.ink)
 
                 Text(sinceLabel)
-                    .font(V3Typography.mono(11, weight: .regular))
+                    .monoSM(weight: .regular)
                     .tracking(1.4)
                     .textCase(.uppercase)
                     .foregroundColor(V3Tokens.faintText)
 
                 if let intent = OnboardingRecord.intent {
-                    Text(intent.uppercased() + " İÇİN")
-                        .font(V3Typography.mono(10, weight: .regular))
+                    Text(String(format: NSLocalizedString("profile.intentFor", comment: ""), intent.uppercased()))
+                        .monoLabel(weight: .regular)
                         .tracking(1.2)
                         .foregroundColor(V3Tokens.ghostText)
                         .lineLimit(2)
@@ -321,7 +403,7 @@ struct V3ProfileView: View {
                     .foregroundColor(V3Tokens.ink)
                 if !vm.username.isEmpty {
                     Text(vm.username)
-                        .font(V3Typography.mono(11, weight: .regular))
+                        .monoSM(weight: .regular, tracking: 0)
                         .foregroundColor(V3Tokens.ghostText)
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -332,15 +414,15 @@ struct V3ProfileView: View {
                 appleSignIn.signOut()
             } label: {
                 Text(NSLocalizedString("profile.signOut", comment: ""))
-                    .font(V3Typography.mono(11, weight: .regular))
+                    .monoSM(weight: .regular)
                     .tracking(1.1)
-                    .foregroundColor(ONEBrand.kor)
+                    .foregroundColor(V3Tokens.korText)
                     .padding(.vertical, 6)
                     .padding(.horizontal, 2)
             }
             .contentShape(Rectangle())
             .buttonStyle(.onePressable)
-            .accessibilityLabel("Çıkış yap")
+            .accessibilityLabel(NSLocalizedString("profile.a11y.signOut", comment: ""))
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 14)
@@ -355,7 +437,7 @@ struct V3ProfileView: View {
     private var signedOutCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("HESAP")
-                .font(V3Typography.mono(10, weight: .regular))
+                .monoLabel(weight: .regular)
                 .tracking(1.5)
                 .foregroundColor(V3Tokens.ghostText)
 
@@ -378,24 +460,14 @@ struct V3ProfileView: View {
             )
             .signInWithAppleButtonStyle(.black)
             .frame(height: 50)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous))
             .padding(.top, 6)
         }
         .padding(.horizontal, 18)
         .padding(.top, V3Tokens.spacingXL)
         .padding(.bottom, 18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(panelBackground)
-    }
-
-    /// Prototipteki tek panel yüzeyi: radius 20, surface, 1px hairline.
-    private var panelBackground: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .fill(V3Tokens.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .strokeBorder(V3Tokens.hairline, lineWidth: 1)
-            )
+        .oneCardBackground(radius: V3Tokens.radiusPanel)
     }
 
     // MARK: - Stats grid
@@ -404,14 +476,14 @@ struct V3ProfileView: View {
     /// zeminin kendisi. Sayı Archivo 26pt, etiket mono 9pt.
     private var statsGrid: some View {
         HStack(spacing: 1) {
-            statCell(value: "\(countedMomentCount)", label: "AN")
-            statCell(value: "\(uniqueColors)", label: "KULLANILAN RENK")
-            statCell(value: topMoodLabel, label: "EN SIK", accentHex: topMoodHex, valueSize: 18)
+            statCell(value: "\(countedMomentCount)", label: NSLocalizedString("profile.stat.moments", comment: ""))
+            statCell(value: "\(uniqueColors)", label: NSLocalizedString("profile.stat.colorsUsed", comment: ""))
+            statCell(value: topMoodLabel, label: NSLocalizedString("profile.stat.mostFrequent", comment: ""), accentHex: topMoodHex, valueSize: 18)
         }
         .background(V3Tokens.hairline)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                 .strokeBorder(V3Tokens.hairline, lineWidth: 1)
         )
     }
@@ -432,7 +504,7 @@ struct V3ProfileView: View {
                     .minimumScaleFactor(0.7)
             }
             Text(label)
-                .font(V3Typography.mono(9, weight: .regular))
+                .monoMicro()
                 .tracking(1.1)
                 .textCase(.uppercase)
                 .foregroundColor(V3Tokens.ghostText)
@@ -474,7 +546,7 @@ struct V3ProfileView: View {
 
     /// Dağılımı ve sayacı tek geçişte üretir.
     private static func computeDistribution(
-        _ moments: [Moment]
+        _ moments: [ProfileStatSlice]
     ) -> (items: [(hex: String, count: Int, label: String)], counted: Int) {
         var counts: [V3Mood: Int] = [:]
         var counted = 0
@@ -510,8 +582,8 @@ struct V3ProfileView: View {
                     .foregroundColor(V3Tokens.ink)
                 Spacer()
                 if let selected = selectedDistribution {
-                    Text("\(selected.label.uppercased()) · \(selected.count) AN")
-                        .font(V3Typography.mono(11, weight: .regular))
+                    Text(String(format: NSLocalizedString("profile.distribution.selected", comment: ""), selected.label.uppercased(), selected.count))
+                        .monoSM(weight: .regular)
                         .tracking(1.1)
                         .foregroundColor(V3Tokens.mutedText)
                 }
@@ -556,10 +628,10 @@ struct V3ProfileView: View {
             // VoiceOver bara tek bir özet olarak giriyor, dokuz mikro öğe
             // olarak değil.
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Renk dağılımı grafiği")
+            .accessibilityLabel(NSLocalizedString("profile.a11y.distributionChart", comment: ""))
             .accessibilityValue(
                 distribution.prefix(9)
-                    .map { "\($0.label) yüzde \(percentage($0.count))" }
+                    .map { String(format: NSLocalizedString("profile.a11y.distributionValue", comment: ""), $0.label, percentage($0.count)) }
                     .joined(separator: ", ")
             )
 
@@ -582,7 +654,7 @@ struct V3ProfileView: View {
                                 .lineLimit(1)
                             Spacer(minLength: 4)
                             Text("\(percentage(item.count))%")
-                                .font(V3Typography.mono(11, weight: .regular))
+                                .monoSM(weight: .regular, tracking: 0)
                                 .foregroundColor(V3Tokens.mutedText)
                         }
                         // Satır 20pt yüksekliğinde metin taşıyor; 44pt'lik
@@ -593,7 +665,7 @@ struct V3ProfileView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.onePressable)
-                    .accessibilityLabel("\(item.label), \(item.count) an, yüzde \(percentage(item.count))")
+                    .accessibilityLabel(String(format: NSLocalizedString("profile.a11y.distributionRow", comment: ""), item.label, item.count, percentage(item.count)))
                     .accessibilityAddTraits(selectedDistributionIndex == index ? [.isButton, .isSelected] : .isButton)
                 }
             }
@@ -622,7 +694,7 @@ struct V3ProfileView: View {
         if let month = currentMonth {
             VStack(alignment: .leading, spacing: 10) {
                 Text(NSLocalizedString("profile.monthlySummary", comment: ""))
-                    .font(V3Typography.mono(10, weight: .regular))
+                    .monoLabel(weight: .regular)
                     .tracking(1.5)
                     .foregroundColor(V3Tokens.ghostText)
 
@@ -633,7 +705,7 @@ struct V3ProfileView: View {
                         HStack(alignment: .top) {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(String(format: NSLocalizedString("profile.monthColour", comment: ""), month.name))
-                                    .font(V3Typography.mono(11, weight: .regular))
+                                    .monoSM(weight: .regular)
                                     .tracking(1.3)
                                     .textCase(.uppercase)
                                     .foregroundColor(month.mood.ink.opacity(0.75))
@@ -645,7 +717,7 @@ struct V3ProfileView: View {
                             }
                             Spacer(minLength: 8)
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 13, weight: .semibold))
+                                .iconSM(weight: .semibold)
                                 .foregroundColor(month.mood.ink.opacity(0.6))
                                 .padding(.top, V3Tokens.spacingXS)
                         }
@@ -656,14 +728,14 @@ struct V3ProfileView: View {
                             spacing: 3
                         ) {
                             ForEach(Array(month.cells.enumerated()), id: \.offset) { _, hex in
-                                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                                RoundedRectangle(cornerRadius: V3Tokens.radiusMicro, style: .continuous)
                                     .fill(hex.map { Color(hex: $0) } ?? month.mood.ink.opacity(0.16))
                                     .aspectRatio(1, contentMode: .fit)
                             }
                         }
 
                         Text(String(format: NSLocalizedString("profile.monthCounts", comment: ""), month.dayCount, month.momentCount))
-                            .font(V3Typography.mono(11, weight: .regular))
+                            .monoSM(weight: .regular)
                             .tracking(1.2)
                             .textCase(.uppercase)
                             .foregroundColor(month.mood.ink.opacity(0.8))
@@ -676,7 +748,7 @@ struct V3ProfileView: View {
                     )
                 }
                 .buttonStyle(.onePressable)
-                .accessibilityLabel("Aylık özet, \(month.name), ayın rengi \(month.mood.label). Yankı'yı aç.")
+                .accessibilityLabel(String(format: NSLocalizedString("profile.a11y.monthlySummary", comment: ""), month.name, month.mood.label))
             }
         }
     }
@@ -691,7 +763,17 @@ struct V3ProfileView: View {
     }
 
     /// İçinde bulunulan ay; hiç kayıt yoksa `nil` (kart çizilmez).
-    private var currentMonth: MonthPreview? {
+    ///
+    /// `distribution` gibi cache'li — ve aynı sebeple. Computed property
+    /// olduğu sürece her `body` değerlendirmesinde tüm arşivi filtreleyip
+    /// grupluyor ve her an için `V3Mood.closest(toHex:)` (dokuz renge RGB
+    /// mesafesi) koşuyordu. `topBarProgress` scroll ile her karede değişen bir
+    /// `@State`, yani `body` kaydırma boyunca sürekli yeniden değerlendiriliyor:
+    /// tam taramanın kare başına tekrarı demekti. Kaynak veri yalnız
+    /// `apply(_:)` içinde değişiyor, orada bir kez hesaplanıyor.
+    @State private var currentMonth: MonthPreview? = nil
+
+    private static func computeCurrentMonth(_ moments: [ProfileStatSlice]) -> MonthPreview? {
         let cal = Calendar.current
         let now = Date()
         let monthMoments = moments.filter {
@@ -759,8 +841,8 @@ struct V3ProfileView: View {
                         .bodyLGMedium()
                         .foregroundColor(V3Tokens.ink)
                     HStack(spacing: 6) {
-                        themePill("Açık", isOn: !isDarkMode) { isDarkMode = false }
-                        themePill("Koyu", isOn: isDarkMode) { isDarkMode = true }
+                        themePill(NSLocalizedString("profile.theme.light", comment: ""), isOn: !isDarkMode) { isDarkMode = false }
+                        themePill(NSLocalizedString("profile.theme.dark", comment: ""), isOn: isDarkMode) { isDarkMode = true }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -795,7 +877,7 @@ struct V3ProfileView: View {
 
                 SettingsRow(
                     title: NSLocalizedString("settings.deleteAccount", comment: ""),
-                    titleColor: ONEBrand.kor,
+                    titleColor: V3Tokens.korText,
                     isLast: true
                 ) { showDeleteAccountAlert = true }
             }
@@ -858,11 +940,11 @@ struct V3ProfileView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(label)
-                .font(V3Typography.mono(10, weight: .regular))
+                .monoLabel(weight: .regular)
                 .tracking(1.5)
                 .foregroundColor(V3Tokens.ghostText)
             VStack(spacing: 0) { content() }
-                .background(panelBackground)
+                .oneCardBackground(radius: V3Tokens.radiusPanel)
         }
     }
 
@@ -871,7 +953,7 @@ struct V3ProfileView: View {
         // onu "Apple Music" gösteriyordu — satır yalan söylüyordu.
         switch UserDefaults.standard.string(forKey: "preferredMusicService") {
         case "Spotify":    return "Spotify"
-        case "SearchOnly": return "Yalnızca arama"
+        case "SearchOnly": return NSLocalizedString("profile.music.searchOnly", comment: "")
         default:           return "Apple Music"
         }
     }
@@ -905,7 +987,7 @@ struct V3ProfileView: View {
     /// Prototip: "Sürüm 3.0 · N an".
     private var versionFooter: some View {
         Text(String(format: NSLocalizedString("profile.versionLine", comment: ""), appVersion, countedMomentCount))
-            .font(V3Typography.mono(10, weight: .regular))
+            .monoLabel(weight: .regular)
             .tracking(1.4)
             .textCase(.uppercase)
             .foregroundColor(V3Tokens.ghostText)
@@ -943,9 +1025,9 @@ struct V3ProfileView: View {
                         PhotosPicker(selection: $photoPickerItem, matching: .images) {
                             HStack(spacing: V3Tokens.spacingMD) {
                                 Image(systemName: vm.profileImage == nil ? "photo.badge.plus" : "arrow.triangle.2.circlepath")
-                                    .font(.system(size: 16, weight: .medium))
+                                    .iconMD(weight: .medium)
                                     .foregroundColor(V3Tokens.ink)
-                                Text(vm.profileImage == nil ? "Fotoğraf seç" : "Fotoğrafı değiştir")
+                                Text(vm.profileImage == nil ? NSLocalizedString("profile.photo.pick", comment: "") : NSLocalizedString("entry.photo.change", comment: ""))
                                     .bodyLGMedium()
                                     .foregroundColor(V3Tokens.ink)
                                 Spacer()
@@ -955,14 +1037,7 @@ struct V3ProfileView: View {
                             }
                             .padding(.horizontal, 18)
                             .padding(.vertical, V3Tokens.spacingLG)
-                            .background(
-                                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                    .fill(V3Tokens.surface)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                            .strokeBorder(V3Tokens.hairline, lineWidth: 1)
-                                    )
-                            )
+                            .oneCardBackground(radius: V3Tokens.radiusPanel)
                         }
                         .buttonStyle(.onePressable)
 

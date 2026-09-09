@@ -9,7 +9,7 @@ struct V3ColorStepView: View {
     ///  • "Bugün nasılsın?" (varsayılan, gün boş)
     ///  • "Bir an daha?" (bugünün ek anı)
     ///  • "12 Temmuz nasıldı?" (geçmiş gün doldururken)
-    var title: String = "Bugün\nnasılsın?"
+    var title: String = NSLocalizedString("entry.title.today", comment: "")
     /// Selam üst satırı (iki tonlu greeting). Nil ise gösterilmez.
     var greeting: String? = nil
     /// "Geçmiş gün" kapsülü — sadece past-day akışında gösterilir.
@@ -46,7 +46,7 @@ struct V3ColorStepView: View {
         VStack(alignment: .leading, spacing: 0) {
             if pastDayChip {
                 Text(NSLocalizedString("entry.pastDay", comment: ""))
-                    .font(V3Typography.mono(11, weight: .regular))
+                    .monoSM(weight: .regular)
                     .tracking(1.4)
                     .textCase(.uppercase)
                     .foregroundColor(V3Tokens.mutedText)
@@ -138,7 +138,7 @@ struct V3ColorStepView: View {
     ///  • Seçildiğinde → `mood.color` zemin, `mood.ink` metin.
     private var footer: some View {
         Button(action: { if selectedMood != nil { onContinue() } }) {
-            Text(selectedMood == nil ? "Bir renk seç" : "Devam")
+            Text(selectedMood == nil ? NSLocalizedString("entry.cta.pickColor", comment: "") : NSLocalizedString("entry.cta.continue", comment: ""))
                 .displayXS()
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
@@ -158,7 +158,7 @@ struct V3ColorStepView: View {
         }
         .buttonStyle(.onePressable)
         .disabled(selectedMood == nil)
-        .accessibilityLabel(selectedMood.map { "Devam, \($0.label) seçildi" } ?? "Bir renk seç")
+        .accessibilityLabel(selectedMood.map { String(format: NSLocalizedString("entry.a11y.continueWith", comment: ""), $0.label) } ?? NSLocalizedString("entry.cta.pickColor", comment: ""))
         .animation(reduceMotion ? nil : ONEAnimation.easingColor, value: selectedMood)
         .padding(.top, 14)
         .background(V3Tokens.paper)
@@ -234,7 +234,7 @@ private struct MoodTile: View {
         .buttonStyle(.onePressable)
         .accessibilityLabel(mood.label)
         .accessibilityValue(mood.meaning)
-        .accessibilityHint("Bugünün rengi olarak seç")
+        .accessibilityHint(NSLocalizedString("entry.a11y.pickHint", comment: ""))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

@@ -25,7 +25,7 @@ struct AppLockView: View {
                     .foregroundColor(ONEBrand.kor)
 
                 Text("Kilitli")
-                    .font(V3Typography.mono(11, weight: .regular))
+                    .monoSM(weight: .regular)
                     .tracking(1.6)
                     .textCase(.uppercase)
                     .foregroundColor(V3Tokens.ghostText)
@@ -56,14 +56,14 @@ struct AppLockView: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("ONE kilitli")
+        .accessibilityLabel(NSLocalizedString("applock.a11y.locked", comment: ""))
     }
 
     private var unlockTitle: String {
         if let biometry = AppLockManager.biometryLabel() {
-            return "\(biometry) ile aç"
+            return String(format: NSLocalizedString("applock.unlockWith", comment: ""), biometry)
         }
-        return "Kilidi aç"
+        return NSLocalizedString("applock.unlock", comment: "")
     }
 }
 

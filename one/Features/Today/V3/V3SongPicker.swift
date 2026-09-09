@@ -65,7 +65,7 @@ struct V3SongPicker: View {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 12, weight: .semibold))
+                            .iconSM(weight: .semibold)
                         Text("Yenile")
                             .bodyXSSemibold()
                     }
@@ -159,7 +159,7 @@ struct V3SongPicker: View {
     private func sectionBlock(_ section: SongRecommendationEngine.Section) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(section.title)
-                .font(V3Typography.mono(11, weight: .regular))
+                .monoSM(weight: .regular)
                 .tracking(1.6)
                 .foregroundColor(V3Tokens.faintText)
 
@@ -226,7 +226,7 @@ struct V3SongPicker: View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(V3Tokens.faintText)
-            TextField("Şarkı, sanatçı…", text: $query)
+            TextField(NSLocalizedString("song.searchPlaceholder", comment: ""), text: $query)
                 .bodyMD()
                 .foregroundColor(V3Tokens.ink)
                 .autocorrectionDisabled(true)
@@ -247,13 +247,6 @@ struct V3SongPicker: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, V3Tokens.spacingMD)
-        .background(
-            RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
-                .fill(V3Tokens.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
-                        .stroke(V3Tokens.hairline, lineWidth: 1)
-                )
-        )
+        .oneCardBackground(radius: V3Tokens.radiusInner)
     }
 }
