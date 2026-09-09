@@ -19,36 +19,35 @@ struct WhatsNewView: View {
     /// "Gelişmiş Kamera" (foto artık ritüelin adımı değil), "Kayıt
     /// Kutlaması" (beş varyant tek imzayla değiştirildi). Yeniliklerde
     /// olmayan bir özelliği vaat etmek en pahalı hata türü.
+    ///
+    /// v4 duruşu iki kart daha düşürdü:
+    ///  • "Kilometre taşları" — kilitli–açık ödül dili (ilke 2) ve
+    ///    profilde öyle bir ekran hiç yoktu.
+    ///  • "Haftalık ritim" — "hedef" bir ölçüm (ilke 2), "kaçırdığın günü
+    ///    doldur" boşluğu borç gibi sunuyordu (ilke 3) ve kod geriye dönük
+    ///    girişe zaten izin vermiyor: `V3DayDetailView` CTA'yı yalnız
+    ///    `isToday` iken çiziyor.
+    /// Yerlerine yeni kart konmadı; söylenecek bir şey yoktu.
     private let features: [WhatsNewFeature] = [
         .init(
             icon: "dot.radiowaves.left.and.right",
-            title: "Çevre artık açılışta",
-            body: "Uygulamayı açtığında önce arkadaşlarının\nbugünkü rengini görüyorsun."
+            title: NSLocalizedString("whatsNew.circleFirst.title", comment: ""),
+            body: NSLocalizedString("whatsNew.circleFirst.body", comment: "")
         ),
         .init(
             icon: "circle.hexagongrid.fill",
-            title: "İki adımda bitiyor",
-            body: "Renk seç, şarkı seç, bırak.\nFotoğraf ve not artık isteğe bağlı."
-        ),
-        .init(
-            icon: "chart.dots.scatter",
-            title: "Haftalık ritim",
-            body: "Hedef her gün değil, haftada dört gün.\nKaçırdığın günü sonradan doldurabilirsin."
+            title: NSLocalizedString("whatsNew.twoSteps.title", comment: ""),
+            body: NSLocalizedString("whatsNew.twoSteps.body", comment: "")
         ),
         .init(
             icon: "waveform.circle.fill",
-            title: "Yeni kayıt anı",
-            body: "Rengini bıraktığında ekran\nbir dalgayla karşılık veriyor."
+            title: NSLocalizedString("whatsNew.savedMoment.title", comment: ""),
+            body: NSLocalizedString("whatsNew.savedMoment.body", comment: "")
         ),
         .init(
             icon: "square.grid.3x3.fill",
-            title: "Arşiv mozaiği",
-            body: "Aylar tek akışta, renk renk.\nGeçen yıl bugün ne hissettiğini de görüyorsun."
-        ),
-        .init(
-            icon: "flag.fill",
-            title: "Kilometre taşları",
-            body: "Neyi açtığını ve sırada ne olduğunu\nprofilinden görebilirsin."
+            title: NSLocalizedString("whatsNew.mosaic.title", comment: ""),
+            body: NSLocalizedString("whatsNew.mosaic.body", comment: "")
         ),
     ]
 
@@ -85,7 +84,7 @@ struct WhatsNewView: View {
 
             // CTA button
             Button(action: advance) {
-                Text(isLastPage ? "Harika!" : "İlerle")
+                Text(isLastPage ? NSLocalizedString("whatsNew.cta.done", comment: "") : NSLocalizedString("whatsNew.cta.next", comment: ""))
                     .monoBase()
                     .foregroundStyle(isLastPage ? ONEBrand.bone : .white)
                     .frame(maxWidth: .infinity)
@@ -100,6 +99,7 @@ struct WhatsNewView: View {
                     )
                     .animation(.easeInOut(duration: 0.2), value: isLastPage)
             }
+            .buttonStyle(.onePressable)
             .padding(.horizontal, V3Tokens.spacingXL3)
             .padding(.bottom, V3Tokens.spacingXL5)
             .opacity(contentVisible ? 1 : 0)
