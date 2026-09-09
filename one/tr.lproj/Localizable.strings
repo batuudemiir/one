@@ -7,7 +7,7 @@
 "archive.a11y.cellMany" = "%1$d, %2$d an: %3$@";
 "archive.a11y.cellOne" = "%1$d, %2$@";
 "archive.a11y.meta" = "%1$d gün, %2$d an";
-"archive.a11y.metaTop" = ", en çok %@";
+"archive.a11y.metaTop" = ", sık geçen %@";
 "archive.addMoment" = "An ekle";
 "archive.seg.month" = "Ay";
 "archive.seg.year" = "Yıl";
@@ -48,7 +48,7 @@
 "common.music" = "Müzik";
 "common.openSettings" = "Ayarları aç";
 "common.retry" = "Tekrar dene";
-"echo.factualLine" = "%1$d an · en sık %2$@";
+"echo.factualLine" = "%1$d an · sık geçen %2$@";
 "echo.noMomentsThisMonth" = "Bu ay henüz an bırakmadın.";
 "echo.playCount" = "%d kez";
 "echo.section.last30" = "Son 30 gün";
@@ -99,6 +99,7 @@
 "entry.title.another" = "Bir an\ndaha?";
 "entry.title.today" = "Bugün\nnasılsın?";
 "export.failed" = "Arşiv dışa aktarılamadı.";
+"friendProfile.recurringColor" = "tekrar eden renk";
 "greeting.day" = "İyi günler";
 "greeting.evening" = "İyi akşamlar";
 "greeting.morning" = "Günaydın";
@@ -1582,9 +1583,6 @@ bir gün.";
 "addFriend.allowContacts" = "kişilere izin ver";
 
 "friendProfile.theirRhythm" = "ritmi";
-"friendProfile.commonFrequency" = "ortak frekans";
-"friendProfile.mostlyPrefix" = "en çok ";
-"friendProfile.mostlySuffix" = ", öyle geçiyor günleri.";
 "friendProfile.commonSongs" = "ortak şarkılar";
 "friendProfile.today" = "bugün";
 "friendProfile.streak" = "seri";
@@ -1603,8 +1601,8 @@ bir gün.";
 "poster.notes" = "notlar";
 "poster.days" = "gün";
 "poster.colours" = "renk";
-"poster.mostly" = "en çok: %@";
-"poster.mostPlayed" = "en çok dinlenen: %@";
+"poster.mostly" = "sık geçen: %@";
+"poster.mostPlayed" = "tekrar eden: %@";
 "poster.notesHint" = "notlar eklendi";
 "poster.saveImage" = "görsele kaydet";
 
@@ -1620,7 +1618,6 @@ bir gün.";
 "addFriend.suggested" = "ONE'da tanıdıkların";
 "addFriend.suggestedHint" = "ortak arkadaşlarına göre sıralı. rastgele insan önerilmez.";
 
-"circle.gateProgress" = "%d kişi daha, sonra frekansın açılıyor.";
 
 
 /* Hızlı ekle — prototip parity */
@@ -1773,7 +1770,7 @@ bir gün.";
 "archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
 "archive.empty.title" = "Arşiv boş.";
 "archive.momentsOnDay" = "%d an bu güne kaydedildi.";
-"archive.mostFrequent" = "en çok %@";
+"archive.mostFrequent" = "sık geçen %@";
 "archive.todayWaiting" = "Bugün arşivde boş.";
 "block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
 "camera.noAccess" = "Kamera erişimi yok";

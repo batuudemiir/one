@@ -7,7 +7,7 @@
 "archive.a11y.cellMany" = "%1$d，%2$d 个瞬间：%3$@";
 "archive.a11y.cellOne" = "%1$d，%2$@";
 "archive.a11y.meta" = "%1$d 天，%2$d 个瞬间";
-"archive.a11y.metaTop" = "，最多的是 %@";
+"archive.a11y.metaTop" = "，反复出现 %@";
 "archive.addMoment" = "添加瞬间";
 "archive.seg.month" = "月";
 "archive.seg.year" = "年";
@@ -48,7 +48,7 @@
 "common.music" = "音乐";
 "common.openSettings" = "打开设置";
 "common.retry" = "重试";
-"echo.factualLine" = "%1$d 个瞬间 · 最多的是 %2$@";
+"echo.factualLine" = "%1$d 个瞬间 · %2$@ 反复出现";
 "echo.noMomentsThisMonth" = "这个月还没有瞬间。";
 "echo.playCount" = "%d 次";
 "echo.section.last30" = "最近 30 天";
@@ -99,6 +99,7 @@
 "entry.title.another" = "再来\n一个瞬间？";
 "entry.title.today" = "今天\n感觉如何？";
 "export.failed" = "无法导出档案。";
+"friendProfile.recurringColor" = "反复出现的颜色";
 "greeting.day" = "你好";
 "greeting.evening" = "晚上好";
 "greeting.morning" = "早上好";
@@ -1437,9 +1438,6 @@ one day.";
 "addFriend.allowContacts" = "allow contacts";
 
 "friendProfile.theirRhythm" = "their rhythm";
-"friendProfile.commonFrequency" = "common frequency";
-"friendProfile.mostlyPrefix" = "mostly ";
-"friendProfile.mostlySuffix" = " — that's how their days go.";
 "friendProfile.commonSongs" = "shared songs";
 "friendProfile.today" = "today";
 "friendProfile.streak" = "streak";
@@ -1458,8 +1456,8 @@ one day.";
 "poster.notes" = "notes";
 "poster.days" = "days";
 "poster.colours" = "colours";
-"poster.mostly" = "mostly: %@";
-"poster.mostPlayed" = "most played: %@";
+"poster.mostly" = "反复出现：%@";
+"poster.mostPlayed" = "重复曲目：%@";
 "poster.notesHint" = "notes included";
 "poster.saveImage" = "save to photos";
 
@@ -1475,7 +1473,6 @@ one day.";
 "addFriend.suggested" = "people you may know";
 "addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
 
-"circle.gateProgress" = "%d more, then your frequency opens.";
 
 
 /* Hızlı ekle — prototip parity */
@@ -1625,7 +1622,7 @@ one day.";
 "archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
 "archive.empty.title" = "Arşiv boş.";
 "archive.momentsOnDay" = "%d an bu güne kaydedildi.";
-"archive.mostFrequent" = "en çok %@";
+"archive.mostFrequent" = "%@ 反复出现";
 "archive.todayWaiting" = "今天在档案里还是空的。";
 "block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
 "camera.noAccess" = "Kamera erişimi yok";

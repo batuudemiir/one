@@ -7,7 +7,7 @@
 "archive.a11y.cellMany" = "%1$d, %2$d moments: %3$@";
 "archive.a11y.cellOne" = "%1$d, %2$@";
 "archive.a11y.meta" = "%1$d days, %2$d moments";
-"archive.a11y.metaTop" = ", mostly %@";
+"archive.a11y.metaTop" = ", recurring %@";
 "archive.addMoment" = "Add a moment";
 "archive.seg.month" = "Month";
 "archive.seg.year" = "Year";
@@ -48,7 +48,7 @@
 "common.music" = "Music";
 "common.openSettings" = "Open Settings";
 "common.retry" = "Try again";
-"echo.factualLine" = "%1$d moments · mostly %2$@";
+"echo.factualLine" = "%1$d moments · %2$@ recurs";
 "echo.noMomentsThisMonth" = "No moments this month yet.";
 "echo.playCount" = "%d times";
 "echo.section.last30" = "Last 30 days";
@@ -99,6 +99,7 @@
 "entry.title.another" = "One more\nmoment?";
 "entry.title.today" = "How are you\ntoday?";
 "export.failed" = "Couldn’t export the archive.";
+"friendProfile.recurringColor" = "recurring color";
 "greeting.day" = "Good day";
 "greeting.evening" = "Good evening";
 "greeting.morning" = "Good morning";
@@ -1565,9 +1566,6 @@ one day.";
 "addFriend.allowContacts" = "allow contacts";
 
 "friendProfile.theirRhythm" = "their rhythm";
-"friendProfile.commonFrequency" = "common frequency";
-"friendProfile.mostlyPrefix" = "mostly ";
-"friendProfile.mostlySuffix" = " — that's how their days go.";
 "friendProfile.commonSongs" = "shared songs";
 "friendProfile.today" = "today";
 "friendProfile.streak" = "streak";
@@ -1586,8 +1584,8 @@ one day.";
 "poster.notes" = "notes";
 "poster.days" = "days";
 "poster.colours" = "colours";
-"poster.mostly" = "mostly: %@";
-"poster.mostPlayed" = "most played: %@";
+"poster.mostly" = "recurring: %@";
+"poster.mostPlayed" = "repeated: %@";
 "poster.notesHint" = "notes included";
 "poster.saveImage" = "save to photos";
 
@@ -1603,7 +1601,6 @@ one day.";
 "addFriend.suggested" = "people you may know";
 "addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
 
-"circle.gateProgress" = "%d more, then your frequency opens.";
 
 
 /* Hızlı ekle — prototip parity */
@@ -1756,7 +1753,7 @@ one day.";
 "archive.empty.body" = "Pick your first colour — the mosaic starts here.";
 "archive.empty.title" = "Your archive is empty.";
 "archive.momentsOnDay" = "%d moments saved on this day.";
-"archive.mostFrequent" = "mostly %@";
+"archive.mostFrequent" = "%@ recurs";
 "archive.todayWaiting" = "Today is empty in the archive.";
 "block.confirmBody" = "Their replies and shares will no longer be visible.";
 "camera.noAccess" = "No camera access";

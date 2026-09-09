@@ -18,11 +18,9 @@ import SwiftUI
 /// üründe bir tercih değil, kalmanın ön koşulu.
 struct CircleEmptyState: View {
     @Binding var showAddFriend: Bool
-    /// Çevre'nin açılması için gereken arkadaş sayısı ve mevcut sayı.
-    /// Çevre tek kişiyle çalışmıyor — karşılaştırma ancak birkaç kişiyle
-    /// oluşuyor. İlerleme göstermek, kapıyı ceza olmaktan çıkarıyor.
-    var friendCount: Int = 0
-    var requiredFriends: Int = 3
+    // Kapı mekaniği kaldırıldı (duruş ilke 2): "N kişi daha, sonra frekansın
+    // açılıyor" bir ilerleme çubuğu + kilitli-açık ödüldü, üstelik reddedilmiş
+    // "Frekans" adını taşıyordu. Çevre kaç arkadaşın varsa onu gösterir.
     /// "Şimdilik tek başıma başla" — ritüele götürür. nil ise buton gizlenir.
     var onStartAlone: (() -> Void)? = nil
 
@@ -64,12 +62,6 @@ struct CircleEmptyState: View {
                 }
                 .fixedSize(horizontal: false, vertical: true)
 
-                if requiredFriends > 0 {
-                    progressRow
-                        .padding(.horizontal, V3Tokens.channel)
-                        .padding(.bottom, V3Tokens.spacingSM)
-                }
-
                 VStack(spacing: V3Tokens.spacingSM) {
                     // Prototip: düz marka rengi, 26pt yarıçap, 44pt min yükseklik.
                     // Gradyan yoktu — tek düz renk daha net bir çağrı.
@@ -82,6 +74,7 @@ struct CircleEmptyState: View {
                                 Capsule(style: .continuous).fill(ONEBrand.kor)
                             )
                     }
+                    .buttonStyle(.onePressable)
                     .accessibilityLabel(NSLocalizedString("accessibility.circle.setupCircle", comment: ""))
 
                     if let onStartAlone {
@@ -116,31 +109,6 @@ struct CircleEmptyState: View {
             .padding(.bottom, 116)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    /// Kaç kişi kaldı. Sayı değil, üç nokta — "2 kişi daha" demek yerine
-    /// ne kadar yaklaştığını göstermek daha az ödev gibi duruyor.
-    private var progressRow: some View {
-        VStack(spacing: 7) {
-            HStack(spacing: 7) {
-                ForEach(0..<requiredFriends, id: \.self) { index in
-                    Circle()
-                        .fill(index < friendCount
-                              ? ONEBrand.kor
-                              : V3Tokens.ink.opacity(0.12))
-                        .frame(width: 9, height: 9)
-                }
-            }
-
-            Text(String(
-                format: NSLocalizedString("circle.gateProgress", comment: ""),
-                max(requiredFriends - friendCount, 0)
-            ))
-            .bodyXS()
-            .foregroundColor(V3Tokens.mutedText)
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
     }
 
     /// Gerçek arkadaş kartlarının silüeti — içerik uydurmadan biçimi gösterir.
@@ -223,6 +191,7 @@ struct CircleCloudKitUnavailableState: View {
                                 .stroke(V3Tokens.mutedText, lineWidth: 1)
                         )
                 }
+                .buttonStyle(.onePressable)
 
                 Button(action: onOpenSettings) {
                     Text(NSLocalizedString("circle.goToSettings", comment: ""))
@@ -235,6 +204,7 @@ struct CircleCloudKitUnavailableState: View {
                                 .fill(V3Tokens.ink)
                         )
                 }
+                .buttonStyle(.onePressable)
             }
             .padding(.horizontal, V3Tokens.spacingXL)
             .padding(.bottom, V3Tokens.spacingXL5)

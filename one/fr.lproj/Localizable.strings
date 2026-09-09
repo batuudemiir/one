@@ -7,7 +7,7 @@
 "archive.a11y.cellMany" = "%1$d, %2$d instants : %3$@";
 "archive.a11y.cellOne" = "%1$d, %2$@";
 "archive.a11y.meta" = "%1$d jours, %2$d instants";
-"archive.a11y.metaTop" = ", surtout %@";
+"archive.a11y.metaTop" = ", récurrent %@";
 "archive.addMoment" = "Ajouter un instant";
 "archive.seg.month" = "Mois";
 "archive.seg.year" = "Année";
@@ -48,7 +48,7 @@
 "common.music" = "Musique";
 "common.openSettings" = "Ouvrir Réglages";
 "common.retry" = "Réessayer";
-"echo.factualLine" = "%1$d instants · surtout %2$@";
+"echo.factualLine" = "%1$d instants · %2$@ revient";
 "echo.noMomentsThisMonth" = "Aucun instant ce mois-ci pour l’instant.";
 "echo.playCount" = "%d fois";
 "echo.section.last30" = "30 derniers jours";
@@ -99,6 +99,7 @@
 "entry.title.another" = "Encore un\ninstant ?";
 "entry.title.today" = "Comment vas-tu\naujourd’hui ?";
 "export.failed" = "Impossible d’exporter l’archive.";
+"friendProfile.recurringColor" = "couleur récurrente";
 "greeting.day" = "Bonne journée";
 "greeting.evening" = "Bonsoir";
 "greeting.morning" = "Bonjour";
@@ -1439,9 +1440,6 @@ one day.";
 "addFriend.allowContacts" = "allow contacts";
 
 "friendProfile.theirRhythm" = "their rhythm";
-"friendProfile.commonFrequency" = "common frequency";
-"friendProfile.mostlyPrefix" = "mostly ";
-"friendProfile.mostlySuffix" = " — that's how their days go.";
 "friendProfile.commonSongs" = "shared songs";
 "friendProfile.today" = "today";
 "friendProfile.streak" = "streak";
@@ -1460,8 +1458,8 @@ one day.";
 "poster.notes" = "notes";
 "poster.days" = "days";
 "poster.colours" = "colours";
-"poster.mostly" = "mostly: %@";
-"poster.mostPlayed" = "most played: %@";
+"poster.mostly" = "récurrent : %@";
+"poster.mostPlayed" = "répétée : %@";
 "poster.notesHint" = "notes included";
 "poster.saveImage" = "save to photos";
 
@@ -1477,7 +1475,6 @@ one day.";
 "addFriend.suggested" = "people you may know";
 "addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
 
-"circle.gateProgress" = "%d more, then your frequency opens.";
 
 
 /* Hızlı ekle — prototip parity */
@@ -1627,7 +1624,7 @@ one day.";
 "archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
 "archive.empty.title" = "Arşiv boş.";
 "archive.momentsOnDay" = "%d an bu güne kaydedildi.";
-"archive.mostFrequent" = "en çok %@";
+"archive.mostFrequent" = "%@ revient";
 "archive.todayWaiting" = "Aujourd’hui est vide dans l’archive.";
 "block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
 "camera.noAccess" = "Kamera erişimi yok";

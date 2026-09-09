@@ -7,7 +7,7 @@
 "archive.a11y.cellMany" = "%1$d、%2$d件の瞬間: %3$@";
 "archive.a11y.cellOne" = "%1$d、%2$@";
 "archive.a11y.meta" = "%1$d日、%2$d件の瞬間";
-"archive.a11y.metaTop" = "、最も多いのは%@";
+"archive.a11y.metaTop" = "、くり返す%@";
 "archive.addMoment" = "瞬間を追加";
 "archive.seg.month" = "月";
 "archive.seg.year" = "年";
@@ -48,7 +48,7 @@
 "common.music" = "音楽";
 "common.openSettings" = "設定を開く";
 "common.retry" = "もう一度";
-"echo.factualLine" = "%1$d件の瞬間 · 最も多いのは%2$@";
+"echo.factualLine" = "%1$d件の瞬間 · %2$@ がくり返し";
 "echo.noMomentsThisMonth" = "今月はまだ瞬間がありません。";
 "echo.playCount" = "%d回";
 "echo.section.last30" = "過去30日";
@@ -99,6 +99,7 @@
 "entry.title.another" = "もう一つ\n瞬間を？";
 "entry.title.today" = "今日は\nどんな気分？";
 "export.failed" = "アーカイブを書き出せませんでした。";
+"friendProfile.recurringColor" = "くり返す色";
 "greeting.day" = "こんにちは";
 "greeting.evening" = "こんばんは";
 "greeting.morning" = "おはよう";
@@ -1439,9 +1440,6 @@ one day.";
 "addFriend.allowContacts" = "allow contacts";
 
 "friendProfile.theirRhythm" = "their rhythm";
-"friendProfile.commonFrequency" = "common frequency";
-"friendProfile.mostlyPrefix" = "mostly ";
-"friendProfile.mostlySuffix" = " — that's how their days go.";
 "friendProfile.commonSongs" = "shared songs";
 "friendProfile.today" = "today";
 "friendProfile.streak" = "streak";
@@ -1460,8 +1458,8 @@ one day.";
 "poster.notes" = "notes";
 "poster.days" = "days";
 "poster.colours" = "colours";
-"poster.mostly" = "mostly: %@";
-"poster.mostPlayed" = "most played: %@";
+"poster.mostly" = "くり返し: %@";
+"poster.mostPlayed" = "くり返した曲: %@";
 "poster.notesHint" = "notes included";
 "poster.saveImage" = "save to photos";
 
@@ -1477,7 +1475,6 @@ one day.";
 "addFriend.suggested" = "people you may know";
 "addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
 
-"circle.gateProgress" = "%d more, then your frequency opens.";
 
 
 /* Hızlı ekle — prototip parity */
@@ -1627,7 +1624,7 @@ one day.";
 "archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
 "archive.empty.title" = "Arşiv boş.";
 "archive.momentsOnDay" = "%d an bu güne kaydedildi.";
-"archive.mostFrequent" = "en çok %@";
+"archive.mostFrequent" = "%@ がくり返し";
 "archive.todayWaiting" = "今日はアーカイブで空のままです。";
 "block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
 "camera.noAccess" = "Kamera erişimi yok";

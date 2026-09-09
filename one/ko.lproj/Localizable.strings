@@ -7,7 +7,7 @@
 "archive.a11y.cellMany" = "%1$d, %2$d개의 순간: %3$@";
 "archive.a11y.cellOne" = "%1$d, %2$@";
 "archive.a11y.meta" = "%1$d일, %2$d개의 순간";
-"archive.a11y.metaTop" = ", 가장 많은 색 %@";
+"archive.a11y.metaTop" = ", 반복되는 %@";
 "archive.addMoment" = "순간 추가";
 "archive.seg.month" = "월";
 "archive.seg.year" = "연";
@@ -48,7 +48,7 @@
 "common.music" = "음악";
 "common.openSettings" = "설정 열기";
 "common.retry" = "다시 시도";
-"echo.factualLine" = "%1$d개의 순간 · 가장 많은 색 %2$@";
+"echo.factualLine" = "%1$d개의 순간 · %2$@ 반복";
 "echo.noMomentsThisMonth" = "이번 달에는 아직 순간이 없습니다.";
 "echo.playCount" = "%d번";
 "echo.section.last30" = "최근 30일";
@@ -99,6 +99,7 @@
 "entry.title.another" = "한 순간\n더?";
 "entry.title.today" = "오늘\n어떤가요?";
 "export.failed" = "보관함을 내보내지 못했습니다.";
+"friendProfile.recurringColor" = "반복되는 색";
 "greeting.day" = "좋은 하루";
 "greeting.evening" = "좋은 저녁";
 "greeting.morning" = "좋은 아침";
@@ -1440,9 +1441,6 @@ one day.";
 "addFriend.allowContacts" = "allow contacts";
 
 "friendProfile.theirRhythm" = "their rhythm";
-"friendProfile.commonFrequency" = "common frequency";
-"friendProfile.mostlyPrefix" = "mostly ";
-"friendProfile.mostlySuffix" = " — that's how their days go.";
 "friendProfile.commonSongs" = "shared songs";
 "friendProfile.today" = "today";
 "friendProfile.streak" = "streak";
@@ -1461,8 +1459,8 @@ one day.";
 "poster.notes" = "notes";
 "poster.days" = "days";
 "poster.colours" = "colours";
-"poster.mostly" = "mostly: %@";
-"poster.mostPlayed" = "most played: %@";
+"poster.mostly" = "반복: %@";
+"poster.mostPlayed" = "반복된 곡: %@";
 "poster.notesHint" = "notes included";
 "poster.saveImage" = "save to photos";
 
@@ -1478,7 +1476,6 @@ one day.";
 "addFriend.suggested" = "people you may know";
 "addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
 
-"circle.gateProgress" = "%d more, then your frequency opens.";
 
 
 /* Hızlı ekle — prototip parity */
@@ -1628,7 +1625,7 @@ one day.";
 "archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
 "archive.empty.title" = "Arşiv boş.";
 "archive.momentsOnDay" = "%d an bu güne kaydedildi.";
-"archive.mostFrequent" = "en çok %@";
+"archive.mostFrequent" = "%@ 반복";
 "archive.todayWaiting" = "오늘은 아카이브에 비어 있습니다.";
 "block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
 "camera.noAccess" = "Kamera erişimi yok";

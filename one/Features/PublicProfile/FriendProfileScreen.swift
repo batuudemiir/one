@@ -73,18 +73,14 @@ struct FriendProfileScreen: View {
                     }
 
                     if let mood = profile.dominantMoodWord, !mood.isEmpty {
-                        InsightCard(label: NSLocalizedString("friendProfile.commonFrequency", comment: "")) {
-                            (
-                                Text(NSLocalizedString("friendProfile.mostlyPrefix", comment: ""))
-                                    .foregroundColor(V3Tokens.ink)
-                                + Text(mood)
-                                    .foregroundColor(Color(hex: profile.dominantMoodColor ?? "#5B8DEF"))
-                                    .fontWeight(.semibold)
-                                + Text(NSLocalizedString("friendProfile.mostlySuffix", comment: ""))
-                                    .foregroundColor(V3Tokens.ink)
-                            )
-                            .bodySM()
-                            .fixedSize(horizontal: false, vertical: true)
+                        // Kart yalnız rengi söyler. Eskiden "en çok X, öyle
+                        // geçiyor günleri." yazıyordu: hem sıralama dili hem
+                        // de başkasının günleri hakkında bir yorum (ilke 1).
+                        InsightCard(label: NSLocalizedString("friendProfile.recurringColor", comment: "")) {
+                            Text(mood)
+                                .foregroundColor(Color(hex: profile.dominantMoodColor ?? "#5B8DEF"))
+                                .bodySMSemibold()
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(.top, V3Tokens.spacingMD)
                     }
@@ -109,7 +105,7 @@ struct FriendProfileScreen: View {
                         } label: {
                             Text(NSLocalizedString("friendProfile.remove", comment: ""))
                                 .bodySMMedium()
-                                .foregroundColor(ONEBrand.kor)
+                                .foregroundColor(V3Tokens.korText)
                                 .frame(maxWidth: .infinity, minHeight: 44)
                         }
                         .contentShape(Rectangle())
@@ -287,7 +283,7 @@ struct FriendProfileScreen: View {
                 .frame(width: 40, height: 40)
                 .overlay(
                     Image(systemName: "music.note")
-                        .font(.system(size: 14))
+                        .iconMD()
                         .foregroundColor(.white.opacity(0.92))
                 )
 

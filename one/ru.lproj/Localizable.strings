@@ -7,7 +7,7 @@
 "archive.a11y.cellMany" = "%1$d, %2$d моментов: %3$@";
 "archive.a11y.cellOne" = "%1$d, %2$@";
 "archive.a11y.meta" = "%1$d дней, %2$d моментов";
-"archive.a11y.metaTop" = ", чаще всего %@";
+"archive.a11y.metaTop" = ", повторяется %@";
 "archive.addMoment" = "Добавить момент";
 "archive.seg.month" = "Месяц";
 "archive.seg.year" = "Год";
@@ -48,7 +48,7 @@
 "common.music" = "Музыка";
 "common.openSettings" = "Открыть настройки";
 "common.retry" = "Повторить";
-"echo.factualLine" = "%1$d моментов · чаще всего %2$@";
+"echo.factualLine" = "%1$d моментов · %2$@ повторяется";
 "echo.noMomentsThisMonth" = "В этом месяце пока нет моментов.";
 "echo.playCount" = "%d раз";
 "echo.section.last30" = "Последние 30 дней";
@@ -99,6 +99,7 @@
 "entry.title.another" = "Ещё один\nмомент?";
 "entry.title.today" = "Как ты\nсегодня?";
 "export.failed" = "Не удалось экспортировать архив.";
+"friendProfile.recurringColor" = "повторяющийся цвет";
 "greeting.day" = "Добрый день";
 "greeting.evening" = "Добрый вечер";
 "greeting.morning" = "Доброе утро";
@@ -1440,9 +1441,6 @@ one day.";
 "addFriend.allowContacts" = "allow contacts";
 
 "friendProfile.theirRhythm" = "their rhythm";
-"friendProfile.commonFrequency" = "common frequency";
-"friendProfile.mostlyPrefix" = "mostly ";
-"friendProfile.mostlySuffix" = " — that's how their days go.";
 "friendProfile.commonSongs" = "shared songs";
 "friendProfile.today" = "today";
 "friendProfile.streak" = "streak";
@@ -1461,8 +1459,8 @@ one day.";
 "poster.notes" = "notes";
 "poster.days" = "days";
 "poster.colours" = "colours";
-"poster.mostly" = "mostly: %@";
-"poster.mostPlayed" = "most played: %@";
+"poster.mostly" = "повторяется: %@";
+"poster.mostPlayed" = "повтор: %@";
 "poster.notesHint" = "notes included";
 "poster.saveImage" = "save to photos";
 
@@ -1478,7 +1476,6 @@ one day.";
 "addFriend.suggested" = "people you may know";
 "addFriend.suggestedHint" = "ranked by mutual friends. never random strangers.";
 
-"circle.gateProgress" = "%d more, then your frequency opens.";
 
 
 /* Hızlı ekle — prototip parity */
@@ -1628,7 +1625,7 @@ one day.";
 "archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
 "archive.empty.title" = "Arşiv boş.";
 "archive.momentsOnDay" = "%d an bu güne kaydedildi.";
-"archive.mostFrequent" = "en çok %@";
+"archive.mostFrequent" = "%@ повторяется";
 "archive.todayWaiting" = "Сегодня в архиве пусто.";
 "block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
 "camera.noAccess" = "Kamera erişimi yok";
