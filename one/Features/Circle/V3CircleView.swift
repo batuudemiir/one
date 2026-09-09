@@ -159,12 +159,16 @@ struct V3CircleView: View {
             .hidesTabBarOnScroll(tab: .circle, spaceName: "one.scroll.circle")
             .topBarProgress($topBarProgress, spaceName: "one.scroll.circle")
             .safeAreaInset(edge: .top, spacing: 0) {
-                // İstek ve bildirim çipleri buraya taşındı. Eskiden scroll
+                // İstek ve bildirim düğmeleri burada. Eskiden scroll
                 // içeriğinin ilk satırıydılar — aşağı kaydırınca kayboluyor,
                 // "yeni istek var mı" sorusu ekranın dışına çıkıyordu.
+                //
+                // Ekranın adı da artık burada ve gövdeden kalktı: çubuk
+                // "Çevre" derken gövde 40pt aşağıda aynı kelimeyi 38pt
+                // Archivo ile tekrar yazıyordu.
                 V3TopBar(
-                    leading: .mark,
-                    title: PrimaryTab.circle.title,
+                    style: .root,
+                    title: PrimaryTab.circle.screenTitle,
                     progress: topBarProgress
                 ) {
                     headerActions
@@ -211,6 +215,19 @@ struct V3CircleView: View {
         .onReceive(NotificationCenter.default.publisher(for: .init("todaySongSaved"))) { _ in
             loadMyMoments()
             loadFriends(force: true)
+        }
+        // Uzaktan inen an değişikliği.
+        //
+        // Bu ekran uzun süre **yalnız** `todaySongSaved` dinliyordu, yani
+        // başka bir cihazdan gelen an Çevre'ye hiç düşmüyordu — `Archive`,
+        // `Profil` ve `Echo` bu bildirimi zaten dinliyordu, Çevre atlanmıştı.
+        //
+        // `loadFriends(force: true)` **çağrılmıyor**: uzak bir *an*
+        // değişikliği arkadaş listesini zorla tazelemeyi gerektirmiyor ve
+        // `force` cache TTL'ini atlayıp her senkronda bir CloudKit sorgusu
+        // koşturuyor. Tazelenmesi gereken kendi anlarım.
+        .onReceive(NotificationCenter.default.publisher(for: .momentsDidChangeRemotely)) { _ in
+            loadMyMoments()
         }
         .onReceive(NotificationCenter.default.publisher(for: .init("circleDataNeedsRefresh"))) { _ in
             loadFriends(force: true)
@@ -315,101 +332,56 @@ struct V3CircleView: View {
 
     // MARK: - Header actions
 
-    /// İki aksiyon çipi: arkadaş istekleri + bildirimler. `V3TopBar`'ın sağ
+    /// İki eylem düğmesi: arkadaş istekleri + bildirimler. `V3TopBar`'ın sağ
     /// yuvasında duruyorlar — çubuk sabit olduğu için scroll'la kaybolmuyorlar.
     ///
-    /// Tasarım: `actionChip` ile sibling — 44pt kapsül, `surface` dolgu +
-    /// hairline kenar. Sayı > 0 iken sağa `mono(11)` kor sayaç, ikon `ink`
-    /// kalır; sıfırken ikon `mutedText` (dinginlik). Nokta rozet yok —
-    /// sayaç okumak "kaç" bilgisini bir bakışta veriyor.
+    /// Buradaki düğmeler bir dönem bu ekrana özgü 44pt sayaç kapsülleriydi.
+    /// Artık çubuğun kendi 36pt dairesi (`V3TopBarIconButton`) + kor rozet:
+    /// aynı satırda An'ın hatırlatma, Arşiv'in Yankı düğmesiyle aynı ailede
+    /// okunuyorlar. Sayı kayb olmuyor, rozete taşındı.
     private var headerActions: some View {
-        HStack(spacing: V3Tokens.spacingSM) {
-            headerActionChip(
+        HStack(spacing: V3Tokens.spacingXS) {
+            V3TopBarIconButton(
                 systemName: "person.badge.plus",
-                count: pendingRequestCount,
-                a11y: NSLocalizedString("circle.requests", comment: "")
+                label: NSLocalizedString("circle.requests", comment: ""),
+                count: pendingRequestCount
             ) {
-                ONEHaptics.tabSwitch()
                 showRequests = true
             }
-            headerActionChip(
+            V3TopBarIconButton(
                 systemName: "bell",
-                count: circleNotifications.unreadCount,
-                a11y: NSLocalizedString("circle.notifications", comment: "")
+                label: NSLocalizedString("circle.notifications", comment: ""),
+                count: circleNotifications.unreadCount
             ) {
-                ONEHaptics.tabSwitch()
                 showNotifications = true
             }
         }
-    }
-
-    private func headerActionChip(
-        systemName: String,
-        count: Int,
-        a11y: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        let hasCount = count > 0
-        return Button(action: action) {
-            HStack(spacing: V3Tokens.spacingSM) {
-                Image(systemName: systemName)
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundColor(V3Tokens.ink)
-                    // Sayaç değişince ikonun yerinden oynamaması için sabit kutu.
-                    .frame(width: 18, height: 18)
-
-                if hasCount {
-                    // 100+ senaryosunda pill genişlemeye zorlanmaz.
-                    Text(count > 99 ? "99+" : "\(count)")
-                        .font(V3Typography.mono(11, weight: .regular))
-                        .tracking(0.3)
-                        .foregroundColor(ONEBrand.kor)
-                        .monospacedDigit()
-                        .transition(.opacity.combined(with: .scale(scale: 0.85)))
-                }
-            }
-            .padding(.horizontal, hasCount ? 14 : 13)
-            .frame(minWidth: 44, minHeight: 44)
-            .background(
-                Capsule(style: .continuous)
-                    .strokeBorder(hasCount ? ONEBrand.kor.opacity(0.35) : V3Tokens.hairline, lineWidth: 1)
-            )
-        }
-        .buttonStyle(.onePressable)
-        .animation(reduceMotion ? nil : ONEAnimation.easingChip, value: hasCount)
-        .accessibilityLabel(a11y)
-        .accessibilityValue(hasCount ? "\(count)" : "")
     }
 
     // MARK: - Main content
 
     private var mainContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(NSLocalizedString("circle.title", comment: ""))
-                .font(ONEBrand.display(38))
-                .tracking(-1.1)
-                .foregroundColor(V3Tokens.ink)
-                .padding(.top, V3Tokens.spacingXL2)
-
-            Text(NSLocalizedString("circle.v3Subtitle", comment: ""))
-                .bodyLG()
-                .foregroundColor(V3Tokens.mutedText)
-                .padding(.top, 10)
-
+            // Gövde başlığı kalktı — ekranın adı artık üst çubukta ve
+            // kaydırmadan da orada. 38pt "Çevre" çubuğun 40pt altında aynı
+            // kelimeyi tekrar ediyordu.
+            //
+            // Alt satır ("Bugün kimin nasıl olduğunu gör.") da kalktı: bir
+            // işlev anlatmıyordu, ızgaranın kendisi zaten onu gösteriyor.
+            // Kopya kuralı — açıklama metni yalnız o an gerekli işlevsel
+            // bilgiyi verir, yoksa hiç yazılmaz.
             HStack(spacing: V3Tokens.spacingSM) {
                 actionChip(NSLocalizedString("circle.resonance", comment: "")) {
-                    ONEHaptics.tabSwitch()
-                    showResonance = true
+                        showResonance = true
                 }
                 actionChip(NSLocalizedString("circle.addFriend", comment: "")) {
-                    ONEHaptics.tabSwitch()
-                    showAddFriend = true
+                        showAddFriend = true
                 }
             }
             .padding(.top, V3Tokens.spacingXL)
 
             Text(String(format: NSLocalizedString("circle.peopleCount", comment: ""), friends.count))
-                .font(V3Typography.mono(10))
+                .monoLabel(weight: .regular)
                 .tracking(1.5)
                 .textCase(.uppercase)
                 .foregroundColor(V3Tokens.ghostText)
@@ -469,7 +441,7 @@ struct V3CircleView: View {
                 photo: selfPhoto
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                     .strokeBorder(V3Tokens.ink, lineWidth: 1.5)
             )
         }
@@ -608,7 +580,7 @@ struct V3CircleView: View {
                 Spacer(minLength: 6)
                 Text(rightMeta)
             }
-            .font(V3Typography.mono(10))
+            .monoLabel(weight: .regular)
             .tracking(1)
             .textCase(.uppercase)
             .foregroundColor(V3Tokens.ghostText)
@@ -619,15 +591,8 @@ struct V3CircleView: View {
         }
         .padding(V3Tokens.spacingLG)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(V3Tokens.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(V3Tokens.hairline, lineWidth: 1)
-                )
-        )
-        .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .oneCardBackground(radius: V3Tokens.radiusPanel)
+        .contentShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous))
     }
 
     // MARK: - Empty state (prototip 11)
@@ -651,7 +616,7 @@ struct V3CircleView: View {
                 spacing: V3Tokens.spacingMD
             ) {
                 ForEach(0..<4, id: \.self) { i in
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                         .strokeBorder(
                             i == 0 ? ONEBrand.kor : V3Tokens.hairline,
                             style: StrokeStyle(lineWidth: 1.5, dash: [6, 5])
@@ -694,14 +659,14 @@ struct V3CircleView: View {
 
     private var skeleton: some View {
         VStack(alignment: .leading, spacing: 18) {
-            RoundedRectangle(cornerRadius: 8).fill(V3Tokens.wash)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusChip).fill(V3Tokens.wash)
                 .frame(width: 160, height: 34)
             LazyVGrid(
                 columns: [GridItem(.flexible(), spacing: V3Tokens.spacingMD), GridItem(.flexible(), spacing: V3Tokens.spacingMD)],
                 spacing: V3Tokens.spacingMD
             ) {
                 ForEach(0..<4, id: \.self) { _ in
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                         .fill(V3Tokens.wash)
                         .frame(height: 150)
                 }
@@ -735,18 +700,11 @@ struct V3CircleView: View {
                     .foregroundColor(V3Tokens.ink)
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .iconSM(weight: .semibold)
                     .foregroundColor(V3Tokens.ghostText)
             }
             .padding(V3Tokens.spacingLG)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(V3Tokens.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .strokeBorder(V3Tokens.hairline, lineWidth: 1)
-                    )
-            )
+            .oneCardBackground(radius: V3Tokens.radiusPanel)
         }
         .buttonStyle(.onePressable)
     }

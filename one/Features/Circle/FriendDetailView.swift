@@ -301,21 +301,18 @@ struct FriendDetailView: View {
         let isPolling: Bool
         let appeared: Bool
 
-        @State private var pulseScale: CGFloat = 1.0
-        @State private var pulseOpacity: Double = 0.35
-
         var body: some View {
             VStack(spacing: V3Tokens.spacingXL2) {
-                // Avatar ile pulse halkaları
+                // Halkalar duruyor, nabız atmıyor: v4 hareket dili — bekleme
+                // bir durum, kutlanacak bir olay değil. Süresiz `repeatForever`
+                // ekranda tek hareketli öğe olmayı da hak etmiyordu.
                 ZStack {
-                    // Dış halka 2
                     Circle()
-                        .stroke(Color.gray.opacity(0.08 * pulseOpacity * 3), lineWidth: 1)
-                        .frame(width: 100 * pulseScale, height: 100 * pulseScale)
-                    // Dış halka 1
+                        .stroke(Color.gray.opacity(0.08), lineWidth: 1)
+                        .frame(width: 100, height: 100)
                     Circle()
-                        .stroke(V3Tokens.dashed.opacity(0.12 * pulseOpacity * 3), lineWidth: 1)
-                        .frame(width: 84 * pulseScale, height: 84 * pulseScale)
+                        .stroke(V3Tokens.dashed.opacity(0.12), lineWidth: 1)
+                        .frame(width: 84, height: 84)
                     // Ana daire
                     // Bekleyen paylaşım — kesikli çerçeve, `dashed` token'ı
                     // tam bu iş için var. Önceden `Color.gray` idi: sistem
@@ -329,12 +326,6 @@ struct FriendDetailView: View {
                         .font(ONEBrand.display(22))
                         .tracking(-0.4)
                         .foregroundColor(V3Tokens.ghostText)
-                }
-                .onAppear {
-                    withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
-                        pulseScale   = 1.08
-                        pulseOpacity = 0.8
-                    }
                 }
                 .padding(.top, V3Tokens.spacingSM)
 

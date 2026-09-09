@@ -417,13 +417,10 @@ struct ONEColorPickerView: View {
         // Akış ortasındayken (An adım 2+) yanlışlıkla sekme kaydırmayı engelle.
         // `including: .gesture` drag'i burada yutar, `.subviews` normal davranış.
         .gesture(DragGesture(), including: globalUI.tabSwipeLocked ? .gesture : .subviews)
-        .onChange(of: PrimaryTab(containing: vm.currentScreen)) { old, new in
+        .onChange(of: PrimaryTab(containing: vm.currentScreen)) { _, new in
             visitedTabs.insert(new)
-            // Dokunarak geçişte haptiği `BottomNavigation` veriyor; swipe ile
-            // geçişte kimse vermiyordu. Sekmenin gerçekten değiştiği tek yer
-            // burası, dolayısıyla haptik de buraya ait — ama çift tetiklememek
-            // için dokunma yolundakini kaldırdık.
-            if old != new { ONEHaptics.tabSwitch() }
+            // v4 hareket dili: sekme değişiminde haptik yok. Titreşim yalnız
+            // taahhüt anında — sürekli titreyen gezinme oyuncak hissi veriyor.
         }
         .onAppear { visitedTabs.insert(PrimaryTab(containing: vm.currentScreen)) }
         // Reduce Motion: sayfa kaydırma animasyonunu kes, geçiş anlık olsun.

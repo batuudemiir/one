@@ -183,7 +183,6 @@ struct V3ProfileView: View {
                         systemName: "gearshape",
                         label: NSLocalizedString("topbar.settings", comment: "")
                     ) {
-                        ONEHaptics.tabSwitch()
                         withAnimation(ONEAnimation.screenTransition) {
                             proxy.scrollTo("profileSettings", anchor: .top)
                         }

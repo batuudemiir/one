@@ -103,7 +103,6 @@ struct SegmentedControl: View {
         HStack(spacing: 2) {
             ForEach(Array(options.enumerated()), id: \.offset) { index, label in
                 Button {
-                    ONEHaptics.tabSwitch()
                     withAnimation(ONEAnimation.easingChip) { selection = index }
                 } label: {
                     Text(label)

@@ -97,7 +97,6 @@ struct V3ColorStepView: View {
                     reduceMotion: reduceMotion,
                     moodMorph: moodMorph
                 ) {
-                    ONEHaptics.moodSelected()
                     selectedMood = mood
                 }
             }

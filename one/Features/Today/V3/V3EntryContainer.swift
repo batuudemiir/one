@@ -119,7 +119,6 @@ struct V3EntryContainer: View {
                             systemName: "alarm",
                             label: NSLocalizedString("settings.reminder", comment: "")
                         ) {
-                            ONEHaptics.tabSwitch()
                             showReminder = true
                         }
                     }

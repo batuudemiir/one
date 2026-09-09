@@ -168,7 +168,6 @@ struct BottomNavigation: View {
                 guard !minimized, let tab = tab(atX: value.location.x) else { return }
                 didDragSelect = true
                 guard !isSelected(tab.screen) else { return }
-                ONEHaptics.tabSwitch()
                 withAnimation(ONEAnimation.easingColor) {
                     currentScreen = tab.screen
                 }

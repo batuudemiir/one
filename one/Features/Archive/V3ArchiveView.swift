@@ -115,7 +115,6 @@ struct V3ArchiveView: View {
                         systemName: "sparkles",
                         label: NSLocalizedString("topbar.monthlyEcho", comment: "")
                     ) {
-                        ONEHaptics.tabSwitch()
                         NotificationCenter.default.post(name: .init("switchToEchoTab"), object: nil)
                     }
                 }
