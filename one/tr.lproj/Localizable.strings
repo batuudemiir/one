@@ -1532,8 +1532,6 @@ bir gün.";
 "music.notConnected" = "bağlı değil";
 "music.searchOnly" = "yalnızca arama";
 "music.searchOnlySub" = "hiçbir hesap bağlama, çalma yok";
-"music.suggestNowPlaying" = "çalan şarkıyı öner";
-"music.suggestNowPlayingSub" = "ritüele girdiğinde o an çalanı en üste koy";
 "privacy.whoCanSee" = "kim görebilir";
 "privacy.todayColour" = "bugünkü rengim";
 "privacy.todaySong" = "bugünkü şarkım";
@@ -1545,8 +1543,6 @@ bir gün.";
 "privacy.discoverability" = "bulunabilirlik";
 "privacy.byUsername" = "kullanıcı adımla bulunayım";
 "privacy.byUsernameSub" = "tam adı bilenler seni ekleyebilir";
-"privacy.byContacts" = "rehberimdekiler beni bulsun";
-"privacy.byContactsSub" = "numaran kimseyle paylaşılmaz";
 
 "friends.addAction" = "＋ ekle";
 "friends.segAll" = "hepsi · %d";

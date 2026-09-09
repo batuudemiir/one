@@ -23,7 +23,6 @@ struct MusicSourceSettingsView: View {
 
     @AppStorage("preferredMusicService") private var preferred = "AppleMusic"
     /// Prototipteki "çalan şarkıyı öner" anahtarı.
-    @AppStorage("suggestNowPlaying") private var suggestNowPlaying = true
 
     var body: some View {
         SubScreen(
@@ -76,19 +75,9 @@ struct MusicSourceSettingsView: View {
                 }
                 .padding(.top, V3Tokens.spacingLG)
 
-                Rectangle()
-                    .fill(V3Tokens.ink.opacity(0.09))
-                    .frame(height: 1)
-                    .padding(.vertical, V3Tokens.spacingXL)
-
-                SettingsGroup {
-                    SettingsToggleRow(
-                        title: NSLocalizedString("music.suggestNowPlaying", comment: ""),
-                        subtitle: NSLocalizedString("music.suggestNowPlayingSub", comment: ""),
-                        isOn: $suggestNowPlaying,
-                        isLast: true
-                    )
-                }
+                // "Çalan şarkıyı öner" anahtarı kaldırıldı: hiçbir yer
+                // okumuyordu. `SpotifyManager.getNowPlaying` duruyor — özellik
+                // gerçekten istenirse önce o bağlanır, anahtar sonra gelir.
             }
         }
     }
@@ -122,7 +111,7 @@ struct MusicSourceSettingsView: View {
                         .frame(width: 34, height: 34)
                         .overlay(
                             Image(systemName: logo)
-                                .font(.system(size: 15))
+                                .iconMD()
                                 .foregroundColor(.white)
                         )
 
@@ -143,7 +132,7 @@ struct MusicSourceSettingsView: View {
                     // tutarlı bir liste davranışı.
                     if isActive {
                         Image(systemName: "checkmark")
-                            .font(.system(size: 13, weight: .semibold))
+                            .iconSM(weight: .semibold)
                             .foregroundColor(V3Tokens.ink)
                     }
                 }
@@ -175,8 +164,10 @@ struct MusicSourceSettingsView: View {
 struct PrivacySettingsView: View {
     let onBack: () -> Void
 
+    /// Tercih hem cihazda (anahtarın hâli) hem kayıtta duruyor: arayan başka
+    /// bir cihaz, aranan kişinin tercihine ancak `AppUser` kaydından bakabilir.
+    /// `onChange` ikisini birlikte yürütüyor.
     @AppStorage("findableByUsername") private var findableByUsername = true
-    @AppStorage("findableByContacts") private var findableByContacts = true
 
     var body: some View {
         SubScreen(
@@ -229,18 +220,21 @@ struct PrivacySettingsView: View {
                     .padding(.top, V3Tokens.spacingXL)
                     .padding(.bottom, V3Tokens.spacingSM)
 
+                // "Rehberimdekiler beni bulsun" anahtarı kaldırıldı: rehberle
+                // eşleştirme diye bir özellik yok (ContactsInviteView yalnız
+                // davet mesajı gönderiyor, sunucuda numara eşleştirme yapmıyor).
+                // Hiçbir şeyi açıp kapatmayan bir gizlilik anahtarı, gizliliğin
+                // kendisinden daha kötü — CLAUDE.md › Sahte kontrol.
                 SettingsGroup {
                     SettingsToggleRow(
                         title: NSLocalizedString("privacy.byUsername", comment: ""),
                         subtitle: NSLocalizedString("privacy.byUsernameSub", comment: ""),
-                        isOn: $findableByUsername
-                    )
-                    SettingsToggleRow(
-                        title: NSLocalizedString("privacy.byContacts", comment: ""),
-                        subtitle: NSLocalizedString("privacy.byContactsSub", comment: ""),
-                        isOn: $findableByContacts,
+                        isOn: $findableByUsername,
                         isLast: true
                     )
+                }
+                .onChange(of: findableByUsername) { _, newValue in
+                    CloudKitManager.shared.updateFindability(byUsername: newValue)
                 }
             }
         }

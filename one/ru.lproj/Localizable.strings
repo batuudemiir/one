@@ -1390,8 +1390,6 @@ one day.";
 "music.notConnected" = "not connected";
 "music.searchOnly" = "search only";
 "music.searchOnlySub" = "no account, no playback";
-"music.suggestNowPlaying" = "suggest what's playing";
-"music.suggestNowPlayingSub" = "put the currently playing track on top";
 "privacy.whoCanSee" = "who can see";
 "privacy.todayColour" = "today's colour";
 "privacy.todaySong" = "today's song";
@@ -1403,8 +1401,6 @@ one day.";
 "privacy.discoverability" = "discoverability";
 "privacy.byUsername" = "find me by username";
 "privacy.byUsernameSub" = "people who know your exact handle can add you";
-"privacy.byContacts" = "let my contacts find me";
-"privacy.byContactsSub" = "your number is never shared";
 
 "friends.addAction" = "＋ add";
 "friends.segAll" = "all · %d";

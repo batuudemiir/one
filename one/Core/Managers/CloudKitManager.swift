@@ -654,6 +654,40 @@ class CloudKitManager: ObservableObject {
         }
     }
     
+    // MARK: - Bulunabilirlik (Gizlilik → Keşfedilebilirlik)
+
+    /// Ayarlar'daki "kullanıcı adımla bulunayım" anahtarının **kayıttaki**
+    /// karşılığı. Tercihin cihazda durması yetmiyor: arayan başka bir cihaz,
+    /// aranan kişinin tercihine ancak kayıttan bakabilir.
+    ///
+    /// Alan yoksa (eski kayıtlar) bulunabilir sayılıyor — mevcut davranış
+    /// korunuyor, kimse bir gecede aramadan düşmüyor.
+    static let findableByUsernameField = "findableByUsername"
+
+    static func isFindableByUsername(_ record: CKRecord) -> Bool {
+        guard let value = record[findableByUsernameField] as? Int64 else { return true }
+        return value != 0
+    }
+
+    /// Tercihi kayda yazar. Ayar ekranı her değişimde çağırır.
+    func updateFindability(byUsername: Bool) {
+        guard let currentUser else { return }
+        currentUser[Self.findableByUsernameField] = (byUsername ? 1 : 0) as CKRecordValue
+
+        let operation = CKModifyRecordsOperation(recordsToSave: [currentUser], recordIDsToDelete: nil)
+        operation.savePolicy = .changedKeys
+        operation.qualityOfService = .utility
+        operation.modifyRecordsResultBlock = { result in
+            switch result {
+            case .success:
+                ONELogger.success("Bulunabilirlik tercihi kaydedildi", category: .cloudkit)
+            case .failure(let error):
+                ONELogger.error("Bulunabilirlik tercihi yazılamadı", error: error, category: .cloudkit)
+            }
+        }
+        publicDatabase.add(operation)
+    }
+
     func findUserByUsername(_ username: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
         let normalizedUsername = username.lowercased().trimmingCharacters(in: .whitespaces)
         ONELogger.debug("Searching for user by username", category: .cloudkit)
@@ -665,6 +699,10 @@ class CloudKitManager: ObservableObject {
             switch result {
             case .success(let (matchResults, _)):
                 let records = matchResults.compactMap { try? $0.1.get() }
+                    // Kullanıcı adıyla bulunmak istemeyen kişi sonuçta çıkmaz.
+                    // Davet kodu yolu bu filtreye tabi değil: kodu paylaşmak
+                    // zaten açık rızadır.
+                    .filter(Self.isFindableByUsername)
                 ONELogger.debug("Username lookup: \(records.count) result(s)", category: .cloudkit)
 
                 if let record = records.first {

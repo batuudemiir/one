@@ -87,7 +87,6 @@ struct V3ProfileView: View {
     // v3 settings — @AppStorage ile persist. iCloud yedeği default açık,
     // uygulama kilidi default kapalı.
     @AppStorage("v3.settings.appLock")     private var appLockEnabled: Bool = false
-    @AppStorage("v3.settings.iCloudBackup") private var iCloudBackupEnabled: Bool = true
     /// Görünüm satırı — `oneApp` bu anahtarı okuyup `preferredColorScheme` veriyor.
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
     /// DEBUG: Çevre sekmesini örnek arkadaşlarla doldurur (kabuk okuyor).
