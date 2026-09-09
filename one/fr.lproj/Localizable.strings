@@ -1353,7 +1353,7 @@ one day.";
 "day.photo" = "photo";
 "day.circleThatDay" = "your circle that day";
 
-"notif.title" = "notifications";
+"notif.title" = "Notifications";
 "notif.markAllRead" = "mark all read";
 "notif.today" = "today";
 "notif.thisWeek" = "this week";
@@ -1425,7 +1425,7 @@ one day.";
 "friends.noIncoming" = "No pending requests.";
 "friends.noOutgoing" = "No sent requests.";
 
-"addFriend.screenTitle" = "add friend";
+"addFriend.screenTitle" = "Ajouter un ami";
 "addFriend.segUsername" = "username";
 "addFriend.segCode" = "code";
 "addFriend.segContacts" = "contacts";
@@ -1500,14 +1500,14 @@ one day.";
 
 
 /* Yankılar — prototip */
-"echoes.title" = "échos du jour";
+"echoes.title" = "ÉCHOS DU JOUR";
 "echoes.screenTitle" = "échos du jour";
-"echoes.reactors" = "qui a répondu";
+"echoes.reactors" = "QUI A RÉPONDU";
 "echoes.threadWith" = "avec %@";
 "echoes.replyPlaceholder" = "réponse";
-"echoes.ephemeralNote" = "les réponses ne sont pas archivées — elles restent l'instant";
-"echoes.empty" = "pas encore d'échos. ils peuvent apparaître plus tard.";
-"echoes.someone" = "quelqu'un";
+"echoes.ephemeralNote" = "Les réponses ne sont pas archivées — elles restent dans l’instant";
+"echoes.empty" = "Pas encore d’échos. Ils peuvent venir dans la journée.";
+"echoes.someone" = "Quelqu’un";
 
 // MARK: - SubCircle
 "subcircle.title" = "Groups";

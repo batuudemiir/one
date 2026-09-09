@@ -773,7 +773,7 @@
 "screen.echo.title" = "回响";
 "screen.echoes.title" = "今天的回响";
 "screen.share.title" = "分享";
-"screen.story.title" = "story 卡片";
+"screen.story.title" = "Story 卡片";
 "screen.camera.title" = "相机";
 "screen.entry.title" = "此刻";
 "screen.archive.title" = "存档";
@@ -1351,7 +1351,7 @@ one day.";
 "day.photo" = "photo";
 "day.circleThatDay" = "your circle that day";
 
-"notif.title" = "notifications";
+"notif.title" = "通知";
 "notif.markAllRead" = "mark all read";
 "notif.today" = "today";
 "notif.thisWeek" = "this week";
@@ -1423,7 +1423,7 @@ one day.";
 "friends.noIncoming" = "No pending requests.";
 "friends.noOutgoing" = "No sent requests.";
 
-"addFriend.screenTitle" = "add friend";
+"addFriend.screenTitle" = "添加好友";
 "addFriend.segUsername" = "username";
 "addFriend.segCode" = "code";
 "addFriend.segContacts" = "contacts";
@@ -1498,14 +1498,14 @@ one day.";
 
 
 /* Yankılar — prototip */
-"echoes.title" = "今日回响";
+"echoes.title" = "今天的回声";
 "echoes.screenTitle" = "今日回响";
 "echoes.reactors" = "回应的人";
 "echoes.threadWith" = "与%@";
 "echoes.replyPlaceholder" = "回复";
-"echoes.ephemeralNote" = "回应不会存档 — 只留在当下";
-"echoes.empty" = "还没有回响。随着一天推移可能出现。";
-"echoes.someone" = "某人";
+"echoes.ephemeralNote" = "回应不会被存档 — 只停留在当下";
+"echoes.empty" = "还没有回声。随着这一天可能会出现。";
+"echoes.someone" = "有人";
 
 // MARK: - SubCircle
 "subcircle.title" = "Groups";

@@ -1353,7 +1353,7 @@ one day.";
 "day.photo" = "photo";
 "day.circleThatDay" = "your circle that day";
 
-"notif.title" = "notifications";
+"notif.title" = "通知";
 "notif.markAllRead" = "mark all read";
 "notif.today" = "today";
 "notif.thisWeek" = "this week";
@@ -1425,7 +1425,7 @@ one day.";
 "friends.noIncoming" = "No pending requests.";
 "friends.noOutgoing" = "No sent requests.";
 
-"addFriend.screenTitle" = "add friend";
+"addFriend.screenTitle" = "友だちを追加";
 "addFriend.segUsername" = "username";
 "addFriend.segCode" = "code";
 "addFriend.segContacts" = "contacts";

@@ -1354,7 +1354,7 @@ one day.";
 "day.photo" = "photo";
 "day.circleThatDay" = "your circle that day";
 
-"notif.title" = "notifications";
+"notif.title" = "Уведомления";
 "notif.markAllRead" = "mark all read";
 "notif.today" = "today";
 "notif.thisWeek" = "this week";
@@ -1426,7 +1426,7 @@ one day.";
 "friends.noIncoming" = "No pending requests.";
 "friends.noOutgoing" = "No sent requests.";
 
-"addFriend.screenTitle" = "add friend";
+"addFriend.screenTitle" = "Добавить друга";
 "addFriend.segUsername" = "username";
 "addFriend.segCode" = "code";
 "addFriend.segContacts" = "contacts";
@@ -1501,14 +1501,14 @@ one day.";
 
 
 /* Yankılar — prototip */
-"echoes.title" = "отклики за день";
+"echoes.title" = "ЭХО СЕГОДНЯ";
 "echoes.screenTitle" = "отклики за день";
-"echoes.reactors" = "кто ответил";
+"echoes.reactors" = "КТО ОТВЕТИЛ";
 "echoes.threadWith" = "с %@";
 "echoes.replyPlaceholder" = "ответ";
-"echoes.ephemeralNote" = "отклики не архивируются — остаются в моменте";
-"echoes.empty" = "пока нет откликов. появятся в течение дня.";
-"echoes.someone" = "кто-то";
+"echoes.ephemeralNote" = "Ответы не архивируются — они остаются в моменте";
+"echoes.empty" = "Пока эха нет. Может появиться в течение дня.";
+"echoes.someone" = "Кто-то";
 
 // MARK: - SubCircle
 "subcircle.title" = "Groups";

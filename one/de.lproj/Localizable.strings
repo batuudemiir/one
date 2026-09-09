@@ -1425,7 +1425,7 @@ one day.";
 "friends.noIncoming" = "No pending requests.";
 "friends.noOutgoing" = "No sent requests.";
 
-"addFriend.screenTitle" = "add friend";
+"addFriend.screenTitle" = "Freund hinzufügen";
 "addFriend.segUsername" = "username";
 "addFriend.segCode" = "code";
 "addFriend.segContacts" = "contacts";
@@ -1500,14 +1500,14 @@ one day.";
 
 
 /* Yankılar — prototip */
-"echoes.title" = "Echos von heute";
+"echoes.title" = "ECHOS VON HEUTE";
 "echoes.screenTitle" = "Echos von heute";
-"echoes.reactors" = "wer geantwortet hat";
+"echoes.reactors" = "WER GEANTWORTET HAT";
 "echoes.threadWith" = "mit %@";
 "echoes.replyPlaceholder" = "Antwort";
 "echoes.ephemeralNote" = "Antworten werden nicht archiviert — sie bleiben im Moment";
-"echoes.empty" = "noch keine Echos. Vielleicht später am Tag.";
-"echoes.someone" = "jemand";
+"echoes.empty" = "Noch keine Echos. Vielleicht später am Tag.";
+"echoes.someone" = "Jemand";
 
 // MARK: - SubCircle
 "subcircle.title" = "Groups";

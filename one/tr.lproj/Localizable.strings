@@ -1496,7 +1496,7 @@ bir gün.";
 "day.photo" = "fotoğraf";
 "day.circleThatDay" = "o gün çevren";
 
-"notif.title" = "bildirimler";
+"notif.title" = "Bildirimler";
 "notif.markAllRead" = "okundu say";
 "notif.today" = "bugün";
 "notif.thisWeek" = "bu hafta";
@@ -1568,7 +1568,7 @@ bir gün.";
 "friends.noIncoming" = "Bekleyen istek yok.";
 "friends.noOutgoing" = "Gönderilmiş istek yok.";
 
-"addFriend.screenTitle" = "arkadaş ekle";
+"addFriend.screenTitle" = "Arkadaş ekle";
 "addFriend.segUsername" = "kullanıcı adı";
 "addFriend.segCode" = "kod";
 "addFriend.segContacts" = "kişiler";
@@ -1643,14 +1643,14 @@ bir gün.";
 
 
 /* Yankılar — prototip */
-"echoes.title" = "bugüne gelenler";
+"echoes.title" = "BUGÜNE GELENLER";
 "echoes.screenTitle" = "bugüne gelenler";
-"echoes.reactors" = "karşılık verenler";
+"echoes.reactors" = "KARŞILIK VERENLER";
 "echoes.threadWith" = "%@ ile";
 "echoes.replyPlaceholder" = "yanıt";
-"echoes.ephemeralNote" = "gelen karşılıklar arşivlenmez — anlık kalır";
-"echoes.empty" = "henüz karşılık yok. gün ilerledikçe belirebilir.";
-"echoes.someone" = "biri";
+"echoes.ephemeralNote" = "Gelen karşılıklar arşivlenmez — anlık kalır";
+"echoes.empty" = "Henüz karşılık yok. Gün ilerledikçe belirebilir.";
+"echoes.someone" = "Biri";
 
 // MARK: - Alt-çevre (SubCircle)
 "subcircle.title" = "Gruplar";

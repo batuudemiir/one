@@ -1354,7 +1354,7 @@ one day.";
 "day.photo" = "photo";
 "day.circleThatDay" = "your circle that day";
 
-"notif.title" = "notifications";
+"notif.title" = "알림";
 "notif.markAllRead" = "mark all read";
 "notif.today" = "today";
 "notif.thisWeek" = "this week";
@@ -1426,7 +1426,7 @@ one day.";
 "friends.noIncoming" = "No pending requests.";
 "friends.noOutgoing" = "No sent requests.";
 
-"addFriend.screenTitle" = "add friend";
+"addFriend.screenTitle" = "친구 추가";
 "addFriend.segUsername" = "username";
 "addFriend.segCode" = "code";
 "addFriend.segContacts" = "contacts";
@@ -1506,8 +1506,8 @@ one day.";
 "echoes.reactors" = "응답한 사람";
 "echoes.threadWith" = "%@와";
 "echoes.replyPlaceholder" = "답장";
-"echoes.ephemeralNote" = "응답은 보관되지 않아요 — 그 순간만";
-"echoes.empty" = "아직 반향이 없어요. 하루가 지나며 나타날 수 있어요.";
+"echoes.ephemeralNote" = "응답은 보관되지 않습니다 — 그 순간에만 남습니다";
+"echoes.empty" = "아직 반향이 없습니다. 하루가 지나며 나타날 수 있습니다.";
 "echoes.someone" = "누군가";
 
 // MARK: - SubCircle
