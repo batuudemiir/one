@@ -11,9 +11,7 @@ extension TodayViewModel {
     /// 1. **Upsert.** `saveEntry` günün tek kaydını günceller. v3'ün çekirdek
     ///    vaadi "bir gün = N an" olduğu hâlde, şarkı seçen kullanıcı o günün
     ///    önceki anlarını eziyordu.
-    /// 2. **`entryDate` yok sayılıyordu.** Arşiv'den geçmiş bir güne şarkılı
-    ///    an eklendiğinde kayıt **bugüne** düşüyordu.
-    ///
+
     /// Artık tek yol var: `MomentWriter`. Aynı yolu App Intents (Siri /
     /// kısayol / Control Center) de kullanıyor — uygulamadan kaydetmekle
     /// Siri'den kaydetmek arasında fark kalmıyor.
@@ -23,8 +21,7 @@ extension TodayViewModel {
         note: String,
         photo: UIImage?,
         song: SongResult?,
-        scope: MomentScope = .private,
-        entryDate: Date? = nil
+        scope: MomentScope = .private
     ) {
         guard MomentWriter.write(
             mood: mood,
@@ -32,7 +29,6 @@ extension TodayViewModel {
             photo: photo,
             song: song,
             scope: scope,
-            entryDate: entryDate,
             context: self.context
         ) else { return }
 

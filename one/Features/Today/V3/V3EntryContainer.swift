@@ -9,9 +9,8 @@ struct V3EntryContainer: View {
     @ObservedObject var vm: TodayViewModel
     @StateObject private var globalUI = GlobalUIState.shared
 
-    /// v3 past-day mode: Arşiv'den boş bir güne dokununca GlobalUIState.pendingEntryDate
-    /// dolar, container onu tüketir ve akışı o tarih için başlatır.
-    @State private var entryDate: Date? = nil
+    // Geriye dönük giriş yok (duruş ilke 3): akış her zaman bugüne yazar.
+    // Eskiden Arşiv'den gelen `pendingEntryDate` ile past-day modu açılıyordu.
 
     /// Kullanıcı "Arşive git" derse dışa (parent) haber ver. TodayView bunu
     /// tab değiştirmek için kullanacak; nil ise buton yalnızca akışı kapatır.
@@ -171,9 +170,6 @@ struct V3EntryContainer: View {
         .onChange(of: showReminder) { _, _ in
             syncTabBarMinimize()
         }
-        .onChange(of: globalUI.pendingEntryDate) { _, date in
-            adoptPendingEntryDate(date)
-        }
         .onReceive(NotificationCenter.default.publisher(for: .startNewMomentRequested)) { _ in
             startNewFromTabRetap()
         }
@@ -246,19 +242,6 @@ struct V3EntryContainer: View {
         scope = .private
     }
 
-    /// Arşiv'den gelen past-day sinyalini tüket → past-day mode aç.
-    private func adoptPendingEntryDate(_ date: Date?) {
-        guard let date else { return }
-        entryDate = date
-        addNew = true                 // Direkt pick'e geç, hub'ı atla.
-        selectedMood = nil
-        note = ""
-        scope = .private
-        step = .pick
-        // Consume — bir kez uygulandı.
-        GlobalUIState.shared.pendingEntryDate = nil
-    }
-
     /// Not yazma adımında (details) çubuğu daralt ve sekme swipe'ını kilitle.
     ///
     /// Kabuk artık `TabView(.page)` — yatay swipe her yerde aktif. Kullanıcı
@@ -300,7 +283,6 @@ struct V3EntryContainer: View {
                 },
                 title: pickTitle,
                 greeting: pickGreeting,
-                pastDayChip: entryDate != nil,
                 moodMorph: moodMorph
             )
             // Adım 1 kendi içinde kaydırılıyor ve footer'ı alta sabitliyor;
@@ -325,7 +307,6 @@ struct V3EntryContainer: View {
                         step = .pick
                     },
                     onSave: { commitSave(mood: mood) },
-                    entryDate: entryDate,
                     moodMorph: moodMorph
                 )
                 .transition(stepTransition())
@@ -363,16 +344,12 @@ struct V3EntryContainer: View {
 
     /// "12 TEMMUZ" formatında micro-label.
     private var savedMomentDateLabel: String {
-        let date = entryDate ?? Date()
-        let f = ONEFormatters.dayMonth
-        return f.string(from: date).uppercased()
+        ONEFormatters.dayMonth.string(from: Date()).uppercased()
     }
 
     /// Story kart üst köşesindeki tarih — "12 TEMMUZ · CUMA".
     private var storyDateLabel: String {
-        let date = entryDate ?? Date()
-        let f = ONEFormatters.dayMonthWeekday
-        return f.string(from: date).uppercased()
+        ONEFormatters.dayMonthWeekday.string(from: Date()).uppercased()
     }
 
     // MARK: - Actions
@@ -383,8 +360,7 @@ struct V3EntryContainer: View {
             note: note,
             photo: photoEnabled ? pickedPhoto : nil,
             song: songEnabled ? pickedSong : nil,
-            scope: scope,
-            entryDate: entryDate
+            scope: scope
         )
         // Kayıt haptiği BURADA DEĞİL.
         //
@@ -399,8 +375,8 @@ struct V3EntryContainer: View {
         // Ritüelin tek sahibi `SaveRitualMoment`: görsel ve taktil aynı yerden,
         // aynı zaman çizgisinde çıkıyor.
         // v3: yeni an eklendi — todayMoments'i tazele ki ordinal doğru olsun.
-        let refDate = entryDate ?? Calendar.current.startOfDay(for: Date())
-        todayMoments = PersistenceController.shared.fetchMoments(for: refDate, context: vm.context)
+        let today = Calendar.current.startOfDay(for: Date())
+        todayMoments = PersistenceController.shared.fetchMoments(for: today, context: vm.context)
         transitionDirection = .forward
         withAnimation(reduceMotion ? .none : ONEAnimation.easingSaved) {
             step = .saved
@@ -466,20 +442,13 @@ struct V3EntryContainer: View {
     /// V3 spec:
     ///  • an yok → "Bugün nasılsın?"
     ///  • an var → "Bir an daha?"
-    ///  • past-day → "12 Temmuz nasıldı?" (Phase 3.5 wire)
     private var pickTitle: String {
-        if let date = entryDate {
-            // Past-day: "12 Temmuz\nnasıldı?"
-            let f = ONEFormatters.dayMonth
-            return String(format: NSLocalizedString("entry.title.pastDay", comment: ""), f.string(from: date))
-        }
         if todayMoments.isEmpty { return NSLocalizedString("entry.title.today", comment: "") }
         return NSLocalizedString("entry.title.another", comment: "")
     }
 
-    /// Sadece günün ilk anı yazılırken selam gösterilir; geçmiş günde asla.
+    /// Sadece günün ilk anı yazılırken selam gösterilir.
     private var pickGreeting: String? {
-        guard entryDate == nil else { return nil }
         guard todayMoments.isEmpty else { return nil }
         // v3: CloudKit currentUser displayName varsa "Günaydın, Batu" olur.
         let name = CloudKitManager.shared.currentUser?["displayName"] as? String

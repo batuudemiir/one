@@ -67,7 +67,6 @@ struct ArchiveContainerView: View {
                             selectedDate = date
                         }
                     },
-                    onPoster: { /* Phase 7 wiring */ },
                     heroDate: selectedDate
                 )
             }
@@ -82,10 +81,9 @@ struct ArchiveContainerView: View {
                         }
                     },
                     onAddMoment: {
-                        // v3: An akışını past-day mode ile aç. TodayView
-                        // GlobalUIState.pendingEntryDate'i tüketir ve entryDay
-                        // olarak V3EntryContainer'a geçirir.
-                        GlobalUIState.shared.pendingEntryDate = Calendar.current.startOfDay(for: date)
+                        // CTA yalnız bugünde çiziliyor (V3DayDetailView
+                        // `isToday` ile kapılıyor), o yüzden burada tarih
+                        // taşımaya gerek yok: An sekmesi zaten bugüne yazar.
                         withAnimation(ONEAnimation.screenTransition) {
                             selectedDate = nil
                         }
@@ -117,6 +115,21 @@ struct ArchiveContainerView: View {
             if let date = selectedDate {
                 selectedMoments = PersistenceController.shared.fetchMoments(for: date, context: context)
             }
+        }
+        // Uzaktan inen değişiklik. Takvimi `ArchiveStore` kendi tazeliyor;
+        // burada yalnız AÇIK gün detayının dilimi yenileniyor.
+        //
+        // `selectedMoments` bir `@State` kopya: merge context'e işlense de
+        // kopya bayat kalıyor (bkz. `.momentsDidChangeRemotely` doc'u). Detay
+        // açıkken inen bir sync ekranda hiç görünmüyordu — yerel kayıt için
+        // `todaySongSaved` yolu vardı, uzak kayıt için karşılığı yoktu.
+        //
+        // `loadDataAsync()` çağrılmıyor: o her zaman bu aya dönüyor ve
+        // kullanıcı geçmiş bir ayı gezerken sync inerse onu takvimden dışarı
+        // fırlatırdı.
+        .onReceive(NotificationCenter.default.publisher(for: .momentsDidChangeRemotely)) { _ in
+            guard let date = selectedDate else { return }
+            selectedMoments = PersistenceController.shared.fetchMoments(for: date, context: context)
         }
         .onReceive(NotificationCenter.default.publisher(for: .archiveTabRetapped)) { _ in
             if selectedDate != nil {

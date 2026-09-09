@@ -97,7 +97,6 @@
 "entry.state.selected" = "seleccionado";
 "entry.state.shared" = "se comparte con tus amigos";
 "entry.title.another" = "¿Otro\nmomento?";
-"entry.title.pastDay" = "¿Cómo fue\nel %@?";
 "entry.title.today" = "¿Cómo estás\nhoy?";
 "export.failed" = "No se pudo exportar el archivo.";
 "greeting.day" = "Buen día";
@@ -1639,7 +1638,6 @@ one day.";
 "echo.noRepeatSong" = "Aynı şarkı iki kez geçmedi.";
 "echo.posterFailed" = "Poster yüklenemedi";
 "entry.changeColour" = "Rengi değiştir";
-"entry.pastDay" = "GEÇMİŞ GÜN";
 "entry.pickColour" = "Bir renk seç. Yeter.";
 "entry.removePhoto" = "Fotoğrafı kaldır";
 "entry.scopeSubtitle" = "Her an için ayrı seçebilirsin.";

@@ -97,7 +97,6 @@
 "entry.state.selected" = "selected";
 "entry.state.shared" = "shared with your friends";
 "entry.title.another" = "One more\nmoment?";
-"entry.title.pastDay" = "How was\n%@?";
 "entry.title.today" = "How are you\ntoday?";
 "export.failed" = "Couldn’t export the archive.";
 "greeting.day" = "Good day";
@@ -1768,7 +1767,6 @@ one day.";
 "echo.noRepeatSong" = "No song came up twice.";
 "echo.posterFailed" = "Couldn't load the poster";
 "entry.changeColour" = "Change colour";
-"entry.pastDay" = "PAST DAY";
 "entry.pickColour" = "Pick a colour. That's all.";
 "entry.removePhoto" = "Remove photo";
 "entry.scopeSubtitle" = "You can choose separately for each moment.";

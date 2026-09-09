@@ -30,7 +30,7 @@ enum AnalyticsEvent {
     /// Faz 4 — `entryIndex` aktivasyon eşiği ("ilk 3 günde ≥2 entry") için şart:
     /// event bazında kaçıncı kayıt olduğu bilinmeden eşik hesaplanamıyordu.
     case entrySaved(hasPhoto: Bool, hasNote: Bool, entryIndex: Int)
-    case entryBackfilled(daysAgo: Int)               // Faz 3 — geri tarihli (telafi) giriş
+    // entryBackfilled kaldırıldı: geriye dönük giriş yok (duruş ilke 3).
     /// Faz 4 — izin prompt'unun NE ZAMAN çıktığını ölçen tek şey. Prompt'u
     /// cold start'tan onboarding'e taşımanın işe yarayıp yaramadığı ancak
     /// bununla görülür.
@@ -91,7 +91,6 @@ enum AnalyticsEvent {
         case .photoAdded:                return "photo_added"
         case .noteAdded:                 return "note_added"
         case .entrySaved:                return "entry_saved"
-        case .entryBackfilled:           return "entry_backfilled"
         case .notifPermissionPrompted:   return "notif_permission_prompted"
         case .notifPermissionResult:     return "notif_permission_result"
         case .circleOpened:              return "circle_opened"
@@ -134,8 +133,6 @@ enum AnalyticsEvent {
             return [:]
         case .firstEntryInviteHookAction(let action):
             return ["action": action]
-        case .entryBackfilled(let daysAgo):
-            return ["days_ago": daysAgo]
         case .onboardingCompleted(let musicPlatform):
             return ["music_platform": musicPlatform]
         case .platformSelected(let platform):

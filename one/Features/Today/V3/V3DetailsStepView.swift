@@ -24,7 +24,6 @@ struct V3DetailsStepView: View {
 
     /// Doldurulan gün — past-day akışında container geçmiş tarihi verir.
     /// Nil ise bugün varsayılır.
-    var entryDate: Date? = nil
 
     /// Container namespace — pick adımındaki seçili tile'ın renk yüzeyi bu
     /// hero'ya interpole edilir. Nil geçilirse (preview/legacy), sade renk.
@@ -383,11 +382,10 @@ struct V3DetailsStepView: View {
 
     // MARK: - Helpers
 
-    /// Ekranda gösterilecek tarih. Past-day akışında container'dan gelen
-    /// `entryDate` kullanılır; yoksa bugün.
+    /// Ekranda gösterilecek tarih — her zaman bugün. Akış geçmiş bir güne
+    /// yazamaz (duruş ilke 3).
     private var dateLabel: String {
-        let f = ONEFormatters.dayMonthWeekday
-        return f.string(from: entryDate ?? Date())
+        ONEFormatters.dayMonthWeekday.string(from: Date())
     }
 
     /// VoiceOver için okunabilir (uppercase değil) varyant.

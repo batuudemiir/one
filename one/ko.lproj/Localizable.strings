@@ -97,7 +97,6 @@
 "entry.state.selected" = "선택됨";
 "entry.state.shared" = "친구와 공유 중";
 "entry.title.another" = "한 순간\n더?";
-"entry.title.pastDay" = "%@은(는)\n어땠나요?";
 "entry.title.today" = "오늘\n어떤가요?";
 "export.failed" = "보관함을 내보내지 못했습니다.";
 "greeting.day" = "좋은 하루";
@@ -1640,7 +1639,6 @@ one day.";
 "echo.noRepeatSong" = "Aynı şarkı iki kez geçmedi.";
 "echo.posterFailed" = "Poster yüklenemedi";
 "entry.changeColour" = "Rengi değiştir";
-"entry.pastDay" = "GEÇMİŞ GÜN";
 "entry.pickColour" = "Bir renk seç. Yeter.";
 "entry.removePhoto" = "Fotoğrafı kaldır";
 "entry.scopeSubtitle" = "Her an için ayrı seçebilirsin.";

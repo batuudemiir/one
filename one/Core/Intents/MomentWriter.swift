@@ -21,13 +21,13 @@ import CoreData
 
 enum MomentWriter {
 
-    /// Bir v3 anı yazar — şarkılı ya da şarkısız, bugüne ya da geçmiş bir güne.
+    /// Bir v3 anı yazar — şarkılı ya da şarkısız. **Her zaman bugüne.**
     ///
-    /// Şarkılı kayıt eskiden legacy `saveEntry`'ye dallanıyordu ve o yol iki
-    /// şeyi bozuyordu: **upsert** semantiği günün diğer anlarını eziyordu, ve
-    /// `entryDate` parametresi hiç okunmadığı için Arşiv'den geçmiş bir güne
-    /// eklenen şarkılı an **bugüne** yazılıyordu. Şarkı artık burada, çok-an
-    /// yolunun içinde.
+    /// `entryDate` parametresi vardı ve Arşiv'den geçmiş bir güne yazmayı
+    /// mümkün kılıyordu. Duruş ilke 3 gereği kaldırıldı: boşluk kalıcıdır,
+    /// arşiv doğru olduğu için değerli, tamamlandığı için değil. Yazma yolunda
+    /// tarih parametresi bulunması, ileride bir çağrı yerinin geriye dönük
+    /// girişi sessizce geri getirmesi demekti.
     ///
     /// - Returns: yazma başarılıysa `true`.
     @discardableResult
@@ -37,16 +37,10 @@ enum MomentWriter {
         photo: UIImage? = nil,
         song: SongResult? = nil,
         scope: MomentScope = .private,
-        entryDate: Date? = nil,
         context: NSManagedObjectContext = PersistenceController.shared.container.viewContext
     ) -> Bool {
         let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let normalized = calendar.startOfDay(for: entryDate ?? Date())
-        /// Geçmiş bir güne yazıyor muyuz? Yan etkilerin bir kısmı "bugün"
-        /// kavramına bağlı (widget, bildirim planı, Echo önbelleği) ve geçmiş
-        /// gün için yanlış olur — 3 gün önceki renk bugünün widget'ına düşemez.
-        let isBackfill = normalized < today
+        let normalized = calendar.startOfDay(for: Date())
         let photoData = photo.flatMap(ONEPhotoEncoder.encode)
 
         let item = PersistenceController.shared.insertNewMoment(
@@ -81,11 +75,7 @@ enum MomentWriter {
             return false
         }
 
-        applySideEffects(mood: mood, note: note, isBackfill: isBackfill, context: context)
-        if isBackfill {
-            let daysAgo = calendar.dateComponents([.day], from: normalized, to: today).day ?? 0
-            AppAnalytics.shared.track(.entryBackfilled(daysAgo: daysAgo))
-        }
+        applySideEffects(mood: mood, note: note, context: context)
         return true
     }
 
@@ -99,15 +89,9 @@ enum MomentWriter {
     /// çağrısıydı, o da `refreshTodaySurfaces`'a taşındı — orası şarkıyı
     /// diskten okuyor.
     ///
-    /// `isBackfill` olduğunda **yalnız analitik** çalışır. Geriye kalan her şey
-    /// "bugün" kavramına bağlı: geçmiş bir günün rengi bugünün widget'ına
-    /// düşemez, bugünün hatırlatmasını iptal edemez ve Echo önbelleğini
-    /// ezemez. Bu ayrımı silinen legacy `backfillEntry` de yapıyordu — telafi
-    /// girişi sessiz olmalı.
     private static func applySideEffects(
         mood: V3Mood,
         note: String,
-        isBackfill: Bool,
         context: NSManagedObjectContext
     ) {
         // v3 mood'unun **kendi** rawValue'su gönderiliyor.
@@ -122,13 +106,6 @@ enum MomentWriter {
         AppAnalytics.shared.track(.moodSelected(mood: mood.rawValue))
         if !note.isEmpty {
             AppAnalytics.shared.track(.noteAdded(length: note.count))
-        }
-
-        // Buradan aşağısı "bugün"e yazıyor — geçmiş gün girişinde atlanır.
-        guard !isBackfill else {
-            // Arşivin kendini tazelemesi için sinyal yine de gitmeli.
-            NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
-            return
         }
 
         NotificationOrchestrator.shared.onSongSaved(
@@ -165,8 +142,24 @@ enum MomentWriter {
     /// **diski okuyarak** çalışıyor. Böylece ne olduğu (ekleme / silme /
     /// düzenleme) önemli değil; sonuç her hâlükârda doğru ve çağrı
     /// idempotent.
+    /// - Parameter notify: `todaySongSaved` atılsın mı.
+    ///
+    ///   **Yerel** yazma/silme için `true`: ekranlar o bildirimle tazeleniyor.
+    ///
+    ///   **Uzak** (CloudKit reconcile) için `false`. Uzak yol zaten
+    ///   `.momentsDidChangeRemotely` atıyor ve ekranlar ona *görüntülenen ayı
+    ///   koruyarak* tepki veriyor. `todaySongSaved`'i oradan da atmak
+    ///   `ArchiveView`'ın `loadDataAsync()` dalını tetikliyordu — o dal yıl/ayı
+    ///   `Date()`'ten sabit alıyor, yani geçmiş bir ayı gezen kullanıcı her
+    ///   uzak senkronda bu aya fırlatılıyordu. (`ArchiveView`'ın
+    ///   `.momentsDidChangeRemotely` dalı tam bunu önlemek için
+    ///   `loadDataAsync` kullanmıyor; bildirim arka kapıdan aynı çağrıyı
+    ///   getiriyordu.) Ayrıca `V3CircleView` o bildirimde
+    ///   `loadFriends(force:)` çağırıyor — her uzak değişiklikte cache TTL'ini
+    ///   atlayan zorunlu bir CloudKit sorgusu demekti.
     static func refreshTodaySurfaces(
-        context: NSManagedObjectContext = PersistenceController.shared.container.viewContext
+        context: NSManagedObjectContext = PersistenceController.shared.container.viewContext,
+        notify: Bool = true
     ) {
         let today = Calendar.current.startOfDay(for: Date())
         let moments = PersistenceController.shared
@@ -178,7 +171,7 @@ enum MomentWriter {
             // Bugün hiç an kalmadı — türetilmiş her şey temizlenmeli.
             WidgetDataWriter.clear()
             TodayViewModel.clearCachedEchoMood()
-            NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
+            if notify { NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil) }
             return
         }
 
@@ -192,6 +185,6 @@ enum MomentWriter {
             note: latest.note,
             entryCount: moments.count
         )
-        NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
+        if notify { NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil) }
     }
 }

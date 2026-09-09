@@ -97,7 +97,6 @@
 "entry.state.selected" = "выбрано";
 "entry.state.shared" = "видно твоим друзьям";
 "entry.title.another" = "Ещё один\nмомент?";
-"entry.title.pastDay" = "Каким был\n%@?";
 "entry.title.today" = "Как ты\nсегодня?";
 "export.failed" = "Не удалось экспортировать архив.";
 "greeting.day" = "Добрый день";
@@ -1640,7 +1639,6 @@ one day.";
 "echo.noRepeatSong" = "Aynı şarkı iki kez geçmedi.";
 "echo.posterFailed" = "Poster yüklenemedi";
 "entry.changeColour" = "Rengi değiştir";
-"entry.pastDay" = "GEÇMİŞ GÜN";
 "entry.pickColour" = "Bir renk seç. Yeter.";
 "entry.removePhoto" = "Fotoğrafı kaldır";
 "entry.scopeSubtitle" = "Her an için ayrı seçebilirsin.";

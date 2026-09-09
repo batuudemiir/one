@@ -60,10 +60,6 @@ final class GlobalUIState: ObservableObject {
     /// Kabuk bunu okuyor.
     var tabSwipeLocked: Bool { entryFlowLocksSwipe || detailStackLocksSwipe }
 
-    /// v3: Arşiv'de boş bir güne (veya "Bu güne an ekle") dokununca An
-    /// akışını o tarih için açar. Container tüketince nil'e set eder.
-    /// nil = bugün, non-nil = past-day mode ("Geçmiş gün" kapsülü + tarih başlığı).
-    @Published var pendingEntryDate: Date? = nil
 }
 
 // MARK: - Photo hero namespace

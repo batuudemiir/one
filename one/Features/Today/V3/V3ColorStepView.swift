@@ -12,8 +12,6 @@ struct V3ColorStepView: View {
     var title: String = NSLocalizedString("entry.title.today", comment: "")
     /// Selam üst satırı (iki tonlu greeting). Nil ise gösterilmez.
     var greeting: String? = nil
-    /// "Geçmiş gün" kapsülü — sadece past-day akışında gösterilir.
-    var pastDayChip: Bool = false
 
     /// Container'dan gelen namespace — seçili tile → details hero → doneBlock
     /// arasında `matchedGeometryEffect` ile aynı yüzey taşınır.
@@ -44,21 +42,6 @@ struct V3ColorStepView: View {
 
     private var scrollContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if pastDayChip {
-                Text(NSLocalizedString("entry.pastDay", comment: ""))
-                    .monoSM(weight: .regular)
-                    .tracking(1.4)
-                    .textCase(.uppercase)
-                    .foregroundColor(V3Tokens.mutedText)
-                    .padding(.horizontal, V3Tokens.spacingMD)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule().fill(V3Tokens.wash)
-                    )
-                    .padding(.top, V3Tokens.spacingMD)
-                    .padding(.bottom, V3Tokens.spacingSM)
-            }
-
             // Selam varken başlık 38pt'ye iniyor: iki 44pt blok üst üste
             // ızgarayı ekran dışına itiyordu. Selam yokken ("Bir an daha?")
             // yer var, 44pt kalıyor.
@@ -74,7 +57,7 @@ struct V3ColorStepView: View {
                     // tek satır kalır, gerekirse küçülür.
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
-                    .padding(.top, pastDayChip ? 0 : 24)
+                    .padding(.top, 24)
             }
 
             Text(title)
@@ -86,7 +69,7 @@ struct V3ColorStepView: View {
                 // satır tasarım, üçüncüsü taşma.
                 .lineLimit(2)
                 .minimumScaleFactor(0.6)
-                .padding(.top, greeting == nil && !pastDayChip ? 28 : 2)
+                .padding(.top, greeting == nil ? 28 : 2)
                 .padding(.bottom, 6)
                 .fixedSize(horizontal: false, vertical: true)
 

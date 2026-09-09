@@ -493,24 +493,10 @@ struct V3ArchiveView: View {
             .contentShape(Rectangle())
             .buttonStyle(.onePressable)
             .accessibilityLabel(cellA11y(date, hexes: hexes))
-            // Menüde "Detay" maddesi vardı; dokunmanın kendisi artık aynı
-            // şeyi yaptığı için kalktı. Geriye menünün tek gerçek işi kaldı:
-            // o güne an eklemek — dokunmayla ulaşılamayan ayrı bir eylem.
-            .contextMenu {
-                Button {
-                    // v3 spec: geçmiş gün için An akışı past-day mode.
-                    GlobalUIState.shared.pendingEntryDate = Calendar.current.startOfDay(for: date)
-                    NotificationCenter.default.post(name: .init("switchToTodayTab"), object: nil)
-                } label: {
-                    Label(
-                        NSLocalizedString(
-                            isEmpty ? "archive.addMomentToDay" : "hub.addMoment",
-                            comment: ""
-                        ),
-                        systemImage: "plus.circle"
-                    )
-                }
-            }
+            // Uzun basınca çıkan menü kaldırıldı: tek maddesi "o güne an
+            // ekle"ydi, yani geriye dönük giriş. Duruş ilke 3 — boşluk
+            // kalıcıdır, arşiv doğru olduğu için değerli. Hücreye dokunmak
+            // günün detayını açar; geçmiş bir güne yazmanın yolu yok.
         }
     }
 

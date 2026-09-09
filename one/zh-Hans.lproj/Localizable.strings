@@ -97,7 +97,6 @@
 "entry.state.selected" = "已选择";
 "entry.state.shared" = "与好友共享";
 "entry.title.another" = "再来\n一个瞬间？";
-"entry.title.pastDay" = "%@\n过得怎么样？";
 "entry.title.today" = "今天\n感觉如何？";
 "export.failed" = "无法导出档案。";
 "greeting.day" = "你好";
@@ -1637,7 +1636,6 @@ one day.";
 "echo.noRepeatSong" = "Aynı şarkı iki kez geçmedi.";
 "echo.posterFailed" = "Poster yüklenemedi";
 "entry.changeColour" = "Rengi değiştir";
-"entry.pastDay" = "GEÇMİŞ GÜN";
 "entry.pickColour" = "Bir renk seç. Yeter.";
 "entry.removePhoto" = "Fotoğrafı kaldır";
 "entry.scopeSubtitle" = "Her an için ayrı seçebilirsin.";
