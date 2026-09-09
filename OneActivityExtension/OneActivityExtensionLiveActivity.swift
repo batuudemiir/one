@@ -125,7 +125,7 @@ struct CelebrationExpandedView: View {
                         Image(systemName: "music.note")
                             .font(.system(size: 10))
                             .foregroundStyle(.white.opacity(0.4))
-                        Text("bugün kaydedildi")
+                        Text(NSLocalizedString("activity.savedToday", comment: ""))
                             .font(.system(size: 10))
                             .foregroundStyle(.white.opacity(0.4))
                     }
@@ -254,7 +254,7 @@ struct DailySongLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.center) {
                     if context.state.isCelebrating {
                         VStack(spacing: 3) {
-                            Text("kaydedildi")
+                            Text(NSLocalizedString("activity.saved", comment: ""))
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundStyle(.white.opacity(0.45))
                             Text(context.state.songName)
@@ -342,7 +342,7 @@ struct FriendShareLiveActivity: Widget {
                         .foregroundStyle(.white.opacity(0.8))
                 }
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("\(context.state.friendName) paylaştı")
+                    Text(String(format: NSLocalizedString("activity.friendShared", comment: ""), context.state.friendName))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.white.opacity(0.6))
                     Text(context.state.songName)
@@ -413,7 +413,7 @@ struct FriendShareLiveActivity: Widget {
                     .font(.system(size: 13))
                     .foregroundStyle(.white.opacity(0.8))
             } compactTrailing: {
-                Text("\(context.state.friendName) paylaştı")
+                Text(String(format: NSLocalizedString("activity.friendShared", comment: ""), context.state.friendName))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.white)
                     .lineLimit(1)

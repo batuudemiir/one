@@ -224,7 +224,7 @@ struct RectangularView: View {
         if entry.songName.isEmpty {
             HStack(spacing: 4) {
                 Image(systemName: "music.note").font(.caption2)
-                Text("Bugün şarkını seç").font(.caption2.weight(.medium))
+                Text(NSLocalizedString("widget.pickSong", comment: "")).font(.caption2.weight(.medium))
             }
             .widgetAccentable()
         } else {
@@ -370,11 +370,11 @@ struct SmallView: View {
                         .font(.system(size: 16, weight: .light)).foregroundStyle(WToken.accent.opacity(0.5))
                 }
                 VStack(spacing: 2) {
-                    Text("Bugün ne hissediyorsun?")
+                    Text(NSLocalizedString("widget.prompt", comment: ""))
                         .font(.system(size: 9, weight: .semibold))
                         .foregroundStyle(WToken.ink.opacity(0.5))
                         .multilineTextAlignment(.center)
-                    Text("Şarkını seç, ruh halini yansıt")
+                    Text(NSLocalizedString("widget.promptSub", comment: ""))
                         .font(.system(size: 8, weight: .medium))
                         .foregroundStyle(WToken.stone)
                         .multilineTextAlignment(.center)
@@ -430,10 +430,10 @@ struct MediumView: View {
                     .foregroundStyle(WToken.accent.opacity(0.5))
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text("Bugün ne hissediyorsun?")
+                Text(NSLocalizedString("widget.prompt", comment: ""))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(WToken.ink.opacity(0.6))
-                Text("Şarkını seç, ruh halini çevrenle paylaş.")
+                Text(NSLocalizedString("widget.promptSubCircle", comment: ""))
                     .font(.system(size: 11, weight: .regular))
                     .foregroundStyle(WToken.stone)
                     .lineLimit(2)
@@ -444,7 +444,7 @@ struct MediumView: View {
                                        initial: String(f.name.prefix(1)).uppercased(),
                                        size: 18)
                         }
-                        Text("paylaştı")
+                        Text(NSLocalizedString("widget.shared", comment: ""))
                             .font(.system(size: 9, weight: .medium))
                             .foregroundStyle(WToken.stone)
                     }
@@ -476,7 +476,7 @@ struct MediumView: View {
                             .lineLimit(2)
                     }
                     if entry.isYesterday {
-                        Text("DÜN")
+                        Text(NSLocalizedString("widget.yesterday", comment: ""))
                             .font(.system(size: 7, weight: .heavy)).tracking(1)
                             .foregroundStyle(.white.opacity(0.5))
                     }
@@ -558,7 +558,7 @@ struct LargeView: View {
                     MoodBubble(colorHex: entry.moodColorHex, initial: "S", size: 36)
                     VStack(alignment: .leading, spacing: 1) {
                         HStack(spacing: 5) {
-                            Text("Sen")
+                            Text(NSLocalizedString("widget.you", comment: ""))
                                 .font(.system(size: 12, weight: .bold)).foregroundStyle(WToken.ink)
                             if !entry.moodLabel.isEmpty {
                                 Text(entry.moodLabel)
@@ -568,7 +568,7 @@ struct LargeView: View {
                                     .background(Capsule().fill(Color(hex: entry.moodColorHex).opacity(0.1)))
                             }
                             if entry.isYesterday {
-                                Text("DÜN")
+                                Text(NSLocalizedString("widget.yesterday", comment: ""))
                                     .font(.system(size: 7, weight: .heavy)).tracking(0.4)
                                     .foregroundStyle(WToken.stone)
                                     .padding(.horizontal, 4).padding(.vertical, 2)
@@ -648,7 +648,7 @@ struct LargeView: View {
                         .padding(.top, 3)
                 }
                 HStack(spacing: 5) {
-                    Text("bekleniyor")
+                    Text(NSLocalizedString("widget.waiting", comment: ""))
                         .font(.system(size: 8, weight: .medium)).tracking(0.3)
                         .foregroundStyle(WToken.stone)
                     ForEach(entry.waitingFriends.prefix(5)) { friend in
@@ -675,10 +675,10 @@ struct LargeView: View {
                     Image(systemName: "music.note")
                         .font(.system(size: 20, weight: .light))
                         .foregroundStyle(WToken.accent.opacity(0.4))
-                    Text("Bugün ne hissediyorsun?")
+                    Text(NSLocalizedString("widget.prompt", comment: ""))
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(WToken.ink.opacity(0.4))
-                    Text("Şarkını seç, ruh halini yansıt.")
+                    Text(NSLocalizedString("widget.promptSub", comment: ""))
                         .font(.system(size: 10))
                         .foregroundStyle(WToken.stone)
                 }
