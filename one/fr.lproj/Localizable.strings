@@ -55,9 +55,9 @@
 "echo.section.moodMap" = "CARTE DES HUMEURS";
 "echo.section.numbers" = "CHIFFRES";
 "echo.section.repeats" = "Les répétitions du mois";
-"echo.section.summary" = "Résumé court";
-"echo.section.topTracks" = "LES PLUS ÉCOUTÉES";
-"echo.stat.mostActiveDay" = "Jour le plus actif";
+"echo.section.summary" = "Chiffres";
+"echo.section.topTracks" = "RÉPÉTÉES";
+"echo.stat.mostActiveDay" = "Jour chargé";
 "echo.stat.resonance" = "Résonance";
 "echo.stat.silentDays" = "Jours silencieux";
 "echo.stat.thisMonth" = "Ce mois-ci";

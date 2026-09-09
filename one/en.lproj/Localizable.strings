@@ -55,9 +55,9 @@
 "echo.section.moodMap" = "MOOD MAP";
 "echo.section.numbers" = "NUMBERS";
 "echo.section.repeats" = "This month’s repeats";
-"echo.section.summary" = "Short summary";
-"echo.section.topTracks" = "MOST PLAYED";
-"echo.stat.mostActiveDay" = "Most active day";
+"echo.section.summary" = "Numbers";
+"echo.section.topTracks" = "REPEATED";
+"echo.stat.mostActiveDay" = "Busy day";
 "echo.stat.resonance" = "Resonance";
 "echo.stat.silentDays" = "Silent days";
 "echo.stat.thisMonth" = "This month";

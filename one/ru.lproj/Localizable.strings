@@ -55,9 +55,9 @@
 "echo.section.moodMap" = "КАРТА НАСТРОЕНИЙ";
 "echo.section.numbers" = "ЦИФРЫ";
 "echo.section.repeats" = "Повторы этого месяца";
-"echo.section.summary" = "Кратко";
-"echo.section.topTracks" = "ЧАЩЕ ВСЕГО";
-"echo.stat.mostActiveDay" = "Самый активный день";
+"echo.section.summary" = "Цифры";
+"echo.section.topTracks" = "ПОВТОРЫ";
+"echo.stat.mostActiveDay" = "Насыщенный день";
 "echo.stat.resonance" = "Резонанс";
 "echo.stat.silentDays" = "Тихие дни";
 "echo.stat.thisMonth" = "В этом месяце";

@@ -55,9 +55,9 @@
 "echo.section.moodMap" = "무드 지도";
 "echo.section.numbers" = "숫자";
 "echo.section.repeats" = "이달의 반복";
-"echo.section.summary" = "짧은 요약";
-"echo.section.topTracks" = "가장 많이 들은 곡";
-"echo.stat.mostActiveDay" = "가장 활발한 요일";
+"echo.section.summary" = "숫자";
+"echo.section.topTracks" = "반복된 곡";
+"echo.stat.mostActiveDay" = "분주한 날";
 "echo.stat.resonance" = "공명";
 "echo.stat.silentDays" = "조용한 날";
 "echo.stat.thisMonth" = "이번 달";

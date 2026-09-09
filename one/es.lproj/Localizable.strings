@@ -55,9 +55,9 @@
 "echo.section.moodMap" = "MAPA DE ÁNIMO";
 "echo.section.numbers" = "NÚMEROS";
 "echo.section.repeats" = "Las repeticiones del mes";
-"echo.section.summary" = "Resumen breve";
-"echo.section.topTracks" = "MÁS ESCUCHADAS";
-"echo.stat.mostActiveDay" = "Día más activo";
+"echo.section.summary" = "Números";
+"echo.section.topTracks" = "REPETIDAS";
+"echo.stat.mostActiveDay" = "Día cargado";
 "echo.stat.resonance" = "Resonancia";
 "echo.stat.silentDays" = "Días en silencio";
 "echo.stat.thisMonth" = "Este mes";

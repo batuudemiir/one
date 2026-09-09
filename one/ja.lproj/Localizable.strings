@@ -55,9 +55,9 @@
 "echo.section.moodMap" = "ムードマップ";
 "echo.section.numbers" = "数字";
 "echo.section.repeats" = "今月のリピート";
-"echo.section.summary" = "短いまとめ";
-"echo.section.topTracks" = "よく聴いた曲";
-"echo.stat.mostActiveDay" = "最も活発な日";
+"echo.section.summary" = "数字";
+"echo.section.topTracks" = "くり返した曲";
+"echo.stat.mostActiveDay" = "よく残した日";
 "echo.stat.resonance" = "レゾナンス";
 "echo.stat.silentDays" = "静かな日";
 "echo.stat.thisMonth" = "今月";

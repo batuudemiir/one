@@ -55,9 +55,9 @@
 "echo.section.moodMap" = "情绪地图";
 "echo.section.numbers" = "数字";
 "echo.section.repeats" = "本月的重复曲目";
-"echo.section.summary" = "简要总结";
-"echo.section.topTracks" = "播放最多";
-"echo.stat.mostActiveDay" = "最活跃的一天";
+"echo.section.summary" = "数字";
+"echo.section.topTracks" = "重复的曲目";
+"echo.stat.mostActiveDay" = "忙碌的一天";
 "echo.stat.resonance" = "共鸣";
 "echo.stat.silentDays" = "安静的日子";
 "echo.stat.thisMonth" = "本月";

@@ -55,9 +55,9 @@
 "echo.section.moodMap" = "MOOD HARİTASI";
 "echo.section.numbers" = "SAYISAL";
 "echo.section.repeats" = "Bu ayın tekrarları";
-"echo.section.summary" = "Kısa özet";
-"echo.section.topTracks" = "EN ÇOK DİNLENENLER";
-"echo.stat.mostActiveDay" = "En aktif gün";
+"echo.section.summary" = "Sayılar";
+"echo.section.topTracks" = "TEKRAR EDENLER";
+"echo.stat.mostActiveDay" = "Yoğun gün";
 "echo.stat.resonance" = "Rezonans";
 "echo.stat.silentDays" = "Sessiz gün";
 "echo.stat.thisMonth" = "Bu ay";

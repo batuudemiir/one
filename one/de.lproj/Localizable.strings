@@ -55,9 +55,9 @@
 "echo.section.moodMap" = "STIMMUNGSKARTE";
 "echo.section.numbers" = "ZAHLEN";
 "echo.section.repeats" = "Wiederholungen des Monats";
-"echo.section.summary" = "Kurze Übersicht";
-"echo.section.topTracks" = "AM HÄUFIGSTEN GEHÖRT";
-"echo.stat.mostActiveDay" = "Aktivster Tag";
+"echo.section.summary" = "Zahlen";
+"echo.section.topTracks" = "WIEDERHOLT";
+"echo.stat.mostActiveDay" = "Voller Tag";
 "echo.stat.resonance" = "Resonanz";
 "echo.stat.silentDays" = "Stille Tage";
 "echo.stat.thisMonth" = "Diesen Monat";
