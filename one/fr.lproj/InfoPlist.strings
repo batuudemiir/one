@@ -7,8 +7,6 @@
 "NSAppleMusicUsageDescription" = "Utilisé pour associer un morceau à ton moment. Fonctionne sans abonnement.";
 "NSCameraUsageDescription" = "Utilisé pour ajouter une photo à ton moment et scanner les QR codes d'invitation.";
 "NSFaceIDUsageDescription" = "Utilisé pour déverrouiller l'app avec Face ID quand le verrouillage est activé.";
-"NSCalendarUsageDescription" = "Utilisé pour ajouter tes moments à ton calendrier.";
 "NSContactsUsageDescription" = "Utilisé pour te permettre de choisir des contacts à inviter sur ONE.";
-"NSMicrophoneUsageDescription" = "Utilisé pour enregistrer le son pendant une capture vidéo.";
 "NSPhotoLibraryUsageDescription" = "Utilisé pour ajouter une photo à ton moment et choisir une photo de profil.";
 "NSPhotoLibraryAddUsageDescription" = "Utilisé pour enregistrer ta carte de partage ou l'affiche mensuelle.";

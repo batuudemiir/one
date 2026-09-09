@@ -7,8 +7,6 @@
 "NSAppleMusicUsageDescription" = "Used to attach a song to your moment. Works without a paid subscription.";
 "NSCameraUsageDescription" = "Used to add a photo to your moment and to scan invite QR codes.";
 "NSFaceIDUsageDescription" = "Used to unlock the app with Face ID when App Lock is on, so only you can open your moments.";
-"NSCalendarUsageDescription" = "Used to add your moments to your calendar.";
 "NSContactsUsageDescription" = "Used to let you pick people from your address book to invite to ONE.";
-"NSMicrophoneUsageDescription" = "Used to record audio while capturing video.";
 "NSPhotoLibraryUsageDescription" = "Used to add a photo to your moment and to pick a profile photo.";
 "NSPhotoLibraryAddUsageDescription" = "Used to save your share card or monthly poster to your photo library.";

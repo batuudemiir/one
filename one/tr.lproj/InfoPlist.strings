@@ -7,8 +7,6 @@
 "NSAppleMusicUsageDescription" = "Hissine bir şarkı eşlemek için Apple Music'e erişim gerekli. Aboneliğin olmasa bile çalışır.";
 "NSCameraUsageDescription" = "Anına fotoğraf eklemek ve davet QR'ı taramak için kamera erişimi gerekli.";
 "NSFaceIDUsageDescription" = "Uygulama kilidi açıkken anlarını yalnızca sen açabilesin diye Face ID kullanılır.";
-"NSCalendarUsageDescription" = "Anlarını takvimine eklemek için takvim erişimi gerekli.";
 "NSContactsUsageDescription" = "Yakınlarını ONE'a davet etmek için rehberinden seçim yapabilmen gerekli.";
-"NSMicrophoneUsageDescription" = "Video çekerken ses kaydı için mikrofon erişimi gerekli.";
 "NSPhotoLibraryUsageDescription" = "Anına fotoğraf eklemek ve profil fotoğrafı seçmek için galeri erişimi gerekli.";
 "NSPhotoLibraryAddUsageDescription" = "Paylaşım kartını ve aylık posteri galerine kaydetmek için izin gerekli.";

@@ -7,8 +7,6 @@
 "NSAppleMusicUsageDescription" = "Wird verwendet, um deinem Moment einen Song zuzuordnen. Funktioniert auch ohne Abo.";
 "NSCameraUsageDescription" = "Wird verwendet, um deinem Moment ein Foto hinzuzufügen und Einladungs-QR-Codes zu scannen.";
 "NSFaceIDUsageDescription" = "Wird verwendet, um die App bei aktivierter App-Sperre mit Face ID zu entsperren.";
-"NSCalendarUsageDescription" = "Wird verwendet, um deine Momente in deinen Kalender einzutragen.";
 "NSContactsUsageDescription" = "Wird verwendet, damit du Kontakte auswählen und zu ONE einladen kannst.";
-"NSMicrophoneUsageDescription" = "Wird verwendet, um bei Videoaufnahmen Ton aufzuzeichnen.";
 "NSPhotoLibraryUsageDescription" = "Wird verwendet, um deinem Moment ein Foto hinzuzufügen und ein Profilbild zu wählen.";
 "NSPhotoLibraryAddUsageDescription" = "Wird verwendet, um deine Teilen-Karte oder das Monatsposter zu sichern.";

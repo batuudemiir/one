@@ -7,8 +7,6 @@
 "NSAppleMusicUsageDescription" = "Se usa para asociar una canción a tu momento. Funciona sin suscripción.";
 "NSCameraUsageDescription" = "Se usa para añadir una foto a tu momento y escanear códigos QR de invitación.";
 "NSFaceIDUsageDescription" = "Se usa para desbloquear la app con Face ID cuando el bloqueo está activado.";
-"NSCalendarUsageDescription" = "Se usa para añadir tus momentos a tu calendario.";
 "NSContactsUsageDescription" = "Se usa para que puedas elegir contactos e invitarlos a ONE.";
-"NSMicrophoneUsageDescription" = "Se usa para grabar audio al capturar vídeo.";
 "NSPhotoLibraryUsageDescription" = "Se usa para añadir una foto a tu momento y elegir una foto de perfil.";
 "NSPhotoLibraryAddUsageDescription" = "Se usa para guardar tu tarjeta o el póster mensual en tu fototeca.";
