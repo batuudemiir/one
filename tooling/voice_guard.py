@@ -43,6 +43,9 @@ import re
 import sys
 import unicodedata
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import catalog  # noqa: E402  — canlı/ölü ayrımının tek kaynağı
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "one")
 
@@ -66,25 +69,17 @@ def is_emoji(ch: str) -> bool:
     return ord(ch) > 0x2000 and unicodedata.category(ch) == "So"
 
 def live_keys() -> tuple[set[str], list[str]]:
-    """Kodda çağrılan anahtarlar + dinamik anahtar önekleri."""
-    keys, prefixes = set(), []
-    for root, _, files in os.walk(SRC):
-        for f in files:
-            if not f.endswith(".swift"):
-                continue
-            text = open(os.path.join(root, f), encoding="utf8", errors="ignore").read()
-            # `NSLocalizedString(...)` + katalog sarmalayıcıları. Sarmalayıcı
-            # (`L`/`Lf`, NotificationMessageBuilder) unutulunca bütün `notif.*`
-            # ailesi "ölü anahtar" sanılıp denetimin dışında kalıyordu.
-            for pattern in (r'NSLocalizedString\(\s*"([^"]+)"',
-                            r'\bLf?\(\s*"([^"]+)"'):
-                for m in re.finditer(pattern, text):
-                    k = m.group(1)
-                    if "\\(" in k:
-                        prefixes.append(k.split("\\(")[0])
-                    else:
-                        keys.add(k)
+    """Canlı anahtarlar + dinamik anahtar önekleri.
+
+    Ayrım `catalog.py`'de: `dead_keys.py` ile **aynı** yöntemi kullanmak
+    zorunda. İkisi ayrı tanım kullanırsa biri denetlemediğini sanır, öteki
+    kullanılan bir anahtarı siler.
+    """
+    blob = catalog.source_blob(ROOT)
+    prefixes = catalog.dynamic_prefixes(blob)
+    keys = set(re.findall(r'"([A-Za-z][A-Za-z0-9_.]*)"', blob))
     return keys, prefixes
+
 
 def check_strings(keys, prefixes):
     problems = []
