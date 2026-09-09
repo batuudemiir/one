@@ -3,7 +3,7 @@
 //  one
 //
 //  Uygulama açılış / mood kayıt / oturum telemetrisini App Group shared
-//  UserDefaults'a yazar. WinBackScheduler ve NotificationMessageBuilder
+//  UserDefaults'a yazar. NotificationMessageBuilder ve planlayıcılar
 //  bu veriden beslenir.
 //
 
@@ -23,7 +23,6 @@ enum EngagementTracker {
         static let lastMoodColorHex     = "engagement.lastMoodColorHex"
         static let recentMoodLabels     = "engagement.recentMoodLabels"
         static let lastKnownFriendCount = "engagement.lastKnownFriendCount"
-        static let nurtureStartedAt     = "engagement.nurtureStartedAt"
         static let abBucket             = "engagement.abBucket"
         // Akıllı bildirim saati — açılış geçmişi
         static let openTimestampLog     = "engagement.openTimestampLog"   // [Double] — son 40 açılış
@@ -121,35 +120,10 @@ enum EngagementTracker {
         defaults.set(log, forKey: Key.openTimestampLog)
     }
 
-    /// İlk 7 gün geçtikten sonra, son 21 gün içindeki açılış saatlerinin medyanını
-    /// döndürür. 9-22 aralığı dışı ve gece açılışları hariç tutulur.
-    /// Yeterli veri yoksa nil döner → mevcut saat ayarı korunur.
-    static func computeSmartReminderHour(now: Date = Date()) -> Int? {
-        guard let firstLaunch = firstLaunchDate else { return nil }
-        let daysSinceInstall = Calendar.current.dateComponents([.day], from: firstLaunch, to: now).day ?? 0
-        guard daysSinceInstall >= 7 else { return nil }
-
-        let cutoff = now.addingTimeInterval(-21 * 86_400)
-        let log = defaults.array(forKey: Key.openTimestampLog) as? [Double] ?? []
-
-        let hours = log
-            .map { Date(timeIntervalSinceReferenceDate: $0) }
-            .filter { $0 >= cutoff }
-            .map { Calendar.current.component(.hour, from: $0) }
-            .filter { $0 >= 9 && $0 <= 22 }
-
-        guard hours.count >= 5 else { return nil }
-
-        let sorted = hours.sorted()
-        return sorted[sorted.count / 2]
-    }
-
-    /// Kurulum tarihinden türetilen kararlı jitter (0 veya 15 dakika).
-    /// Her kurulumda sabit kalır, her açılışta değişmez.
-    static var stableJitterMinute: Int {
-        guard let d = firstLaunchDate else { return 0 }
-        return Int(d.timeIntervalSinceReferenceDate) % 2 == 0 ? 0 : 15
-    }
+    // v4: `computeSmartReminderHour` + `stableJitterMinute` kaldırıldı.
+    // Hatırlatma saatini kullanıcı seçer; uygulama açılış medyanına bakıp
+    // randevuyu kendi başına kaydırmaz. Açılış log'u (`openTimestampLog`)
+    // duruyor — gün/streak hesapları onu okuyor.
 
     // MARK: - Mood
 
@@ -197,16 +171,8 @@ enum EngagementTracker {
         return Calendar.current.isDateInToday(last)
     }
 
-    // MARK: - Nurture
-
-    static func startNurtureIfNeeded(_ date: Date = Date()) {
-        guard defaults.object(forKey: Key.nurtureStartedAt) == nil else { return }
-        defaults.set(date, forKey: Key.nurtureStartedAt)
-    }
-
-    static var nurtureStartedAt: Date? {
-        defaults.object(forKey: Key.nurtureStartedAt) as? Date
-    }
+    // v4: nurture (D1/D2/D3) serisi kaldırıldı — `startNurtureIfNeeded` ve
+    // `nurtureStartedAt` ile birlikte. Bkz. CLAUDE.md › Bildirim mimarisi.
 
     // MARK: - A/B Bucket
 

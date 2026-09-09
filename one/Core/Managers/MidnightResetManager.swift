@@ -87,16 +87,9 @@ class MidnightResetManager {
         context.perform {
             self.resetExpiredShares(context: context)
 
-            // Ayın son günüyse ay-sonu özet bildirimi planla
-            let cal = Calendar.current
-            let today = cal.startOfDay(for: Date())
-            if let lastDayOfMonth = cal.date(
-                byAdding: .day, value: -1,
-                to: cal.date(byAdding: .month, value: 1,
-                             to: cal.date(from: cal.dateComponents([.year, .month], from: today))!)!
-            ), cal.isDate(today, inSameDayAs: lastDayOfMonth) {
-                NotificationManager.shared.scheduleMonthEndNotification()
-            }
+            // v4: ay-sonu push'u kaldırıldı. Aylık portrenin tek sahibi
+            // `MonthlyPortraitScheduler` (ayın 1'i 11:00) — ayın son günü
+            // 20:00'de ikinci bir bildirim aynı şeyi iki kez duyuruyordu.
 
             // Subscription sağlamlık kontrolü — Apple belirli koşullarda CKSubscription'ları
             // silebiliyor; gece yarısı sıfırlamasında eksik olanları yeniden kayıt et.

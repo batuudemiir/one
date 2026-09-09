@@ -44,14 +44,6 @@ enum NotificationKind: String, CaseIterable {
     case weeklySummary
     case monthEndSummary
     case circleActivity
-    case winBack3
-    case winBack7
-    case winBack14
-    case winBack30
-    case nurtureDay1
-    case nurtureDay2
-    case nurtureDay3
-    case circleInviteWave   // B4 — D3-D5 arası "ONE çevrenle daha iyi" davet
     case moodResonance
     case friendShared
     case friendReaction
@@ -72,22 +64,20 @@ enum NotificationKind: String, CaseIterable {
         case .friendReaction, .moodResonance, .circleActivity,
              .commentReceived, .commentReply, .commentMention, .commentBatch:
             return .high
-        case .dailyReminder, .weeklySummary, .monthEndSummary,
-             .nurtureDay1, .nurtureDay2, .nurtureDay3,
-             .circleInviteWave:
+        case .dailyReminder, .weeklySummary, .monthEndSummary:
             return .normal
-        case .winBack3, .winBack7, .winBack14, .winBack30:
-            return .low
         }
     }
 
     /// True if scheduled proactively by the app (not reacting to a live event).
     /// Proactive kinds count toward the weekly proactive cap.
+    ///
+    /// v4: win-back ve nurture serileri kaldırıldı. Uygulamanın kendi
+    /// inisiyatifiyle konuştuğu tek üç durum kaldı — günlük ritüel,
+    /// haftalık ve aylık portre. Hepsi haftalık proactive cap'e tabi.
     var isProactive: Bool {
         switch self {
-        case .winBack3, .winBack7, .winBack14, .winBack30,
-             .nurtureDay1, .nurtureDay2, .nurtureDay3,
-             .circleInviteWave:
+        case .dailyReminder, .weeklySummary, .monthEndSummary:
             return true
         default:
             return false
@@ -122,7 +112,7 @@ struct QuietHours {
     let start: Int   // hour 0-23 inclusive
     let end: Int     // hour 0-23 exclusive
 
-    static let `default` = QuietHours(start: 23, end: 8)
+    static let `default` = QuietHours(start: 22, end: 9)
 
     func contains(_ date: Date, calendar: Calendar = .current) -> Bool {
         let hour = calendar.component(.hour, from: date)

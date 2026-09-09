@@ -22,37 +22,62 @@ enum V3ReminderTone: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .quiet:   return "Sessiz"
-        case .short:   return "Kısa"
-        case .curious: return "Merak eden"
+        case .quiet:   return NSLocalizedString("reminder.tone.quiet", comment: "")
+        case .short:   return NSLocalizedString("reminder.tone.short", comment: "")
+        case .curious: return NSLocalizedString("reminder.tone.recall", comment: "")
         }
     }
 
+    /// Ayar ekranındaki örnek satır. **Gönderilen metnin kendisidir** —
+    /// örnek ile gerçek metin ayrı yazıldığında ikisi ayrı sese kayıyordu.
+    ///
+    /// Dün bağlamlı tonun farkı ancak gerçek bir dünkü kayıtla görünür; o
+    /// yüzden örnekte kullanıcının **kendi** son moodu kullanılıyor. Kayıt
+    /// yoksa ton `Kısa` metnine düşüyor — ekranda da öyle görünmesi doğru.
     var sampleBody: String {
-        switch self {
-        case .quiet:   return "Tek kelime, tek renk."
-        case .short:   return "On saniye sürer."
-        case .curious: return "Dün maviydin. Bugün hangi renk?"
-        }
+        let tone: NotificationMessageBuilder.DailyTone = {
+            switch self {
+            case .quiet:   return .quiet
+            case .short:   return .plain
+            case .curious: return .recall
+            }
+        }()
+        return NotificationMessageBuilder.dailyReminder(
+            tone: tone,
+            yesterdayMoodLabel: EngagementTracker.lastMoodLabel,
+            now: Self.sampleDate
+        ).body
     }
 
-    /// Bildirim metni. `curious` için önceki güne göre body yeniden üretilir;
-    /// önceki gün yoksa `short` fallback verilir (handoff kuralı).
-    func notification(yesterdayMood: V3Mood?) -> (title: String, body: String) {
-        switch self {
-        case .quiet:
-            return ("Bugün.", "Tek kelime, tek renk.")
-        case .short:
-            return ("Bugün nasılsın?", "On saniye sürer.")
-        case .curious:
-            if let y = yesterdayMood {
-                // Tam cümle katalogdan geliyor — "Dün " + çekimli kelime
-                // birleştirmesi yalnız Türkçe'de çalışıyordu.
-                return (y.yesterdayRecallSentence,
-                        NSLocalizedString("reminder.curious.body", comment: ""))
+    /// Örnek satır için sabit bir gün/saat: ayar ekranı her açılışta farklı
+    /// varyant göstermesin.
+    private static let sampleDate: Date = {
+        var comps = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        comps.hour = 21
+        comps.minute = 0
+        return Calendar.current.date(from: comps) ?? Date()
+    }()
+
+    /// v4 marka sesi: metin `NotificationMessageBuilder`'dan gelir. Ton
+    /// yalnızca ne kadar bağlam taşındığını seçer — üçü de bir olguyu
+    /// bildirir, hiçbiri bir şey istemez, süre vaat etmez, duygu yorumlamaz.
+    ///
+    /// `curious` için önceki günün moodu **olgu olarak** anılır; önceki gün
+    /// yoksa `short` metnine düşer.
+    func notification(yesterdayMood: V3Mood?, now: Date = Date()) -> (title: String, body: String) {
+        let tone: NotificationMessageBuilder.DailyTone = {
+            switch self {
+            case .quiet:   return .quiet
+            case .short:   return .plain
+            case .curious: return .recall
             }
-            return V3ReminderTone.short.notification(yesterdayMood: nil)
-        }
+        }()
+        let msg = NotificationMessageBuilder.dailyReminder(
+            tone: tone,
+            yesterdayMoodLabel: yesterdayMood?.label.localizedLowercase,
+            now: now
+        )
+        return (msg.title, msg.body)
     }
 }
 

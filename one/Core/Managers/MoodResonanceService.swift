@@ -124,9 +124,18 @@ extension CloudKitManager {
         let myHex   = UserDefaults.standard.string(
             forKey: "\(Self.resonanceMoodColorPrefix)\(dateKey)")
 
+        // v4: başlık kişi, gövde olgu — "Deniz / Bugün senin gibi huzurlu."
+        // Duyguyu iki kullanıcı da kendisi seçti; uygulama yalnız örtüşmeyi
+        // bildiriyor, yorumlamıyor.
+        let msg = NotificationMessageBuilder.social(
+            .moodResonance,
+            friendName: friendName,
+            moodLabel: EngagementTracker.lastMoodLabel
+        )
+
         scheduleLocalNotification(
-            title: "Çevre Yankısı 🎨",
-            body:  "Bugün \(friendName) ile aynı tonda hissediyorsunuz.",
+            title: msg.title,
+            body:  msg.body,
             category: "MOOD_RESONANCE",
             userInfo: ["type": "mood_resonance", "friendUserID": friendUserID]
         )
@@ -135,8 +144,8 @@ extension CloudKitManager {
         let notif = CircleNotification(
             id: "moodResonance_\(friendUserID)_\(dateKey)",
             type: .moodResonance,
-            title: "\(friendName) ile aynı tondasınız 🌊",
-            body: "Bugün aynı mood rengini seçtiniz.",
+            title: msg.title,
+            body: msg.body,
             date: Date(),
             isRead: false,
             relatedUserID: friendUserID,

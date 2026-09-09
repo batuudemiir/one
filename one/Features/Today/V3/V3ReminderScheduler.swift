@@ -2,13 +2,16 @@ import Foundation
 import UserNotifications
 import CoreData
 
-/// v3 hatırlatma planlayıcısı. `NotificationManager.scheduleDailyReminder` var
-/// olan Duolingo-tonlu mesajları kullandığı için ondan bağımsız yeni bir
-/// katman kurdum. Bu katman handoff'un yalın kuralına uyar:
+/// Günlük ritüelin **tek** planlayıcısı. Kurallar:
 /// - Günde tek local notification.
 /// - Bugün kayıt zaten varsa iptal.
 /// - Kaçırılan gün için follow-up yok.
 /// - Master kapalıysa tüm pending istekleri iptal.
+///
+/// v4: metin `NotificationMessageBuilder`'dan gelir (bkz. `V3ReminderTone`).
+/// Saati, günlerini ve tonunu kullanıcı seçtiği için bu bildirim haftalık
+/// proaktif bütçeye girmez — uygulamanın kendi inisiyatifi değil, kullanıcının
+/// kendisiyle kurduğu randevudur.
 enum V3ReminderScheduler {
 
     /// Bekleyen tüm v3 istekleri için ID prefix'i.
@@ -82,7 +85,7 @@ enum V3ReminderScheduler {
             // curious tonu için body — yalnızca bugünkü fire'a bakalım; sonraki
             // günlerde `short` fallback (yarının "dünü" bugün henüz belirsiz).
             let mood: V3Mood? = (offset == 0) ? yesterdayMood : nil
-            let content = makeContent(tone: settings.tone, yesterdayMood: mood)
+            let content = makeContent(tone: settings.tone, yesterdayMood: mood, fireDate: fireDate)
 
             let trigger = UNCalendarNotificationTrigger(
                 dateMatching: calendar.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate),
@@ -94,8 +97,13 @@ enum V3ReminderScheduler {
         }
     }
 
-    private static func makeContent(tone: V3ReminderTone, yesterdayMood: V3Mood?) -> UNNotificationContent {
-        let text = tone.notification(yesterdayMood: yesterdayMood)
+    /// `fireDate` metne giriyor: başlık gün adını taşıyor ("Salı akşamı") ve
+    /// bu döngü 7 gün ileriyi planlıyor. Bugünün gününü yedi isteğe birden
+    /// yazmak, kullanıcıya cuma günü "Salı" diyen bir bildirim gönderirdi.
+    private static func makeContent(tone: V3ReminderTone,
+                                    yesterdayMood: V3Mood?,
+                                    fireDate: Date) -> UNNotificationContent {
+        let text = tone.notification(yesterdayMood: yesterdayMood, now: fireDate)
         let content = UNMutableNotificationContent()
         content.title = text.title
         content.body = text.body

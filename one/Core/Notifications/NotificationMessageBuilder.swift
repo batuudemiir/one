@@ -1,423 +1,401 @@
 //
-// NotificationMessageBuilder.swift
-// one
+//  NotificationMessageBuilder.swift
+//  one
 //
-// title/body üretimi. TimeOfDay + NotificationKind + son mood +
-// A/B bucket girdilerine göre deterministik seçim yapar (aynı seed → aynı
-// mesaj). Varyantlar arası eşit dağılım için `seed % count` kullanılır.
+//  title/body üretimi. TimeOfDay + NotificationKind + son mood +
+//  A/B bucket girdilerine göre deterministik seçim yapar (aynı seed → aynı
+//  mesaj). Varyantlar arası eşit dağılım için `seed % count` kullanılır.
+//
+//  v4 marka sesi — "az konuşan kurator". Bağlayıcı kurallar:
+//  · Uygulama bir şey istemez; bir olguyu bildirir.
+//  · Kullanıcının duygusu yorumlanmaz, adlandırılmaz, teşhis edilmez.
+//  · Süre vaadi ("10 saniye"), alışkanlık dili, FOMO ve özlem dili yok.
+//  · Sosyal bildirimde özne insandır: başlık kişi, gövde olay (Apple HIG).
+//  · Soru işareti ve ünlem talep sinyalidir — kullanılmaz.
+//  · Uygulama kendini özne yapmaz: "ONE seni bekliyor" yasak.
+//
+//  Metin **katalogdan** gelir (`notif.*` anahtarları, dokuz dil). Burada
+//  kelime birleştirilmez: her dil tam cümleyi kendi dilbilgisiyle kurar —
+//  "Dün " + mood ya da isim + " ve N kişi" yalnız Türkçe'de çalışıyordu.
+//  Gün ve ay adları `LanguageManager.shared.currentLocale` ile biçimleniyor.
 //
 
 import Foundation
 
 struct NotificationMessage {
- let title: String
- let body: String
- let variant: Int
+    let title: String
+    let body: String
+    let variant: Int
 }
 
 struct MessageContext {
- let kind: NotificationKind
- let now: Date
- let timeOfDay: TimeOfDay
- let lastMoodLabel: String?
- let recentMoodLabels: [String] // B6 — son 3 mood (en yenisi başta)
- let friendName: String?
- let friendCount: Int
- let emoji: String?
- let commentExcerpt: String? // v2.5 — yorum önizleme (≤80 karakter, trimmed)
- let commentCount: Int // v2.5 — batch'te kaç yorum
- let abBucket: Int
+    let kind: NotificationKind
+    let now: Date
+    let timeOfDay: TimeOfDay
+    let lastMoodLabel: String?
+    let recentMoodLabels: [String]
+    let friendName: String?
+    let friendCount: Int
+    let emoji: String?
+    let commentExcerpt: String? // v2.5 — yorum önizleme (≤80 karakter, trimmed)
+    let commentCount: Int       // v2.5 — batch'te kaç yorum
+    let abBucket: Int
 
- /// B6 — Hafta sonu (Cumartesi/Pazar) mı?
- var isWeekend: Bool {
- let wd = Calendar.current.component(.weekday, from: now)
- return wd == 1 || wd == 7 // 1=Pazar, 7=Cumartesi
- }
+    /// Gün adı ("Salı", "Cumartesi"). Bildirimin bağlamını takvim verir,
+    /// uygulama değil — nötr, talepsiz bir çerçeve.
+    var weekdayName: String {
+        let f = DateFormatter()
+        f.locale = LanguageManager.shared.currentLocale
+        f.dateFormat = "EEEE"
+        return f.string(from: now).localizedCapitalized
+    }
 
- /// B6 — Son 3 entry'de "ağır" mood dizisi var mı? (seri sayacıyla
-    /// ilgisi yok — mood tonuna bakıyor.) Birikmiş yoğunluğu
- /// yumuşak bir tonda kabul eden push tetikler.
- var isHeavyMoodRun: Bool {
- let heavySet: Set<String> = [
-"yorgun", "kırgın", "üzgün", "kaygılı", "stresli", "öfkeli", "boş", "bunalmış",
-"tired", "anxious", "sad", "stressed", "angry", "empty", "overwhelmed"
- ]
- let normalized = recentMoodLabels.map { $0.lowercased() }
- let heavy = normalized.filter { heavySet.contains($0) }.count
- return recentMoodLabels.count >= 3 && heavy >= 3
- }
-
- init(
- kind: NotificationKind,
- now: Date = Date(),
- lastMoodLabel: String? = EngagementTracker.lastMoodLabel,
- recentMoodLabels: [String]? = nil,
- friendName: String? = nil,
- friendCount: Int = 1,
- emoji: String? = nil,
- commentExcerpt: String? = nil,
- commentCount: Int = 1,
- abBucket: Int = 0
- ) {
- self.kind = kind
- self.now = now
- self.timeOfDay = TimeOfDay.from(now)
- self.lastMoodLabel = lastMoodLabel
- self.recentMoodLabels = recentMoodLabels ?? EngagementTracker.recentMoodLabels(limit: 3)
- self.friendName = friendName
- self.friendCount = friendCount
- self.emoji = emoji
- self.commentExcerpt = commentExcerpt
- self.commentCount = max(1, commentCount)
- self.abBucket = abBucket
- }
+    init(
+        kind: NotificationKind,
+        now: Date = Date(),
+        lastMoodLabel: String? = EngagementTracker.lastMoodLabel,
+        recentMoodLabels: [String]? = nil,
+        friendName: String? = nil,
+        friendCount: Int = 1,
+        emoji: String? = nil,
+        commentExcerpt: String? = nil,
+        commentCount: Int = 1,
+        abBucket: Int = 0
+    ) {
+        self.kind = kind
+        self.now = now
+        self.timeOfDay = TimeOfDay.from(now)
+        self.lastMoodLabel = lastMoodLabel
+        self.recentMoodLabels = recentMoodLabels ?? EngagementTracker.recentMoodLabels(limit: 3)
+        self.friendName = friendName
+        self.friendCount = friendCount
+        self.emoji = emoji
+        self.commentExcerpt = commentExcerpt
+        self.commentCount = max(1, commentCount)
+        self.abBucket = abBucket
+    }
 }
 
 enum NotificationMessageBuilder {
 
- // MARK: - Public
+    // MARK: - Katalog
 
- static func build(_ ctx: MessageContext, seed: Int) -> NotificationMessage {
- let variants = variants(for: ctx)
- guard !variants.isEmpty else {
- return NotificationMessage(title: "ONE", body: "Seni bekliyoruz.", variant: 0)
- }
- let idx = abs(seed &+ ctx.abBucket) % variants.count
- let v = variants[idx]
- return NotificationMessage(title: v.title, body: v.body, variant: idx)
- }
+    /// Bildirim metni katalog anahtarı. `Bundle.setLanguage` (LanguageManager)
+    /// ana bundle'ı takas ettiği için uygulama içi dil seçimi burada da geçerli.
+    private static func L(_ key: String) -> String {
+        NSLocalizedString(key, comment: "notification copy")
+    }
 
- /// Convenience: date-based seed for daily reminders so ardışık günler
- /// farklı mesaj alsın.
- static func dailySeed(for date: Date = Date()) -> Int {
- let comps = Calendar.current.dateComponents([.year, .month, .day], from: date)
- return (comps.year ?? 0) * 10_000 + (comps.month ?? 0) * 100 + (comps.day ?? 0)
- }
+    /// Biçimli karşılık. Çok argümanlı anahtarlar konumlu (`%1$@`) yazılır:
+    /// sıralama dile göre değişiyor.
+    private static func Lf(_ key: String, _ args: CVarArg...) -> String {
+        String(format: NSLocalizedString(key, comment: "notification copy"),
+               arguments: args)
+    }
 
- // MARK: - Variants
+    /// "%1$@ ve %2$d kişi" — çevre, rezonans ve yorum yığını ortak kullanır.
+    private static func peopleTitle(_ name: String, _ others: Int) -> String {
+        Lf("notif.people.andOthers", name, others)
+    }
 
- private static func variants(for ctx: MessageContext) -> [(title: String, body: String)] {
- switch ctx.kind {
- case .dailyReminder: return dailyReminderVariants(ctx)
- case .weeklySummary: return weeklySummaryVariants(ctx)
- case .monthEndSummary: return monthlyPortraitVariants(ctx)
- case .circleActivity: return circleActivityVariants(ctx)
- case .winBack3: return winBackVariants(days: 3, ctx: ctx)
- case .winBack7: return winBackVariants(days: 7, ctx: ctx)
- case .winBack14: return winBackVariants(days: 14, ctx: ctx)
- case .winBack30: return winBackVariants(days: 30, ctx: ctx)
- case .nurtureDay1: return nurtureDay1Variants(ctx)
- case .circleInviteWave: return circleInviteWaveVariants(ctx)
- case .nurtureDay2: return nurtureDay2Variants(ctx)
- case .nurtureDay3: return nurtureDay3Variants(ctx)
- case .moodResonance: return moodResonanceVariants(ctx)
- case .friendShared: return friendSharedVariants(ctx)
- case .friendReaction: return friendReactionVariants(ctx)
- case .friendRequest: return friendRequestVariants(ctx)
- case .friendAccepted: return friendAcceptedVariants(ctx)
- case .commentReceived: return commentReceivedVariants(ctx)
- case .commentReply: return commentReplyVariants(ctx)
- case .commentMention: return commentMentionVariants(ctx)
- case .commentBatch: return commentBatchVariants(ctx)
- }
- }
+    // MARK: - Public
 
- // MARK: - Comment excerpt helper
+    static func build(_ ctx: MessageContext, seed: Int) -> NotificationMessage {
+        let variants = variants(for: ctx)
+        guard !variants.isEmpty else {
+            return NotificationMessage(title: "ONE", body: L("notif.fallback.body"), variant: 0)
+        }
+        let idx = abs(seed &+ ctx.abBucket) % variants.count
+        let v = variants[idx]
+        return NotificationMessage(title: v.title, body: v.body, variant: idx)
+    }
 
- /// Yorum metnini push body için güvenli kısaltır: newline → boşluk, 80 karakter cap, "…".
- private static func excerpt(_ raw: String?, limit: Int = 80) -> String? {
- guard let raw else { return nil }
- let cleaned = raw
- .trimmingCharacters(in: .whitespacesAndNewlines)
- .replacingOccurrences(of: "\n", with: "")
- guard !cleaned.isEmpty else { return nil }
- if cleaned.count <= limit { return cleaned }
- let idx = cleaned.index(cleaned.startIndex, offsetBy: limit)
- return String(cleaned[..<idx]) + "…"
- }
+    /// Convenience: date-based seed for daily reminders so ardışık günler
+    /// farklı mesaj alsın.
+    static func dailySeed(for date: Date = Date()) -> Int {
+        let comps = Calendar.current.dateComponents([.year, .month, .day], from: date)
+        return (comps.year ?? 0) * 10_000 + (comps.month ?? 0) * 100 + (comps.day ?? 0)
+    }
 
- // MARK: - Comment variants (v2.5)
+    /// Sosyal olaylar için tek satırlık giriş. Çağrı yerleri (CloudKit push
+    /// handler'ları, rezonans servisi, çevre özeti) kendi metnini yazmaz —
+    /// v4 sesinin tek kaynağı burasıdır.
+    ///
+    /// Başlık kişidir, gövde olaydır (Apple HIG başlık/gövde ayrımı).
+    static func social(
+        _ kind: NotificationKind,
+        friendName: String? = nil,
+        friendCount: Int = 1,
+        moodLabel: String? = nil,
+        emoji: String? = nil,
+        now: Date = Date()
+    ) -> NotificationMessage {
+        build(
+            MessageContext(
+                kind: kind,
+                now: now,
+                lastMoodLabel: moodLabel,
+                friendName: friendName,
+                friendCount: friendCount,
+                emoji: emoji
+            ),
+            seed: 0
+        )
+    }
 
- private static func commentReceivedVariants(_ ctx: MessageContext) -> [(String, String)] {
- let name = ctx.friendName ?? "Biri"
- let body = excerpt(ctx.commentExcerpt).map {"\"\($0)\"" } ?? "Paylaşımına yorum bıraktı."
- return [("\(name) paylaşımına yorum bıraktı", body)]
- }
+    // MARK: - Günlük ritüel
 
- private static func commentReplyVariants(_ ctx: MessageContext) -> [(String, String)] {
- let name = ctx.friendName ?? "Biri"
- let body = excerpt(ctx.commentExcerpt).map {"\"\($0)\"" } ?? "Yorumuna yanıt verdi."
- return [("\(name) yorumuna yanıt verdi", body)]
- }
+    /// Kullanıcının hatırlatma ayarındaki ton. Üçü de aynı kurala uyar —
+    /// olguyu bildirir, bir şey istemez, duyguyu adlandırmaz. Fark yalnızca
+    /// ne kadar bağlam taşıdıklarıdır.
+    enum DailyTone {
+        case quiet    // yalnız gün + durum
+        case plain    // günün saatine göre çerçeve
+        case recall   // dünkü kaydı olgu olarak anar
+    }
 
- private static func commentMentionVariants(_ ctx: MessageContext) -> [(String, String)] {
- let name = ctx.friendName ?? "Biri"
- let body = excerpt(ctx.commentExcerpt).map {"\"\($0)\"" } ?? "Seni bir yorumda andı."
- return [("\(name) seni bir yorumda andı", body)]
- }
+    /// Günlük ritüelin metni. Ritüeli kullanıcı kurar (saatini kendisi seçer),
+    /// bu yüzden haftalık proaktif bütçeye girmez; ama sesi bildirimin geri
+    /// kalanıyla aynıdır.
+    static func dailyReminder(
+        tone: DailyTone,
+        yesterdayMoodLabel: String? = nil,
+        now: Date = Date(),
+        seed: Int? = nil
+    ) -> NotificationMessage {
+        let ctx = MessageContext(
+            kind: .dailyReminder,
+            now: now,
+            lastMoodLabel: (tone == .recall) ? yesterdayMoodLabel : nil
+        )
+        let day = ctx.weekdayName
+        let chosenSeed = seed ?? dailySeed(for: now)
 
- private static func commentBatchVariants(_ ctx: MessageContext) -> [(String, String)] {
- let count = ctx.commentCount
- let name = ctx.friendName
- if let name, count == 2 {
- return [("\(name) ve 1 kişi daha yorum bıraktı", "Paylaşımında konuşma başladı.")]
- } else if let name, count > 2 {
- return [("\(name) ve \(count - 1) kişi daha yorum bıraktı", "Paylaşımın hareketlendi.")]
- } else {
- return [("\(count) yeni yorum", "Paylaşımında konuşma başladı.")]
- }
- }
+        let variants: [(title: String, body: String)]
+        switch tone {
+        case .quiet:
+            // Tek cümle, tek olgu. Gün adı bağlamı zaten veriyor.
+            variants = [(day, L("notif.daily.empty"))]
 
- // MARK: - D1 — Monthly portrait (30-gün özet push)
+        case .plain:
+            variants = dailyReminderVariants(ctx)
 
- private static func monthlyPortraitVariants(_ ctx: MessageContext) -> [(String, String)] {
- let cal = Calendar.current
- // ctx.now ay 1'i temsil ediyor — geçen ay için kart üret.
- let prevMonth = cal.date(byAdding: .month, value: -1, to: ctx.now) ?? ctx.now
- let formatter = DateFormatter()
- formatter.dateFormat = "LLLL"
- formatter.locale = LanguageManager.shared.currentLocale
- let monthName = formatter.string(from: prevMonth).capitalized
- return [
- ("İşte senin \(monthName) ayın", "30 gün, 30 mood — aylık portrenin hazır."),
- ("\(monthName) yansıması", "Bu ayın renk paletini paylaşmaya ne dersin? "),
- ("Aylık posterin hazır", "\(monthName) ayını tek bir kartta gör.")
- ]
- }
+        case .recall:
+            if let mood = yesterdayMoodLabel, !mood.isEmpty {
+                // Çerçeve fire saatinden gelir: hatırlatması 09:00 olan
+                // kullanıcıya "Salı akşamı" demek, uydurma bir bağlamdır.
+                let frame: String
+                switch ctx.timeOfDay {
+                case .morning: frame = Lf("notif.day.morning", day)
+                case .noon:    frame = Lf("notif.day.noon", day)
+                case .evening: frame = Lf("notif.day.evening", day)
+                case .night:   frame = L("notif.day.night")
+                }
+                let recallBody = Lf("notif.daily.yesterday", mood)
+                variants = [(day, recallBody), (frame, recallBody)]
+            } else {
+                variants = dailyReminderVariants(ctx)
+            }
+        }
 
- // MARK: - C2 — Sunday Reflection (weekly summary push)
+        guard !variants.isEmpty else {
+            return NotificationMessage(title: day, body: L("notif.daily.empty"), variant: 0)
+        }
+        let idx = abs(chosenSeed) % variants.count
+        return NotificationMessage(title: variants[idx].title, body: variants[idx].body, variant: idx)
+    }
 
- private static func weeklySummaryVariants(_ ctx: MessageContext) -> [(String, String)] {
- let mood = ctx.lastMoodLabel
- let hasFriends = ctx.friendName != nil || ctx.friendCount > 1
- var variants: [(String, String)] = [
- ("Haftanın renk paleti hazır", "Pazar yansımana göz at — 7 günün sesi.")
- ]
- if let m = mood {
- variants.append(("Bu haftanın baskın tonu: \(m) ", "Pazar yansımana göz at."))
- }
- if hasFriends {
- variants.append(("Çevren ne hissetti bu hafta? ", "Pazar yansımanı paylaşmak ister misin? "))
- } else {
- variants.append(("Pazar yansıması", "7 günü tek bir kartta gör — paylaşmak ister misin? "))
- }
- variants.append(("Bu haftanın sesi hazır — bir bak.", "7 günlük moodun seni bekliyor."))
- variants.append(("Bu haftan hazır", "Haftanın renk paletini keşfet."))
- return variants
- }
+    // MARK: - Variants
 
- // MARK: - Circle invite wave (B4) — D4 push, no friends added yet
+    private static func variants(for ctx: MessageContext) -> [(title: String, body: String)] {
+        switch ctx.kind {
+        case .dailyReminder:    return dailyReminderVariants(ctx)
+        case .weeklySummary:    return weeklySummaryVariants(ctx)
+        case .monthEndSummary:  return monthlyPortraitVariants(ctx)
+        case .circleActivity:   return circleActivityVariants(ctx)
+        case .moodResonance:    return moodResonanceVariants(ctx)
+        case .friendShared:     return friendSharedVariants(ctx)
+        case .friendReaction:   return friendReactionVariants(ctx)
+        case .friendRequest:    return friendRequestVariants(ctx)
+        case .friendAccepted:   return friendAcceptedVariants(ctx)
+        case .commentReceived:  return commentReceivedVariants(ctx)
+        case .commentReply:     return commentReplyVariants(ctx)
+        case .commentMention:   return commentMentionVariants(ctx)
+        case .commentBatch:     return commentBatchVariants(ctx)
+        }
+    }
 
- private static func circleInviteWaveVariants(_ ctx: MessageContext) -> [(String, String)] {
- return [
- ("ONE çevrenle daha iyi", "Bir yakını da bugün hangi rengi seçtiğini bıraksın."),
- ("Tek başına güzel, çevrenle güzel", "Bir yakını davet et — birlikte bir hafta deneyin.")
- ]
- }
+    // MARK: - Comment excerpt helper
 
- // MARK: - Nurture Day 3 — ilk haftan başladı (B3)
+    /// Yorum metnini push body için güvenli kısaltır: newline → boşluk, 80 karakter cap, "…".
+    private static func excerpt(_ raw: String?, limit: Int = 80) -> String? {
+        guard let raw else { return nil }
+        let cleaned = raw
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\n", with: " ")
+        guard !cleaned.isEmpty else { return nil }
+        if cleaned.count <= limit { return cleaned }
+        let idx = cleaned.index(cleaned.startIndex, offsetBy: limit)
+        return String(cleaned[..<idx]) + "…"
+    }
 
- /// Day-3 push'u yeni kullanıcıyı üçüncü gün geri çağırır.
-    private static func nurtureDay3Variants(_ ctx: MessageContext) -> [(String, String)] {
-        // Davet sayıya değil eyleme bakıyor.
-        [
-            ("Alışkanlık 3. günde kök salar", "Bugün de bir renk bırak."),
-            ("İlk haftan seni bekliyor", "Tek bir an yeter.")
+    // MARK: - Comment variants (v2.5)
+    //
+    // Başlık olayı, gövde yorumun kendisini taşır. Uygulama yorum hakkında
+    // yorum yapmaz — "konuşma başladı", "hareketlendi" gibi coşku dili yok.
+
+    private static func commentReceivedVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let name = ctx.friendName ?? L("notif.someone")
+        let body = excerpt(ctx.commentExcerpt).map { "\"\($0)\"" } ?? L("notif.comment.received.body")
+        return [(Lf("notif.comment.received.title", name), body)]
+    }
+
+    private static func commentReplyVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let name = ctx.friendName ?? L("notif.someone")
+        let body = excerpt(ctx.commentExcerpt).map { "\"\($0)\"" } ?? L("notif.comment.reply.body")
+        return [(Lf("notif.comment.reply.title", name), body)]
+    }
+
+    private static func commentMentionVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let name = ctx.friendName ?? L("notif.someone")
+        let body = excerpt(ctx.commentExcerpt).map { "\"\($0)\"" } ?? L("notif.comment.mention.body")
+        return [(Lf("notif.comment.mention.title", name), body)]
+    }
+
+    private static func commentBatchVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let count = ctx.commentCount
+        if let name = ctx.friendName, count > 1 {
+            return [(peopleTitle(name, count - 1), L("notif.comment.received.body"))]
+        } else {
+            return [(Lf("notif.comment.batch.title", count), L("notif.comment.batch.body"))]
+        }
+    }
+
+    // MARK: - D1 — Monthly portrait (30-gün özet push)
+
+    private static func monthlyPortraitVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let cal = Calendar.current
+        // ctx.now ay 1'i temsil ediyor — geçen ay için kart üret.
+        let prevMonth = cal.date(byAdding: .month, value: -1, to: ctx.now) ?? ctx.now
+        let formatter = DateFormatter()
+        formatter.dateFormat = "LLLL"
+        formatter.locale = LanguageManager.shared.currentLocale
+        let monthName = formatter.string(from: prevMonth).localizedCapitalized
+        return [
+            (monthName, L("notif.monthly.ready")),
+            (Lf("notif.monthly.closed.title", monthName), L("notif.monthly.closed.body")),
+            (L("notif.monthly.generic.title"), Lf("notif.monthly.generic.body", monthName))
         ]
     }
 
- // MARK: - Nurture Day 2 — widget kurulumu (B5)
+    // MARK: - C2 — Sunday Reflection (weekly summary push)
 
- /// Day-2 nurture push'u kullanıcıyı ana ekrana ONE widget'ı eklemeye
- /// yönlendirir. Widget kurmuş kullanıcı kapısız retention sağlar
- /// (D7'de %30+ daha yüksek dönüş hipotezi).
- private static func nurtureDay2Variants(_ ctx: MessageContext) -> [(String, String)] {
- return [
- ("Tek dokunuş kalsın", "Ana ekranına ONE widget'ı ekle, mood'unu uygulamayı açmadan bırak."),
- ("Widget'ı dene", "Bugün uygulamayı açmadan bir renk bırakmak ister misin? ")
- ]
- }
+    private static func weeklySummaryVariants(_ ctx: MessageContext) -> [(String, String)] {
+        var variants: [(String, String)] = [
+            (L("notif.weekly.thisWeek.title"), L("notif.weekly.thisWeek.body")),
+            (L("notif.weekly.palette.title"), L("notif.weekly.palette.body"))
+        ]
+        if let mood = ctx.lastMoodLabel {
+            variants.append((L("notif.weekly.dominant.title"), Lf("notif.weekly.dominant.body", mood)))
+        }
+        variants.append((L("notif.weekly.sunday.title"), L("notif.weekly.sunday.body")))
+        return variants
+    }
 
- // MARK: - Nurture Day 1 — onboarding sonrası akşam, ilk mood seçimine referans
+    // MARK: - Daily reminder (TimeOfDay-aware)
+    //
+    // Tek görevi: bugünün arşivde boş olduğunu bildirmek. Motivasyon,
+    // alışkanlık, süre vaadi ve ruh hali yorumu içermez. Hafta sonu ve
+    // "ağır mood serisi" özel dilleri v4'te kaldırıldı: uygulama
+    // kullanıcının duygusal durumunu okumaz ve ona göre konuşmaz.
 
- private static func nurtureDay1Variants(_ ctx: MessageContext) -> [(String, String)] {
- // Onboarding sırasında seçilen ilk mood'u referans al (varsa)
- // `OnboardingRecord.firstMoodHex` okunuyor.
- //
- // Eskiden burada `UserDefaults.string(forKey: "onboardingFirstMood")` vardı
- // ama o anahtarı **hiçbir yer yazmıyordu** — v3 onboarding'i seçimi
- // `v3.onboarding.firstMoodHex` altına kaydediyor. Yani bu dal hiç
- // çalışmıyor, Day-1 bildirimi her zaman jenerik metne düşüyordu.
- if let hex = OnboardingRecord.firstMoodHex,
- let firstMood = V3Mood.closest(toHex: hex) {
- return [
- ("Bugünün rengi neydi? ", "Dün '\(firstMood.label)' dedin. Bugünkü hissini de bırak."),
- ("Dünkü '\(firstMood.label)' bugün nasıl? ", "Tek bir renk, tek bir his. ONE seni bekliyor."),
- ]
- }
- return [
- ("Bugünün rengi neydi? ", "Akşam ritüelin ONE'da seni bekliyor."),
- ("İlk günün nasıl geçti? ", "Bugünkü şarkını da bırak, alışkanlık burada başlar."),
- ]
- }
+    private static func dailyReminderVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let day = ctx.weekdayName
+        let mood = ctx.lastMoodLabel
 
- // MARK: - Daily reminder (TimeOfDay-aware)
+        switch ctx.timeOfDay {
+        case .morning:
+            var v: [(String, String)] = [
+                (Lf("notif.day.morning", day), L("notif.daily.emptyStanding")),
+                (day, L("notif.daily.noColorYet"))
+            ]
+            if let mood { v.append((day, Lf("notif.daily.yesterday", mood))) }
+            return v
 
- private static func dailyReminderVariants(_ ctx: MessageContext) -> [(String, String)] {
- let mood = ctx.lastMoodLabel
+        case .noon:
+            var v: [(String, String)] = [
+                (Lf("notif.day.noon", day), L("notif.daily.stillEmpty")),
+                (day, L("notif.daily.noColorYet"))
+            ]
+            if let mood { v.append((day, Lf("notif.daily.yesterday", mood))) }
+            return v
 
- // B6 — Ağır mood serisi: yumuşak, dayatmasız, soft aesthetic ton
- if ctx.isHeavyMoodRun {
- return [
- ("Birkaç gündür yoğunsun", "Küçük bir nefes ve tek bir kelime — kendine zaman tanı."),
- ("Yavaş bir gün için", "Bugünkü hissini ONE'a bırak, üzerinde durma.")
- ]
- }
+        case .evening:
+            var v: [(String, String)] = [
+                (Lf("notif.day.evening", day), L("notif.daily.stillEmpty")),
+                (day, L("notif.daily.beforeClose"))
+            ]
+            if let mood { v.append((Lf("notif.day.evening", day), Lf("notif.daily.yesterday", mood))) }
+            return v
 
- // B6 — Hafta sonu özel dili
- if ctx.isWeekend {
- let day = Calendar.current.component(.weekday, from: ctx.now)
- let dayLabel = (day == 7) ? "Cumartesi" : "Pazar"
- switch ctx.timeOfDay {
- case .morning:
- return [
- ("\(dayLabel) sabahı", "Yavaş başla — bugünkü vibe ne? "),
- ("Hafta sonu vibe'ı", mood.map {"Dün \($0) — bugün hangi tona geçiyorsun? " } ?? "Bugün hangi renktesin? ")
- ]
- case .noon, .evening:
- return [
- ("\(dayLabel) keyfi", "Bugünkü mood'unu bırak, kendine zaman ayır."),
- ("Hafta sonunun rengi? ", "Tek bir kelime yeter.")
- ]
- case .night:
- return [
- ("\(dayLabel) kapanmadan", "Bugünkü hissini bırakmak hâlâ erken."),
- ]
- }
- }
+        case .night:
+            return [
+                (L("notif.day.night"), L("notif.daily.colorless")),
+                (day, L("notif.daily.stillNotPicked"))
+            ]
+        }
+    }
 
- switch ctx.timeOfDay {
- case .morning:
- return [
- ("Günaydın", "Bugüne bir şarkıyla başla."),
- ("Sabah ritmi hazır mı? ", "Bugünkü mood'unu seç."),
- ("Güne bir renk ver", mood.map {"Dün \($0) hissettin — bugün nasılsın? " } ?? "Bugün hangi renktesin? ")
- ]
- case .noon:
- return [
- ("Günün ortası", "Şarkını seç, nefes al."),
- ("Öğle molası", "Bugünkü mood'unu kaydet."),
- ("Bir şarkı, bir an ⏸", mood.map {"Sabah \($0) hissettin. Şu an? " } ?? "Kendine 10 saniye ayır.")
- ]
- case .evening:
- return [
- ("Günü bir şarkıyla kapat", "Bugünkü mood'unu bırak."),
- ("Akşamın ruhu ne? ", mood.map {"Dün \($0) — bugün? " } ?? "Seçimini yap, geride bırakma."),
- ("Bugünü mühürle", "Şarkını seç, yarın güzel bakarsın.")
- ]
- case .night:
- return [
- ("Günü kapatmadan", "Bir şarkı, bir mood, 10 saniye."),
- ("Gece olmadan bırak", mood.map {"Dün '\($0)' dedin. Bugün? " } ?? "Bugünkü seçimini kaydet.")
- ]
- }
- }
+    // MARK: - Circle
+    //
+    // Özne insan. Uygulama "bir bak", "hareketli" gibi yorum eklemez.
 
+    private static func circleActivityVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let friend = ctx.friendName ?? L("notif.aFriend")
+        if ctx.friendCount <= 1 {
+            return [(friend, L("notif.circle.leftColor"))]
+        } else {
+            return [(peopleTitle(friend, ctx.friendCount - 1), L("notif.circle.leftColors"))]
+        }
+    }
 
- // MARK: - Circle
+    // MARK: - Mood Resonance
 
- private static func circleActivityVariants(_ ctx: MessageContext) -> [(String, String)] {
- let friend = ctx.friendName ?? "Bir arkadaşın"
- if ctx.friendCount <= 1 {
- return [("\(friend) bugünkü seçimini yaptı", "Çevrende neler oluyor bir bak!")]
- } else {
- let extras = ctx.friendCount - 1
- return [("\(friend) ve \(extras) kişi paylaştı", "Çevren bugün hareketli.")]
- }
- }
+    private static func moodResonanceVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let friend = ctx.friendName ?? L("notif.someoneInCircle")
+        let body = ctx.lastMoodLabel.map { Lf("notif.resonance.body", $0) }
+            ?? L("notif.resonance.bodyNoMood")
+        if ctx.friendCount <= 1 {
+            return [(friend, body)]
+        } else {
+            return [(peopleTitle(friend, ctx.friendCount - 1), body)]
+        }
+    }
 
- // MARK: - Win-back
+    // MARK: - Social
 
- private static func winBackVariants(days: Int, ctx: MessageContext) -> [(String, String)] {
- // C5 — Yumuşak ton, FOMO yerine kabul. Çevre varsa"seni özledi"
- // referansı, yoksa nazik bir"küçük bir not" daveti.
- // friendCount default 1 olduğu için friendName veya >1 ile gerçek
- // sosyal sinyal teyit edilir.
- let hasFriends = ctx.friendName != nil || ctx.friendCount > 1
- switch days {
- case 3:
- if hasFriends {
- return [
- ("Çevren seni özledi", "Birkaç gündür mood yok — küçük bir not bırakır mısın? "),
- ("3 gün geçti", "Acele yok. Bugünün rengini bırakmak yeter.")
- ]
- }
- return [
- ("Birkaç gün ara verdin", "İstediğinde tek bir kelime yeter — bugün nasılsın? "),
- ("Yavaş bir dönüş için", "Bugünkü hissini ONE'a bırakmak ister misin? ")
- ]
- case 7:
- if hasFriends {
- return [
- ("Çevren bu hafta seni andı", "Bir şarkı, bir mood — kısa bir geri dönüş yeter."),
- ("Bir hafta sessizdin", "Çevrende neler oldu görmek ister misin? ")
- ]
- }
- return [
- ("Bir haftadır sessiz", "Tek bir kelime: bugün nasılsın? "),
- ("Bugüne küçük bir başlangıç", "10 saniye yeter — mood'unu bırak.")
- ]
- case 14:
- return [
- ("İki hafta oldu", "Yumuşak bir dönüş için: tek bir mood yeter."),
- ("14 gün, 14 farklı renk olabilirdi", "Bugünkü tonun ne? ")
- ]
- case 30:
- return [
- ("Bir aydır birikenler var", "Geri dönüş ağır olmasın — tek kelime yeter."),
- ("30 gün geçti", hasFriends ? "Çevren senin payını saklı tutuyor." : "Tekrar başlamak için bugün güzel bir gün.")
- ]
- default:
- return [("Seni özledik", "Geri dönmek istediğinde, ONE seni bekliyor.")]
- }
- }
+    private static func friendSharedVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let name = ctx.friendName ?? L("notif.aFriend")
+        let body = ctx.lastMoodLabel.map { Lf("notif.friendShared.withMood", $0) }
+            ?? L("notif.friendShared.noMood")
+        return [(name, body)]
+    }
 
- // MARK: - Mood Resonance
+    private static func friendReactionVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let name = ctx.friendName ?? L("notif.aFriend")
+        if let emoji = ctx.emoji, !emoji.isEmpty {
+            return [(name, Lf("notif.reaction.withEmoji", emoji))]
+        }
+        return [(name, L("notif.reaction.plain"))]
+    }
 
- private static func moodResonanceVariants(_ ctx: MessageContext) -> [(String, String)] {
- let mood = ctx.lastMoodLabel ?? "aynı mood"
- let friend = ctx.friendName ?? "Çevren"
- if ctx.friendCount <= 1 {
- return [("\(friend) da \(mood) hissediyor", "Çevrende yankı var.")]
- } else if ctx.friendCount == 2 {
- return [("\(friend) ve 1 kişi daha \(mood) ", "Çevren bugün seninle aynı frekansta.")]
- } else {
- return [("\(friend) ve \(ctx.friendCount - 1) kişi daha \(mood) ", "Çevren bugün seninle aynı frekansta.")]
- }
- }
+    private static func friendRequestVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let name = ctx.friendName ?? L("notif.someone")
+        return [(name, L("notif.friendRequest.body"))]
+    }
 
- // MARK: - Social
-
- private static func friendSharedVariants(_ ctx: MessageContext) -> [(String, String)] {
- let name = ctx.friendName ?? "Bir arkadaşın"
- let moodPart = ctx.lastMoodLabel.map {"\($0) hissediyor — dinlemek ister misin? " }
- ?? "Dinlemek ister misin? "
- return [("\(name) bugünkü şarkısını paylaştı", moodPart)]
- }
-
- private static func friendReactionVariants(_ ctx: MessageContext) -> [(String, String)] {
- let name = ctx.friendName ?? "Bir arkadaşın"
- let emoji = ctx.emoji ?? ""
- return [("\(name) paylaşımına \(emoji) bıraktı", "Çevrende yankı buluyorsun.")]
- }
-
- private static func friendRequestVariants(_ ctx: MessageContext) -> [(String, String)] {
- let name = ctx.friendName ?? "Biri"
- return [("\(name) seni çevresine eklemek istiyor", "Kabul et veya incele.")]
- }
-
- private static func friendAcceptedVariants(_ ctx: MessageContext) -> [(String, String)] {
- let name = ctx.friendName ?? "Arkadaşın"
- return [("\(name) artık çevrende", "İlk paylaşımını görmeye hazır mısın? ")]
- }
+    private static func friendAcceptedVariants(_ ctx: MessageContext) -> [(String, String)] {
+        let name = ctx.friendName ?? L("notif.yourFriend")
+        return [(name, L("notif.friendAccepted.body"))]
+    }
 }

@@ -2,12 +2,12 @@
 //  SundayReflectionScheduler.swift
 //  one
 //
-//  C2 — Retention planı: her pazar 11:00 push ile haftanın renk paleti
-//  ve "Pazar yansıması" davetiyle kullanıcıyı haftalık özete çağırır.
+//  Her Pazar 11:00: haftanın portresi hazır olduğunu bildirir.
+//  v4 — haftalık portrenin **tek** planlayıcısı. Cumartesi 10:00'daki
+//  "Yankı hazır" push'u aynı içeriği ikinci kez duyurduğu için kaldırıldı.
 //
 //  Her boot'ta gelecek 2 Pazar yeniden zamanlanır (idempotent). Daha
-//  uzağa schedule etmek anlamlı değil — kullanıcı 2 hafta açmadıysa
-//  win-back zaten devreye girer.
+//  uzağa schedule etmenin anlamı yok: uygulama açıldıkça tazeleniyor.
 //
 
 import Foundation

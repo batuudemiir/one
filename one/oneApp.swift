@@ -282,11 +282,10 @@ struct oneApp: App {
                             appDelegate.setupNotificationCategories()
                             NotificationOrchestrator.shared.bootOnLaunch()
                             NotificationOrchestrator.shared.onAppOpened()
-                            // v3 daily reminder — cold start'ta yeniden planla.
-                            // scheduleSmartDailyReminder ile aynı andaydılar; v3
-                            // rescheduler eski daily'yi kendisi iptal ediyor.
+                            // Günlük ritüel — cold start'ta yeniden planla.
+                            // Tek planlayıcı bu; orchestrator artık kendi
+                            // `daily_reminder`'ını kurmuyor.
                             V3ReminderScheduler.reschedule()
-                            NotificationManager.shared.scheduleMonthEndNotification()
                             updateChecker.check()
                             // Prod launch histogram telemetry — iOS payload'ı
                             // günde ~1 kez teslim eder; register bir sonraki

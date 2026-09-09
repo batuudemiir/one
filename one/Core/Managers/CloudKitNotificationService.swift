@@ -29,7 +29,10 @@ extension CloudKitManager {
     // v9: friendShare + comment silent push → visible push (alertBody eklendi).
     //     Silent push iOS tarafından throttle edildiği için uygulama kapalıyken bildirim
     //     gelmiyordu. Visible push CloudKit sunucu tarafında APNs'e dönüşür, app state'ten bağımsız.
-    private static let currentSubVersion   = 9
+    // v10 — abonelik fallback metinleri v4 sesine geçti ve katalogdan
+    // (dokuz dil) geliyor. Metin CloudKit'te abonelikle saklandığı için
+    // sürüm artışı mevcut kurulumlarda yeniden kayıt tetikler.
+    private static let currentSubVersion   = 10
     private static let subVersionKey       = "cloudkit_subscription_version"
 
     // Eski subscription ID'leri (temizleme için)
@@ -108,8 +111,11 @@ extension CloudKitManager {
                 options: [.firesOnRecordCreation]
             )
             let info = CKSubscription.NotificationInfo()
-            // Görünür bildirim — uygulama kapalı olsa bile APNs gösterir
-            info.alertBody  = "Yeni bir arkadaşlık isteğin var 🎵"
+            // Görünür bildirim — uygulama kapalı olsa bile APNs gösterir.
+            // Bu metin abonelikle birlikte CloudKit'te saklanıyor: kayıt
+            // anındaki dille donuyor. Dil değişince `currentSubVersion`
+            // artırılıp abonelikler yeniden kurulmalı.
+            info.alertBody  = NSLocalizedString("notif.push.friendRequest", comment: "")
             info.soundName  = "default"
             info.shouldBadge = true
             // Arka planda da işlem yapılabilsin
@@ -159,7 +165,7 @@ extension CloudKitManager {
             // Not: arkadaş olmayanların paylaşımları handler tarafında isFriendWith ile filtrelenir;
             // onlar için generic bildirim birkaç saniye görünüp silinir (iOS throttle'ı nedeniyle
             // kabul edilebilir tradeoff — uygulama kapalıyken tümü kaybolmasından iyi).
-            info.alertBody                  = "Çevrenden birisi paylaşım yaptı 🎵"
+            info.alertBody                  = NSLocalizedString("notif.push.friendShared", comment: "")
             info.shouldSendContentAvailable = true
             info.shouldBadge                = true
             info.collapseIDKey              = "userID"
@@ -192,7 +198,7 @@ extension CloudKitManager {
             )
             let info = CKSubscription.NotificationInfo()
             // Görünür bildirim
-            info.alertBody  = "Birisi paylaşımına tepki verdi 💫"
+            info.alertBody  = NSLocalizedString("notif.push.reaction", comment: "")
             info.soundName  = "default"
             info.shouldBadge = true
             info.shouldSendContentAvailable = true
@@ -239,7 +245,7 @@ extension CloudKitManager {
             )
             let info = CKSubscription.NotificationInfo()
             // Görünür bildirim
-            info.alertBody  = "Arkadaşlık isteğin kabul edildi ✨"
+            info.alertBody  = NSLocalizedString("notif.push.friendAccepted", comment: "")
             info.soundName  = "default"
             info.shouldBadge = true
             info.shouldSendContentAvailable = true
@@ -290,11 +296,16 @@ extension CloudKitManager {
 
         fetchDisplayName(for: senderID) { name in
             // Store'a friendRequest bildirimi ekle — birleşik akışta gösterim için
+            // v4: başlık kişi, gövde olay. Metin tek kaynaktan
+            // (`NotificationMessageBuilder`) — push ile uygulama içi satır
+            // ayrı yazıldığında ikisi ayrı sese kayıyordu.
+            let msg = NotificationMessageBuilder.social(.friendRequest, friendName: name)
+
             let notif = CircleNotification(
                 id: "friendRequest_\(senderID)_\(Int(Date().timeIntervalSince1970))",
                 type: .friendRequest,
-                title: "\(name) seni çevresine eklemek istiyor",
-                body: "Kabul et veya incele.",
+                title: msg.title,
+                body: msg.body,
                 date: Date(),
                 isRead: false,
                 relatedUserID: senderID,
@@ -305,8 +316,8 @@ extension CloudKitManager {
             Task { @MainActor in CircleNotificationStore.shared.add(notif) }
 
             self.scheduleLocalNotification(
-                title: "Çevrenden yeni davet 🎵",
-                body:  "\(name) seni ONE çevresine çağırıyor.",
+                title: msg.title,
+                body:  msg.body,
                 category: "FRIEND_REQUEST",
                 userInfo: ["type": "friend_request", "senderID": senderID]
             )
@@ -368,19 +379,21 @@ extension CloudKitManager {
                             moodColorHex = nil
                         }
 
-                        let moodBody: String = {
-                            if let mood = moodLabel {
-                                return "\(name) bugün \(mood) hissediyor — dinlemek ister misin?"
-                            }
-                            return "\(name) bugün mood'unu ve şarkısını seçti. Bakmak ister misin?"
-                        }()
+                        // v4: "\(name)" / "Huzurlu. Bir şarkı bıraktı."
+                        // Duyguyu arkadaş adlandırdı, uygulama yalnız aktarıyor;
+                        // davet cümlesi ("dinlemek ister misin?") kaldırıldı.
+                        let msg = NotificationMessageBuilder.social(
+                            .friendShared,
+                            friendName: name,
+                            moodLabel: moodLabel
+                        )
 
                         DispatchQueue.main.async {
                             let notif = CircleNotification(
                                 id: notifID,
                                 type: .friendShare,
-                                title: "\(name) paylaşım yaptı 🎵",
-                                body: moodBody,
+                                title: msg.title,
+                                body: msg.body,
                                 date: Date(),
                                 isRead: false,
                                 relatedUserID: sharerID,
@@ -399,8 +412,8 @@ extension CloudKitManager {
                             if let mood = moodLabel { userInfo["moodLabel"] = mood }
 
                             self.scheduleLocalNotification(
-                                title: "\(name) paylaşım yaptı 🎵",
-                                body:  moodBody,
+                                title: msg.title,
+                                body:  msg.body,
                                 category: "FRIEND_SHARED",
                                 identifier: notifID,
                                 userInfo: userInfo
@@ -458,11 +471,13 @@ extension CloudKitManager {
         }
 
         fetchDisplayName(for: accepterID) { name in
+            let msg = NotificationMessageBuilder.social(.friendAccepted, friendName: name)
+
             let notif = CircleNotification(
                 id: "friendAccepted_\(accepterID)_\(Self.todayDateKey())",
                 type: .friendAccepted,
-                title: "\(name) artık çevrende 🎉",
-                body: "İlk paylaşımını görmeye hazır mısın?",
+                title: msg.title,
+                body: msg.body,
                 date: Date(),
                 isRead: false,
                 relatedUserID: accepterID,
@@ -471,8 +486,8 @@ extension CloudKitManager {
             Task { @MainActor in CircleNotificationStore.shared.add(notif) }
 
             self.scheduleLocalNotification(
-                title: "Çevrene yeni biri katıldı ✨",
-                body:  "\(name) senin çevrende artık. Bugünkü paylaşımlarını göster!",
+                title: msg.title,
+                body:  msg.body,
                 category: "FRIEND_ACCEPTED",
                 userInfo: ["type": "friend_accepted", "accepterID": accepterID]
             )
@@ -506,11 +521,19 @@ extension CloudKitManager {
             else { completion(); return }
 
             self.fetchDisplayName(for: senderID) { name in
+                // Emoji burada kullanıcının bıraktığı **veri**; uygulamanın
+                // kendi süslemesi değil. Gövdede aynen aktarılıyor.
+                let msg = NotificationMessageBuilder.social(
+                    .friendReaction,
+                    friendName: name,
+                    emoji: emoji
+                )
+
                 let notif = CircleNotification(
                     id: "emojiReaction_\(senderID)_\(emoji)_\(shareRecordName)",
                     type: .emojiReaction,
-                    title: "\(name) paylaşımına tepki verdi \(emoji)",
-                    body: "Bugünkü seçimin çevrende karşılık buldu.",
+                    title: msg.title,
+                    body: msg.body,
                     date: Date(),
                     isRead: false,
                     relatedUserID: senderID,
@@ -519,8 +542,8 @@ extension CloudKitManager {
                 Task { @MainActor in CircleNotificationStore.shared.add(notif) }
 
                 self.scheduleLocalNotification(
-                    title: "\(name) paylaşımına tepki verdi \(emoji)",
-                    body:  "Bugünkü seçimin çevrende karşılık buldu.",
+                    title: msg.title,
+                    body:  msg.body,
                     category: "EMOJI_REACTION",
                     userInfo: ["type": "emoji_reaction", "senderID": senderID, "emoji": emoji]
                 )

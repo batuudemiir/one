@@ -45,9 +45,6 @@ final class NotificationOrchestrator: NSObject {
         static let dedupDayKey                = "notificationDedupDayKey"
         static let dedupWeekKey               = "notificationDedupWeekKey"
         static let milestonesCelebrated       = "milestonesCelebrated"
-        static let dailyReminderHour          = "dailyReminderHour"
-        static let dailyReminderMinute        = "dailyReminderMinute"
-        static let smartReminderLastHour      = "smartReminderLastAppliedHour"
     }
 
     private let center = UNUserNotificationCenter.current()
@@ -67,12 +64,30 @@ final class NotificationOrchestrator: NSObject {
     func bootOnLaunch() {
         rollDailyWindowIfNeeded()
         rollWeeklyWindowIfNeeded()
-        WinBackScheduler.rescheduleAll()
-        NewUserNurtureScheduler.rescheduleAll()
+        purgeRetiredSchedules()
         SundayReflectionScheduler.rescheduleAll()
-        scheduleEchoReadyIfNeeded()
         MonthlyPortraitScheduler.rescheduleAll()
-        applySmartReminderIfReady()
+    }
+
+    /// v4 — kaldırılan serilerin cihazda **zaten kurulmuş** istekleri.
+    /// Kod silinince pending istekler silinmez: `echo_ready_saturday`,
+    /// `weekly_summary` ve `daily_reminder` tekrarlayan trigger'la kuruluydu,
+    /// win-back/nurture ise 30 güne kadar ileri tarihliydi. Güncelleyen
+    /// kullanıcı aksi halde v3 metnini almaya devam ederdi — ve `repeats:
+    /// true` olanlarda süresiz. Her boot'ta çalışır — idempotent ve ucuz.
+    private static let retiredIdentifiers = [
+        "winback_3d", "winback_7d", "winback_14d", "winback_30d",
+        "nurture_d1", "nurture_d2", "nurture_d3", "nurture_d4_circle",
+        "echo_ready_saturday",   // Cumartesi 10:00 — Pazar yansımasıyla çakışıyordu
+        "weekly_summary",        // Pazar 18:00 — ikinci haftalık motor
+        "monthEndSummary",       // ayın son günü 20:00 — ikinci aylık motor
+        "daily_reminder"         // orchestrator'ın kendi tekrarlayan isteği
+    ]
+
+    private func purgeRetiredSchedules() {
+        center.removePendingNotificationRequests(
+            withIdentifiers: Self.retiredIdentifiers
+        )
     }
 
     // MARK: - Public: Quiet Hours
@@ -80,19 +95,25 @@ final class NotificationOrchestrator: NSObject {
     var quietHours: QuietHours {
         let enabled = defaults.object(forKey: Key.quietHoursEnabled) as? Bool ?? true
         guard enabled else { return QuietHours(start: 0, end: 0) }
-        let start = defaults.object(forKey: Key.quietHoursStart) as? Int ?? 23
-        let end   = defaults.object(forKey: Key.quietHoursEnd)   as? Int ?? 8
+        // v4 sessiz saatler 22–09. Fallback tek kaynaktan (QuietHours.default)
+        // okunur; burada tekrar yazılan sayı politika değişince sessizce
+        // eskiyordu.
+        let start = defaults.object(forKey: Key.quietHoursStart) as? Int ?? QuietHours.default.start
+        let end   = defaults.object(forKey: Key.quietHoursEnd)   as? Int ?? QuietHours.default.end
         return QuietHours(start: start, end: end)
     }
 
     var dailyCap: Int {
         let v = defaults.integer(forKey: Key.dailyNotificationCap)
-        return v == 0 ? 2 : v
+        return v == 0 ? 1 : v
     }
 
     var weeklyProactiveCap: Int {
+        // v4: uygulamanın kendi inisiyatifiyle konuşma bütçesi haftada 2.
+        // Günlük ritüel kullanıcının açıkça istediği bir şey olduğu için
+        // bu bütçeye dahil değildir (bkz. decide()).
         let v = defaults.integer(forKey: Key.weeklyProactiveCap)
-        return v == 0 ? 5 : v
+        return v == 0 ? 2 : v
     }
 
     // MARK: - Decision
@@ -132,8 +153,9 @@ final class NotificationOrchestrator: NSObject {
             return .drop(reason: "daily cap")
         }
 
-        // Weekly proactive cap.
-        if kind.isProactive {
+        // Weekly proactive cap. Günlük ritüel kullanıcının kendi kurduğu
+        // bir randevu — bütçeden düşmez.
+        if kind.isProactive && kind != .dailyReminder {
             let sentWeek = defaults.integer(forKey: Key.proactiveSentThisWeek)
             if sentWeek >= weeklyProactiveCap {
                 return .drop(reason: "weekly cap")
@@ -228,28 +250,23 @@ final class NotificationOrchestrator: NSObject {
 
     // MARK: - Event hooks
 
-    /// Uygulama foreground olduğunda çağrılır. Engagement tracker günceller
-    /// ve pending win-back zincirini resetler (Phase 2'de kullanılır).
+    /// Uygulama foreground olduğunda çağrılır.
     func onAppOpened() {
         EngagementTracker.markOpened()
-        applySmartReminderIfReady()
     }
 
-    /// Kullanıcı mood kaydettiğinde çağrılır. Günün daily_reminder'ı iptal
-    /// edilir, yarının daily_reminder'ı
-    /// deterministik seed ile tekrar kurulur — 1sn asyncAfter race'i gider.
+    /// Kullanıcı mood kaydettiğinde çağrılır.
+    ///
+    /// v4: burada **yeniden planlama yok.** Günlük ritüelin tek sahibi
+    /// `V3ReminderScheduler` (kullanıcının seçtiği saat, gün ve ton).
+    /// Orchestrator burada kendi tekrarlayan `daily_reminder`'ını kuruyordu;
+    /// V3 katmanı onu birkaç satır sonra zaten siliyordu, ama silinmeden önce
+    /// `markSent` sayaçları artıyordu — hiç teslim edilmemiş bir bildirim
+    /// günlük tavanı doldurup gerçek olayları düşürüyordu (v4'te tavan 1).
+    /// Kalan tek iş, eski sürümlerden kalmış olabilecek isteği temizlemek.
     func onSongSaved(moodLabel: String?, moodColorHex: String?) {
         EngagementTracker.markMoodSaved(label: moodLabel, colorHex: moodColorHex)
-
-        // Bugünün daily reminder'ı geçersiz — iptal et.
         cancel(identifiers: ["daily_reminder"])
-
-        // Yarın için yeni variant seed ile yeniden kur.
-        rescheduleDailyReminderForTomorrow()
-
-        // B3 — Nurture push'larını yeniden kur (Day-3 metni
-        // güncellensin diye). Idempotent: aynı identifier'lar ile re-register eder.
-        NewUserNurtureScheduler.rescheduleAll()
     }
 
     /// Midnight reset hook. notificationsSentToday boşaltılır (zaten gün
@@ -259,83 +276,17 @@ final class NotificationOrchestrator: NSObject {
         rollDailyWindowIfNeeded(force: true)
     }
 
-    // MARK: - Akıllı Bildirim Saati
-
-    /// İlk 7 gün geçtikten sonra kullanıcının medyan açılış saatine göre
-    /// daily_reminder'ı yeniden programlar. Yalnızca mevcut ayardan ≥1 saat
-    /// fark varsa güncelleme yapar; gereksiz reschedule önlenir.
-    func applySmartReminderIfReady() {
-        guard defaults.oneNotificationsEnabled else { return }
-        guard let smartHour = EngagementTracker.computeSmartReminderHour() else { return }
-
-        let storedHour = defaults.integer(forKey: Key.dailyReminderHour)
-        let currentHour = storedHour == 0 ? 20 : storedHour
-        let lastApplied = defaults.integer(forKey: Key.smartReminderLastHour)
-
-        // Zaten bu saate uygulandıysa ve mevcut ayar da aynıysa atla
-        guard smartHour != lastApplied || abs(smartHour - currentHour) >= 1 else { return }
-        guard abs(smartHour - currentHour) >= 1 else { return }
-
-        let jitter = EngagementTracker.stableJitterMinute
-        defaults.set(smartHour, forKey: Key.dailyReminderHour)
-        defaults.set(jitter, forKey: Key.dailyReminderMinute)
-        defaults.set(smartHour, forKey: Key.smartReminderLastHour)
-
-        rescheduleDailyReminderForTomorrow()
-
-        AppAnalytics.shared.track(.smartNotificationScheduled(hour: smartHour))
-        ONELogger.info(
-            "Akıllı bildirim saati uygulandı: \(smartHour):\(String(format: "%02d", jitter)) (önceki: \(currentHour):00)",
-            category: .notification
-        )
-    }
-
-    // MARK: - Daily reminder helpers
-
-    private func rescheduleDailyReminderForTomorrow() {
-        guard defaults.oneNotificationsEnabled else { return }
-
-        let hourSetting = defaults.integer(forKey: "dailyReminderHour")
-        let minuteSetting = defaults.integer(forKey: "dailyReminderMinute")
-        let hour = hourSetting == 0 ? 20 : hourSetting
-
-        let cal = Calendar.current
-        let now = Date()
-        var comps = cal.dateComponents([.year, .month, .day], from: now)
-        comps.day = (comps.day ?? 0) + 1
-        comps.hour = hour
-        comps.minute = minuteSetting
-        guard let fireDate = cal.date(from: comps) else { return }
-
-        let seed = NotificationMessageBuilder.dailySeed(for: fireDate)
-        let bucket = EngagementTracker.abBucket(userID: nil)
-        let msg = NotificationMessageBuilder.build(
-            MessageContext(kind: .dailyReminder,
-                           now: fireDate,
-                           abBucket: bucket),
-            seed: seed
-        )
-
-        let content = UNMutableNotificationContent()
-        content.title = msg.title
-        content.body = msg.body
-        content.sound = .default
-
-        // Daily reminder tekrarlayıcı olarak schedule ediliyordu.
-        // Yeniden tekrarlayan trigger kur: hour+minute repeats=true.
-        var repeating = DateComponents()
-        repeating.hour = hour
-        repeating.minute = minuteSetting
-        let trigger = UNCalendarNotificationTrigger(dateMatching: repeating, repeats: true)
-
-        _ = schedule(
-            kind: .dailyReminder,
-            identifier: "daily_reminder",
-            trigger: trigger,
-            content: content,
-            variant: msg.variant
-        )
-    }
+    // MARK: - Akıllı Bildirim Saati (v4'te kaldırıldı)
+    //
+    // Kullanıcının açılış medyanına bakıp hatırlatma saatini kendi başına
+    // kaydıran katman kaldırıldı. İki gerekçe:
+    //  · v4 ekseni — günlük ritüel kullanıcının kendisiyle kurduğu randevu.
+    //    Randevunun saatini uygulamanın sessizce değiştirmesi, "uygulama bir
+    //    şey istemez" kuralının en görünmez ihlaliydi.
+    //  · Zaten ölü koddu: yazdığı `dailyReminderHour` anahtarını gerçek
+    //    planlayıcı (`V3ReminderScheduler`, `v3ReminderMinutes`) okumuyordu;
+    //    kurduğu istek de birkaç satır sonra siliniyordu.
+    // Saat ayarı ekranda duruyor ve yalnız kullanıcı değiştiriyor.
 
     // MARK: - Windowing
 
@@ -480,31 +431,4 @@ extension NotificationOrchestrator {
         )
     }
 
-    // MARK: - Echo hazır (Cumartesi 10:00)
-
-    private func scheduleEchoReadyIfNeeded() {
-        guard defaults.oneNotificationsEnabled else { return }
-        let identifier = "echo_ready_saturday"
-        center.getPendingNotificationRequests { [weak self] pending in
-            guard let self else { return }
-            guard !pending.contains(where: { $0.identifier == identifier }) else { return }
-            let seed = NotificationMessageBuilder.dailySeed()
-            let msg = NotificationMessageBuilder.build(
-                MessageContext(kind: .weeklySummary),
-                seed: seed &+ 999
-            )
-            let content = UNMutableNotificationContent()
-            content.title = msg.title
-            content.body  = msg.body
-            content.sound = .default
-
-            var comps = DateComponents()
-            comps.weekday = 7  // Cumartesi
-            comps.hour    = 10
-            comps.minute  = 0
-            let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: true)
-            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-            self.center.add(request, withCompletionHandler: nil)
-        }
-    }
 }

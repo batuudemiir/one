@@ -2,9 +2,10 @@
 //  MonthlyPortraitScheduler.swift
 //  one
 //
-//  D1 — Retention planı: her ayın 1'inde 11:00, geçen ayın MonthlySummary
-//  posterini görmeye / paylaşmaya çağıran cinematic push. "Spotify Wrapped"
-//  mantığının aylık dozajı — sürekli ödül beklentisi yaratır.
+//  Her ayın 1'inde 11:00: geçen ayın portresi hazır olduğunu bildirir.
+//  v4 — bir olgu bildirimi, bir davet değil. Metin
+//  `NotificationMessageBuilder`'dan gelir ("Ağustos / Ayın portresi hazır.").
+//  Aylık portrenin **tek** planlayıcısı burasıdır.
 //
 //  Boot başına gelecek 2 ayın 1'i kuyruğa alınır (idempotent). Ay sonu
 //  hesaplama yerine "ayın ilk günü 11:00" sabitlenir — geçen ay tamamlanmış
