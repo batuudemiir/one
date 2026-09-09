@@ -820,6 +820,14 @@ struct V3ProfileView: View {
     private var settingsList: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingXL2) {
             settingsGroup(NSLocalizedString("settings.group.settings", comment: "")) {
+                // Duruş ilke 4: arşivin sahibi kullanıcıdır. Dışa aktarma
+                // gizli bir ayar değil — grubun ilk satırı.
+                SettingsRow(
+                    title: NSLocalizedString("settings.exportArchive", comment: ""),
+                    subtitle: NSLocalizedString("settings.exportArchive.note", comment: ""),
+                    showsChevron: false
+                ) { exportArchive() }
+
                 SettingsRow(
                     title: NSLocalizedString("settings.reminder", comment: ""),
                     value: reminderTimeLabel
@@ -931,6 +939,24 @@ struct V3ProfileView: View {
                     note: NSLocalizedString("applock.noPasscode", comment: "")
                 )
             }
+        }
+    }
+
+    /// Arşivi tek dosyaya yazıp sistem paylaşım sayfasını açar.
+    ///
+    /// Dosya `ArchiveExporter` tarafından geçici dizine yazılıyor; paylaşım
+    /// sayfası kullanıcının seçtiği yere kopyalıyor.
+    private func exportArchive() {
+        ONEHaptics.feelingSelected()
+        do {
+            let url = try ArchiveExporter.writeArchive(
+                context: PersistenceController.shared.container.viewContext
+            )
+            ShareManager.shared.shareViaActivityController(items: [url])
+        } catch {
+            ErrorHandler.shared.handle(
+                AppError.unknown(message: NSLocalizedString("export.failed", comment: ""))
+            )
         }
     }
 

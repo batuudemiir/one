@@ -99,6 +99,7 @@
 "entry.title.another" = "もう一つ\n瞬間を？";
 "entry.title.pastDay" = "%@は\nどうでしたか？";
 "entry.title.today" = "今日は\nどんな気分？";
+"export.failed" = "アーカイブを書き出せませんでした。";
 "greeting.day" = "こんにちは";
 "greeting.evening" = "こんばんは";
 "greeting.morning" = "おはよう";
@@ -216,6 +217,8 @@
 "saved.oneMoment" = "今日のマスがアーカイブに入りました。";
 "saved.scope.circle" = "サークルの友だちが見られます。";
 "saved.scope.private" = "あなたのアーカイブだけに。";
+"settings.exportArchive" = "アーカイブを書き出す";
+"settings.exportArchive.note" = "すべての記録を一つのファイルに。";
 "share.other" = "その他";
 "share.photoLoadFailed" = "写真を読み込めませんでした";
 "share_to_instagram" = "シェア";
@@ -492,7 +495,6 @@
 "profile.icloudOff" = "オフ";
 "profile.appleMusicConnected" = "接続済み · 設定で切断";
 "profile.appleMusicConnect" = "接続";
-"profile.exportData" = "データをエクスポート";
 "profile.rateApp" = "アプリを評価";
 "profile.exportFormat" = "エクスポート形式";
 "profile.exportError" = "エクスポートエラー";
@@ -1366,7 +1368,6 @@ one day.";
 "settings.weeklyGoal" = "weekly goal";
 "settings.privacy" = "privacy";
 "settings.privacyAccount" = "privacy & account";
-"settings.exportData" = "export data";
 "settings.freeTier" = "free";
 "reminder.onceADay" = "once a day";
 "reminder.promise" = "ONE nudges you at most once a day. If you already logged today, it stays quiet.";

@@ -99,6 +99,7 @@
 "entry.title.another" = "Noch ein\nMoment?";
 "entry.title.pastDay" = "Wie war\n%@?";
 "entry.title.today" = "Wie geht es dir\nheute?";
+"export.failed" = "Archiv konnte nicht exportiert werden.";
 "greeting.day" = "Guten Tag";
 "greeting.evening" = "Guten Abend";
 "greeting.morning" = "Guten Morgen";
@@ -216,6 +217,8 @@
 "saved.oneMoment" = "Das Feld von heute ist im Archiv gefüllt.";
 "saved.scope.circle" = "Freunde in deinem Kreis können es sehen.";
 "saved.scope.private" = "Nur in deinem Archiv.";
+"settings.exportArchive" = "Archiv exportieren";
+"settings.exportArchive.note" = "Alle deine Einträge in einer Datei.";
 "share.other" = "Mehr";
 "share.photoLoadFailed" = "Foto konnte nicht geladen werden";
 "share_to_instagram" = "Teilen";
@@ -492,7 +495,6 @@
 "profile.icloudOff" = "Aus";
 "profile.appleMusicConnected" = "Verbunden · In Einstellungen trennen";
 "profile.appleMusicConnect" = "Verbinden";
-"profile.exportData" = "Daten exportieren";
 "profile.rateApp" = "App bewerten";
 "profile.exportFormat" = "Exportformat";
 "profile.exportError" = "Exportfehler";
@@ -1366,7 +1368,6 @@ one day.";
 "settings.weeklyGoal" = "Wochenziel";
 "settings.privacy" = "Privatsphäre";
 "settings.privacyAccount" = "Privatsphäre & Konto";
-"settings.exportData" = "Daten exportieren";
 "settings.freeTier" = "kostenlos";
 "reminder.onceADay" = "einmal am Tag";
 "reminder.promise" = "ONE stupst dich höchstens einmal täglich an. Hast du schon eingetragen, bleibt es still.";

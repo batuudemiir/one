@@ -30,14 +30,13 @@ struct SubScreenNavBar: View {
         V3TopBar(
             leading: .back(onBack),
             title: title,
-            titleMode: .always,
             progress: progress
         ) {
             if let actionTitle, let onAction {
                 Button(action: onAction) {
                     Text(actionTitle)
                         .bodyXSSemibold()
-                        .foregroundColor(ONEBrand.kor)
+                        .foregroundColor(V3Tokens.korText)
                         .padding(.horizontal, V3Tokens.spacingXS)
                         .frame(minHeight: 44)
                         .contentShape(Rectangle())
@@ -113,7 +112,7 @@ struct SegmentedControl: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 7)
                         .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusChip, style: .continuous)
                                 .fill(selection == index ? V3Tokens.surface : .clear)
                                 .shadow(
                                     color: selection == index
@@ -223,6 +222,9 @@ struct SettingsRow<Trailing: View>: View {
     /// Sağda duran hazır metin (saat, dil adı). Serbest içerik gerekiyorsa
     /// `trailing` closure'ını kullan.
     var value: String? = nil
+    /// Başlığın altındaki tek satır olgu. Açıklama değil, vaaz değil —
+    /// satırın ne yaptığı başlıktan anlaşılmıyorsa kullanılır.
+    var subtitle: String? = nil
     var showsChevron: Bool = true
     var isLast: Bool = false
     var action: (() -> Void)? = nil
@@ -239,10 +241,19 @@ struct SettingsRow<Trailing: View>: View {
                             .frame(width: 22)
                     }
 
-                    Text(title)
-                        .bodyLGMedium()
-                        .foregroundColor(titleColor)
-                        .multilineTextAlignment(.leading)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(title)
+                            .bodyLGMedium()
+                            .foregroundColor(titleColor)
+                            .multilineTextAlignment(.leading)
+
+                        if let subtitle {
+                            Text(subtitle)
+                                .bodyXS()
+                                .foregroundColor(V3Tokens.mutedText)
+                                .multilineTextAlignment(.leading)
+                        }
+                    }
 
                     Spacer(minLength: V3Tokens.spacingSM)
 
@@ -283,6 +294,7 @@ extension SettingsRow where Trailing == EmptyView {
         title: String,
         titleColor: Color = V3Tokens.ink,
         value: String? = nil,
+        subtitle: String? = nil,
         showsChevron: Bool = true,
         isLast: Bool = false,
         action: (() -> Void)? = nil
@@ -292,6 +304,7 @@ extension SettingsRow where Trailing == EmptyView {
             title: title,
             titleColor: titleColor,
             value: value,
+            subtitle: subtitle,
             showsChevron: showsChevron,
             isLast: isLast,
             action: action

@@ -99,6 +99,7 @@
 "entry.title.another" = "Bir an\ndaha?";
 "entry.title.pastDay" = "%@\nnasıldı?";
 "entry.title.today" = "Bugün\nnasılsın?";
+"export.failed" = "Arşiv dışa aktarılamadı.";
 "greeting.day" = "İyi günler";
 "greeting.evening" = "İyi akşamlar";
 "greeting.morning" = "Günaydın";
@@ -216,6 +217,8 @@
 "saved.oneMoment" = "Arşivde bugünün karesi doldu.";
 "saved.scope.circle" = "Çevrendeki arkadaşlar görebilir.";
 "saved.scope.private" = "Yalnızca senin arşivinde.";
+"settings.exportArchive" = "Arşivi dışa aktar";
+"settings.exportArchive.note" = "Tüm kayıtların, tek dosyada.";
 "share.other" = "Diğer";
 "share.photoLoadFailed" = "Fotoğraf yüklenemedi";
 "share_to_instagram" = "Paylaş";
@@ -614,7 +617,6 @@
 "profile.icloudOff" = "Kapalı";
 "profile.appleMusicConnected" = "Bağlı · Ayarlar'dan kes";
 "profile.appleMusicConnect" = "Bağla";
-"profile.exportData" = "Verilerimi Dışa Aktar";
 "profile.rateApp" = "Uygulamayı Değerlendir";
 "profile.exportFormat" = "Dışa Aktarma Formatı";
 "profile.exportError" = "Dışa Aktarma Hatası";
@@ -1509,7 +1511,6 @@ bir gün.";
 "settings.weeklyGoal" = "haftalık hedef";
 "settings.privacy" = "gizlilik";
 "settings.privacyAccount" = "gizlilik & hesap";
-"settings.exportData" = "veriyi dışa aktar";
 "settings.freeTier" = "ücretsiz";
 "reminder.onceADay" = "hatırlatma";
 "reminder.promise" = "Seçtiğin saatte bir hatırlatma. Kaydın varsa o gün gelmez.";

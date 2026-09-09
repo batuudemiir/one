@@ -99,6 +99,7 @@
 "entry.title.another" = "한 순간\n더?";
 "entry.title.pastDay" = "%@은(는)\n어땠나요?";
 "entry.title.today" = "오늘\n어떤가요?";
+"export.failed" = "보관함을 내보내지 못했습니다.";
 "greeting.day" = "좋은 하루";
 "greeting.evening" = "좋은 저녁";
 "greeting.morning" = "좋은 아침";
@@ -216,6 +217,8 @@
 "saved.oneMoment" = "오늘의 칸이 보관함에 채워졌습니다.";
 "saved.scope.circle" = "서클의 친구들이 볼 수 있습니다.";
 "saved.scope.private" = "당신의 보관함에만.";
+"settings.exportArchive" = "보관함 내보내기";
+"settings.exportArchive.note" = "모든 기록을 한 파일에.";
 "share.other" = "기타";
 "share.photoLoadFailed" = "사진을 불러오지 못했습니다";
 "share_to_instagram" = "공유";
@@ -492,7 +495,6 @@
 "profile.icloudOff" = "꺼짐";
 "profile.appleMusicConnected" = "연결됨 · 설정에서 해제";
 "profile.appleMusicConnect" = "연결";
-"profile.exportData" = "내 데이터 내보내기";
 "profile.rateApp" = "앱 평가하기";
 "profile.exportFormat" = "내보내기 형식";
 "profile.exportError" = "내보내기 오류";
@@ -1367,7 +1369,6 @@ one day.";
 "settings.weeklyGoal" = "weekly goal";
 "settings.privacy" = "privacy";
 "settings.privacyAccount" = "privacy & account";
-"settings.exportData" = "export data";
 "settings.freeTier" = "free";
 "reminder.onceADay" = "once a day";
 "reminder.promise" = "ONE nudges you at most once a day. If you already logged today, it stays quiet.";

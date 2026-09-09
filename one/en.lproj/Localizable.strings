@@ -99,6 +99,7 @@
 "entry.title.another" = "One more\nmoment?";
 "entry.title.pastDay" = "How was\n%@?";
 "entry.title.today" = "How are you\ntoday?";
+"export.failed" = "Couldn’t export the archive.";
 "greeting.day" = "Good day";
 "greeting.evening" = "Good evening";
 "greeting.morning" = "Good morning";
@@ -216,6 +217,8 @@
 "saved.oneMoment" = "Today’s square is filled in the archive.";
 "saved.scope.circle" = "Friends in your circle can see it.";
 "saved.scope.private" = "Only in your archive.";
+"settings.exportArchive" = "Export the archive";
+"settings.exportArchive.note" = "All your entries, in one file.";
 "share.other" = "More";
 "share.photoLoadFailed" = "Couldn’t load the photo";
 "share_to_instagram" = "Share";
@@ -564,7 +567,6 @@
 "profile.icloudOff" = "Off";
 "profile.appleMusicConnected" = "Connected · Disconnect in Settings";
 "profile.appleMusicConnect" = "Connect";
-"profile.exportData" = "Export My Data";
 "profile.rateApp" = "Rate the App";
 "profile.exportFormat" = "Export Format";
 "profile.exportError" = "Export Error";
@@ -1492,7 +1494,6 @@ one day.";
 "settings.weeklyGoal" = "weekly goal";
 "settings.privacy" = "privacy";
 "settings.privacyAccount" = "privacy & account";
-"settings.exportData" = "export data";
 "settings.freeTier" = "free";
 "reminder.onceADay" = "once a day";
 "reminder.promise" = "ONE nudges you at most once a day. If you already logged today, it stays quiet.";

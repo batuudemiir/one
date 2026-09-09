@@ -99,6 +99,7 @@
 "entry.title.another" = "Ещё один\nмомент?";
 "entry.title.pastDay" = "Каким был\n%@?";
 "entry.title.today" = "Как ты\nсегодня?";
+"export.failed" = "Не удалось экспортировать архив.";
 "greeting.day" = "Добрый день";
 "greeting.evening" = "Добрый вечер";
 "greeting.morning" = "Доброе утро";
@@ -216,6 +217,8 @@
 "saved.oneMoment" = "Квадрат сегодняшнего дня заполнен в архиве.";
 "saved.scope.circle" = "Друзья из твоего круга это увидят.";
 "saved.scope.private" = "Только в твоём архиве.";
+"settings.exportArchive" = "Экспортировать архив";
+"settings.exportArchive.note" = "Все твои записи в одном файле.";
 "share.other" = "Ещё";
 "share.photoLoadFailed" = "Не удалось загрузить фото";
 "share_to_instagram" = "Поделиться";
@@ -492,7 +495,6 @@
 "profile.icloudOff" = "Выключено";
 "profile.appleMusicConnected" = "Подключено · Отключить в настройках";
 "profile.appleMusicConnect" = "Подключить";
-"profile.exportData" = "Экспортировать мои данные";
 "profile.rateApp" = "Оценить приложение";
 "profile.exportFormat" = "Формат экспорта";
 "profile.exportError" = "Ошибка экспорта";
@@ -1367,7 +1369,6 @@ one day.";
 "settings.weeklyGoal" = "weekly goal";
 "settings.privacy" = "privacy";
 "settings.privacyAccount" = "privacy & account";
-"settings.exportData" = "export data";
 "settings.freeTier" = "free";
 "reminder.onceADay" = "once a day";
 "reminder.promise" = "ONE nudges you at most once a day. If you already logged today, it stays quiet.";

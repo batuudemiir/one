@@ -99,6 +99,7 @@
 "entry.title.another" = "再来\n一个瞬间？";
 "entry.title.pastDay" = "%@\n过得怎么样？";
 "entry.title.today" = "今天\n感觉如何？";
+"export.failed" = "无法导出档案。";
 "greeting.day" = "你好";
 "greeting.evening" = "晚上好";
 "greeting.morning" = "早上好";
@@ -216,6 +217,8 @@
 "saved.oneMoment" = "今天的方格已填入档案。";
 "saved.scope.circle" = "圈子里的好友可以看到。";
 "saved.scope.private" = "只在你的档案里。";
+"settings.exportArchive" = "导出档案";
+"settings.exportArchive.note" = "你所有的记录，装进一个文件。";
 "share.other" = "更多";
 "share.photoLoadFailed" = "无法加载照片";
 "share_to_instagram" = "分享";
@@ -492,7 +495,6 @@
 "profile.icloudOff" = "关闭";
 "profile.appleMusicConnected" = "已连接 · 在设置中断开";
 "profile.appleMusicConnect" = "连接";
-"profile.exportData" = "导出我的数据";
 "profile.rateApp" = "评价应用";
 "profile.exportFormat" = "导出格式";
 "profile.exportError" = "导出错误";
@@ -1364,7 +1366,6 @@ one day.";
 "settings.weeklyGoal" = "weekly goal";
 "settings.privacy" = "privacy";
 "settings.privacyAccount" = "privacy & account";
-"settings.exportData" = "export data";
 "settings.freeTier" = "free";
 "reminder.onceADay" = "once a day";
 "reminder.promise" = "ONE nudges you at most once a day. If you already logged today, it stays quiet.";
