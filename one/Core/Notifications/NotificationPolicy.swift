@@ -49,11 +49,10 @@ enum NotificationKind: String, CaseIterable {
     case friendReaction
     case friendRequest
     case friendAccepted
-    // v2.5 — yorum sistemi
-    case commentReceived     // paylaşımına tekil yorum
-    case commentReply        // yorumuna birebir yanıt
-    case commentMention      // @mention (v2.6 placeholder)
-    case commentBatch        // aynı paylaşımda birden fazla yorum bundle'ı
+    // Yorum türleri (commentReceived/Reply/Mention/Batch) kaldırıldı: kalıcı
+    // yorum sistemi sökülüp yerine efemer karşılık (tepki + yanıt) geldi,
+    // dördünü de üreten hiçbir çağrı yeri kalmamıştı. Gelen karşılıklar
+    // `friendReaction` ile bildiriliyor.
 
     var priority: NotificationPriority {
         switch self {
@@ -61,8 +60,7 @@ enum NotificationKind: String, CaseIterable {
             return .critical
         case .friendShared:
             return .critical
-        case .friendReaction, .moodResonance, .circleActivity,
-             .commentReceived, .commentReply, .commentMention, .commentBatch:
+        case .friendReaction, .moodResonance, .circleActivity:
             return .high
         case .dailyReminder, .weeklySummary, .monthEndSummary:
             return .normal
@@ -91,19 +89,10 @@ enum NotificationKind: String, CaseIterable {
         case .friendRequest:          return "FRIEND_REQUEST"
         case .friendReaction, .friendAccepted: return "FRIEND_ACCEPTED"
         case .moodResonance:          return "MOOD_RESONANCE"
-        case .commentReceived, .commentReply, .commentMention, .commentBatch:
-            return "COMMENT_NOTIFICATION"
         default:                      return ""
         }
     }
 
-    /// Yorum ailesine ait mı — Orchestrator + bundler için kısa kısayol.
-    var isCommentKind: Bool {
-        switch self {
-        case .commentReceived, .commentReply, .commentMention, .commentBatch: return true
-        default: return false
-        }
-    }
 }
 
 // MARK: - Quiet Hours

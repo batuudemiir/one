@@ -135,8 +135,7 @@ final class NotificationOrchestrator: NSObject {
         let dedupable: Bool = {
             switch kind {
             case .friendShared, .friendReaction, .friendRequest,
-                 .friendAccepted, .moodResonance, .circleActivity,
-                 .commentReceived, .commentReply, .commentMention, .commentBatch:
+                 .friendAccepted, .moodResonance, .circleActivity:
                 return false
             default:
                 return true

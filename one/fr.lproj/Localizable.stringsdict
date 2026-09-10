@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!-- Çoğul çekimi. .strings'teki aynı anahtarı ezer; oradaki satır tek biçimli
-     yedek olarak duruyor. Kategori adları Unicode CLDR: one/few/many/other. -->
 <plist version="1.0">
 <dict>
+	<key>archive.dayCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld jour</string>
+			<key>other</key>
+			<string>%lld jours</string>
+		</dict>
+	</dict>
 	<key>circle.momentCount</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -18,22 +32,6 @@
 			<string>%d instant</string>
 			<key>other</key>
 			<string>%d instants</string>
-		</dict>
-	</dict>
-	<key>circle.peopleCount</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d personne</string>
-			<key>other</key>
-			<string>%d personnes</string>
 		</dict>
 	</dict>
 	<key>circle.pendingRequests</key>
@@ -52,6 +50,22 @@
 			<string>%d demandes reçues</string>
 		</dict>
 	</dict>
+	<key>circle.peopleCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d personne</string>
+			<key>other</key>
+			<string>%d personnes</string>
+		</dict>
+	</dict>
 	<key>echo.playCount</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -64,22 +78,6 @@
 			<string>d</string>
 			<key>other</key>
 			<string>%d fois</string>
-		</dict>
-	</dict>
-	<key>notif.comment.batch.title</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d nouveau commentaire</string>
-			<key>other</key>
-			<string>%d nouveaux commentaires</string>
 		</dict>
 	</dict>
 	<key>friendProfile.mutualCount</key>
@@ -98,22 +96,6 @@
 			<string>%d amis en commun</string>
 		</dict>
 	</dict>
-	<key>publicProfile.mutualFriends</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Vous avez %d ami en commun</string>
-			<key>other</key>
-			<string>Vous avez %d amis en commun</string>
-		</dict>
-	</dict>
 	<key>hub.momentCount</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -130,7 +112,7 @@
 			<string>%d instants aujourd’hui</string>
 		</dict>
 	</dict>
-	<key>archive.dayCount</key>
+	<key>publicProfile.mutualFriends</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@count@</string>
@@ -139,11 +121,11 @@
 			<key>NSStringFormatSpecTypeKey</key>
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
-			<string>lld</string>
+			<string>d</string>
 			<key>one</key>
-			<string>%lld jour</string>
+			<string>Vous avez %d ami en commun</string>
 			<key>other</key>
-			<string>%lld jours</string>
+			<string>Vous avez %d amis en commun</string>
 		</dict>
 	</dict>
 </dict>

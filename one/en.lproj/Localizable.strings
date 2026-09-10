@@ -109,14 +109,6 @@
 "notif.aFriend" = "A friend";
 "notif.circle.leftColor" = "Left today’s color.";
 "notif.circle.leftColors" = "Left today’s colors.";
-"notif.comment.batch.body" = "On your entry.";
-"notif.comment.batch.title" = "%d new comments";
-"notif.comment.mention.body" = "Mentioned you in a comment.";
-"notif.comment.mention.title" = "%@ mentioned you";
-"notif.comment.received.body" = "Left a comment on your entry.";
-"notif.comment.received.title" = "%@ left a comment";
-"notif.comment.reply.body" = "Replied to your comment.";
-"notif.comment.reply.title" = "%@ replied";
 "notif.daily.beforeClose" = "You can leave a color before the day closes.";
 "notif.daily.colorless" = "Today will be saved without a color.";
 "notif.daily.empty" = "Today is empty in the archive.";

@@ -37,8 +37,6 @@ struct MessageContext {
     let friendName: String?
     let friendCount: Int
     let emoji: String?
-    let commentExcerpt: String? // v2.5 — yorum önizleme (≤80 karakter, trimmed)
-    let commentCount: Int       // v2.5 — batch'te kaç yorum
     let abBucket: Int
 
     /// Gün adı ("Salı", "Cumartesi"). Bildirimin bağlamını takvim verir,
@@ -58,8 +56,6 @@ struct MessageContext {
         friendName: String? = nil,
         friendCount: Int = 1,
         emoji: String? = nil,
-        commentExcerpt: String? = nil,
-        commentCount: Int = 1,
         abBucket: Int = 0
     ) {
         self.kind = kind
@@ -70,8 +66,6 @@ struct MessageContext {
         self.friendName = friendName
         self.friendCount = friendCount
         self.emoji = emoji
-        self.commentExcerpt = commentExcerpt
-        self.commentCount = max(1, commentCount)
         self.abBucket = abBucket
     }
 }
@@ -218,58 +212,12 @@ enum NotificationMessageBuilder {
         case .friendReaction:   return friendReactionVariants(ctx)
         case .friendRequest:    return friendRequestVariants(ctx)
         case .friendAccepted:   return friendAcceptedVariants(ctx)
-        case .commentReceived:  return commentReceivedVariants(ctx)
-        case .commentReply:     return commentReplyVariants(ctx)
-        case .commentMention:   return commentMentionVariants(ctx)
-        case .commentBatch:     return commentBatchVariants(ctx)
         }
     }
 
-    // MARK: - Comment excerpt helper
-
-    /// Yorum metnini push body için güvenli kısaltır: newline → boşluk, 80 karakter cap, "…".
-    private static func excerpt(_ raw: String?, limit: Int = 80) -> String? {
-        guard let raw else { return nil }
-        let cleaned = raw
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: "\n", with: " ")
-        guard !cleaned.isEmpty else { return nil }
-        if cleaned.count <= limit { return cleaned }
-        let idx = cleaned.index(cleaned.startIndex, offsetBy: limit)
-        return String(cleaned[..<idx]) + "…"
-    }
-
-    // MARK: - Comment variants (v2.5)
-    //
-    // Başlık olayı, gövde yorumun kendisini taşır. Uygulama yorum hakkında
-    // yorum yapmaz — "konuşma başladı", "hareketlendi" gibi coşku dili yok.
-
-    private static func commentReceivedVariants(_ ctx: MessageContext) -> [(String, String)] {
-        let name = ctx.friendName ?? L("notif.someone")
-        let body = excerpt(ctx.commentExcerpt).map { "\"\($0)\"" } ?? L("notif.comment.received.body")
-        return [(Lf("notif.comment.received.title", name), body)]
-    }
-
-    private static func commentReplyVariants(_ ctx: MessageContext) -> [(String, String)] {
-        let name = ctx.friendName ?? L("notif.someone")
-        let body = excerpt(ctx.commentExcerpt).map { "\"\($0)\"" } ?? L("notif.comment.reply.body")
-        return [(Lf("notif.comment.reply.title", name), body)]
-    }
-
-    private static func commentMentionVariants(_ ctx: MessageContext) -> [(String, String)] {
-        let name = ctx.friendName ?? L("notif.someone")
-        let body = excerpt(ctx.commentExcerpt).map { "\"\($0)\"" } ?? L("notif.comment.mention.body")
-        return [(Lf("notif.comment.mention.title", name), body)]
-    }
-
-    private static func commentBatchVariants(_ ctx: MessageContext) -> [(String, String)] {
-        let count = ctx.commentCount
-        if let name = ctx.friendName, count > 1 {
-            return [(peopleTitle(name, count - 1), L("notif.comment.received.body"))]
-        } else {
-            return [(Lf("notif.comment.batch.title", count), L("notif.comment.batch.body"))]
-        }
-    }
+    // Yorum varyantları kaldırıldı: kalıcı yorum sistemi söküldü, yerine
+    // efemer karşılık geldi. `excerpt` yardımcısı da onlarla gitti — tek
+    // kullanıcısı yorum önizlemesiydi.
 
     // MARK: - D1 — Monthly portrait (30-gün özet push)
 

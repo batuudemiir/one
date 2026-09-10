@@ -109,14 +109,6 @@
 "notif.aFriend" = "Bir arkadaşın";
 "notif.circle.leftColor" = "Bugünkü rengini bıraktı.";
 "notif.circle.leftColors" = "Bugünkü renklerini bıraktı.";
-"notif.comment.batch.body" = "Paylaşımında.";
-"notif.comment.batch.title" = "%d yeni yorum";
-"notif.comment.mention.body" = "Bir yorumda senden bahsetti.";
-"notif.comment.mention.title" = "%@ senden bahsetti";
-"notif.comment.received.body" = "Paylaşımına yorum bıraktı.";
-"notif.comment.received.title" = "%@ yorum bıraktı";
-"notif.comment.reply.body" = "Yorumuna yanıt verdi.";
-"notif.comment.reply.title" = "%@ yanıt verdi";
 "notif.daily.beforeClose" = "Gün kapanmadan bir renk bırakabilirsin.";
 "notif.daily.colorless" = "Bugün renksiz kaydedilecek.";
 "notif.daily.empty" = "Bugün arşivde boş.";

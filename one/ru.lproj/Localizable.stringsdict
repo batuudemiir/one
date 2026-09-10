@@ -1,9 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!-- Çoğul çekimi. .strings'teki aynı anahtarı ezer; oradaki satır tek biçimli
-     yedek olarak duruyor. Kategori adları Unicode CLDR: one/few/many/other. -->
 <plist version="1.0">
 <dict>
+	<key>archive.dayCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld дня</string>
+			<key>many</key>
+			<string>%lld дней</string>
+			<key>one</key>
+			<string>%lld день</string>
+			<key>other</key>
+			<string>%lld дня</string>
+		</dict>
+	</dict>
 	<key>circle.momentCount</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -14,34 +32,14 @@
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
-			<key>one</key>
-			<string>%d момент</string>
 			<key>few</key>
 			<string>%d момента</string>
 			<key>many</key>
 			<string>%d моментов</string>
+			<key>one</key>
+			<string>%d момент</string>
 			<key>other</key>
 			<string>%d момента</string>
-		</dict>
-	</dict>
-	<key>circle.peopleCount</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d человек</string>
-			<key>few</key>
-			<string>%d человека</string>
-			<key>many</key>
-			<string>%d человек</string>
-			<key>other</key>
-			<string>%d человека</string>
 		</dict>
 	</dict>
 	<key>circle.pendingRequests</key>
@@ -54,14 +52,34 @@
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
-			<key>one</key>
-			<string>%d входящая заявка</string>
 			<key>few</key>
 			<string>%d входящие заявки</string>
 			<key>many</key>
 			<string>%d входящих заявок</string>
+			<key>one</key>
+			<string>%d входящая заявка</string>
 			<key>other</key>
 			<string>%d входящей заявки</string>
+		</dict>
+	</dict>
+	<key>circle.peopleCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d человека</string>
+			<key>many</key>
+			<string>%d человек</string>
+			<key>one</key>
+			<string>%d человек</string>
+			<key>other</key>
+			<string>%d человека</string>
 		</dict>
 	</dict>
 	<key>echo.playCount</key>
@@ -74,34 +92,14 @@
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
-			<key>one</key>
-			<string>%d раз</string>
 			<key>few</key>
 			<string>%d раза</string>
 			<key>many</key>
 			<string>%d раз</string>
+			<key>one</key>
+			<string>%d раз</string>
 			<key>other</key>
 			<string>%d раза</string>
-		</dict>
-	</dict>
-	<key>notif.comment.batch.title</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d новый комментарий</string>
-			<key>few</key>
-			<string>%d новых комментария</string>
-			<key>many</key>
-			<string>%d новых комментариев</string>
-			<key>other</key>
-			<string>%d нового комментария</string>
 		</dict>
 	</dict>
 	<key>friendProfile.mutualCount</key>
@@ -114,34 +112,14 @@
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
-			<key>one</key>
-			<string>%d общий друг</string>
 			<key>few</key>
 			<string>%d общих друга</string>
 			<key>many</key>
 			<string>%d общих друзей</string>
+			<key>one</key>
+			<string>%d общий друг</string>
 			<key>other</key>
 			<string>%d общего друга</string>
-		</dict>
-	</dict>
-	<key>publicProfile.mutualFriends</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>У вас %d общий друг</string>
-			<key>few</key>
-			<string>У вас %d общих друга</string>
-			<key>many</key>
-			<string>У вас %d общих друзей</string>
-			<key>other</key>
-			<string>У вас %d общего друга</string>
 		</dict>
 	</dict>
 	<key>hub.momentCount</key>
@@ -154,17 +132,17 @@
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
-			<key>one</key>
-			<string>Сегодня %d момент</string>
 			<key>few</key>
 			<string>Сегодня %d момента</string>
 			<key>many</key>
 			<string>Сегодня %d моментов</string>
+			<key>one</key>
+			<string>Сегодня %d момент</string>
 			<key>other</key>
 			<string>Сегодня %d момента</string>
 		</dict>
 	</dict>
-	<key>archive.dayCount</key>
+	<key>publicProfile.mutualFriends</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@count@</string>
@@ -173,15 +151,15 @@
 			<key>NSStringFormatSpecTypeKey</key>
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
-			<string>lld</string>
-			<key>one</key>
-			<string>%lld день</string>
+			<string>d</string>
 			<key>few</key>
-			<string>%lld дня</string>
+			<string>У вас %d общих друга</string>
 			<key>many</key>
-			<string>%lld дней</string>
+			<string>У вас %d общих друзей</string>
+			<key>one</key>
+			<string>У вас %d общий друг</string>
 			<key>other</key>
-			<string>%lld дня</string>
+			<string>У вас %d общего друга</string>
 		</dict>
 	</dict>
 </dict>

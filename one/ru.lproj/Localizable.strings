@@ -109,14 +109,6 @@
 "notif.aFriend" = "Кто-то из твоего круга";
 "notif.circle.leftColor" = "Цвет сегодняшнего дня.";
 "notif.circle.leftColors" = "Цвета сегодняшнего дня.";
-"notif.comment.batch.body" = "К твоей записи.";
-"notif.comment.batch.title" = "Новых комментариев: %d";
-"notif.comment.mention.body" = "Упоминание в комментарии.";
-"notif.comment.mention.title" = "Упоминание от %@";
-"notif.comment.received.body" = "Комментарий к твоей записи.";
-"notif.comment.received.title" = "Комментарий от %@";
-"notif.comment.reply.body" = "Ответ на твой комментарий.";
-"notif.comment.reply.title" = "Ответ от %@";
 "notif.daily.beforeClose" = "Можно оставить цвет, пока день не закончился.";
 "notif.daily.colorless" = "Сегодня сохранится без цвета.";
 "notif.daily.empty" = "Сегодня в архиве пусто.";

@@ -109,14 +109,6 @@
 "notif.aFriend" = "友だち";
 "notif.circle.leftColor" = "今日の色を残しました。";
 "notif.circle.leftColors" = "今日の色を残しました。";
-"notif.comment.batch.body" = "あなたの記録に。";
-"notif.comment.batch.title" = "新しいコメント%d件";
-"notif.comment.mention.body" = "コメントであなたに言及しました。";
-"notif.comment.mention.title" = "%@があなたに言及しました";
-"notif.comment.received.body" = "あなたの記録にコメントしました。";
-"notif.comment.received.title" = "%@がコメントしました";
-"notif.comment.reply.body" = "あなたのコメントに返信しました。";
-"notif.comment.reply.title" = "%@が返信しました";
 "notif.daily.beforeClose" = "一日が終わる前に色を残せます。";
 "notif.daily.colorless" = "今日は色なしで記録されます。";
 "notif.daily.empty" = "今日はアーカイブが空です。";

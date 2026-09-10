@@ -109,14 +109,6 @@
 "notif.aFriend" = "Jemand aus deinem Kreis";
 "notif.circle.leftColor" = "Hat die Farbe von heute hinterlassen.";
 "notif.circle.leftColors" = "Haben ihre Farben von heute hinterlassen.";
-"notif.comment.batch.body" = "Zu deinem Eintrag.";
-"notif.comment.batch.title" = "%d neue Kommentare";
-"notif.comment.mention.body" = "Hat dich in einem Kommentar erwähnt.";
-"notif.comment.mention.title" = "%@ hat dich erwähnt";
-"notif.comment.received.body" = "Hat deinen Eintrag kommentiert.";
-"notif.comment.received.title" = "%@ hat kommentiert";
-"notif.comment.reply.body" = "Hat auf deinen Kommentar geantwortet.";
-"notif.comment.reply.title" = "%@ hat geantwortet";
 "notif.daily.beforeClose" = "Du kannst eine Farbe hinterlassen, bevor der Tag endet.";
 "notif.daily.colorless" = "Heute wird ohne Farbe gespeichert.";
 "notif.daily.empty" = "Heute ist im Archiv leer.";

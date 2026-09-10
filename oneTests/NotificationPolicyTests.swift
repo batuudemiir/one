@@ -65,16 +65,19 @@ struct NotificationPolicyTests {
     /// v4'te 21 tür 13'e indi. Sayı bir "hedef" değil, bir sözleşme: bu test
     /// kırıldıysa ya bir tür geri geldi ya da bilerek kaldırıldı — ikisi de
     /// gözden geçirilmeli.
-    @Test("v4'te 13 bildirim türü var")
+    @Test("v4'te 9 bildirim türü var")
     func kindCount() {
-        #expect(NotificationKind.allCases.count == 13)
+        #expect(NotificationKind.allCases.count == 9)
     }
 
     @Test("Silinen seriler geri gelmedi")
     func retiredKindsStayRetired() {
         let retired = ["winBack3", "winBack7", "winBack14", "winBack30",
                        "nurtureDay1", "nurtureDay2", "nurtureDay3",
-                       "circleInviteWave"]
+                       "circleInviteWave",
+                       // Kalıcı yorum sistemi söküldü, efemer karşılık geldi.
+                       "commentReceived", "commentReply", "commentMention",
+                       "commentBatch"]
         for raw in retired {
             #expect(NotificationKind(rawValue: raw) == nil)
         }

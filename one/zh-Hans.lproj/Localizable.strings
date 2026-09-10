@@ -109,14 +109,6 @@
 "notif.aFriend" = "一位朋友";
 "notif.circle.leftColor" = "留下了今天的颜色。";
 "notif.circle.leftColors" = "留下了今天的颜色。";
-"notif.comment.batch.body" = "在你的记录上。";
-"notif.comment.batch.title" = "%d 条新评论";
-"notif.comment.mention.body" = "在评论里提到了你。";
-"notif.comment.mention.title" = "%@ 提到了你";
-"notif.comment.received.body" = "评论了你的记录。";
-"notif.comment.received.title" = "%@ 留下了评论";
-"notif.comment.reply.body" = "回复了你的评论。";
-"notif.comment.reply.title" = "%@ 回复了";
 "notif.daily.beforeClose" = "可以在这一天结束前留下一个颜色。";
 "notif.daily.colorless" = "今天将不带颜色地保存。";
 "notif.daily.empty" = "今天在档案里还是空的。";
