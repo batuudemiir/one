@@ -24,6 +24,8 @@ final class AppEnvironment {
     let echoes: EchoEngine
     let recommendations: RecommendationEngine
     let badges: BadgeEngine
+    let insights: InsightsEngine
+    let search: SearchIndex
     let legacy: LegacyMomentStore
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
     private let legacyWriteGuard: LegacyWriteGuard?
@@ -48,6 +50,9 @@ final class AppEnvironment {
         recommendations = RecommendationEngine(content: self.content, prompts: prompts, journal: journal, day: day,
                                                mood: mood, profile: self.profile, clock: clock)
         badges = BadgeEngine(content: self.content, journal: journal, day: day, library: library, profile: self.profile)
+        insights = InsightsEngine(context: context, mood: mood, journal: journal, day: day, exposure: exposure,
+                                  content: self.content, profile: self.profile, clock: clock)
+        search = SearchIndex(context: context)
         // Her kayıttan sonra: E8 yazıyla tamamlama, E9 rozet değerlendirmesi.
         journal.didSave = { [day, weak badges] entry in
             _ = try? day.recordWriting(entry)

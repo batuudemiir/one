@@ -53,6 +53,8 @@ final class LibraryStore {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw StoreError.invalidValue("empty tag") }
         row.name = trimmed
+        // Etiket adı girdilerin arama metninde (E11).
+        for entry in (row.entries as? Set<EntryMO>) ?? [] { entry.refreshSearchText() }
         try context.saveIfNeeded()
     }
 

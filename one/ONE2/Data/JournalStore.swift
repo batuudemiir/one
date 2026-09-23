@@ -40,6 +40,7 @@ final class JournalStore {
         entry.kind = draft.kind.rawValue
         entry.isBackfilled = target < today
         apply(draft, to: entry)
+        entry.refreshSearchText()
         try context.saveIfNeeded()
         let value = try require(entry.value)
         didSave?(value)
@@ -57,6 +58,7 @@ final class JournalStore {
         if let tagIDs { try setTags(tagIDs, on: entry) }
         if let answers { replaceAnswers(answers, on: entry) }
         entry.updatedAt = clock.now
+        entry.refreshSearchText()
         try context.saveIfNeeded()
         let value = try require(entry.value)
         didSave?(value)
