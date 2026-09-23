@@ -15,6 +15,7 @@ import Foundation
 import CoreData
 @testable import OneDailyBatuhan
 
+@MainActor
 struct ModelVersionTests {
 
     private static var momdURL: URL {
@@ -23,17 +24,29 @@ struct ModelVersionTests {
 
     private static func model(version: String) throws -> NSManagedObjectModel {
         let url = momdURL.appendingPathComponent("\(version).mom")
-        return try #require(NSManagedObjectModel(contentsOf: url))
+        return anonymized(try #require(NSManagedObjectModel(contentsOf: url)))
     }
 
-    /// Paketin güncel sürümü (`.xccurrentversion`).
-    private static var currentModel: NSManagedObjectModel {
-        NSManagedObjectModel(contentsOf: momdURL)!
+    /// Paketin güncel sürümü (`.xccurrentversion`): uygulamanın kendi model
+    /// örneği. Ayrı bir `NSManagedObjectModel(contentsOf:)` kopyası sınıfları
+    /// ikinci kez sahiplenir; `copy()` ise ters ilişkileri düşürür.
+    private static var currentModel: NSManagedObjectModel { ONE2TestStack.model }
+
+    /// Bu testlerin sürüm dosyasından yüklediği taze model örnekleri hiçbir
+    /// alt sınıfı sahiplenmez. Sahiplenirlerse paralel koşan testlerde
+    /// `DailySong(context:)` gibi çağrılar entity'yi tekil bulamaz ve Core Data
+    /// istisna fırlatır. Sınıf adı `versionHash`'e girmez; T3 bundan etkilenmez.
+    private static func anonymized(_ model: NSManagedObjectModel) -> NSManagedObjectModel {
+        for entity in model.entities {
+            entity.managedObjectClassName = NSStringFromClass(NSManagedObject.self)
+        }
+        return model
     }
 
     private static let newEntities = [
         "Entry", "EntryAnswer", "MoodLog", "DayRecord", "Tag", "Media",
-        "Template", "TemplateItem", "MetricDefinition", "BadgeAward", "Practice"
+        "Template", "TemplateItem", "MetricDefinition", "BadgeAward", "Practice",
+        "ContentExposure"
     ]
 
     // MARK: - T3
@@ -74,6 +87,27 @@ struct ModelVersionTests {
             }
         }
         #expect(problems.isEmpty, "\(problems)")
+    }
+
+    @Test("Motor eklemeleri (04 › Veri modeli eklemeleri) modelde ve opsiyonel")
+    func engineAdditions() throws {
+        let entities = Self.currentModel.entitiesByName
+        let expected: [String: [String]] = [
+            "Entry": ["searchText", "sourceContext", "comparedEntryID"],
+            "DayRecord": ["completedBy"],
+            "ContentExposure": ["id", "contentID", "contentKind", "firstSeenAt", "lastSeenAt",
+                                "seenCount", "liked", "likedAt", "lastEntryID", "lastWrittenAt",
+                                "writtenCount"],
+        ]
+        for (entity, names) in expected {
+            let attrs = try #require(entities[entity]).attributesByName
+            for name in names {
+                let attr = try #require(attrs[name], "\(entity).\(name) yok")
+                #expect(attr.isOptional, "\(entity).\(name) opsiyonel değil")
+            }
+        }
+        let index = try #require(entities["ContentExposure"]?.indexes.first)
+        #expect(index.elements.compactMap { $0.property?.name } == ["contentID", "contentKind"])
     }
 
     @Test("Büyük ikili veri harici depolamada")

@@ -11,12 +11,12 @@ import CoreData
 
 @MainActor
 enum ONE2TestStack {
-    /// Model süreç başına bir kez yüklenir: aynı sınıfı sahiplenen birden çok
-    /// model, `EntryMO` gibi sınıflar için entity eşlemesini belirsizleştirir.
-    static let model: NSManagedObjectModel = {
-        let url = Bundle(for: PersistenceController.self).url(forResource: "one", withExtension: "momd")!
-        return NSManagedObjectModel(contentsOf: url)!
-    }()
+    /// Uygulamanın kendi container'ının kullandığı model örneği. Ayrı bir
+    /// `NSManagedObjectModel(contentsOf:)` kopyası `DailySong`, `EntryMO` gibi
+    /// sınıfları ikinci kez sahiplenir; paralel koşan testlerde
+    /// `DailySong(context:)` hangi entity'yi kullanacağını bilemez ve Core Data
+    /// istisna fırlatır ("Failed to find a unique match…").
+    static let model: NSManagedObjectModel = PersistenceController(inMemory: true).container.managedObjectModel
 
     /// `/dev/null` URL'li SQLite: gerçek SQLite davranışı, diske yazmadan.
     static func makeContainer() -> NSPersistentContainer {

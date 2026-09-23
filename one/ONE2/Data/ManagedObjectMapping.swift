@@ -19,6 +19,7 @@ nonisolated enum ONE2Entity {
     static let tag = "Tag"
     static let badge = "BadgeAward"
     static let practice = "Practice"
+    static let exposure = "ContentExposure"
 }
 
 extension NSManagedObjectContext {

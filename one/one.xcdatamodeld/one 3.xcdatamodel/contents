@@ -43,6 +43,9 @@
         <attribute name="contentRef" optional="YES" attributeType="String"/>
         <attribute name="contentSnapshot" optional="YES" attributeType="String"/>
         <attribute name="isBackfilled" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="searchText" optional="YES" attributeType="String"/>
+        <attribute name="sourceContext" optional="YES" attributeType="String"/>
+        <attribute name="comparedEntryID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <relationship name="mood" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MoodLog" inverseName="entry" inverseEntity="MoodLog"/>
         <relationship name="answers" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="EntryAnswer" inverseName="entry" inverseEntity="EntryAnswer"/>
         <relationship name="media" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Media" inverseName="entry" inverseEntity="Media"/>
@@ -86,6 +89,7 @@
         <attribute name="eveningCompletedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="focusText" optional="YES" attributeType="String"/>
         <attribute name="backfilledAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="completedBy" optional="YES" attributeType="String"/>
     </entity>
     <entity name="Tag" representedClassName="TagMO" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
@@ -141,6 +145,23 @@
         <attribute name="contentRef" optional="YES" attributeType="String"/>
         <attribute name="order" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="addedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="ContentExposure" representedClassName="ContentExposureMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="contentID" optional="YES" attributeType="String"/>
+        <attribute name="contentKind" optional="YES" attributeType="String"/>
+        <attribute name="firstSeenAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastSeenAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="seenCount" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="liked" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="likedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastEntryID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="lastWrittenAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="writtenCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <fetchIndex name="byContent">
+            <fetchIndexElement property="contentID" type="Binary" order="ascending"/>
+            <fetchIndexElement property="contentKind" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <elements>
         <element name="DailySong" positionX="-63" positionY="-18" width="128" height="389"/>

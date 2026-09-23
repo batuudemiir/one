@@ -171,8 +171,9 @@ Tüm içerik türleri için tek kayıt; E2, E4, E6 ve E7 okur.
 | `contentKind` | String | `quote`, `prompt`, `echo`, `guided`, `theme` |
 | `firstSeenAt`, `lastSeenAt` | Date | |
 | `seenCount` | Int32 | |
-| `liked` | Bool | |
+| `liked` + `likedAt` | Bool, Date? | `likedAt`: E2.3 ilgi sinyalinin "son 90 gün" penceresi |
 | `lastEntryID` | UUID? | Bu içeriğe son yazılan girdi |
+| `lastWrittenAt` | Date? | E2.2 kural 4'ün "yazıldıktan ≥90 gün" koşulu; `Entry` okumadan hesaplanır |
 | `writtenCount` | Int16 | |
 
 - Mantıksal anahtar `contentID`; CloudKit tekrarını `dayKey` deduplikasyonundaki desenle birleştir (en erken `firstSeenAt`, toplam `seenCount`, `liked` OR).

@@ -68,6 +68,9 @@ erDiagram
 | contentRef | String? | `theme:2026-w40:d3`, `guided:gratitude-01` |
 | contentSnapshot | String? | Gösterilen sorunun kopyası |
 | isBackfilled | Bool = NO | |
+| searchText | String? | Arama metni: başlık + gövde + snapshot + etiketler, küçük harf + aksansız kopya (04 › E11) |
+| sourceContext | String? | `theme`, `quote`, `free`, `suggestion`, `comparison`, `guided` (04 › E4, E17) |
+| comparedEntryID | UUID? | Karşılaştırma zincirinde önceki cevap (04 › E4) |
 | mood | → MoodLog? | inverse `MoodLog.entry` |
 | answers | →> EntryAnswer | inverse `EntryAnswer.entry`, cascade |
 | media | →> Media | inverse `Media.entry`, cascade |
@@ -114,6 +117,7 @@ erDiagram
 | dailyCompletedAt, morningCompletedAt, eveningCompletedAt | Date? | |
 | focusText | String? | |
 | backfilledAt | Date? | |
+| completedBy | String? | `ritual` / `writing` (04 › E8 alternatif tamamlama) |
 
 Streak (taslak): bir gün, seçili ritüel modunda gereken kart(lar) tamamlandıysa "tamam". Seri = bugünden geriye kesintisiz tamam günler. Geriye dönük doldurma günü tamam yapar, seri yeniden hesaplanır. Pencere sınırı teardown'da doğrulanacak. **v3 günleri (`DailySong`) seriye sayılmaz** (öneri; tartışmaya açık).
 
@@ -147,6 +151,10 @@ TemplateItem: `id`, `order` Int16, `kind` (`prompt`, `scale5`, `yesNo`, `text`),
 | MetricDefinition | `id`, `name`, `kind` (`scale5`/`yesNo`), `isActive` Bool, `order` Int16 |
 | BadgeAward | `id`, `badgeID` String, `earnedAt` Date (aynı `badgeID` için dedupe) |
 | Practice | `id`, `contentRef` String, `order` Int16, `addedAt` Date |
+
+### ContentExposure (04 › E3)
+
+`id` UUID · `contentID` String (`q_…`, `p_…`) · `contentKind` String · `firstSeenAt`, `lastSeenAt` Date · `seenCount` Int32 = 0 · `liked` Bool = NO · `likedAt` Date? · `lastEntryID` UUID? · `lastWrittenAt` Date? · `writtenCount` Int16 = 0. Mantıksal anahtar `contentID`; çift satırlar kodla birleştirilir. Fetch index `contentID` + `contentKind`. Favoriler `liked` ile tutulur.
 
 ## CloudKit dışında
 
