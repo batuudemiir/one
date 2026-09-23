@@ -105,12 +105,12 @@ marka öğeleri (ad, logo, renk paleti, ikonografi). Kendi içeriğimizi yaz.
 
 ## Derleme
 
-`xcode-select` CommandLineTools'u gösteriyor; tam toolchain Xcode-beta'da.
-Yolu sabit sayma, önce `ls -d /Applications/Xcode*.app ~/Downloads/Xcode*.app`.
-Tip denetimi:
+`xcode-select` CommandLineTools'u gösteriyor; tam toolchain Xcode içinde
+(23 Eylül 2026: `/Applications/Xcode.app`, Xcode 27.0). Yolu sabit sayma,
+önce `ls -d /Applications/Xcode*.app`. Tip denetimi:
 
 ```bash
-X=/Applications/Xcode-beta.app/Contents/Developer
+X=/Applications/Xcode.app/Contents/Developer
 SDK="$X/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk"
 CD=$(mktemp -d)
 "$X/usr/bin/momc" --sdkroot "$SDK" --module one --swift-version 5.0 \
@@ -123,6 +123,8 @@ CD=$(mktemp -d)
   $(find one -name '*.swift') "$CD"/*.swift OneActivityExtension/ActivityAttributes.swift
 ```
 
+- `momc` Swift dosyalarını `--swift-output-dir`'e değil doğrudan `$CD`'ye
+  yazıyor; `"$CD"/*.swift` bu yüzden doğru.
 - `-default-isolation MainActor` şart. Core Data sınıfları derleme anında
   üretiliyor; yukarıda `momc` ile üretiliyor (yeni model sürümü gelince yolu
   güncelle). Süre ~5 dk.
