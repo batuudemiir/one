@@ -17,6 +17,7 @@ final class AppEnvironment {
     let mood: MoodStore
     let day: DayStore
     let library: LibraryStore
+    let exposure: ExposureStore
     let legacy: LegacyMomentStore
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
     private let legacyWriteGuard: LegacyWriteGuard?
@@ -29,6 +30,7 @@ final class AppEnvironment {
         mood = MoodStore(context: context, clock: clock)
         day = DayStore(context: context, clock: clock)
         library = LibraryStore(context: context, clock: clock)
+        exposure = ExposureStore(context: context, clock: clock)
         legacy = LegacyMomentStore(context: context, calendar: clock.calendar)
         if guardLegacyWrites, let coordinator = context.persistentStoreCoordinator {
             legacyWriteGuard = LegacyWriteGuard(coordinator: coordinator)

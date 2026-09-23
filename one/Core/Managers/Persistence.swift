@@ -294,6 +294,7 @@ final class PersistenceController: ObservableObject {
                 do {
                     let merged = try DayStore(context: context).reconcileDuplicates()
                         + LibraryStore(context: context).reconcileDuplicateBadges()
+                        + ExposureStore(context: context).reconcileDuplicates()
                     if merged > 0 { context.refreshAllObjects() }
                 } catch {
                     ONELogger.warning("ONE2 uzlaştırma başarısız: \(error.localizedDescription)", category: .persistence)
