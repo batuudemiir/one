@@ -22,6 +22,7 @@ final class AppEnvironment {
     let quotes: LiveQuoteEngine
     let prompts: LivePromptEngine
     let echoes: EchoEngine
+    let recommendations: RecommendationEngine
     let legacy: LegacyMomentStore
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
     private let legacyWriteGuard: LegacyWriteGuard?
@@ -43,6 +44,8 @@ final class AppEnvironment {
         prompts = LivePromptEngine(content: self.content, exposure: exposure, journal: journal,
                                    profile: self.profile, clock: clock)
         echoes = EchoEngine(content: self.content, exposure: exposure, profile: self.profile, clock: clock)
+        recommendations = RecommendationEngine(content: self.content, prompts: prompts, journal: journal, day: day,
+                                               mood: mood, profile: self.profile, clock: clock)
         legacy = LegacyMomentStore(context: context, calendar: clock.calendar)
         if guardLegacyWrites, let coordinator = context.persistentStoreCoordinator {
             legacyWriteGuard = LegacyWriteGuard(coordinator: coordinator)
