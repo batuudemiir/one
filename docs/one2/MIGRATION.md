@@ -159,7 +159,7 @@ Ad notları: entity adları kalıcı. CloudKit tarafında `CD_` önekiyle gider,
 
 | # | Adım | Nerede |
 |---|---|---|
-| 1 | `one 3` modeli bitince, DEBUG'da bir kez `container.initializeCloudKitSchema(options: [])` çağrılır (launch argument ya da gizli debug menüsü; açılışta her seferinde **değil**) | Xcode'dan çalışan build (Development ortamı) |
+| 1 | `one 3` modeli bitince, DEBUG'da bir kez `container.initializeCloudKitSchema(options: [])` çağrılır: Xcode şemasında launch argument `-ONE2InitializeCloudKitSchema YES` (kanca: `PersistenceController.initializeCloudKitSchemaIfRequested`, yalnız DEBUG). Açılışta her seferinde **değil** | Xcode'dan çalışan build (Development ortamı), iCloud hesaplı cihaz/simülatör |
 | 2 | Dashboard → `iCloud.com.batu.ones` → Development → Schema: `CD_Entry`, `CD_EntryAnswer`, `CD_MoodLog`, `CD_DayRecord`, `CD_Tag`, `CD_Media`, `CD_Template`, `CD_TemplateItem`, `CD_MetricDefinition`, `CD_BadgeAward`, `CD_Practice` ve çoka çok ilişki kaydı (`CDMR`) görünüyor mu, alan listesi modelle aynı mı | Dashboard |
 | 3 | `initializeCloudKitSchema`'nın oluşturduğu örnek kayıtları Development'tan sil | Dashboard |
 | 4 | Deploy Schema Changes → Production | Dashboard |

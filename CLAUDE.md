@@ -100,6 +100,14 @@ marka öğeleri (ad, logo, renk paleti, ikonografi). Kendi içeriğimizi yaz.
   yeni kod `one/ONE2/`, v3 `Features/*` ve `CloudKitManager`'a erişim yok.
 - Çevre ONE 2.0'da yok (ADR §10). Yeni kod sosyal katmana bağlanmaz.
 - Faz 1 iş sırası: ADR-001 › "Faz 1: ilk 10 iş kalemi".
+- **İki kabuk, tek build:** `ONE2Flag` DEBUG ve TestFlight'ta açık (ONE 2.0),
+  App Store'da kapalı (v3). Xcode'da v3'ü görmek için launch argument
+  `-ONE2Enabled NO`; ONE 2.0 Profil'inde "Eski arayüze dön" düğmesi de var
+  (bir sonraki açılışta). Bayrağa bağlı v3 kodu: `oneApp.swift` açılış
+  katmanları ve deep link'ler, `Persistence.reconcileAfterRemoteChange`,
+  `MidnightResetManager` görev işleyicisi, `AppDelegate` CloudKit push'u.
+- ONE 2.0 açıkken `DailySong`'a insert/update DEBUG'da `assertionFailure`
+  verir (`LegacyWriteGuard`); silme serbest.
 - ONE 2.0 işi `one2/*` dallarında. Gerçek kullanıcı verisi (CloudKit
   dökümleri, `tooling/*.json`) repoya girmez; repo public.
 
