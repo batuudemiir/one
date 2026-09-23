@@ -1,0 +1,48 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "g_bosalt_01",
+      "title": "Kafandakini boşalt",
+      "summary": "Aklında dönenleri sayfaya bırak.",
+      "durationMinutes": 3,
+      "tags": [
+        "kaygi",
+        "dinlenme"
+      ],
+      "timeOfDay": "any",
+      "steps": [
+        {
+          "id": "g_bosalt_01_s1",
+          "kind": "scale5",
+          "prompt": "Şu an zihnin ne kadar kalabalık?"
+        },
+        {
+          "id": "g_bosalt_01_s2",
+          "kind": "text",
+          "prompt": "Aklında dönen her şeyi sırasız yaz."
+        },
+        {
+          "id": "g_bosalt_01_s3",
+          "kind": "multiChoice",
+          "prompt": "Bunlardan hangileri senin elinde?",
+          "choices": [
+            "Bir kısmı",
+            "Çoğu",
+            "Hiçbiri",
+            "Emin değilim"
+          ]
+        },
+        {
+          "id": "g_bosalt_01_s4",
+          "kind": "text",
+          "prompt": "Bugün bunlardan yalnız biri için ne yapabilirsin?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

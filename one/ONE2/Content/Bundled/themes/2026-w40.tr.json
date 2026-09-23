@@ -1,0 +1,49 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "t_2026w40",
+      "week": "2026-W40",
+      "title": "Minnet",
+      "summary": "Elinde olanı yeniden görmek.",
+      "tags": [
+        "minnet",
+        "iliskiler"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Bu sabah neye minnettarsın?"
+        },
+        {
+          "day": 2,
+          "prompt": "Kime teşekkür borçlusun?"
+        },
+        {
+          "day": 3,
+          "prompt": "Sıradan bir eşyanın sana kattığı ne?"
+        },
+        {
+          "day": 4,
+          "prompt": "Zor bir anın sana bıraktığı iyi bir şey var mı?"
+        },
+        {
+          "day": 5,
+          "prompt": "Bedenine neden teşekkür edersin?"
+        },
+        {
+          "day": 6,
+          "prompt": "Bu hafta seni gülümseten biri oldu mu?"
+        },
+        {
+          "day": 7,
+          "prompt": "Minnetini bir mektuba dönüştür."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

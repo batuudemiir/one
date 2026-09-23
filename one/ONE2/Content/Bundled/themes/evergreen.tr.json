@@ -1,0 +1,853 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "t_ev_001",
+      "title": "Merak",
+      "summary": "Evergreen tema: merak.",
+      "tags": [
+        "merak"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Bugün neyi merak ettin?"
+        },
+        {
+          "day": 2,
+          "prompt": "Son öğrendiğin şaşırtıcı şey ne?"
+        },
+        {
+          "day": 3,
+          "prompt": "Kimi daha yakından tanımak isterdin?"
+        },
+        {
+          "day": 4,
+          "prompt": "Hangi soruya cevap arıyorsun?"
+        },
+        {
+          "day": 5,
+          "prompt": "Denemek istediğin yeni bir şey var mı?"
+        },
+        {
+          "day": 6,
+          "prompt": "Çocukken neyi merak ederdin?"
+        },
+        {
+          "day": 7,
+          "prompt": "Merakın seni bu hafta nereye götürdü?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_002",
+      "title": "Cesaret",
+      "summary": "Evergreen tema: cesaret.",
+      "tags": [
+        "cesaret"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Seni korkutan ama çeken bir şey var mı?"
+        },
+        {
+          "day": 2,
+          "prompt": "En son ne zaman cesur davrandın?"
+        },
+        {
+          "day": 3,
+          "prompt": "Küçük bir cesaret adımı ne olabilir?"
+        },
+        {
+          "day": 4,
+          "prompt": "Başkasının cesaretinden ne öğrendin?"
+        },
+        {
+          "day": 5,
+          "prompt": "Korktuğunda bedenin ne yapıyor?"
+        },
+        {
+          "day": 6,
+          "prompt": "Hangi konuşmayı erteliyorsun?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bu haftaki cesaretini yaz."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_003",
+      "title": "Değişim",
+      "summary": "Evergreen tema: değişim.",
+      "tags": [
+        "degisim"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Son bir yılda ne değişti?"
+        },
+        {
+          "day": 2,
+          "prompt": "Değişmesini istediğin bir alışkanlık var mı?"
+        },
+        {
+          "day": 3,
+          "prompt": "Değişmeyen neye tutunuyorsun?"
+        },
+        {
+          "day": 4,
+          "prompt": "Bir değişikliğe nasıl alışırsın?"
+        },
+        {
+          "day": 5,
+          "prompt": "Eski sen ile şimdiki sen arasındaki fark ne?"
+        },
+        {
+          "day": 6,
+          "prompt": "Hangi değişim seni şaşırttı?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bir sonraki küçük değişim ne olabilir?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_004",
+      "title": "Kabul",
+      "summary": "Evergreen tema: kabul.",
+      "tags": [
+        "kabul"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Değiştiremediğin bir şeyle nasıl yaşıyorsun?"
+        },
+        {
+          "day": 2,
+          "prompt": "Bugün neyi olduğu gibi bıraktın?"
+        },
+        {
+          "day": 3,
+          "prompt": "Kendinde kabul etmekte zorlandığın ne?"
+        },
+        {
+          "day": 4,
+          "prompt": "Kabul ile vazgeçmek arasındaki fark ne?"
+        },
+        {
+          "day": 5,
+          "prompt": "Bir hayal kırıklığını nasıl taşıdın?"
+        },
+        {
+          "day": 6,
+          "prompt": "Bugün neyi kontrol etmeye çalıştın?"
+        },
+        {
+          "day": 7,
+          "prompt": "Kabul sana ne kazandırdı?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_005",
+      "title": "Odak",
+      "summary": "Evergreen tema: odak.",
+      "tags": [
+        "odak"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Bugün dikkatin en çok nereye gitti?"
+        },
+        {
+          "day": 2,
+          "prompt": "Seni en çok ne dağıtıyor?"
+        },
+        {
+          "day": 3,
+          "prompt": "Tek bir şeye odaklandığın son an ne zamandı?"
+        },
+        {
+          "day": 4,
+          "prompt": "Gerçekten önemli olan üç şey ne?"
+        },
+        {
+          "day": 5,
+          "prompt": "Bir işi bitirmek sana ne hissettiriyor?"
+        },
+        {
+          "day": 6,
+          "prompt": "Telefonsuz bir saatin nasıl geçerdi?"
+        },
+        {
+          "day": 7,
+          "prompt": "Haftanın odağını değerlendir."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_006",
+      "title": "Dinlenme",
+      "summary": "Evergreen tema: dinlenme.",
+      "tags": [
+        "dinlenme"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Sana gerçekten dinlendiren ne?"
+        },
+        {
+          "day": 2,
+          "prompt": "Yorgunluğu bedeninin neresinde hissediyorsun?"
+        },
+        {
+          "day": 3,
+          "prompt": "Son ne zaman hiçbir şey yapmadın?"
+        },
+        {
+          "day": 4,
+          "prompt": "Dinlenmek için izin mi bekliyorsun?"
+        },
+        {
+          "day": 5,
+          "prompt": "Uykun seni nasıl etkiliyor?"
+        },
+        {
+          "day": 6,
+          "prompt": "Bir öğleden sonrayı boşaltsan ne yapardın?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bu hafta nasıl dinlendin?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_007",
+      "title": "İlişkiler",
+      "summary": "Evergreen tema: i̇lişkiler.",
+      "tags": [
+        "iliskiler"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Yanında kendin olabildiğin kim?"
+        },
+        {
+          "day": 2,
+          "prompt": "Bir ilişkinde neyi geliştirmek isterdin?"
+        },
+        {
+          "day": 3,
+          "prompt": "En son kiminle içten konuştun?"
+        },
+        {
+          "day": 4,
+          "prompt": "Birine söylemek isteyip söyleyemediğin ne?"
+        },
+        {
+          "day": 5,
+          "prompt": "Yakınlık sana ne hissettiriyor?"
+        },
+        {
+          "day": 6,
+          "prompt": "Bir arkadaşlığı nasıl beslersin?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bu hafta kimi özledin?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_008",
+      "title": "Umut",
+      "summary": "Evergreen tema: umut.",
+      "tags": [
+        "umut"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Seni umutlandıran küçük bir şey ne?"
+        },
+        {
+          "day": 2,
+          "prompt": "Zor bir dönemden nasıl çıktın?"
+        },
+        {
+          "day": 3,
+          "prompt": "Gelecekte neyi dört gözle bekliyorsun?"
+        },
+        {
+          "day": 4,
+          "prompt": "Umudunu kim ya da ne besliyor?"
+        },
+        {
+          "day": 5,
+          "prompt": "Karamsar anlarında neye tutunuyorsun?"
+        },
+        {
+          "day": 6,
+          "prompt": "Bir yıl sonra nerede olmak isterdin?"
+        },
+        {
+          "day": 7,
+          "prompt": "Umudunu bir cümleye sığdır."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_009",
+      "title": "Özşefkat",
+      "summary": "Evergreen tema: özşefkat.",
+      "tags": [
+        "ozsefkat"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Kendine en çok hangi cümleyi söylüyorsun?"
+        },
+        {
+          "day": 2,
+          "prompt": "Hata yaptığında kendine nasıl davranıyorsun?"
+        },
+        {
+          "day": 3,
+          "prompt": "Bir arkadaşına söyleyeceğin gibi kendine yaz."
+        },
+        {
+          "day": 4,
+          "prompt": "Kendinle gurur duyduğun bir an ne?"
+        },
+        {
+          "day": 5,
+          "prompt": "Bugün kendine ne verebilirsin?"
+        },
+        {
+          "day": 6,
+          "prompt": "Kendini eleştirdiğin bir konuyu yumuşat."
+        },
+        {
+          "day": 7,
+          "prompt": "Bu hafta kendine nasıl baktın?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_010",
+      "title": "Anlam",
+      "summary": "Evergreen tema: anlam.",
+      "tags": [
+        "anlam"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Sana anlam veren bir uğraş ne?"
+        },
+        {
+          "day": 2,
+          "prompt": "Hangi an sana değerli hissettirdi?"
+        },
+        {
+          "day": 3,
+          "prompt": "Bir gününü neyin anlamlı kıldığını düşün."
+        },
+        {
+          "day": 4,
+          "prompt": "Hayatında vazgeçmek istemediğin ne?"
+        },
+        {
+          "day": 5,
+          "prompt": "Birine dokunduğun bir anı hatırla."
+        },
+        {
+          "day": 6,
+          "prompt": "Yaptığın bir şeyin neden önemli olduğunu yaz."
+        },
+        {
+          "day": 7,
+          "prompt": "Bu haftanın anlamlı anı neydi?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_011",
+      "title": "Sabır",
+      "summary": "Evergreen tema: sabır.",
+      "tags": [
+        "sabir"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Neyi beklemekte zorlanıyorsun?"
+        },
+        {
+          "day": 2,
+          "prompt": "Sabrın en çok nerede sınanıyor?"
+        },
+        {
+          "day": 3,
+          "prompt": "Zamanla gelen bir kazancını anlat."
+        },
+        {
+          "day": 4,
+          "prompt": "Acele etmediğinde ne değişiyor?"
+        },
+        {
+          "day": 5,
+          "prompt": "Kime karşı daha sabırlı olmak isterdin?"
+        },
+        {
+          "day": 6,
+          "prompt": "Sabrı nasıl öğrendin?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bu hafta neyi zamana bıraktın?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_012",
+      "title": "Kayıp",
+      "summary": "Evergreen tema: kayıp.",
+      "tags": [
+        "kayip"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Özlediğin bir şeyi anlat."
+        },
+        {
+          "day": 2,
+          "prompt": "Bir kaybın sana öğrettiği ne?"
+        },
+        {
+          "day": 3,
+          "prompt": "Hatırlamak sana ne hissettiriyor?"
+        },
+        {
+          "day": 4,
+          "prompt": "Kaybettiğin bir şeyin hâlâ seninle olan tarafı ne?"
+        },
+        {
+          "day": 5,
+          "prompt": "Yas tutmaya kendine izin veriyor musun?"
+        },
+        {
+          "day": 6,
+          "prompt": "Birine teşekkür etmek istediğin bir anı var mı?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bu haftayı nazik bir cümleyle kapat."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_013",
+      "title": "Sabahlar",
+      "summary": "Evergreen tema: sabahlar.",
+      "tags": [
+        "odak",
+        "umut"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Sabahın ilk düşüncesi neydi?"
+        },
+        {
+          "day": 2,
+          "prompt": "İdeal bir sabahın nasıl olurdu?"
+        },
+        {
+          "day": 3,
+          "prompt": "Güne nasıl başlamak istersin?"
+        },
+        {
+          "day": 4,
+          "prompt": "Sabah seni ne zorluyor?"
+        },
+        {
+          "day": 5,
+          "prompt": "Bu sabah bedenin nasıldı?"
+        },
+        {
+          "day": 6,
+          "prompt": "Bir sabah alışkanlığı eklesen ne olurdu?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bu haftanın sabahlarını değerlendir."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_014",
+      "title": "Akşamlar",
+      "summary": "Evergreen tema: akşamlar.",
+      "tags": [
+        "dinlenme",
+        "kabul"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Akşamları seni ne yoruyor?"
+        },
+        {
+          "day": 2,
+          "prompt": "Günü nasıl kapatmak istersin?"
+        },
+        {
+          "day": 3,
+          "prompt": "Bugünün en sessiz anı hangisiydi?"
+        },
+        {
+          "day": 4,
+          "prompt": "Uyumadan önce aklında ne dönüyor?"
+        },
+        {
+          "day": 5,
+          "prompt": "Akşam kendine ayırdığın bir zaman var mı?"
+        },
+        {
+          "day": 6,
+          "prompt": "Günü bırakmak sana ne hissettiriyor?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bu haftanın akşamlarını yaz."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_015",
+      "title": "Beden",
+      "summary": "Evergreen tema: beden.",
+      "tags": [
+        "yavaslik",
+        "dinlenme"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Bedenin bugün sana ne söyledi?"
+        },
+        {
+          "day": 2,
+          "prompt": "Hareket etmek sana nasıl geliyor?"
+        },
+        {
+          "day": 3,
+          "prompt": "Nerede gerginlik taşıyorsun?"
+        },
+        {
+          "day": 4,
+          "prompt": "Bedenine en son ne zaman teşekkür ettin?"
+        },
+        {
+          "day": 5,
+          "prompt": "Nasıl bir yürüyüş sana iyi gelir?"
+        },
+        {
+          "day": 6,
+          "prompt": "Bugün ne yedin, nasıl hissettirdi?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bedeninle ilişkini bir cümleyle yaz."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_016",
+      "title": "Yaratıcılık",
+      "summary": "Evergreen tema: yaratıcılık.",
+      "tags": [
+        "merak",
+        "anlam"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "En son ne ürettin?"
+        },
+        {
+          "day": 2,
+          "prompt": "Yaratıcı hissettiğin an hangisiydi?"
+        },
+        {
+          "day": 3,
+          "prompt": "Seni ne besliyor: müzik, doğa, insanlar?"
+        },
+        {
+          "day": 4,
+          "prompt": "Yapmak isteyip ertelediğin bir proje var mı?"
+        },
+        {
+          "day": 5,
+          "prompt": "Mükemmel olmak zorunda olmasa ne yapardın?"
+        },
+        {
+          "day": 6,
+          "prompt": "Bir renk seçip bugünü anlat."
+        },
+        {
+          "day": 7,
+          "prompt": "Bu hafta neyi yarattın?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_017",
+      "title": "Doğa",
+      "summary": "Evergreen tema: doğa.",
+      "tags": [
+        "yavaslik",
+        "minnet"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Bugün gökyüzüne baktın mı?"
+        },
+        {
+          "day": 2,
+          "prompt": "Seni sakinleştiren bir yer var mı?"
+        },
+        {
+          "day": 3,
+          "prompt": "Mevsimin değiştiğini nasıl fark ediyorsun?"
+        },
+        {
+          "day": 4,
+          "prompt": "Bir ağacın yanında ne hissediyorsun?"
+        },
+        {
+          "day": 5,
+          "prompt": "Doğada geçirdiğin bir anı hatırla."
+        },
+        {
+          "day": 6,
+          "prompt": "Penceren ne gösteriyor?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bu hafta doğayla temasını yaz."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_018",
+      "title": "Alışkanlıklar",
+      "summary": "Evergreen tema: alışkanlıklar.",
+      "tags": [
+        "degisim",
+        "odak"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Sürdürdüğün iyi bir alışkanlık ne?"
+        },
+        {
+          "day": 2,
+          "prompt": "Bırakmak istediğin bir alışkanlık var mı?"
+        },
+        {
+          "day": 3,
+          "prompt": "Bir alışkanlığı nasıl başlatırsın?"
+        },
+        {
+          "day": 4,
+          "prompt": "Küçük bir tekrarın büyük etkisini gördün mü?"
+        },
+        {
+          "day": 5,
+          "prompt": "Seni alışkanlıklarından ne koparıyor?"
+        },
+        {
+          "day": 6,
+          "prompt": "Yarın için küçük bir tekrar seç."
+        },
+        {
+          "day": 7,
+          "prompt": "Bu hafta alışkanlıkların nasıldı?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_019",
+      "title": "Sessizlik",
+      "summary": "Evergreen tema: sessizlik.",
+      "tags": [
+        "yavaslik",
+        "sinirlar"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Sessizlik sana ne hissettiriyor?"
+        },
+        {
+          "day": 2,
+          "prompt": "Bugün sessiz kaldığın bir an oldu mu?"
+        },
+        {
+          "day": 3,
+          "prompt": "Gürültü seni nasıl etkiliyor?"
+        },
+        {
+          "day": 4,
+          "prompt": "Söylemediğin bir şeyi buraya yaz."
+        },
+        {
+          "day": 5,
+          "prompt": "Kendi sesini ne zaman duyuyorsun?"
+        },
+        {
+          "day": 6,
+          "prompt": "Sessiz bir saat nasıl geçerdi?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bu haftanın sessiz anlarını yaz."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "t_ev_020",
+      "title": "Başlangıçlar",
+      "summary": "Evergreen tema: başlangıçlar.",
+      "tags": [
+        "umut",
+        "cesaret"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Yeni başladığın bir şey var mı?"
+        },
+        {
+          "day": 2,
+          "prompt": "Başlamak sana ne hissettiriyor?"
+        },
+        {
+          "day": 3,
+          "prompt": "Bir işe başlamadan önce neye ihtiyaç duyarsın?"
+        },
+        {
+          "day": 4,
+          "prompt": "Yarım kalan bir başlangıç var mı?"
+        },
+        {
+          "day": 5,
+          "prompt": "En sevdiğin başlangıç anı ne?"
+        },
+        {
+          "day": 6,
+          "prompt": "Yeniden başlamak nasıl bir his?"
+        },
+        {
+          "day": 7,
+          "prompt": "Bu haftanın başlangıçlarını yaz."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import CoreData
 
 final class AppEnvironment {
     let clock: AppClock
+    let content: ContentRepository
     let journal: JournalStore
     let mood: MoodStore
     let day: DayStore
@@ -20,8 +21,10 @@ final class AppEnvironment {
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
     private let legacyWriteGuard: LegacyWriteGuard?
 
-    init(context: NSManagedObjectContext, clock: AppClock = SystemClock(), guardLegacyWrites: Bool = true) {
+    init(context: NSManagedObjectContext, clock: AppClock = SystemClock(), guardLegacyWrites: Bool = true,
+         content: ContentRepository? = nil) {
         self.clock = clock
+        self.content = content ?? ContentRepository(clock: clock)
         journal = JournalStore(context: context, clock: clock)
         mood = MoodStore(context: context, clock: clock)
         day = DayStore(context: context, clock: clock)

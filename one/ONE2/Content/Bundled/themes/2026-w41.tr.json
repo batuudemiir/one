@@ -1,0 +1,49 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "t_2026w41",
+      "week": "2026-W41",
+      "title": "Sınırlar",
+      "summary": "Neye yer açtığını seçmek.",
+      "tags": [
+        "sinirlar",
+        "ozsefkat"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Bu hafta neye hayır demek istiyorsun?"
+        },
+        {
+          "day": 2,
+          "prompt": "Bir sınırın zorlandığını nasıl anlarsın?"
+        },
+        {
+          "day": 3,
+          "prompt": "Kimin yanında rahat nefes alırsın?"
+        },
+        {
+          "day": 4,
+          "prompt": "Sana ait olan zamanı nasıl korursun?"
+        },
+        {
+          "day": 5,
+          "prompt": "Bir sınır koyduğunda ne hissedersin?"
+        },
+        {
+          "day": 6,
+          "prompt": "Bu hafta kendine verdiğin bir söz var mı?"
+        },
+        {
+          "day": 7,
+          "prompt": "Sınırlarının sana ne kazandırdığını yaz."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

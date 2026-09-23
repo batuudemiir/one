@@ -1,0 +1,266 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "b_first_entry",
+      "title": "İlk sayfa",
+      "summary": "İlk girdini yazdın.",
+      "rule": {
+        "type": "entries",
+        "n": 1
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_first_quote_reflection",
+      "title": "İlk söz",
+      "summary": "Bir söze ilk kez yazdın.",
+      "rule": {
+        "type": "firstOf",
+        "kind": "quoteReflection"
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_first_guided",
+      "title": "İlk rehber",
+      "summary": "İlk rehberli günlüğünü bitirdin.",
+      "rule": {
+        "type": "firstOf",
+        "kind": "guided"
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_first_morning",
+      "title": "İlk sabah",
+      "summary": "İlk sabah hazırlığını yaptın.",
+      "rule": {
+        "type": "firstOf",
+        "kind": "morning"
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_first_evening",
+      "title": "İlk akşam",
+      "summary": "İlk akşam kapanışını yaptın.",
+      "rule": {
+        "type": "firstOf",
+        "kind": "evening"
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_streak_3",
+      "title": "Üç gün",
+      "summary": "Üç gün üst üste buradaydın.",
+      "rule": {
+        "type": "streak",
+        "n": 3
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_streak_7",
+      "title": "Bir hafta",
+      "summary": "Yedi gün üst üste buradaydın.",
+      "rule": {
+        "type": "streak",
+        "n": 7
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_streak_30",
+      "title": "Bir ay",
+      "summary": "Otuz gün üst üste buradaydın.",
+      "rule": {
+        "type": "streak",
+        "n": 30
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_streak_100",
+      "title": "Yüz gün",
+      "summary": "Yüz gün üst üste buradaydın.",
+      "rule": {
+        "type": "streak",
+        "n": 100
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_entries_10",
+      "title": "On sayfa",
+      "summary": "On girdi yazdın.",
+      "rule": {
+        "type": "entries",
+        "n": 10
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_entries_50",
+      "title": "Elli sayfa",
+      "summary": "Elli girdi yazdın.",
+      "rule": {
+        "type": "entries",
+        "n": 50
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_entries_200",
+      "title": "İki yüz sayfa",
+      "summary": "İki yüz girdi yazdın.",
+      "rule": {
+        "type": "entries",
+        "n": 200
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_quote_reflection_10",
+      "title": "Söz defteri",
+      "summary": "On söze yazdın.",
+      "rule": {
+        "type": "entries",
+        "kind": "quoteReflection",
+        "n": 10
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_words_1000",
+      "title": "Bin kelime",
+      "summary": "Toplam bin kelime yazdın.",
+      "rule": {
+        "type": "words",
+        "n": 1000
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_words_10000",
+      "title": "On bin kelime",
+      "summary": "Toplam on bin kelime yazdın.",
+      "rule": {
+        "type": "words",
+        "n": 10000
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_theme_1",
+      "title": "Tam hafta",
+      "summary": "Bir haftalık temanın yedi gününü yazdın.",
+      "rule": {
+        "type": "themeComplete",
+        "n": 1
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_theme_4",
+      "title": "Dört tema",
+      "summary": "Dört haftalık temayı tamamladın.",
+      "rule": {
+        "type": "themeComplete",
+        "n": 4
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_both_rituals_7",
+      "title": "Sabah ve akşam",
+      "summary": "Yedi gün sabahı ve akşamı birlikte yaptın.",
+      "rule": {
+        "type": "bothRituals",
+        "n": 7
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_comparison_1",
+      "title": "Dönüp bakış",
+      "summary": "Aynı soruya zaman içinde ikinci kez cevap verdin.",
+      "rule": {
+        "type": "comparison",
+        "n": 1
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "b_comparison_5",
+      "title": "Değişimin izi",
+      "summary": "Beş soruya zaman içinde yeniden cevap verdin.",
+      "rule": {
+        "type": "comparison",
+        "n": 5
+      },
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}
