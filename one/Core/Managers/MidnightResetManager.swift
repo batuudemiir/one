@@ -28,6 +28,14 @@ class MidnightResetManager {
                 task.setTaskCompleted(success: false)
                 return
             }
+            // ONE 2.0: işleyici kayıtlı kalır (Info.plist'teki kimlik için
+            // kayıtsız bekleyen görev sorun çıkarabilir), ama v3 işi — Çevre
+            // paylaşımlarını sıfırlamak, yani `DailySong`'a yazmak — yapılmaz
+            // (MIGRATION.md §6).
+            if ONE2Flag.isEnabled {
+                task.setTaskCompleted(success: true)
+                return
+            }
             self.handleMidnightReset(task: refreshTask)
         }
     }

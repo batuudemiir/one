@@ -890,3 +890,16 @@ one day.";
 "error.title.camera" = "Kamera Hatası";
 "error.title.circle" = "Çevre Hatası";
 "error.title.unknown" = "Hata";
+
+/* ONE 2.0 — kabuk (ADR-001 Faz 1 madde 8) */
+"one2.tab.today" = "Hoy";
+"one2.tab.journey" = "Recorrido";
+"one2.tab.explore" = "Explorar";
+"one2.tab.profile" = "Perfil";
+"one2.sheet.checkIn" = "Estado de ánimo";
+"one2.sheet.paywall" = "ONE+";
+"one2.placeholder.body" = "Esta sección está en preparación.";
+"one2.notice.circleUnavailable" = "Círculo no está en esta versión.";
+"one2.action.dismiss" = "Cerrar";
+"one2.debug.useV3" = "Cambiar a v3";
+"one2.debug.restart" = "Se aplica al reiniciar la app.";

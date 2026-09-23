@@ -888,3 +888,16 @@ one day.";
 "error.title.camera" = "Kamera Hatası";
 "error.title.circle" = "Çevre Hatası";
 "error.title.unknown" = "Hata";
+
+/* ONE 2.0 — kabuk (ADR-001 Faz 1 madde 8) */
+"one2.tab.today" = "今天";
+"one2.tab.journey" = "历程";
+"one2.tab.explore" = "探索";
+"one2.tab.profile" = "我的";
+"one2.sheet.checkIn" = "心情";
+"one2.sheet.paywall" = "ONE+";
+"one2.placeholder.body" = "此部分正在准备中。";
+"one2.notice.circleUnavailable" = "此版本不包含圈子。";
+"one2.action.dismiss" = "关闭";
+"one2.debug.useV3" = "切换到 v3";
+"one2.debug.restart" = "重启应用后生效。";

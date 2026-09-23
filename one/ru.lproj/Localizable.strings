@@ -891,3 +891,16 @@ one day.";
 "error.title.camera" = "Kamera Hatası";
 "error.title.circle" = "Çevre Hatası";
 "error.title.unknown" = "Hata";
+
+/* ONE 2.0 — kabuk (ADR-001 Faz 1 madde 8) */
+"one2.tab.today" = "Сегодня";
+"one2.tab.journey" = "Путь";
+"one2.tab.explore" = "Обзор";
+"one2.tab.profile" = "Профиль";
+"one2.sheet.checkIn" = "Настроение";
+"one2.sheet.paywall" = "ONE+";
+"one2.placeholder.body" = "Этот раздел в разработке.";
+"one2.notice.circleUnavailable" = "В этой версии нет раздела «Круг».";
+"one2.action.dismiss" = "Закрыть";
+"one2.debug.useV3" = "Перейти на v3";
+"one2.debug.restart" = "Вступит в силу после перезапуска приложения.";

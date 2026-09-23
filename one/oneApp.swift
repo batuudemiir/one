@@ -54,6 +54,14 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         // Convert [AnyHashable: Any] to [String: Any]
         let stringKeyedDict = Dictionary(uniqueKeysWithValues: userInfo.map { (String(describing: $0.key), $0.value) })
         
+        // ONE 2.0'da Çevre yok (ADR-001 §10): eski sorgu aboneliklerinden gelen
+        // push'lar arkadaş bildirimine dönüşmesin. Core Data senkronu kendi
+        // push işleyicisini kullanıyor, bu yoldan etkilenmez.
+        if ONE2Flag.isEnabled {
+            completionHandler(.noData)
+            return
+        }
+
         // Check if it's a CloudKit notification
         if let ck = userInfo["ck"] as? [String: Any] {
             ONELogger.debug("Received CloudKit push: \(ck["qry"] ?? "unknown")", category: .cloudkit)
@@ -164,6 +172,9 @@ struct oneApp: App {
     @Environment(\.scenePhase) private var scenePhase
     /// Invite code from a deep link that arrived before currentUser was loaded.
     @State private var pendingDeepLinkCode: String? = nil
+    /// ONE 2.0 kabuğu (ADR-001 §3): bayrak açılışta bir kez okunur.
+    @State private var one2Router = Router()
+    @State private var one2Environment: AppEnvironment? = ONE2Flag.isEnabled ? .live() : nil
 
     init() {
         // 3-tier launch contract: this init is Tier 0. Bütçe: <80ms toplam
@@ -216,7 +227,7 @@ struct oneApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            rootView
                 .environmentObject(languageManager)
                 // Rebuild the entire SwiftUI tree when the language changes
                 .id(languageManager.refreshToken)
@@ -256,6 +267,9 @@ struct oneApp: App {
                     Task.detached(priority: .userInitiated) {
                         ONELaunchSignpost.begin("tier2")
                         await MainActor.run {
+                            // v3'e özgü: Çevre kullanıcısı, gece yarısı
+                            // görevi, CloudKit abonelikleri.
+                            guard !ONE2Flag.isEnabled else { return }
                             cloudKitManager.checkCloudKitAvailability()
                             MidnightResetManager.shared.scheduleMidnightReset()
                             setupPushNotifications()
@@ -278,14 +292,21 @@ struct oneApp: App {
                         #endif
                         #endif
 
+                        if ONE2Flag.isEnabled {
+                            // v3 bildirimleri, kategorileri, arka plan görevi
+                            // ve widget verisi (MIGRATION.md §6).
+                            await ONE2Cleanup.run()
+                        }
                         await MainActor.run {
-                            appDelegate.setupNotificationCategories()
-                            NotificationOrchestrator.shared.bootOnLaunch()
+                            if !ONE2Flag.isEnabled {
+                                appDelegate.setupNotificationCategories()
+                                NotificationOrchestrator.shared.bootOnLaunch()
+                                // Günlük ritüel — cold start'ta yeniden planla.
+                                // Tek planlayıcı bu; orchestrator artık kendi
+                                // `daily_reminder`'ını kurmuyor.
+                                V3ReminderScheduler.reschedule()
+                            }
                             NotificationOrchestrator.shared.onAppOpened()
-                            // Günlük ritüel — cold start'ta yeniden planla.
-                            // Tek planlayıcı bu; orchestrator artık kendi
-                            // `daily_reminder`'ını kurmuyor.
-                            V3ReminderScheduler.reschedule()
                             updateChecker.check()
                             // Prod launch histogram telemetry — iOS payload'ı
                             // günde ~1 kez teslim eder; register bir sonraki
@@ -305,6 +326,14 @@ struct oneApp: App {
                     // lands on the default tab.
                     ONELaunchSignpost.begin("deeplink.resolve.url")
                     defer { ONELaunchSignpost.end("deeplink.resolve.url") }
+
+                    // ONE 2.0: tüm `ones://` link'leri router'a (ADR-001 §9).
+                    if ONE2Flag.isEnabled {
+                        if !one2Router.handle(url) {
+                            ONELogger.warning("ONE2: unhandled deep link host \(url.host ?? "-")", category: .general)
+                        }
+                        return
+                    }
 
                     // 1. Handle Spotify callback (no tab intent — auth only)
                     if url.scheme == "ones" && url.host == "spotify-callback" {
@@ -368,6 +397,11 @@ struct oneApp: App {
                     ONELaunchSignpost.begin("deeplink.resolve.activity")
                     defer { ONELaunchSignpost.end("deeplink.resolve.activity") }
 
+                    if ONE2Flag.isEnabled {
+                        one2Router.handle(url)
+                        return
+                    }
+
                     // In-App Event universal link: https://one.forvibe.app/event/mood
                     // Mood seçim ekranı (ONEColorPickerView) zaten splash sonrası
                     // ana ekran; burada sadece olası modal/sheet'leri kapatıp
@@ -422,6 +456,17 @@ struct oneApp: App {
         }
     }
     
+    /// Bayrak açıksa ONE 2.0 kabuğu, değilse v3. Kilit perdesi, dil ve tema
+    /// ikisinde de aynı (body'deki ortak düzen).
+    @ViewBuilder
+    private var rootView: some View {
+        if let one2Environment {
+            ONE2RootView(router: one2Router, environment: one2Environment)
+        } else {
+            ContentView()
+        }
+    }
+
     private func handleInviteCode(_ code: String) {
         if cloudKitManager.currentUser != nil {
             NotificationCenter.default.post(

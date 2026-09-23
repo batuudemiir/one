@@ -112,6 +112,9 @@ final class PersistenceController: ObservableObject {
                     // tüketici zaten uzlaşmış veriyi okuyor.
                     self?.setupRemoteChangeNotifications()
                     self?.schedulePersistentHistoryPurge()
+                    #if DEBUG
+                    self?.initializeCloudKitSchemaIfRequested()
+                    #endif
                 }
             }
 
@@ -136,6 +139,34 @@ final class PersistenceController: ObservableObject {
         setupRemoteChangeNotifications()
     }
     
+    #if DEBUG
+    /// `one 3` record type'larını CloudKit **development** ortamında üretir
+    /// (MIGRATION.md §5, ADR-001 Faz 1 madde 10). Yalnız Xcode'dan, launch
+    /// argument ile: `-ONE2InitializeCloudKitSchema YES`. Development'a örnek
+    /// kayıtlar yazar; Dashboard'dan silinip Production'a deploy edilmeli.
+    /// Model her değiştiğinde yeniden çalıştırılır.
+    private func initializeCloudKitSchemaIfRequested() {
+        guard UserDefaults.standard.bool(forKey: "ONE2InitializeCloudKitSchema") else { return }
+        let container = self.container
+        DispatchQueue.global(qos: .utility).async {
+            let failure: Error?
+            do {
+                try container.initializeCloudKitSchema(options: [])
+                failure = nil
+            } catch {
+                failure = error
+            }
+            DispatchQueue.main.async {
+                if let failure {
+                    ONELogger.error("CloudKit şeması üretilemedi", error: failure, category: .persistence)
+                } else {
+                    ONELogger.success("CloudKit şeması (development) üretildi", category: .persistence)
+                }
+            }
+        }
+    }
+    #endif
+
     /// Store kurtarma yalnızca bir kez denenir — ikinci kez başarısız olması
     /// diskin kendisinde bir sorun olduğunu gösterir ve döngüye girmenin
     /// kullanıcıya faydası yok.
@@ -252,6 +283,26 @@ final class PersistenceController: ObservableObject {
     /// Sıra önemli — `ArchiveStore` gibi tüketiciler tazelendiğinde veri zaten
     /// uzlaşmış olmalı, yoksa kullanıcı bir an için çift satır görür.
     private func reconcileAfterRemoteChange() {
+        // ONE 2.0: `DailySong` salt okunur (B'). v3 uzlaştırması ona yazdığı,
+        // `refreshTodaySurfaces` de widget'a v3 verisi yazdığı için ikisi de
+        // atlanır; yerine ONE 2.0'ın "gün başına bir" kayıtları birleştirilir
+        // (ADR-001 §1, MIGRATION.md §1.3–1.4).
+        if ONE2Flag.isEnabled {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                let context = self.container.viewContext
+                do {
+                    let merged = try DayStore(context: context).reconcileDuplicates()
+                        + LibraryStore(context: context).reconcileDuplicateBadges()
+                    if merged > 0 { context.refreshAllObjects() }
+                } catch {
+                    ONELogger.warning("ONE2 uzlaştırma başarısız: \(error.localizedDescription)", category: .persistence)
+                }
+                NotificationCenter.default.post(name: .momentsDidChangeRemotely, object: nil)
+            }
+            return
+        }
+
         let bg = container.newBackgroundContext()
         // Uzak değişiklik zaten kazanmış durumda; uzlaştırma yalnızca fazlalığı
         // temizliyor, bu yüzden çakışmada store'daki hâli tercih ediyoruz.

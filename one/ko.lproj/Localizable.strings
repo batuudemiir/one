@@ -891,3 +891,16 @@ one day.";
 "error.title.camera" = "Kamera Hatası";
 "error.title.circle" = "Çevre Hatası";
 "error.title.unknown" = "Hata";
+
+/* ONE 2.0 — kabuk (ADR-001 Faz 1 madde 8) */
+"one2.tab.today" = "오늘";
+"one2.tab.journey" = "여정";
+"one2.tab.explore" = "둘러보기";
+"one2.tab.profile" = "프로필";
+"one2.sheet.checkIn" = "기분";
+"one2.sheet.paywall" = "ONE+";
+"one2.placeholder.body" = "이 섹션은 준비 중입니다.";
+"one2.notice.circleUnavailable" = "이 버전에는 서클이 없습니다.";
+"one2.action.dismiss" = "닫기";
+"one2.debug.useV3" = "v3로 전환";
+"one2.debug.restart" = "앱을 다시 시작하면 적용됩니다.";

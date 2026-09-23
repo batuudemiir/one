@@ -890,3 +890,16 @@ one day.";
 "error.title.camera" = "Kamera Hatası";
 "error.title.circle" = "Çevre Hatası";
 "error.title.unknown" = "Hata";
+
+/* ONE 2.0 — kabuk (ADR-001 Faz 1 madde 8) */
+"one2.tab.today" = "今日";
+"one2.tab.journey" = "記録";
+"one2.tab.explore" = "見つける";
+"one2.tab.profile" = "プロフィール";
+"one2.sheet.checkIn" = "気分";
+"one2.sheet.paywall" = "ONE+";
+"one2.placeholder.body" = "このセクションは準備中です。";
+"one2.notice.circleUnavailable" = "このバージョンにはサークルがありません。";
+"one2.action.dismiss" = "閉じる";
+"one2.debug.useV3" = "v3に切り替える";
+"one2.debug.restart" = "アプリの再起動後に反映されます。";

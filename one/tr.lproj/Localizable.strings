@@ -1032,3 +1032,16 @@ bir gün.";
 "error.title.camera" = "Kamera Hatası";
 "error.title.circle" = "Çevre Hatası";
 "error.title.unknown" = "Hata";
+
+/* ONE 2.0 — kabuk (ADR-001 Faz 1 madde 8) */
+"one2.tab.today" = "Bugün";
+"one2.tab.journey" = "Yolculuk";
+"one2.tab.explore" = "Keşfet";
+"one2.tab.profile" = "Profil";
+"one2.sheet.checkIn" = "Ruh hali";
+"one2.sheet.paywall" = "ONE+";
+"one2.placeholder.body" = "Bu bölüm hazırlanıyor.";
+"one2.notice.circleUnavailable" = "Çevre bu sürümde yok.";
+"one2.action.dismiss" = "Kapat";
+"one2.debug.useV3" = "Eski arayüze dön";
+"one2.debug.restart" = "Uygulamayı yeniden başlatınca geçerli olur.";
