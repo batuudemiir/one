@@ -55,6 +55,13 @@
 		<string>DMSans_24pt-SemiBold.ttf</string>
 		<string>DMSans-Bold.ttf</string>
 		<string>DMSans_18pt-LightItalic.ttf</string>
+		<string>PlusJakartaSans-Medium.ttf</string>
+		<string>PlusJakartaSans-SemiBold.ttf</string>
+		<string>PlusJakartaSans-Bold.ttf</string>
+		<string>Literata-Regular.ttf</string>
+		<string>Literata-Italic.ttf</string>
+		<string>IBMPlexMono-Regular.ttf</string>
+		<string>IBMPlexMono-Medium.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

@@ -1,0 +1,72 @@
+//
+//  ONE2Space.swift
+//  ONE 2.0
+//
+//  Boşluk (tokens.json › spacing) ve ölçü token'ları. Ölçüler tokens.json'da
+//  yok; README ve components/*.md'de yazılı sabitler burada toplanır ki
+//  bileşenler elle sayı yazmasın.
+//
+
+import CoreGraphics
+
+enum ONE2Space {
+    /// İkon–metin arası.
+    static let s1: CGFloat = 4
+    /// Chip içi dikey, ilişkili öğeler arası.
+    static let s2: CGFloat = 8
+    /// Chip yatay dolgu, liste satırı; bir gruptaki kartlar arası.
+    static let s3: CGFloat = 12
+    /// Ekran kenarı, kart iç dolgusu.
+    static let s4: CGFloat = 16
+    /// Kart içi bölümler arası.
+    static let s5: CGFloat = 20
+    /// Kart iç dolgusu (geniş).
+    static let s6: CGFloat = 24
+    /// Ekran bölümleri arası.
+    static let s8: CGFloat = 32
+    /// Büyük bölüm ayrımı, tamamlama ekranı.
+    static let s10: CGFloat = 40
+    /// Onboarding üst boşluğu.
+    static let s14: CGFloat = 56
+
+    // Anlamsal takma adlar (README "Boşluk, köşe, yüzey").
+    static let gutter = s4
+    static let cardGap = s3
+    static let sectionGap = s8
+}
+
+/// Bileşen ölçüleri (README ve components/*.md).
+enum ONE2Size {
+    /// En küçük dokunma hedefi.
+    static let minTouch: CGFloat = 44
+    /// Hap ve yuvarlak kontroller (TopBar).
+    static let control: CGFloat = 48
+    /// Buton yüksekliği; kart içinde `buttonCompact`.
+    static let button: CGFloat = 52
+    static let buttonCompact: CGFloat = 48
+    /// Skor diski ve küçük varyantı.
+    static let scoreDisc: CGFloat = 60
+    static let scoreDiscSmall: CGFloat = 20
+    /// Tab bar ikonu.
+    static let tabIcon: CGFloat = 24
+    /// Yüzen + hapı.
+    static let addButtonWidth: CGFloat = 72
+    static let addButtonHeight: CGFloat = 56
+    /// PracticeTile ikon kuyusu.
+    static let iconWell: CGFloat = 72
+    /// Badge diski.
+    static let badgeDisc: CGFloat = 64
+    /// Seal diski.
+    static let sealDisc: CGFloat = 96
+    /// EmotionChip aile noktası.
+    static let emotionDot: CGFloat = 10
+    /// CheckInCard en küçük yükseklik.
+    static let checkInCardMin: CGFloat = 300
+    /// ContentCard kemer görseli.
+    static let contentArt: CGFloat = 88
+
+    /// Dekoratif kenar (`line`) ve anlamlı kenar (`lineStrong`).
+    static let hairline: CGFloat = 1
+    /// Odak halkası, seçili PlanCard kenarı.
+    static let focusRing: CGFloat = 2
+}
