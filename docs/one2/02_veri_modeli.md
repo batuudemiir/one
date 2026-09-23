@@ -169,7 +169,7 @@ v3'te tek entity var: `DailySong` (28 alan, ilişki yok). Asıl mood verisi `moo
 
 B' `dayKey` için: `DailySong.date` bileşenlerinden (yerel takvim) türetilir; saat dilimi bilgisi olmadığı için birebir doğruluk garanti değil (R4). Salt görüntüleme olduğu için kabul edilebilir.
 
-Karar: ___ (Batuhan)
+Karar: **B'** (Batuhan, 23 Eylül 2026). Tasarım ve riskler: `MIGRATION.md`.
 
 ## Açık sorular
 

@@ -8,6 +8,7 @@ v3 kuralları arşivde: `docs/archive/CLAUDE_v3.md`. Ürün yönü değişti; or
 ONE 2.0: günlük (journal) + mood check-in + sabah/akşam ritüeli + haftalık
 tema + seri (streak) ve rozetler + geriye dönük giriş + premium. Referans
 sistem Stoic'in akışı; içerik ve marka bizim.
+Rehberli akışlarda süre bilgisi ("2 dakika") serbest.
 
 **Doğruluk kaynağı `docs/one2/`.** Kod ile doküman çelişirse doküman kazanır;
 çelişkiyi fark edersen düzeltmeden önce söyle.
@@ -95,8 +96,10 @@ marka öğeleri (ad, logo, renk paleti, ikonografi). Kendi içeriğimizi yaz.
 
 ## Faz kuralları
 
-- Faz 0'da ürün kodu yazılmaz; yalnız denetim, doküman, karar.
-- Kod yerleşimi ve mimari `ADR-001.md` onaylanınca bağlayıcı olur.
+- Faz 0 kapandı (23 Eylül 2026). `ADR-001.md` kabul edildi ve bağlayıcı:
+  yeni kod `one/ONE2/`, v3 `Features/*` ve `CloudKitManager`'a erişim yok.
+- Çevre ONE 2.0'da yok (ADR §10). Yeni kod sosyal katmana bağlanmaz.
+- Faz 1 iş sırası: ADR-001 › "Faz 1: ilk 10 iş kalemi".
 - ONE 2.0 işi `one2/*` dallarında. Gerçek kullanıcı verisi (CloudKit
   dökümleri, `tooling/*.json`) repoya girmez; repo public.
 
