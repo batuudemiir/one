@@ -141,7 +141,9 @@ final class PersistenceController: ObservableObject {
     /// kullanıcıya faydası yok.
     private var didAttemptStoreRecovery = false
 
-    /// Açılamayan store'u atıp sıfırdan kurar. Veri CloudKit'ten geri iner.
+    /// Açılamayan store'u kenara taşıyıp sıfırdan kurar. Veri CloudKit'ten
+    /// geri iner; iCloud'u kapalı kullanıcı için eski dosyalar
+    /// `StoreBackups/` altında kalır (bkz. `StoreBackup`).
     private func recoverFromUnopenableStore(
         _ description: NSPersistentStoreDescription,
         originalError: NSError
@@ -152,21 +154,26 @@ final class PersistenceController: ObservableObject {
         }
         didAttemptStoreRecovery = true
 
-        ONELogger.warning("CoreData store açılamadı, yerel kopya atılıp yeniden kuruluyor", category: .persistence)
+        ONELogger.warning("CoreData store açılamadı, yerel kopya kenara alınıp yeniden kuruluyor", category: .persistence)
 
-        do {
-            try container.persistentStoreCoordinator.destroyPersistentStore(
-                at: url, ofType: NSSQLiteStoreType, options: description.options
-            )
-        } catch {
-            // `destroy` başarısızsa dosyaları elle temizlemeyi dene — sqlite
-            // yan dosyaları (-wal, -shm) geride kalırsa yeni store da açılmaz.
-            let fm = FileManager.default
-            for suffix in ["", "-wal", "-shm"] {
-                let sidecar = URL(fileURLWithPath: url.path + suffix)
-                try? fm.removeItem(at: sidecar)
+        if let root = StoreBackup.defaultRoot(),
+           let folder = try? StoreBackup.moveAside(storeURL: url, root: root) {
+            ONELogger.warning("Açılamayan store yedeklendi: \(folder.lastPathComponent)", category: .persistence)
+        } else {
+            do {
+                try container.persistentStoreCoordinator.destroyPersistentStore(
+                    at: url, ofType: NSSQLiteStoreType, options: description.options
+                )
+            } catch {
+                // `destroy` başarısızsa dosyaları elle temizlemeyi dene — sqlite
+                // yan dosyaları (-wal, -shm) geride kalırsa yeni store da açılmaz.
+                let fm = FileManager.default
+                for suffix in ["", "-wal", "-shm"] {
+                    let sidecar = URL(fileURLWithPath: url.path + suffix)
+                    try? fm.removeItem(at: sidecar)
+                }
+                ONELogger.error("destroyPersistentStore başarısız, dosyalar elle silindi: \(error.localizedDescription)", category: .persistence)
             }
-            ONELogger.error("destroyPersistentStore başarısız, dosyalar elle silindi: \(error.localizedDescription)", category: .persistence)
         }
 
         container.loadPersistentStores { [weak self] _, retryError in
