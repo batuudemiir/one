@@ -1,0 +1,62 @@
+# ONE 2.0 — minimal CI (ADR-001 §11, Faz 1 madde 3)
+#
+# guards: marka sesi, ekran kuralları, font bütünlüğü — hızlı, zorunlu.
+# test:   oneTests birim testleri simülatörde. Proje en yeni Xcode ile
+#         düzenleniyor; runner'daki Xcode projeyi açamazsa bu iş kırmızı
+#         görünür ama PR'ı bloklamaz (continue-on-error). O durumda yerel
+#         `swiftc -typecheck` doğrulaması (CLAUDE.md › Derleme) zorunlu.
+
+name: CI
+
+on:
+  push:
+    branches: ["one2/**"]
+  pull_request:
+    branches: [main, "one2/**"]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guards:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Marka sesi, ekran kuralları, font
+        run: tooling/ui_guard.sh
+
+  test:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: En yeni Xcode'u seç
+        run: |
+          XCODE=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+
+      # SaveRipple.metal için gerekli; Xcode 26+ bileşeni ayrı indiriyor.
+      - name: Metal Toolchain
+        run: xcodebuild -downloadComponent MetalToolchain || echo "Metal Toolchain indirilemedi"
+
+      - name: Secrets.xcconfig (şablondan)
+        run: cp one/Secrets.xcconfig.template one/Secrets.xcconfig
+
+      - name: Birim testleri
+        run: |
+          DEST=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          print(next(d["udid"] for runtime, ds in devices.items() if "iOS" in runtime
+                     for d in ds if d["name"].startswith("iPhone")))')
+          xcodebuild test \
+            -project ones.xcodeproj \
+            -scheme ones \
+            -destination "id=$DEST" \
+            -only-testing:oneTests \
+            CODE_SIGNING_ALLOWED=NO
