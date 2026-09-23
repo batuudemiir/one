@@ -90,6 +90,8 @@ ONE 2.0 açıkken `DailySong` üzerindeki **tek izinli yazma, kullanıcının a�
 
 Genel: `one 3.xcdatamodel` yeni sürüm olarak eklenir; `DailySong` `one 2`'den **birebir** kopyalanır. `usedWithCloudKit="YES"`. Tüm entity'ler Default configuration'da. Codegen: `class` (mevcutla tutarlı). Yeni entity adları mevcut Swift tipleriyle çakışmıyor (repo tarandı).
 
+**Uygulandı (23 Eylül 2026, Faz 1 madde 5):** `one/one.xcdatamodeld/one 3.xcdatamodel`, güncel sürüm. Aşağıdaki tüm düzeltmeler modelde: UUID, Date ve String alanlar opsiyonel; scalar'lar varsayılanlı; ilişkiler opsiyonel, ters ilişkili ve 3.2'deki delete rule'larla; `MoodLog` ve `DayRecord`'da `timeZoneID` var. Entity adları dokümandaki gibi; üretilen sınıflar `MO` sonekli (`EntryMO`, `TagMO` …) ki genel adlar modül içinde çakışmasın. CloudKit record type adı entity adından gelir (`CD_Entry`), sınıf adı şemayı etkilemez. `momc` CloudKit doğrulaması uyarısız geçiyor. Testler: `oneTests/ModelVersionTests.swift` (T1, T3, T4). CloudKit şeması **henüz üretilmedi ve deploy edilmedi** (§5); ONE2 yazma yolu olmadığı sürece bu modelle build almak güvenli.
+
 ### 3.1 Genel kurallar
 
 | Kural | v0.2 durumu | Düzeltme |

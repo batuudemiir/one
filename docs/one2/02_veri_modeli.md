@@ -37,6 +37,8 @@ Kapsam: Kullanıcı verisi (CloudKit private DB, `iCloud.com.batu.ones`) ve içe
 
 ## Varlıklar (model sürümü `one 3`)
 
+Model dosyası: `one/one.xcdatamodeld/one 3.xcdatamodel` (23 Eylül 2026). Tablolardaki tipler Swift katmanının gördüğü tiplerdir; modelde CloudKit gereği tüm UUID, Date ve String alanlar opsiyoneldir (`MIGRATION.md` §3). `MoodLog` ve `DayRecord`'a `timeZoneID String?` eklendi. Sınıf adları `<Entity>MO`.
+
 ```mermaid
 erDiagram
   DayRecord ||--o{ Entry : "dayKey"

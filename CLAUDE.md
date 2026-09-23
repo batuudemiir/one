@@ -115,7 +115,7 @@ SDK="$X/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk"
 CD=$(mktemp -d)
 "$X/usr/bin/momc" --sdkroot "$SDK" --module one --swift-version 5.0 \
   --action generate --swift-output-dir "$CD/src" \
-  "one/one.xcdatamodeld/one 2.xcdatamodel" "$CD"
+  "one/one.xcdatamodeld/one 3.xcdatamodel" "$CD"
 "$X/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc" -typecheck \
   -sdk "$SDK" -target arm64-apple-ios17.0-simulator \
   -swift-version 5 -module-name OneDailyBatuhan \
