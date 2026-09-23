@@ -88,6 +88,12 @@ enum ONEFormatters {
     static var monthYear: DateFormatter { localized("MMMM yyyy") }
     /// `LLLL` — tek başına ay adı (bazı dillerde `MMMM`'den farklı çekimlenir)
     static var monthStandalone: DateFormatter { localized("LLLL") }
+    /// `EEEE` — "Pazar". Gün detayının meta satırı.
+    ///
+    /// `dayMonthWeekday` zaten vardı ama tarihi de taşıyor ("17 Ağustos ·
+    /// Pazar"); gün detayında tarih başlıkta duruyor, meta satırına yalnız
+    /// haftanın günü kalıyor.
+    static var weekday: DateFormatter { localized("EEEE") }
 
     // MARK: - Havuz
 

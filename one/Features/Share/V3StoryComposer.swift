@@ -96,13 +96,14 @@ struct V3StoryComposerView: View {
             let safeBottom = proxy.safeAreaInsets.bottom
             let screenH = proxy.size.height
             let screenW = proxy.size.width
-            // Toplam UI'nin öncelik yüksekliği: header 62 + toggles 200 + actionBar 88.
-            // Önizleme kalanı doldurur, ama en fazla ekranın %60'ı.
-            let togglesHeight: CGFloat = 210
-            let headerHeight: CGFloat = 62
-            let actionBarHeight: CGFloat = 88
-            let verticalChrome = safeTop + safeBottom + headerHeight + togglesHeight + actionBarHeight + 36
-            let previewMaxH = max(240, min(screenH * 0.58, screenH - verticalChrome))
+            // Chrome yükseklikleri (header + toggles + actionBar + padding).
+            // Küçük ekranlarda (SE, mini) taşmayı önlemek için
+            // toggle'lar ve preview daha kompakt.
+            let headerHeight: CGFloat = 56
+            let togglesHeight: CGFloat = 160
+            let actionBarHeight: CGFloat = 80
+            let verticalChrome = safeTop + safeBottom + headerHeight + togglesHeight + actionBarHeight + 24
+            let previewMaxH = max(200, min(screenH * 0.50, screenH - verticalChrome))
             let previewMaxW = screenW - 40
             // Karta sığdır: aspect'e göre en kısıtlayıcı boyut kazanır.
             let byHeight = CGSize(width: previewMaxH * ratio.aspect, height: previewMaxH)
@@ -115,7 +116,7 @@ struct V3StoryComposerView: View {
                 VStack(spacing: 0) {
                     header
 
-                    Spacer(minLength: 8)
+                    Spacer(minLength: 4)
 
                     storyCard
                         .frame(width: cardSize.width, height: cardSize.height)
@@ -129,15 +130,15 @@ struct V3StoryComposerView: View {
                         .animation(.timingCurve(0.2, 0.9, 0.25, 1, duration: 0.22), value: background)
                         .animation(.timingCurve(0.2, 0.9, 0.25, 1, duration: 0.22), value: content)
 
-                    Spacer(minLength: 8)
+                    Spacer(minLength: 4)
 
                     togglesGroup
                         .padding(.horizontal, V3Tokens.spacingXL)
 
                     actionBar
                         .padding(.horizontal, V3Tokens.spacingXL)
-                        .padding(.top, 14)
-                        .padding(.bottom, max(safeBottom, 10) + 4)
+                        .padding(.top, 10)
+                        .padding(.bottom, max(safeBottom, 8))
                 }
 
                 if let toast {
@@ -176,7 +177,6 @@ struct V3StoryComposerView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, V3Tokens.barInset)
         }
-        .padding(.bottom, V3Tokens.spacingXS)
     }
 
     // MARK: - Card (aynı view hem preview hem export'ta kullanılır)
@@ -185,6 +185,10 @@ struct V3StoryComposerView: View {
         ZStack(alignment: .topLeading) {
             backgroundLayer
             scrimLayer
+            if background == .photo {
+                MoodArtworkOverlay(mood: mood)
+                    .allowsHitTesting(false)
+            }
             contentLayer
         }
     }
@@ -338,7 +342,7 @@ struct V3StoryComposerView: View {
     // MARK: - Toggles
 
     private var togglesGroup: some View {
-        VStack(spacing: V3Tokens.spacingMD) {
+        VStack(spacing: V3Tokens.spacingSM) {
             toggleRow(title: NSLocalizedString("story.row.ratio", comment: "")) {
                 segmented(V3StoryRatio.allCases, selection: $ratio) { $0.label }
             }
@@ -378,7 +382,7 @@ struct V3StoryComposerView: View {
                         .font(V3Typography.sans(13, weight: isOn ? .semibold : .medium))
                         .foregroundColor(isOn ? V3Tokens.ink : V3Tokens.mutedText)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 9)
+                        .padding(.vertical, 7)
                         .background(
                             Group {
                                 if isOn {
@@ -391,7 +395,7 @@ struct V3StoryComposerView: View {
                 .buttonStyle(.onePressable)
             }
         }
-        .padding(V3Tokens.spacingXS)
+        .padding(3)
         .background(Capsule().fill(V3Tokens.wash))
     }
 
@@ -410,7 +414,7 @@ struct V3StoryComposerView: View {
                 }
                 .foregroundColor(V3Tokens.ink)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
+                .padding(.vertical, 12)
                 .background(Capsule().stroke(V3Tokens.ink, lineWidth: 1.5))
             }
             .buttonStyle(.onePressable)
@@ -426,7 +430,7 @@ struct V3StoryComposerView: View {
                 }
                 .foregroundColor(V3Tokens.paper)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
+                .padding(.vertical, 12)
                 .background(Capsule().fill(V3Tokens.ink))
             }
             .buttonStyle(.onePressable)

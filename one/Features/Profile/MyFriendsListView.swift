@@ -231,7 +231,7 @@ struct MyFriendsListView: View {
                     .frame(width: 32, height: 32)
                     .overlay(
                         Image(systemName: glyph)
-                            .font(.system(size: 13))
+                            .iconSM()
                             .foregroundColor(ONEBrand.bone)
                     )
                 Text(label)
@@ -260,7 +260,7 @@ struct MyFriendsListView: View {
     private var searchField: some View {
         HStack(spacing: 9) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14))
+                .iconMD()
                 .foregroundColor(V3Tokens.faintText)
             TextField(
                 NSLocalizedString("friends.searchPlaceholder", comment: ""),
@@ -365,8 +365,8 @@ struct MyFriendsListView: View {
                 Button(NSLocalizedString("friends.accept", comment: "")) {
                     accept(recordName: recordName)
                 }
-                .font(.system(size: 12.5, weight: .semibold))
-                .foregroundColor(ONEBrand.kor)
+                .bodyXSSemibold()
+                .foregroundColor(V3Tokens.korText)
                 .buttonStyle(.onePressable)
 
                 Button(NSLocalizedString("friends.ignore", comment: "")) {

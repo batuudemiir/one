@@ -58,7 +58,7 @@ private struct LanguageRow: View {
 
                     if isSelected {
                         Image(systemName: "checkmark")
-                            .font(.system(size: 13, weight: .semibold))
+                            .iconSM(weight: .semibold)
                             .foregroundColor(ONEBrand.kor)
                     }
                 }

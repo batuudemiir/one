@@ -46,6 +46,17 @@ enum V3Tokens {
     }
 
     static let kor        = Color(hex: "#FF3B1F")   // brand / accent — tema-bağımsız
+    // Kor'un **metin** hali. `kor` bir yüzey/işaret rengi: dolu kapsülde,
+    // rozette, 5pt'lik noktada sorun yok çünkü orada grafik eşiği (3:1)
+    // geçerli. Ama açık temada kağıdın üstünde METİN olarak 3.41:1 veriyor
+    // ve AA gövde eşiği 4.5 — "Kaydet", "Çıkış yap", "Hesabı sil" hep o
+    // eşiğin altında kalıyordu.
+    //
+    // Çözüm rengi atmak değil koyultmak: kırmızı burada anlam taşıyor
+    // (yıkıcı eylem, birincil onay). `ink`'e çevirmek okunurluğu düzeltip
+    // anlamı siliyordu. Koyu temada zaten 5.48:1 — orada kor'un kendisi
+    // kalıyor, koyultmak tersine okunmaz yapardı.
+    static let korText    = adaptive(light: "#C42A10", dark: "#FF3B1F")   // en kötü zemin: 5.46 / 5.06
     static let ink        = adaptive(light: "#14141A", dark: "#F2F1EE")   // birincil metin
     static let paper      = adaptive(light: "#FBFAF7", dark: "#0C0C10")   // ekran zemini
     static let surface    = adaptive(light: "#FFFFFF", dark: "#16161C")   // kart, alan

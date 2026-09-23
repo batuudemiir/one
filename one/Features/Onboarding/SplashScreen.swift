@@ -81,7 +81,7 @@ struct SplashScreen: View {
                 // tek satırlık tracking'li bir şerit olduğu için taşmak
                 // yerine sıkışsın.
                 Text(NSLocalizedString("splash.tagline", comment: ""))
-                    .font(V3Typography.mono(11, weight: .regular))
+                    .monoSM(weight: .regular)
                     .tracking(1.6)
                     .foregroundColor(ONEBrand.bone)
                     .lineLimit(1)

@@ -49,18 +49,39 @@ final class AppLockManager: ObservableObject {
         UserDefaults.standard.bool(forKey: Self.enabledKey)
     }
 
+    /// Donanım yeteneğinin belleğe alınmış hâli.
+    ///
+    /// `canEvaluatePolicy` biyometri daemon'una **senkron** bir XPC turudur.
+    /// İki çağıranı da (`isAvailable`, `biometryLabel`) SwiftUI gövdesinin
+    /// içinde duruyor — `V3ProfileView.appLockRow`. O gövde `topBarProgress`
+    /// yüzünden her scroll karesinde yeniden değerlendiriliyor, yani kare
+    /// başına iki daemon turu: ana thread'i kilitleyen bir maliyet.
+    ///
+    /// Cevap uygulama ön plandayken değişmiyor; kullanıcı ancak Ayarlar'a
+    /// gidip parola/biyometri kurabilir, o da uygulamayı arka plana atar —
+    /// `handleDidBecomeActive` önbelleği orada düşürüyor.
+    private static var cachedCapability: (available: Bool, biometry: LABiometryType)?
+
+    private static func capability() -> (available: Bool, biometry: LABiometryType) {
+        if let cached = cachedCapability { return cached }
+        let context = LAContext()
+        let available = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+        let value = (available: available, biometry: context.biometryType)
+        cachedCapability = value
+        return value
+    }
+
     /// Cihaz herhangi bir doğrulama yöntemi sunuyor mu (biyometri **veya**
     /// parola). Anahtar açılmadan önce sorulur.
     static func isAvailable() -> Bool {
-        var error: NSError?
-        return LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: &error)
+        capability().available
     }
 
     /// Kullanılabilir biyometri türünün adı — ayar satırındaki alt metin için.
     static func biometryLabel() -> String? {
-        let context = LAContext()
-        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil) else { return nil }
-        switch context.biometryType {
+        let capability = capability()
+        guard capability.available else { return nil }
+        switch capability.biometry {
         case .faceID:  return "Face ID"
         case .touchID: return "Touch ID"
         case .opticID: return "Optic ID"
@@ -84,6 +105,10 @@ final class AppLockManager: ObservableObject {
     }
 
     func handleDidBecomeActive() {
+        // Kullanıcı Ayarlar'da parola/Face ID kurmuş olabilir — yetenek
+        // önbelleği yalnız burada, ön plana dönüşte düşer.
+        Self.cachedCapability = nil
+
         guard isEnabled else {
             isLocked = false
             return

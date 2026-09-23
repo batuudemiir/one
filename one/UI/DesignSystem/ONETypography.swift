@@ -239,23 +239,30 @@ extension View {
 
     // ── Mono / etiket (SF Mono + tracking) ───────────────────────────────
 
-    /// 12pt SemiBold + tracking — buton etiketi, büyük harf etiket
-    func monoBase(tracking: CGFloat = 1.2) -> some View {
-        self.font(V3Typography.mono(12, weight: .semibold)).tracking(tracking)
+    // Ağırlık artık parametre. Varsayılanlar değişmedi — mevcut 102 çağrı
+    // aynı şeyi çiziyor — ama roller **regular** ağırlığı kabul etmiyordu ve
+    // ekranların istediği ağırlık ezici çoğunlukla oydu: 63 ham
+    // `V3Typography.mono(...)` çağrısının 55'i `regular`. Yani rol vardı,
+    // ihtiyaç vardı, ama rol o ihtiyacı karşılamıyordu — herkes rolü atlayıp
+    // ham çağrı yazıyordu. Eksik semibold gövde rollerindeki hatanın aynısı.
+
+    /// 12pt + tracking — buton etiketi, büyük harf etiket
+    func monoBase(weight: Font.Weight = .semibold, tracking: CGFloat = 1.2) -> some View {
+        self.font(V3Typography.mono(12, weight: weight)).tracking(tracking)
     }
 
-    /// 11pt Medium + tracking — meta bilgi, sayaç
-    func monoSM(tracking: CGFloat = 0.8) -> some View {
-        self.font(V3Typography.mono(11, weight: .medium)).tracking(tracking)
+    /// 11pt + tracking — meta bilgi, sayaç
+    func monoSM(weight: Font.Weight = .medium, tracking: CGFloat = 0.8) -> some View {
+        self.font(V3Typography.mono(11, weight: weight)).tracking(tracking)
     }
 
-    /// 10pt Medium + tracking — küçük etiket, badge
-    func monoLabel(tracking: CGFloat = 0.6) -> some View {
-        self.font(V3Typography.mono(10, weight: .medium)).tracking(tracking)
+    /// 10pt + tracking — küçük etiket, badge
+    func monoLabel(weight: Font.Weight = .medium, tracking: CGFloat = 0.6) -> some View {
+        self.font(V3Typography.mono(10, weight: weight)).tracking(tracking)
     }
 
-    /// 9pt Regular + tracking — mikro açıklama
-    func monoMicro(tracking: CGFloat = 0.4) -> some View {
-        self.font(V3Typography.mono(9)).tracking(tracking)
+    /// 9pt + tracking — mikro açıklama
+    func monoMicro(weight: Font.Weight = .regular, tracking: CGFloat = 0.4) -> some View {
+        self.font(V3Typography.mono(9, weight: weight)).tracking(tracking)
     }
 }

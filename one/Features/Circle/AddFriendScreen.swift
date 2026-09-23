@@ -128,7 +128,7 @@ struct AddFriendScreen: View {
     private func quickTileLabel(glyph: String, title: String) -> some View {
         VStack(spacing: 7) {
             Image(systemName: glyph)
-                .font(.system(size: 14, weight: .medium))
+                .iconMD(weight: .medium)
                 .foregroundColor(ONEBrand.bone)
                 .frame(width: 32, height: 32)
                 .background(Circle().fill(V3Tokens.ink))
@@ -207,7 +207,7 @@ struct AddFriendScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 9) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 14))
+                    .iconMD()
                     .foregroundColor(V3Tokens.faintText)
                 TextField(
                     NSLocalizedString("addFriend.usernamePlaceholder", comment: ""),
@@ -299,8 +299,8 @@ struct AddFriendScreen: View {
                 Button(NSLocalizedString("addFriend.addAction", comment: "")) {
                     send(to: user)
                 }
-                .font(.system(size: 12.5, weight: .semibold))
-                .foregroundColor(ONEBrand.kor)
+                .bodyXSSemibold()
+                .foregroundColor(V3Tokens.korText)
                 .buttonStyle(.onePressable)
             }
         }

@@ -258,6 +258,21 @@ final class PersistenceController: ObservableObject {
                     self.container.viewContext.refreshAllObjects()
                 }
                 NotificationCenter.default.post(name: .momentsDidChangeRemotely, object: nil)
+                // Ekranlar `.momentsDidChangeRemotely` ile kendi bellek içi
+                // state'ini tazeliyor, ama uygulamanın **dışındaki** türetilmiş
+                // yüzeyler (widget, cached echo mood) o bildirimi görmüyor.
+                // Bu çağrı olmadan başka cihazdan gelen bir an widget'a hiç
+                // düşmüyordu — yerel yazma/silme yollarındaki aynı boşluğun
+                // uzak taraftaki eşi.
+                // `notify: false` — bu yol zaten `.momentsDidChangeRemotely`
+                // attı. `todaySongSaved`'i de atmak `ArchiveView`'ı
+                // `loadDataAsync()`'e sokuyor ve geçmiş ayı gezen kullanıcıyı
+                // bu aya fırlatıyordu. Burada gereken tek şey uygulamanın
+                // **dışındaki** yüzeyleri (widget, cached echo) tazelemek.
+                MomentWriter.refreshTodaySurfaces(
+                    context: self.container.viewContext,
+                    notify: false
+                )
                 ONELogger.debug("CloudKit: uzak değişiklik uzlaştırıldı", category: .persistence)
             }
         }
@@ -421,170 +436,24 @@ final class PersistenceController: ObservableObject {
         return song
     }
 
-    // MARK: - Pattern Analysis
+    // MARK: - Şarkı tekrarı analizi — KALDIRILDI
+    //
+    // `SongPattern` + `analyzeSongPatterns` + `getMostFrequentSong` +
+    // `analyzeSongPatternsAsync` (~164 satır) buradaydı.
+    //
+    // Üretimde tek bir çağıranı yoktu. Zincir kendi içinde dönüyordu
+    // (`getMostFrequentSong` → `analyzeSongPatterns`) ve dışarıdan yalnız
+    // testler tutuyordu — yani ölü kod, test kapsamı sayesinde kullanılıyor
+    // gibi görünüyordu.
+    //
+    // İşlevi de yinelenmişti: "en sık çalınan şarkılar" hesabını
+    // `MonthlySummaryViewModel` kendi içinde yapıyor (`songCount` →
+    // `topTracks`) ve gerçekten ekrana çıkan o. Buradaki sürüm v2'nin
+    // günde-tek-şarkı modelinden kalmaydı.
+    //
+    // İronik not: üçünden `analyzeSongPatternsAsync` işi doğru yapan
+    // (arka plan context'i kullanan) sürümdü ve hiç çağrılmamıştı.
 
-    struct SongPattern: Identifiable {
-        let id = UUID()
-        let songName: String
-        let artistName: String
-        let count: Int
-        let percentage: Double
-        let color: Color
-        let dates: [Date]
-        let emoji: String?
-        
-        var dateString: String {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "d MMM"
-            formatter.locale = LanguageManager.shared.currentLocale
-            
-            let sortedDates = dates.sorted()
-            let dateStrings = sortedDates.prefix(4).map { formatter.string(from: $0) }
-            
-            if sortedDates.count > 4 {
-                return dateStrings.joined(separator: " · ") + "..."
-            } else {
-                return dateStrings.joined(separator: " · ")
-            }
-        }
-    }
-    
-    func analyzeSongPatterns(context: NSManagedObjectContext) -> [SongPattern] {
-        let allSongs = fetchAllDailySongs(context: context)
-        
-        guard !allSongs.isEmpty else { return [] }
-        
-        // Group by song name + artist
-        var songCounts: [String: (count: Int, dates: [Date], color: String?, emoji: String?)] = [:]
-        
-        for song in allSongs {
-            guard let songName = song.songName, let artistName = song.artistName else { continue }
-            let key = "\(songName)|\(artistName)"
-            
-            if var existing = songCounts[key] {
-                existing.count += 1
-                if let date = song.date {
-                    existing.dates.append(date)
-                }
-                songCounts[key] = existing
-            } else {
-                songCounts[key] = (
-                    count: 1,
-                    dates: song.date != nil ? [song.date!] : [],
-                    color: song.moodColorHex,
-                    emoji: song.emoji
-                )
-            }
-        }
-        
-        // Filter songs that appear more than once
-        let repeatedSongs = songCounts.filter { $0.value.count > 1 }
-        
-        // Convert to SongPattern
-        let patterns = repeatedSongs.compactMap { key, value -> SongPattern? in
-            let components = key.components(separatedBy: "|")
-            guard components.count >= 2 else { return nil }
-            let songName = components[0]
-            let artistName = components[1]
-            let percentage = Double(value.count) / Double(allSongs.count)
-            
-            return SongPattern(
-                songName: songName,
-                artistName: artistName,
-                count: value.count,
-                percentage: percentage,
-                color: Color(hex: value.color ?? "#5B8DEF"),
-                dates: value.dates,
-                emoji: value.emoji
-            )
-        }
-        
-        // Sort by count descending
-        return patterns.sorted { $0.count > $1.count }
-    }
-    
-    func getMostFrequentSong(context: NSManagedObjectContext) -> SongPattern? {
-        return analyzeSongPatterns(context: context).first
-    }
-
-    /// Off-main variant. `analyzeSongPatterns` yukarıda tüm DailySong'ları
-    /// çekip O(N) grup + hex→Color çevirisi yapıyor; kayıt büyüdükçe main'i
-    /// bloke ediyordu. Bu sürüm ağır kısmı background context'te çalıştırır,
-    /// yalnız `SongPattern` inşasını çağıran actor'da yapar.
-    func analyzeSongPatternsAsync() async -> [SongPattern] {
-        ONELaunchSignpost.begin("songPatterns")
-        defer { ONELaunchSignpost.end("songPatterns") }
-        let bgContext = container.newBackgroundContext()
-        struct RawPattern {
-            let songName: String
-            let artistName: String
-            let count: Int
-            let percentage: Double
-            let colorHex: String
-            let dates: [Date]
-            let emoji: String?
-        }
-        let raw: [RawPattern] = await withCheckedContinuation { continuation in
-            bgContext.perform {
-                let request: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-                request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
-                let songs = (try? bgContext.fetch(request)) ?? []
-                guard !songs.isEmpty else {
-                    continuation.resume(returning: [])
-                    return
-                }
-
-                var counts: [String: (count: Int, dates: [Date], color: String?, emoji: String?)] = [:]
-                for song in songs {
-                    guard let name = song.songName, let artist = song.artistName else { continue }
-                    let key = "\(name)|\(artist)"
-                    if var e = counts[key] {
-                        e.count += 1
-                        if let d = song.date { e.dates.append(d) }
-                        counts[key] = e
-                    } else {
-                        counts[key] = (
-                            count: 1,
-                            dates: song.date.map { [$0] } ?? [],
-                            color: song.moodColorHex,
-                            emoji: song.emoji
-                        )
-                    }
-                }
-
-                let total = Double(songs.count)
-                let repeated = counts.filter { $0.value.count > 1 }
-                let out: [RawPattern] = repeated.compactMap { key, value in
-                    let parts = key.components(separatedBy: "|")
-                    guard parts.count >= 2 else { return nil }
-                    return RawPattern(
-                        songName: parts[0],
-                        artistName: parts[1],
-                        count: value.count,
-                        percentage: Double(value.count) / total,
-                        colorHex: value.color ?? "#5B8DEF",
-                        dates: value.dates,
-                        emoji: value.emoji
-                    )
-                }
-                .sorted { $0.count > $1.count }
-
-                continuation.resume(returning: out)
-            }
-        }
-
-        return raw.map {
-            SongPattern(
-                songName: $0.songName,
-                artistName: $0.artistName,
-                count: $0.count,
-                percentage: $0.percentage,
-                color: Color(hex: $0.colorHex),
-                dates: $0.dates,
-                emoji: $0.emoji
-            )
-        }
-    }
 }
 
 // MARK: - Color Extension for Hex Conversion
@@ -615,10 +484,20 @@ extension Notification.Name {
     /// tazelemiyor.
     ///
     /// Aboneler:
-    /// - `ArchiveStore.reloadAfterRemoteChange()`
+    /// - `ArchiveStore.reloadAfterRemoteChange()` — takvimin kendisi,
+    ///   görüntülenen ayı **koruyarak** (`loadDataAsync()` değil; o her zaman
+    ///   bu aya döner ve `V3ArchiveView` kendi `@State year`'ını tuttuğu için
+    ///   takvim sessizce boşalır)
     /// - `TodayViewModel.refreshAfterRemoteChange()`
     /// - `V3ProfileView` — `.onReceive` -> `loadMoments()`
     /// - `EchoViewModel.refreshAfterRemoteChange()`
+    /// - `ArchiveContainerView` — yalnız AÇIK gün detayının `selectedMoments`
+    ///   dilimi
+    /// - `V3CircleView` — `loadMyMoments()`. Uzun süre **abone değildi**:
+    ///   yalnız `todaySongSaved` dinliyordu, yani başka cihazdan gelen an
+    ///   Çevre'ye hiç düşmüyordu. `loadFriends(force:)` bilerek çağrılmıyor —
+    ///   uzak bir *an* değişikliği arkadaş listesini zorla tazelemeyi
+    ///   gerektirmiyor.
     ///
     /// `ProfileViewModel` abone değil ve olmamalı: moment okumuyor, yalnızca
     /// `deleteAccount()` içinde toplu siliyor.

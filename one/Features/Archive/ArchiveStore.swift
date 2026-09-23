@@ -43,7 +43,17 @@ class ArchiveStore: ObservableObject {
     /// `loadDataAsync()` çağrılmıyor: o her zaman *bu* aya/yıla dönüyor.
     /// Kullanıcı geçmiş bir ayı gezerken arka planda sync inerse onu
     /// takvimden dışarı fırlatmak yerine görüntülenen dönem korunuyor.
-    /// `isLoading` da bilerek kıpırdatılmıyor — sessiz tazeleme, spinner yok.
+    ///
+    /// Kritik olan `yearData`'nın hangi yıla ait olduğu: `V3ArchiveView`
+    /// görüntülenen yılı kendi `@State year`'ında tutuyor (satır 21) ve
+    /// store'dan senkronlanmıyor — veriyi `months.first(where: { $0.year ==
+    /// year })` ile arıyor. `yearData` başka bir yıla dönerse view eski yılı
+    /// çizmeye devam eder ve her hücre nil'e düşer: takvim sessizce boşalır.
+    ///
+    /// `isLoading` kıpırdatılmıyor, ama iskeleti tutan bu değil —
+    /// `ArchiveView:54` onu `yearData.isEmpty` ile de koşullamış, yani ilk
+    /// yüklemeden sonra zaten görünmüyor. Dokunmamak yine de doğru: bu bir
+    /// arka plan tazelemesi, yükleme durumu değil.
     @MainActor
     private func reloadAfterRemoteChange() async {
         // İlk yükleme henüz olmadıysa geç: `currentMonth` hâlâ init'teki

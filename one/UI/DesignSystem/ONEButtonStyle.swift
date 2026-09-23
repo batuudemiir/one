@@ -20,6 +20,15 @@ struct ONEPressableButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
+            // Hit-test alanı: etiketin tam dörtgeni.
+            //
+            // Dolgusuz (yalnız `.stroke`'lu ya da hiç arka planı olmayan)
+            // etiketlerde SwiftUI dokunuşu sadece Text gliflerine / Image
+            // piksellerine düşürüyor; kapsülün içi "ölü" kalıyor ve buton
+            // yalnız yazıya basınca çalışıyordu. Tek tek her çağrı noktasına
+            // `.contentShape` eklemek yerine stile koyuyoruz: ONE'daki
+            // dokunulabilir her şey zaten bu stili kullanıyor.
+            .contentShape(Rectangle())
             .scaleEffect(
                 (reduceMotion || !isEnabled) ? 1.0
                     : (configuration.isPressed ? ONEAnimation.buttonPressScale : 1.0)

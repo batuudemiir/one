@@ -49,8 +49,19 @@ scan_dirs() { find "$SRC/Features" "$SRC/UI" "${SCAN[@]}" -not -path "*/UI/Desig
 CHROME_EXCLUDE='UI/Components/V3TopBar.swift|UI/Components/SubScreenChrome.swift|UI/Components/V3Sheet.swift|UI/Components/BottomNavigation.swift|UI/Components/V3Skeleton.swift'
 
 count() { grep -rEl "$1" $(scan_dirs) 2>/dev/null | wc -l | tr -d ' '; }
-hits()  { grep -rEn "$1" $(scan_dirs) 2>/dev/null | grep -vE "$CHROME_EXCLUDE" ; }
-hitcount() { hits "$1" | wc -l | tr -d ' '; }
+
+# `hits <regex> [ek_dışlama_regex]`
+#
+# İkinci argüman kural başına: bazı kuralların meşru istisnaları var ve
+# onları ana regex'e gömmek regex'i okunmaz hale getiriyor (ERE'de negatif
+# lookahead yok). Boş bırakılırsa hiçbir şey elenmez.
+hits()  {
+  local out
+  out=$(grep -rEn "$1" $(scan_dirs) 2>/dev/null | grep -vE "$CHROME_EXCLUDE")
+  if [[ -n "${2:-}" ]]; then out=$(printf '%s\n' "$out" | grep -vE "$2"); fi
+  printf '%s\n' "$out" | grep -v '^$'
+}
+hitcount() { hits "$1" "${2:-}" | wc -l | tr -d ' '; }
 
 # ── Kurallar ────────────────────────────────────────────────────────────
 #
@@ -71,9 +82,9 @@ RULE_NAMES=(
 
 RULE_DESC=(
   "Sistem NavigationStack / navigationTitle / toolbar"
-  ".font(.system(size:)) — Text alıcısında anlamsal rol kullan (Image ikonlarında meşru)"
+  "Ham punto — metin: ONETypography rolü · ikon: ONEIcon rolü (11-18pt bandı)"
   "Ham ekran kenar payı — V3Tokens.channel kullan"
-  "Sabit Türkçe dize — NSLocalizedString kullan"
+  "Sabit Türkçe dize — NSLocalizedString kullan (parametreler dahil)"
   "Renk zemin üstünde .white / .black — mood ink eşi kullan"
   ".buttonStyle(.plain) — .onePressable kullan"
   "Ham hex rengi — V3Tokens / V3Mood kullan"
@@ -81,11 +92,33 @@ RULE_DESC=(
   "Ham punto — ONETypography rolü kullan (bodyLG/bodySM/displayMD…)"
 )
 
+# Kural başına ek dışlama (indeks sırası RULE_NAMES ile aynı; boş = yok).
+#
+# `hardcoded_tr` için gerekli: kural artık `Text("…")` değil **her** Türkçe
+# diyakritikli literal'i sayıyor, çünkü eski hâli yalnız doğrudan `Text("…")`
+# biçimini görüyordu ve `statRow(label: "Sessiz gün")` gibi parametre yoluyla
+# geçen sabit dizeler kuralın altından geçiyordu — eşik 0 görünürken dosyalar
+# Türkçe doluydu. Genişletince iki meşru kaynak elenmeli:
+#   • `NSLocalizedString(..., comment: "Türkçe açıklama")` — comment zaten
+#     çevirmene not, kullanıcıya gitmiyor.
+#   • `//` ile başlayan yorum satırları — bu depoda yorumlar Türkçe.
+RULE_EXCLUDE=(
+  ""
+  ""
+  ""
+  "NSLocalizedString|^[^:]*:[0-9]+: *//|LocalizedString"
+  ""
+  ""
+  ""
+  ""
+  ""
+)
+
 RULE_REGEX=(
   'NavigationStack|NavigationView|\.navigationTitle|navigationBarTitleDisplayMode|ToolbarItem'
   '\.font\(\.system\(size:'
   '\.padding\(\.horizontal, (1[4-9]|2[0-9]|3[0-9])\)'
-  'Text\("[^"]*(ç|ğ|ı|ö|ş|ü|Ç|Ğ|İ|Ö|Ş|Ü)'
+  '"[^"]*(ç|ğ|ı|ö|ş|ü|Ç|Ğ|İ|Ö|Ş|Ü)[^"]*"'
   'foregroundColor\(\.white\)|foregroundStyle\(\.white\)|foregroundColor\(\.black\)'
   '\.buttonStyle\(\.plain\)'
   'Color\(hex: "#'
@@ -95,7 +128,7 @@ RULE_REGEX=(
 
 declare -a CURRENT
 for i in "${!RULE_NAMES[@]}"; do
-  CURRENT[$i]=$(hitcount "${RULE_REGEX[$i]}")
+  CURRENT[$i]=$(hitcount "${RULE_REGEX[$i]}" "${RULE_EXCLUDE[$i]:-}")
 done
 
 # ── Rapor ───────────────────────────────────────────────────────────────
@@ -103,11 +136,13 @@ done
 if [[ "$MODE" == "report" ]]; then
   for i in "${!RULE_NAMES[@]}"; do
     printf '\n── %s  (%s)\n   %s\n' "${RULE_NAMES[$i]}" "${CURRENT[$i]}" "${RULE_DESC[$i]}"
-    hits "${RULE_REGEX[$i]}" | awk -F: '{print $1}' | sort | uniq -c | sort -rn | head -8 | sed 's/^/     /'
+    hits "${RULE_REGEX[$i]}" "${RULE_EXCLUDE[$i]:-}" | awk -F: '{print $1}' | sort | uniq -c | sort -rn | head -8 | sed 's/^/     /'
   done
   echo
   printf '\n── font bütünlüğü (eşiksiz)\n'
   python3 "$ROOT/tooling/font_guard.py" | sed 's/^/     /'
+  printf '\n── marka sesi v4 (eşiksiz)\n'
+  python3 "$ROOT/tooling/voice_guard.py" | sed 's/^/     /'
   echo
   exit 0
 fi
@@ -143,7 +178,7 @@ for i in "${!RULE_NAMES[@]}"; do
   if (( now > want )); then
     echo "error: ui_guard — ${RULE_DESC[$i]}"
     echo "note:  ${name}: ${now} ihlal, eşik ${want}. Yeni ihlal eklenmiş."
-    hits "${RULE_REGEX[$i]}" | head -5 | sed 's/^/note:  /'
+    hits "${RULE_REGEX[$i]}" "${RULE_EXCLUDE[$i]:-}" | head -5 | sed 's/^/note:  /'
     FAILED=1
   elif (( now < want )); then
     echo "note: ui_guard — ${name}: ${now} (eşik ${want}). Eşiği düşür: tooling/ui_guard.sh --update"
@@ -161,11 +196,21 @@ done
 # bekçinin engellemeye çalıştığı şey.
 
 if ! command -v python3 >/dev/null 2>&1; then
-  echo "error: ui_guard — font denetimi için python3 gerekli, bulunamadı."
+  echo "error: ui_guard — font ve ses denetimi için python3 gerekli, bulunamadı."
   echo "note:  Atlanmadı: font eksikliği sessiz bir hata, denetimi de sessiz olamaz."
   FAILED=1
-elif ! python3 "$ROOT/tooling/font_guard.py"; then
-  FAILED=1
+else
+  if ! python3 "$ROOT/tooling/font_guard.py"; then
+    FAILED=1
+  fi
+
+  # ── Marka sesi (eşiksiz) ────────────────────────────────────────────
+  #
+  # Font gibi ikili bir değişmez: bir ünlem ya da "10 saniye" ürüne
+  # girdiği anda ses değişiyor, "iki tane olabilir" diye bir eşik yok.
+  if ! python3 "$ROOT/tooling/voice_guard.py"; then
+    FAILED=1
+  fi
 fi
 
 if (( FAILED )); then

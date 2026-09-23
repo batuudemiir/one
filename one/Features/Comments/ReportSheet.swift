@@ -215,7 +215,7 @@ private struct ReasonRow: View {
                     Spacer(minLength: V3Tokens.spacingSM)
 
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 17))
+                        .iconLG()
                         .foregroundColor(isSelected ? ONEBrand.kor : V3Tokens.hairline)
                 }
                 .padding(.horizontal, 15)

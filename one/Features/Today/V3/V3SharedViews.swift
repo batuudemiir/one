@@ -28,6 +28,12 @@ struct V3AppMark: View {
 
 // MARK: - Header
 
+/// Tek satırlık bağlam etiketi. Tek kullanıcısı `V3ReminderView`.
+///
+/// Sağında `V3AppMark` duruyordu; kalktı. Marka işareti uygulamanın içinde
+/// her ekranın tepesinde tekrar edilecek bir şey değil — o yuva ekranın
+/// bağlamına ait. An akışı bu başlığı hiç kullanmıyor artık: onun çubuğu
+/// `V3EntryContainer`'daki `V3TopBar`.
 struct V3Header: View {
     let dateLabel: String
     var body: some View {
@@ -36,7 +42,6 @@ struct V3Header: View {
                 .v3MicroLabel(1.4)
                 .foregroundColor(V3Tokens.mutedText)
             Spacer(minLength: 0)
-            V3AppMark()
         }
     }
 }
@@ -118,6 +123,7 @@ private struct V3PrimaryButtonStyle: ButtonStyle {
                 Capsule(style: .continuous)
                     .fill(isEnabled ? (isPressed ? V3Tokens.kor : V3Tokens.ink) : V3Tokens.hairline)
             )
+            .contentShape(Capsule(style: .continuous))
             .animation(ONEAnimation.easingChip, value: isPressed)
     }
 }

@@ -66,7 +66,11 @@ struct V3ProfileView: View {
     @Environment(\.managedObjectContext) private var context
     @StateObject private var vm = ProfileViewModel()
     @StateObject private var appleSignIn = AppleSignInService.shared
-    @State private var moments: [ProfileStatSlice] = []
+    /// Arşivin en eski anı — `sinceLabel` için. Tüm dilim dizisi burada
+    /// tutuluyordu; tek okuyucusu bu tarihti.
+    @State private var joinedDate: Date? = nil
+    /// Uçuştaki istatistik hesabı — yenisi geldiğinde iptal edilir.
+    @State private var statsReload: Task<Void, Never>? = nil
     @StateObject private var languageManager = LanguageManager.shared
     @State private var showAvatarPicker: Bool = false
     @State private var showReminder: Bool = false
@@ -282,10 +286,17 @@ struct V3ProfileView: View {
 
     private func loadMoments() {
         if let injected = injectedMoments {
-            apply(injected.map(ProfileStatSlice.init(moment:)))
+            apply(Self.computeStats(injected.map(ProfileStatSlice.init(moment:))))
             return
         }
-        Task { await loadMomentsAsync() }
+        // Tek uçuş kuralı. `.momentsDidChangeRemotely` CloudKit içe aktarımı
+        // boyunca saniyede birkaç kez düşüyor (log'da onlarca "uzak değişiklik
+        // uzlaştırıldı" arka arkaya). Her bildirim yeni bir `Task` + yeni bir
+        // background context + tüm tablonun taraması demekti; işler üst üste
+        // biniyor, hiçbiri diğerini iptal etmiyordu. Sondan bir önceki sonuç
+        // zaten çöp — yalnız sonuncusu ekrana çıkıyor.
+        statsReload?.cancel()
+        statsReload = Task { await loadMomentsAsync() }
     }
 
     /// Arşivin tamamını **dilim** olarak okur — `Moment` olarak değil.
@@ -307,24 +318,53 @@ struct V3ProfileView: View {
     /// üyelik tarihi) zaten yalnız bu dördünü okuyor.
     private func loadMomentsAsync() async {
         let bg = PersistenceController.shared.container.newBackgroundContext()
-        let slices: [ProfileStatSlice] = await bg.perform {
+        let stats: ProfileStats = await bg.perform {
             let request = NSFetchRequest<NSDictionary>(entityName: "DailySong")
             request.resultType = .dictionaryResultType
             request.propertiesToFetch = ["date", "createdAt", "moodColorHex", "passed"]
             request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
             let rows = (try? bg.fetch(request)) ?? []
-            return rows.compactMap(ProfileStatSlice.init(row:))
+            return Self.computeStats(rows.compactMap(ProfileStatSlice.init(row:)))
         }
-        apply(slices)
+        guard !Task.isCancelled else { return }
+        apply(stats)
     }
 
-    /// Yeni dilimleri ve onlardan türeyen her şeyi tek geçişte yerleştirir.
-    private func apply(_ slices: [ProfileStatSlice]) {
-        moments = slices
-        let result = Self.computeDistribution(slices)
-        distribution = result.items
-        countedMomentCount = result.counted
-        currentMonth = Self.computeCurrentMonth(slices)
+    /// Ekranın okuduğu türetilmiş her şey. Hesabın tamamı arka planda,
+    /// `bg.perform` bloğunun içinde bitiyor.
+    ///
+    /// Eskiden yalnız **fetch** arka plandaydı; dilimler main'e taşınıp
+    /// `apply(_:)` içinde işleniyordu. O iş arşiv boyunca O(N) ve ucuz değil:
+    /// her an için `V3Mood.closest(toHex:)`, o da dokuz renge karşı hex
+    /// ayrıştırma. Kayıt sayısı büyüdükçe sekmeye giriş anında ana thread
+    /// saniyelerce bloke oluyordu — watchdog'un uygulamayı öldürdüğü yer.
+    /// Tip `Sendable`: main'e yalnız üç küçük sonuç geçiyor, N dilim değil.
+    private struct ProfileStats: Sendable {
+        var distribution: [(hex: String, count: Int, label: String)] = []
+        var counted: Int = 0
+        var month: MonthPreview? = nil
+        /// Arşivin en eski anı — üyelik tarihi satırı için. Tüm dizinin
+        /// `@State`'te tutulmasının tek sebebi buydu.
+        var joined: Date? = nil
+    }
+
+    private static func computeStats(_ slices: [ProfileStatSlice]) -> ProfileStats {
+        let result = computeDistribution(slices)
+        return ProfileStats(
+            distribution: result.items,
+            counted: result.counted,
+            month: computeCurrentMonth(slices),
+            // `date` azalan sıralı geliyor; sonuncusu en eski an.
+            joined: slices.last?.date
+        )
+    }
+
+    /// Hazır sonuçları tek geçişte yerleştirir.
+    private func apply(_ stats: ProfileStats) {
+        distribution = stats.distribution
+        countedMomentCount = stats.counted
+        currentMonth = stats.month
+        joinedDate = stats.joined
         // Dağılım yeniden sıralanınca eski index başka bir rengi işaret
         // ediyordu — okuma satırı sessizce yanlış kovayı gösteriyordu.
         selectedDistributionIndex = 0
@@ -380,7 +420,7 @@ struct V3ProfileView: View {
 
     private var sinceLabel: String {
         let f = ONEFormatters.monthYear
-        let joined = moments.last?.date ?? Date()
+        let joined = joinedDate ?? Date()
         return "\(f.string(from: joined))'dan beri"
     }
 

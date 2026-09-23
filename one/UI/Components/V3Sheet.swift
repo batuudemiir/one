@@ -68,7 +68,7 @@ enum V3Sheet {
 /// geriye gitmiyor, üstteki katmanı kapatıyor. `V3TopBar` bu ayrımı
 /// `V3TopBarLeading` üzerinden zaten taşıyor.
 ///
-/// Başlık `titleMode: .always` — modalin gövdesinde büyük başlık yok,
+/// Başlık her zaman görünür — modalin gövdesinde büyük başlık yok,
 /// çubuktaki tek ad ekranın adı.
 struct V3SheetScreen<Content: View>: View {
     let title: String
@@ -107,9 +107,8 @@ struct V3SheetScreen<Content: View>: View {
         .safeAreaInset(edge: .top, spacing: 0) {
             V3TopBar(
                 leading: .close(onClose),
-                context: context,
                 title: title,
-                titleMode: .always,
+                context: context,
                 progress: progress
             ) {
                 if let actionTitle, let onAction {
@@ -138,7 +137,7 @@ struct V3SheetAction: View {
         Button(action: action) {
             Text(title)
                 .bodyXSSemibold()
-                .foregroundColor(isEnabled ? ONEBrand.kor : V3Tokens.ghostText)
+                .foregroundColor(isEnabled ? V3Tokens.korText : V3Tokens.ghostText)
                 .padding(.horizontal, V3Tokens.spacingXS)
                 // Dokunma hedefi metnin kutusundan büyük: 13pt'lik bir
                 // etiketin kendi yüksekliği 16pt civarı, HIG asgarisi 44.

@@ -61,7 +61,7 @@ struct ProfileView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(maxWidth: UIScreen.main.bounds.width - 48)
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusTile))
                         .shadow(color: .black.opacity(0.5), radius: 40, x: 0, y: 16)
                         .transition(.scale(scale: 0.5).combined(with: .opacity))
                         .allowsHitTesting(false)

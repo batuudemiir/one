@@ -117,7 +117,7 @@ struct ProfileFormView: View {
                     PhotosPicker(selection: $vm.selectedPhotoItem, matching: .images) {
                         HStack(spacing: 6) {
                             Image(systemName: "camera.fill")
-                                .font(.system(size: 12, weight: .semibold))
+                                .iconSM(weight: .semibold)
                             Text(NSLocalizedString("profile.changePhoto", comment: ""))
                                 .monoLabel(tracking: 0.6)
                         }
@@ -185,7 +185,7 @@ struct ProfileFormView: View {
             fieldGroup(title: NSLocalizedString("profile.name", comment: "")) {
                 HStack(spacing: 10) {
                     Image(systemName: "person")
-                        .font(.system(size: 14))
+                        .iconMD()
                         .foregroundColor(focusedField == .displayName ? profileColor : secondaryText)
                         .frame(width: 20)
                     TextField(NSLocalizedString("profile.namePlaceholder", comment: ""), text: $vm.displayName)
@@ -236,7 +236,7 @@ struct ProfileFormView: View {
                             V3Loading(.inline)
                         } else if let isAvailable = vm.isUsernameAvailable {
                             Image(systemName: isAvailable ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                .font(.system(size: 16))
+                                .iconMD()
                                 .foregroundColor(isAvailable ? V3Tokens.success : V3Tokens.danger)
                                 .transition(.scale.combined(with: .opacity))
                         }
@@ -289,6 +289,7 @@ struct ProfileFormView: View {
                                 }
                             }
                         }
+                        .buttonStyle(.onePressable)
                     }
                     Spacer()
                 }
@@ -341,7 +342,7 @@ struct ProfileFormView: View {
                 } else if vm.showSuccess {
                     HStack(spacing: 6) {
                         Image(systemName: "checkmark")
-                            .font(.system(size: 13, weight: .bold))
+                            .iconSM(weight: .bold)
                         Text(NSLocalizedString("addFriend.ok", comment: ""))
                     }
                 } else {
@@ -369,6 +370,7 @@ struct ProfileFormView: View {
                     )
             )
         }
+        .buttonStyle(.onePressable)
         .disabled(!vm.canSaveProfile || vm.isLoading)
     }
 }

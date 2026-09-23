@@ -52,7 +52,7 @@ struct V3ResonanceView: View {
     private var hero: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(NSLocalizedString("circle.yourColorToday", comment: ""))
-                .font(V3Typography.mono(11))
+                .monoSM(weight: .regular)
                 .tracking(1.4)
                 .textCase(.uppercase)
                 .foregroundColor((myMood?.ink ?? V3Tokens.mutedText).opacity(0.75))
@@ -97,7 +97,7 @@ struct V3ResonanceView: View {
                     Spacer(minLength: 8)
 
                     Text(item.time)
-                        .font(V3Typography.mono(11))
+                        .monoSM(weight: .regular)
                         .tracking(1)
                         .foregroundColor(V3Tokens.ghostText)
                 }
@@ -109,14 +109,7 @@ struct V3ResonanceView: View {
                 }
             }
         }
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(V3Tokens.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(V3Tokens.hairline, lineWidth: 1)
-                )
-        )
+        .oneCardBackground(radius: V3Tokens.radiusPanel)
     }
 
     // MARK: - Distribution
@@ -141,7 +134,7 @@ struct V3ResonanceView: View {
                     .frame(height: 10)
 
                     Text("\(row.count)")
-                        .font(V3Typography.mono(11))
+                        .monoSM(weight: .regular, tracking: 0)
                         .foregroundColor(V3Tokens.ghostText)
                         .frame(width: 22, alignment: .trailing)
                 }
@@ -151,7 +144,7 @@ struct V3ResonanceView: View {
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(V3Typography.mono(10))
+            .monoLabel(weight: .regular)
             .tracking(1.5)
             .textCase(.uppercase)
             .foregroundColor(V3Tokens.ghostText)

@@ -228,7 +228,7 @@ struct SelfShareDetailView: View {
                     }
                     HStack(spacing: 5) {
                         Image(systemName: "music.note")
-                            .font(.system(size: 10))
+                            .iconXS()
                             .foregroundColor(V3Tokens.mutedText)
                         Text(platform).monoLabel().foregroundColor(V3Tokens.mutedText)
                     }
@@ -257,7 +257,7 @@ struct SelfShareDetailView: View {
         }
         .background(V3Tokens.surface)
         .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel))
-        .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
+        .elevation(.cardRest)
         .padding(.horizontal, V3Tokens.spacingXL)
         .scaleEffect(appeared ? 1 : 0.94)
         .opacity(appeared ? 1 : 0)
@@ -270,11 +270,11 @@ struct SelfShareDetailView: View {
         Button(action: { ONEHaptics.feelingSelected(); showEchoes = true }) {
             HStack(spacing: V3Tokens.spacingSM) {
                 Image(systemName: "dot.radiowaves.left.and.right")
-                    .font(.system(size: 14, weight: .medium))
+                    .iconMD(weight: .medium)
                 Text(NSLocalizedString("echoes.title", comment: ""))
                     .monoBase(tracking: 0.5)
                 Spacer()
-                Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
+                Image(systemName: "chevron.right").iconSM(weight: .semibold)
             }
             .foregroundColor(V3Tokens.mutedText)
             .padding(.horizontal, V3Tokens.spacingXL)
@@ -303,6 +303,7 @@ struct SelfShareDetailView: View {
             .padding(.vertical, V3Tokens.spacingMD)
             .background(Capsule().stroke(V3Tokens.faintText, lineWidth: 1.5))
         }
+        .buttonStyle(.onePressable)
         .padding(.top, V3Tokens.spacingXL2)
         .padding(.bottom, V3Tokens.spacingXL4)
         .opacity(appeared ? 1 : 0)

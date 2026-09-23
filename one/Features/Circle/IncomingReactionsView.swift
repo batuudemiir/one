@@ -32,7 +32,7 @@ struct EchoesEntryButton: View {
         } label: {
             HStack(spacing: V3Tokens.spacingSM) {
                 Image(systemName: "dot.radiowaves.left.and.right")
-                    .font(.system(size: 14, weight: .medium))
+                    .iconMD(weight: .medium)
                 Text(NSLocalizedString("echoes.title", comment: ""))
                     .monoBase(tracking: 0.5)
                 Spacer()
@@ -40,7 +40,7 @@ struct EchoesEntryButton: View {
                     Circle().fill(Color(hex: accentColorHex)).frame(width: 7, height: 7)
                 }
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .iconSM(weight: .semibold)
             }
             .foregroundColor(V3Tokens.mutedText)
             .padding(.horizontal, V3Tokens.spacingXL)
@@ -83,8 +83,6 @@ struct IncomingReactionsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-
             if loading {
                 Spacer()
                 V3Loading(.region)
@@ -107,25 +105,19 @@ struct IncomingReactionsView: View {
             }
         }
         .background(V3Tokens.paper.ignoresSafeArea())
-        .task { await load() }
-    }
-
-    // MARK: Header
-
-    private var header: some View {
-        HStack {
-            Text(NSLocalizedString("echoes.screenTitle", comment: ""))
-                .bodyLGSemibold()
-                .foregroundColor(V3Tokens.ink)
-            Spacer()
-            V3TopBarIconButton(
-                systemName: "xmark",
-                label: NSLocalizedString("general.close", comment: "")
-            ) { dismiss() }
+        // Elle çizilmiş bir başlık satırıydı: kapat SAĞDA, başlık 16pt sans.
+        // Uygulamanın geri kalanında kapat SOLDA ve alt ekran başlığı 17pt.
+        // Aynı glif, aynı daire, zıt köşe — "aynı görünen şey aynı yerde
+        // durur" kuralı bir modalde bozulunca kullanıcı her modalde iki köşeye
+        // birden bakmak zorunda kalıyor.
+        .safeAreaInset(edge: .top, spacing: 0) {
+            V3TopBar(
+                leading: .close { dismiss() },
+                title: NSLocalizedString("screen.echoes.title", comment: ""),
+                progress: 1
+            )
         }
-        .padding(.horizontal, V3Tokens.spacingXL)
-        .padding(.top, V3Tokens.spacingLG)
-        .padding(.bottom, V3Tokens.spacingMD)
+        .task { await load() }
     }
 
     /// Boş durum — paylaşılan `SubScreenState`. Eskiden burada 34pt ikon +
@@ -228,7 +220,7 @@ struct IncomingReactionsView: View {
 
             Button { sendReply(to: otherUserID) } label: {
                 Image(systemName: "arrow.up")
-                    .font(.system(size: 15, weight: .semibold))
+                    .iconMD(weight: .semibold)
                     .foregroundColor(ONEBrand.bone)
                     .frame(width: 34, height: 34)
                     .background(Circle().fill(V3Tokens.ink))

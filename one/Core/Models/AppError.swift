@@ -4,7 +4,9 @@
 //
 //  Merkezi hata tipleri.
 //  Tüm uygulama hataları bu enum altında kategorize edilir.
-//  Her hata tipi kullanıcıya gösterilecek Türkçe mesaj içerir.
+//  Mesajlar `Localizable.strings`'ten geliyor (`error.*`). Eskiden koda
+//  gömülü Türkçe'ydi: uygulama dokuz dile çevriliydi ama hata alan bir
+//  Alman kullanıcı arayüzü Almanca, hatayı Türkçe görüyordu.
 //
 
 import Foundation
@@ -66,79 +68,79 @@ enum AppError: LocalizedError, Identifiable {
         switch self {
         // Network
         case .networkUnavailable:
-            return "İnternet bağlantısı yok. Lütfen bağlantını kontrol et."
+            return NSLocalizedString("error.networkUnavailable.message", comment: "AppError message")
         case .networkTimeout:
-            return "İstek zaman aşımına uğradı. Tekrar dene."
+            return NSLocalizedString("error.networkTimeout.message", comment: "AppError message")
         case .networkUnknown:
-            return "Bağlantı hatası oluştu. Lütfen tekrar dene."
+            return NSLocalizedString("error.networkUnknown.message", comment: "AppError message")
             
         // CloudKit
         case .cloudKitNotAvailable:
-            return "iCloud kullanılamıyor. Ayarlar'dan iCloud'u kontrol et."
+            return NSLocalizedString("error.cloudKitNotAvailable.message", comment: "AppError message")
         case .cloudKitNotAuthenticated:
-            return "iCloud hesabına giriş yapmamışsın."
+            return NSLocalizedString("error.cloudKitNotAuthenticated.message", comment: "AppError message")
         case .cloudKitRecordNotFound:
-            return "Kayıt bulunamadı."
+            return NSLocalizedString("error.cloudKitRecordNotFound.message", comment: "AppError message")
         case .cloudKitSchemaError:
-            return "Sunucu yapılandırma hatası. Lütfen daha sonra tekrar dene."
+            return NSLocalizedString("error.cloudKitSchemaError.message", comment: "AppError message")
         case .cloudKitServerConflict:
-            return "Sunucu çakışması oluştu. Veriler senkronize ediliyor."
+            return NSLocalizedString("error.cloudKitServerConflict.message", comment: "AppError message")
         case .cloudKitQuotaExceeded:
-            return "iCloud depolama alanın dolu."
+            return NSLocalizedString("error.cloudKitQuotaExceeded.message", comment: "AppError message")
         case .cloudKitUnknown:
-            return "iCloud hatası oluştu. Lütfen tekrar dene."
+            return NSLocalizedString("error.cloudKitUnknown.message", comment: "AppError message")
             
         // Persistence
         case .persistenceSaveFailed:
-            return "Kayıt sırasında bir hata oluştu."
+            return NSLocalizedString("error.persistenceSaveFailed.message", comment: "AppError message")
         case .persistenceFetchFailed:
-            return "Veriler yüklenirken bir hata oluştu."
+            return NSLocalizedString("error.persistenceFetchFailed.message", comment: "AppError message")
         case .persistenceDeleteFailed:
-            return "Silme işlemi başarısız oldu."
+            return NSLocalizedString("error.persistenceDeleteFailed.message", comment: "AppError message")
         case .persistenceMigrationFailed:
-            return "Veri tabanı güncellemesi başarısız oldu."
+            return NSLocalizedString("error.persistenceMigrationFailed.message", comment: "AppError message")
             
         // Auth
         case .authAppleMusicDenied:
-            return "Apple Music izni gerekli. Ayarlar > Gizlilik'ten izin ver."
+            return NSLocalizedString("error.authAppleMusicDenied.message", comment: "AppError message")
         case .authAppleMusicRestricted:
-            return "Apple Music bu cihazda kısıtlanmış."
+            return NSLocalizedString("error.authAppleMusicRestricted.message", comment: "AppError message")
         case .authSpotifyFailed:
-            return "Spotify bağlantısı başarısız oldu."
+            return NSLocalizedString("error.authSpotifyFailed.message", comment: "AppError message")
         case .authSpotifyTokenExpired:
-            return "Spotify oturumun sona erdi. Tekrar bağlan."
+            return NSLocalizedString("error.authSpotifyTokenExpired.message", comment: "AppError message")
         case .authSpotifyNotConnected:
-            return "Spotify hesabı bağlı değil."
+            return NSLocalizedString("error.authSpotifyNotConnected.message", comment: "AppError message")
             
         // Music
         case .musicSearchFailed:
-            return "Arama sırasında bir hata oluştu."
+            return NSLocalizedString("error.musicSearchFailed.message", comment: "AppError message")
         case .musicNoResults:
-            return "Sonuç bulunamadı."
+            return NSLocalizedString("error.musicNoResults.message", comment: "AppError message")
         case .musicPlaybackFailed:
-            return "Şarkı çalınamadı."
+            return NSLocalizedString("error.musicPlaybackFailed.message", comment: "AppError message")
         case .musicServiceUnavailable:
-            return "Müzik servisi kullanılamıyor."
+            return NSLocalizedString("error.musicServiceUnavailable.message", comment: "AppError message")
             
         // Camera
         case .cameraDenied:
-            return "Kamera izni gerekli. Ayarlar'dan izin ver."
+            return NSLocalizedString("error.cameraDenied.message", comment: "AppError message")
         case .cameraUnavailable:
-            return "Kamera kullanılamıyor."
+            return NSLocalizedString("error.cameraUnavailable.message", comment: "AppError message")
         case .photoSaveFailed:
-            return "Fotoğraf kaydedilemedi."
+            return NSLocalizedString("error.photoSaveFailed.message", comment: "AppError message")
             
         // Circle
         case .circleUserNotFound:
-            return "Kullanıcı bulunamadı. Kodu kontrol et."
+            return NSLocalizedString("error.circleUserNotFound.message", comment: "AppError message")
         case .circleAlreadyFriend:
-            return "Bu kullanıcı zaten çevrende."
+            return NSLocalizedString("error.circleAlreadyFriend.message", comment: "AppError message")
         case .circleSelfAdd:
-            return "Kendi kendini ekleyemezsin."
+            return NSLocalizedString("error.circleSelfAdd.message", comment: "AppError message")
         case .circleInviteCodeInvalid:
-            return "Geçersiz davet kodu."
+            return NSLocalizedString("error.circleInviteCodeInvalid.message", comment: "AppError message")
         case .circleFriendRequestFailed:
-            return "Arkadaşlık isteği gönderilemedi."
+            return NSLocalizedString("error.circleFriendRequestFailed.message", comment: "AppError message")
             
         // General
         case .unknown(let message):
@@ -150,24 +152,24 @@ enum AppError: LocalizedError, Identifiable {
     var title: String {
         switch self {
         case .networkUnavailable, .networkTimeout, .networkUnknown:
-            return "Bağlantı Hatası"
+            return NSLocalizedString("error.title.network", comment: "AppError title")
         case .cloudKitNotAvailable, .cloudKitNotAuthenticated, .cloudKitRecordNotFound,
              .cloudKitSchemaError, .cloudKitServerConflict, .cloudKitQuotaExceeded, .cloudKitUnknown:
-            return "iCloud Hatası"
+            return NSLocalizedString("error.title.cloudKit", comment: "AppError title")
         case .persistenceSaveFailed, .persistenceFetchFailed, .persistenceDeleteFailed, .persistenceMigrationFailed:
-            return "Kayıt Hatası"
+            return NSLocalizedString("error.title.persistence", comment: "AppError title")
         case .authAppleMusicDenied, .authAppleMusicRestricted, .authSpotifyFailed,
              .authSpotifyTokenExpired, .authSpotifyNotConnected:
-            return "Yetkilendirme"
+            return NSLocalizedString("error.title.auth", comment: "AppError title")
         case .musicSearchFailed, .musicNoResults, .musicPlaybackFailed, .musicServiceUnavailable:
-            return "Müzik Hatası"
+            return NSLocalizedString("error.title.music", comment: "AppError title")
         case .cameraDenied, .cameraUnavailable, .photoSaveFailed:
-            return "Kamera Hatası"
+            return NSLocalizedString("error.title.camera", comment: "AppError title")
         case .circleUserNotFound, .circleAlreadyFriend, .circleSelfAdd,
              .circleInviteCodeInvalid, .circleFriendRequestFailed:
-            return "Çevre Hatası"
+            return NSLocalizedString("error.title.circle", comment: "AppError title")
         case .unknown:
-            return "Hata"
+            return NSLocalizedString("error.title.unknown", comment: "AppError title")
         }
     }
     

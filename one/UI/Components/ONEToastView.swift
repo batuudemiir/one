@@ -67,18 +67,19 @@ struct ONEToastView: View {
             if toast.isRetryable {
                 Button(action: { handler.retry() }) {
                     Text(NSLocalizedString("general.retry", comment: ""))
-                        .font(V3Typography.mono(11, weight: .semibold))
+                        .monoSM(weight: .semibold)
                         .tracking(1.2)
                         .foregroundColor(ONEBrand.ink)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(Capsule().fill(V3Tokens.surface))
                 }
+                .buttonStyle(.onePressable)
                 .accessibilityLabel(NSLocalizedString("general.retry", comment: ""))
             } else {
                 Button(action: { handler.dismiss() }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .semibold))
+                        .iconXS(weight: .semibold)
                         .foregroundColor(ONEBrand.bone.opacity(0.6))
                         .frame(width: 32, height: 32)
                 }
@@ -92,7 +93,7 @@ struct ONEToastView: View {
             RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
                 .fill(ONEBrand.ink)
         )
-        .shadow(color: .black.opacity(0.16), radius: 20, x: 0, y: 6)
+        .elevation(.toastPop)
         .padding(.horizontal, V3Tokens.spacingLG)
         .offset(y: dragY)
         .opacity(dragOpacity)

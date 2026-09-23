@@ -36,12 +36,29 @@ enum PrimaryTab: String, CaseIterable {
         }
     }
 
+    /// Alt gezinme çubuğunun etiketi — bilerek küçük harf ("an", "arşiv").
     var title: String {
         switch self {
         case .entry:   return NSLocalizedString("nav.entry",   comment: "")
         case .archive: return NSLocalizedString("nav.archive", comment: "")
         case .circle:  return NSLocalizedString("nav.circle",  comment: "")
         case .profile: return NSLocalizedString("nav.profile", comment: "")
+        }
+    }
+
+    /// Üst çubuğun taşıdığı **ekran adı** — büyük harfle başlar ("An",
+    /// "Arşiv").
+    ///
+    /// Neden `title`'dan ayrı: alt çubuğun etiketleri 12pt küçük harf, bir
+    /// gezinti dili. Üst çubuktaki ad 20pt Archivo bir masthead ve orada
+    /// küçük harf bir stil tercihi değil, hata gibi okunuyor. İki kullanım
+    /// tek dizeye bağlanınca birini düzeltmek diğerini bozuyordu.
+    var screenTitle: String {
+        switch self {
+        case .entry:   return NSLocalizedString("screen.entry.title",   comment: "")
+        case .archive: return NSLocalizedString("screen.archive.title", comment: "")
+        case .circle:  return NSLocalizedString("screen.circle.title",  comment: "")
+        case .profile: return NSLocalizedString("screen.profile.title", comment: "")
         }
     }
 

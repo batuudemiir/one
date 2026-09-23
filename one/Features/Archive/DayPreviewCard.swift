@@ -179,7 +179,7 @@ struct FullScreenPhotoView: View {
                 Spacer()
                 Button(action: dismiss) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 15, weight: .semibold))
+                        .iconMD(weight: .semibold)
                         .foregroundColor(.white)
                         .frame(width: 36, height: 36)
                         .background(
@@ -352,7 +352,7 @@ struct DayPreviewCard: View {
                     Button(action: openSong) {
                         HStack(spacing: V3Tokens.spacingXS) {
                             Image(systemName: "play.circle.fill")
-                                .font(.system(size: 10))
+                                .iconXS()
                             Text(NSLocalizedString("archive.openSong", comment: ""))
                                 .monoLabel(tracking: 0.4)
                         }
@@ -364,6 +364,7 @@ struct DayPreviewCard: View {
                                 .fill(V3Tokens.surface)
                         )
                     }
+                    .buttonStyle(.onePressable)
                 }
                 
                 Spacer()
@@ -375,7 +376,7 @@ struct DayPreviewCard: View {
                 }) {
                     HStack(spacing: 6) {
                         Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 12, weight: .semibold))
+                            .iconSM(weight: .semibold)
                         Text(NSLocalizedString("general.share", comment: ""))
                             .monoBase(tracking: 0.6)
                     }
@@ -397,6 +398,7 @@ struct DayPreviewCard: View {
                             .shadow(color: Color(hex: entry.moodColorHex).opacity(0.3), radius: 8, x: 0, y: 4)
                     )
                 }
+                .buttonStyle(.onePressable)
             }
             .padding(.horizontal, V3Tokens.spacingXL)
             .padding(.vertical, 14)
@@ -564,17 +566,17 @@ struct DayShareCard: View {
                         .lineLimit(2)
 
                     Text(entry.artistName)
-                        .font(V3Typography.mono(11, weight: .medium))
+                        .monoSM(tracking: 0)
                         .foregroundColor(.white.opacity(0.85))
 
                     Spacer().frame(height: 5)
 
                     Text(dayText)
-                        .font(V3Typography.mono(9))
+                        .monoMicro(tracking: 0)
                         .foregroundColor(.white.opacity(0.6))
 
                     Text(NSLocalizedString("share.brandWatermark", comment: ""))
-                        .font(V3Typography.mono(9))
+                        .monoMicro(tracking: 0)
                         .foregroundColor(.white.opacity(0.3))
                         .padding(.top, 1)
                 }
@@ -628,12 +630,12 @@ struct DayShareCard: View {
                 HStack {
                     VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                         Text(dayText.uppercased())
-                            .font(V3Typography.mono(10, weight: .medium))
+                            .monoLabel()
                             .tracking(1.0)
                             .foregroundColor(.white.opacity(0.8))
 
                         Text(NSLocalizedString("share.brandWatermarkUpper", comment: ""))
-                            .font(V3Typography.mono(9))
+                            .monoMicro()
                             .tracking(1.5)
                             .foregroundColor(.white.opacity(0.6))
                     }

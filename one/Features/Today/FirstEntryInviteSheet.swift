@@ -72,7 +72,7 @@ struct FirstEntryInviteSheet: View {
                     Button(action: onInvite) {
                         HStack(spacing: V3Tokens.spacingSM) {
                             Image(systemName: "person.2.fill")
-                                .font(.system(size: 15))
+                                .iconMD()
                             Text(NSLocalizedString("firstEntryInvite.invite", comment: ""))
                                 .monoSM(tracking: 0.8)
                         }
@@ -84,6 +84,7 @@ struct FirstEntryInviteSheet: View {
                                 .fill(V3Tokens.ink)
                         )
                     }
+                    .buttonStyle(.onePressable)
 
                     Button(action: onSkip) {
                         Text(NSLocalizedString("firstEntryInvite.skip", comment: ""))

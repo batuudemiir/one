@@ -20,7 +20,7 @@ struct V3OfflineBanner: View {
     var body: some View {
         if isVisible {
             Text(NSLocalizedString("offline.banner", comment: ""))
-                .font(V3Typography.mono(10, weight: .regular))
+                .monoLabel(weight: .regular)
                 .tracking(1.4)
                 .foregroundColor(ONEBrand.bone)
                 .frame(maxWidth: .infinity)

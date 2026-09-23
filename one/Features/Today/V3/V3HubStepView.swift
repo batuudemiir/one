@@ -80,17 +80,10 @@ struct V3HubStepView: View {
             }
             .buttonStyle(.onePressable)
         }
-        // Diğer üç kök gibi çubuk bağlam taşıyor. Eskiden yalnız `.mark`
-        // vardı: dört sekmeden üçünde çubuk bir şey söylerken An'da boş
-        // duruyordu — `V3TopBar`'ın kendi belgesi "durağan halde bile çubuk
-        // bir şey söylüyor" derken.
-        //
-        // Tarih başlıktan buraya taşındı, kopyalanmadı: hub kaydırılmadığı
-        // için (iç ScrollView başlığın altında) gövde başlığı hiç kaybolmuyor
-        // ve ikisi aynı anda görünseydi aynı bilgi iki kez yazılmış olurdu.
-        .safeAreaInset(edge: .top, spacing: 0) {
-            V3TopBar(leading: .mark, context: V3DateFormatter.headerLabel())
-        }
+        // Üst çubuk burada değil: An sekmesinin çubuğu artık akışın
+        // tamamında geçerli ve `V3EntryContainer`'da tanımlı. Buradaki
+        // `safeAreaInset` gövdenin 24pt payının *içinde* oturuyordu, yani
+        // An'ın çubuğu diğer üç sekmenin çubuğuyla hizasızdı.
     }
 
     // MARK: - Header
@@ -120,12 +113,12 @@ struct V3HubStepView: View {
             VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                 HStack(spacing: V3Tokens.spacingSM) {
                     Text(timeString(moment.time))
-                        .font(V3Typography.mono(11, weight: .regular))
+                        .monoSM(weight: .regular)
                         .tracking(1.2)
                         .foregroundColor(V3Tokens.faintText)
                     if moment.scope == .private {
                         Text(NSLocalizedString("moment.archiveTag", comment: ""))
-                            .font(V3Typography.mono(11, weight: .regular))
+                            .monoSM(weight: .regular)
                             .tracking(1.2)
                             .foregroundColor(V3Tokens.ghostText)
                     }

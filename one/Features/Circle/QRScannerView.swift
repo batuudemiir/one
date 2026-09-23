@@ -36,7 +36,7 @@ struct QRScannerView: View {
 
                     VStack {
                         Spacer()
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
                             .strokeBorder(Color.white, lineWidth: 2)
                             .frame(width: 230, height: 230)
                             .overlay(
@@ -65,16 +65,21 @@ struct QRScannerView: View {
                         Text(NSLocalizedString("addFriend.cameraRequired", comment: ""))
                             .displaySM()
                             .foregroundColor(V3Tokens.darkText)
-                        Button(NSLocalizedString("circle.goToSettings", comment: "")) {
+                        // Pay ve çerçeve etiketin *içinde*: dışarıda kalırsa
+                        // görünen kapsülün içi dokunulmaz oluyor.
+                        Button {
                             if let url = URL(string: UIApplication.openSettingsURLString) {
                                 UIApplication.shared.open(url)
                             }
+                        } label: {
+                            Text(NSLocalizedString("circle.goToSettings", comment: ""))
+                                .monoSM(tracking: 0)
+                                .foregroundColor(V3Tokens.darkText)
+                                .padding(.horizontal, V3Tokens.spacingXL)
+                                .padding(.vertical, 10)
+                                .background(Capsule().stroke(Color.white.opacity(0.5), lineWidth: 1))
                         }
-                        .monoSM(tracking: 0)
-                        .foregroundColor(V3Tokens.darkText)
-                        .padding(.horizontal, V3Tokens.spacingXL)
-                        .padding(.vertical, 10)
-                        .background(Capsule().stroke(Color.white.opacity(0.5), lineWidth: 1))
+                        .buttonStyle(.onePressable)
                     }
                 } else {
                     ProgressView().tint(.white)
@@ -84,13 +89,15 @@ struct QRScannerView: View {
             // Bağlam etiketi yok: `V3TopBar` onu `faintText` ile çiziyor ve
             // bu ekran temadan bağımsız siyah — açık temanın faint'i orada
             // okunmuyordu. Vizörün talimatı zaten çerçevenin altında.
-            V3TopBar(leading: .none, progress: 0) {
-                V3TopBarIconButton(
-                    systemName: "xmark",
-                    label: NSLocalizedString("general.close", comment: ""),
-                    ground: .media
-                ) { dismiss() }
-            }
+            // Kapat SOLDA — uygulamanın geri kalanıyla aynı yerde. Sağda
+            // duruyordu ve sebebi tasarım değil bir API boşluğuydu: çubuğun
+            // sol yuvası `.media` zeminini kabul etmiyordu, vizörün üstünde
+            // beyaz daireli bir xmark kalıyordu. Artık `leadingGround` var.
+            V3TopBar(
+                leading: .close { dismiss() },
+                leadingGround: .media,
+                progress: 0
+            )
         }
         .onAppear { requestCameraPermission() }
     }

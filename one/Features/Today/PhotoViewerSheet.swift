@@ -151,7 +151,7 @@ struct PhotoViewerSheet: View {
             HStack {
                 Button(action: dismiss) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 15, weight: .semibold))
+                        .iconMD(weight: .semibold)
                         .foregroundColor(V3Tokens.darkText)
                         .frame(width: 36, height: 36)
                         .background(
