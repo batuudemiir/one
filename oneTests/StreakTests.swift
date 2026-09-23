@@ -72,22 +72,60 @@ struct StreakTests {
         #expect(!record.isComplete(in: .morningEvening))
     }
 
-    @Test("Sabah-akşam modunda iki kart da gerekli")
+    @Test("Sabah-akşam modu: tek kart yarım gün, ikisi tam gün; seri için yarım gün yeter (E8)")
     func morningEveningMode() {
         var record = DayCompletion(day: today, morningCompletedAt: t)
-        #expect(!record.isComplete(in: .morningEvening))
-        record.eveningCompletedAt = t
+        #expect(record.status(in: .morningEvening) == .half)
         #expect(record.isComplete(in: .morningEvening))
+        record.eveningCompletedAt = t
+        #expect(record.status(in: .morningEvening) == .full)
+        #expect(DayCompletion(day: today).status(in: .morningEvening) == .none)
     }
 
     @Test("Mod değişince aynı kayıtlardan farklı seri çıkar")
     func modeAffectsStreak() {
         let records = [
-            DayCompletion(day: today, dailyCompletedAt: t, morningCompletedAt: t, eveningCompletedAt: t),
-            DayCompletion(day: today.adding(days: -1), dailyCompletedAt: t, morningCompletedAt: t),
+            DayCompletion(day: today, morningCompletedAt: t, eveningCompletedAt: t),
+            DayCompletion(day: today.adding(days: -1), eveningCompletedAt: t),
             DayCompletion(day: today.adding(days: -2), dailyCompletedAt: t, morningCompletedAt: t, eveningCompletedAt: t)
         ]
-        #expect(Streak.current(records, mode: .daily, today: today) == 3)
-        #expect(Streak.current(records, mode: .morningEvening, today: today) == 1)
+        #expect(Streak.current(records, mode: .daily, today: today) == 0)
+        #expect(Streak.current(records, mode: .morningEvening, today: today) == 3)
+    }
+
+    @Test("Yalnız yazılı girdiyle tamamlanan gün her iki modda tam")
+    func writingCompletes() {
+        let record = DayCompletion(day: today, completedBy: .writing)
+        #expect(record.status(in: .daily) == .full)
+        #expect(record.status(in: .morningEvening) == .full)
+        #expect(DayCompletion(day: today, morningCompletedAt: t, completedBy: .writing).status(in: .morningEvening) == .full)
+    }
+
+    @Test("Seri durumu: bugün tamam değilse risk altında; gizliyken de hesaplanır")
+    func streakState() {
+        let records = [DayCompletion(day: today.adding(days: -1), dailyCompletedAt: t),
+                       DayCompletion(day: today.adding(days: -2), dailyCompletedAt: t)]
+        let state = Streak.state(records, mode: .daily, today: today, visible: false)
+        #expect(state == StreakState(count: 2, atRisk: true, isVisible: false, longest: 2))
+        let done = Streak.state(records + [DayCompletion(day: today, dailyCompletedAt: t)], mode: .daily, today: today)
+        #expect(done.count == 3 && !done.atRisk)
+        #expect(!Streak.state([], mode: .daily, today: today).atRisk)
+    }
+
+    @Test("Geriye dönük pencere: dün…7 gün önce açık, 8. gün ve bugün/gelecek değil")
+    func backfillWindow() {
+        #expect(DayCompletionRules.canBackfill(today.adding(days: -1), today: today))
+        #expect(DayCompletionRules.canBackfill(today.adding(days: -7), today: today))
+        #expect(!DayCompletionRules.canBackfill(today.adding(days: -8), today: today))
+        #expect(!DayCompletionRules.canBackfill(today, today: today))
+        #expect(!DayCompletionRules.canBackfill(today.adding(days: 1), today: today))
+    }
+
+    @Test("Yazılı girdi eşiği: ≥ 20 kelime ve ritüel olmayan tür")
+    func writingThreshold() {
+        #expect(DayCompletionRules.countsAsWriting(.freeform, words: 20))
+        #expect(!DayCompletionRules.countsAsWriting(.freeform, words: 19))
+        #expect(DayCompletionRules.countsAsWriting(.quoteReflection, words: 40))
+        #expect(!DayCompletionRules.countsAsWriting(.dailyCheckIn, words: 200))
     }
 }

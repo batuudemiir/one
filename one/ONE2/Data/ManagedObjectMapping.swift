@@ -137,7 +137,8 @@ extension DayRecordMO {
         return DayCompletion(day: day,
                              dailyCompletedAt: dailyCompletedAt,
                              morningCompletedAt: morningCompletedAt,
-                             eveningCompletedAt: eveningCompletedAt)
+                             eveningCompletedAt: eveningCompletedAt,
+                             completedBy: completedBy.flatMap(DayCompletionSource.init(rawValue:)))
     }
 }
 

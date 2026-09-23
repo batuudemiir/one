@@ -29,6 +29,9 @@ final class MoodStore {
         let today = clock.today
         let target = day ?? today
         guard target <= today else { throw StoreError.invalidValue("future day") }
+        guard target == today || DayCompletionRules.canBackfill(target, today: today) else {
+            throw StoreError.invalidValue("backfill window")
+        }
 
         let row: MoodLogMO = context.insert(ONE2Entity.mood)
         row.id = UUID()

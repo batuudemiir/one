@@ -105,7 +105,7 @@ struct JournalStoreTests {
         let b = try store.create(EntryDraft(kind: .freeform, title: "b"))
         clock.advance(hours: 1)
         let c = try store.create(EntryDraft(kind: .freeform, title: "c"))
-        _ = try store.create(EntryDraft(kind: .freeform, title: "dışarıda"), on: DayKey("2026-09-10")!)
+        _ = try store.create(EntryDraft(kind: .freeform, title: "dışarıda"), on: DayKey("2026-09-16")!)
         let ids = try store.entries(from: DayKey("2026-09-20")!, through: DayKey("2026-09-23")!).map(\.id)
         #expect(ids == [b.id, c.id, a.id])
     }
@@ -177,12 +177,51 @@ struct DayStoreTests {
         #expect(backfilled.count == 2)
     }
 
-    @Test("Sabah-akşam modunda iki kart gerekir")
+    @Test("Sabah-akşam modunda tek kart yarım gün ve seriye sayılır (E8)")
     func morningEvening() throws {
-        try store.markCompleted(.morning)
         #expect(try store.currentStreak(mode: .morningEvening) == 0)
-        try store.markCompleted(.evening)
+        try store.markCompleted(.morning)
         #expect(try store.currentStreak(mode: .morningEvening) == 1)
+        #expect(try store.completion(on: DayKey("2026-09-23")!)?.status(in: .morningEvening) == .half)
+        try store.markCompleted(.evening)
+        #expect(try store.completion(on: DayKey("2026-09-23")!)?.status(in: .morningEvening) == .full)
+        #expect(try store.completion(on: DayKey("2026-09-23")!)?.completedBy == .ritual)
+    }
+
+    @Test("Geriye dönük doldurma 7. günde açık, 8. günde reddedilir")
+    func backfillWindow() throws {
+        let today = DayKey("2026-09-23")!
+        try store.markCompleted(.daily, on: today.adding(days: -7))
+        #expect(throws: StoreError.invalidValue("backfill window")) {
+            try store.markCompleted(.daily, on: today.adding(days: -8))
+        }
+    }
+
+    @Test("Yalnız yazılı girdiyle tamamlanan gün: ≥20 kelime seriyi sayar, altı saymaz, ritüel sonradan kaynak değiştirmez")
+    func writingCompletesDay() throws {
+        let journal = JournalStore(context: container.viewContext, clock: clock)
+        let short = try journal.create(EntryDraft(kind: .freeform, body: "kısa bir not"))
+        #expect(try store.recordWriting(short) == false)
+        #expect(try store.currentStreak(mode: .daily) == 0)
+
+        let long = try journal.create(EntryDraft(kind: .prompt, body: String(repeating: "kelime ", count: 20)))
+        #expect(try store.recordWriting(long))
+        #expect(try store.currentStreak(mode: .daily) == 1)
+        #expect(try store.completion(on: DayKey("2026-09-23")!)?.completedBy == .writing)
+
+        // Dün, geriye dönük yazı: gün onarılır.
+        let yesterday = try journal.create(EntryDraft(kind: .freeform, body: String(repeating: "söz ", count: 25)),
+                                           on: DayKey("2026-09-22")!)
+        #expect(try store.recordWriting(yesterday))
+        #expect(try store.currentStreak(mode: .morningEvening) == 2)
+        #expect(try store.recordWriting(long) == false) // aynı gün ikinci kez değişmez
+    }
+
+    @Test("Seri gizliyken de hesaplanır; bugün boşsa risk altında")
+    func hiddenStreakState() throws {
+        try store.markCompleted(.daily, on: DayKey("2026-09-22")!)
+        let state = try store.streakState(mode: .daily, visible: false)
+        #expect(state.count == 1 && state.atRisk && !state.isVisible)
     }
 
     @Test("Senkron çiftleri deterministik birleşir: en erken zaman, en küçük id")

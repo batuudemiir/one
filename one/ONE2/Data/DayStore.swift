@@ -35,6 +35,9 @@ final class DayStore {
         let today = clock.today
         let target = day ?? today
         guard target <= today else { throw StoreError.invalidValue("future day") }
+        guard target == today || DayCompletionRules.canBackfill(target, today: today) else {
+            throw StoreError.invalidValue("backfill window")
+        }
 
         let record = try recordForWriting(target)
         let now = clock.now
@@ -44,9 +47,37 @@ final class DayStore {
         case .evening: if record.eveningCompletedAt == nil { record.eveningCompletedAt = now }
         }
         if target < today, record.backfilledAt == nil { record.backfilledAt = now }
+        if record.completedBy == nil { record.completedBy = DayCompletionSource.ritual.rawValue }
         try context.saveIfNeeded()
         guard let completion = record.completion else { throw StoreError.invalidValue("mapping") }
         return completion
+    }
+
+    /// E8 alternatif tamamlama: o günün ≥ 20 kelimelik yazılı girdisi günü
+    /// tamamlar. Girdi kaydedildikten sonra çağrılır; eşik altındaysa bir şey
+    /// yapmaz. Geriye dönük girdi 7 günlük pencere içindeyse günü onarır.
+    @discardableResult
+    func recordWriting(_ entry: JournalEntry) throws -> Bool {
+        guard DayCompletionRules.countsAsWriting(entry.kind, words: entry.wordCount) else { return false }
+        let today = clock.today
+        guard entry.day == today || DayCompletionRules.canBackfill(entry.day, today: today) else { return false }
+        let record = try recordForWriting(entry.day)
+        guard record.completedBy == nil else { return false }
+        record.completedBy = DayCompletionSource.writing.rawValue
+        if entry.day < today, record.backfilledAt == nil { record.backfilledAt = clock.now }
+        try context.saveIfNeeded()
+        return true
+    }
+
+    /// Seri durumu (sayı, risk, görünürlük, en uzun).
+    func streakState(mode: RitualMode, visible: Bool = true) throws -> StreakState {
+        let rows: [DayRecordMO] = try context.fetchAll(ONE2Entity.day)
+        return Streak.state(Self.merged(rows.compactMap(\.completion)), mode: mode, today: clock.today, visible: visible)
+    }
+
+    func allCompletions() throws -> [DayCompletion] {
+        let rows: [DayRecordMO] = try context.fetchAll(ONE2Entity.day)
+        return Self.merged(rows.compactMap(\.completion))
     }
 
     /// Sabah seçilen odak.
@@ -100,6 +131,7 @@ final class DayStore {
                 survivor.backfilledAt = Self.earliest(survivor.backfilledAt, other.backfilledAt)
                 if survivor.focusText == nil { survivor.focusText = other.focusText }
                 if survivor.timeZoneID == nil { survivor.timeZoneID = other.timeZoneID }
+                survivor.completedBy = Self.mergedSource(survivor.completedBy, other.completedBy)
                 context.delete(other)
                 removed += 1
             }
@@ -137,9 +169,19 @@ final class DayStore {
                 DayCompletion(day: day,
                               dailyCompletedAt: earliest(acc.dailyCompletedAt, next.dailyCompletedAt),
                               morningCompletedAt: earliest(acc.morningCompletedAt, next.morningCompletedAt),
-                              eveningCompletedAt: earliest(acc.eveningCompletedAt, next.eveningCompletedAt))
+                              eveningCompletedAt: earliest(acc.eveningCompletedAt, next.eveningCompletedAt),
+                              completedBy: mergedSource(acc.completedBy?.rawValue, next.completedBy?.rawValue)
+                                  .flatMap(DayCompletionSource.init(rawValue:)))
             }
         }.sorted { $0.day < $1.day }
+    }
+
+    /// Ritüel yazıya üstün: iki cihazdan biri ritüelle tamamladıysa o kalır.
+    private static func mergedSource(_ a: String?, _ b: String?) -> String? {
+        if a == DayCompletionSource.ritual.rawValue || b == DayCompletionSource.ritual.rawValue {
+            return DayCompletionSource.ritual.rawValue
+        }
+        return a ?? b
     }
 
     private static func earliest(_ a: Date?, _ b: Date?) -> Date? {

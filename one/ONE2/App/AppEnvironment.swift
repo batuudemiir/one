@@ -23,6 +23,7 @@ final class AppEnvironment {
     let prompts: LivePromptEngine
     let echoes: EchoEngine
     let recommendations: RecommendationEngine
+    let badges: BadgeEngine
     let legacy: LegacyMomentStore
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
     private let legacyWriteGuard: LegacyWriteGuard?
@@ -46,6 +47,12 @@ final class AppEnvironment {
         echoes = EchoEngine(content: self.content, exposure: exposure, profile: self.profile, clock: clock)
         recommendations = RecommendationEngine(content: self.content, prompts: prompts, journal: journal, day: day,
                                                mood: mood, profile: self.profile, clock: clock)
+        badges = BadgeEngine(content: self.content, journal: journal, day: day, library: library, profile: self.profile)
+        // Her kayıttan sonra: E8 yazıyla tamamlama, E9 rozet değerlendirmesi.
+        journal.didSave = { [day, weak badges] entry in
+            _ = try? day.recordWriting(entry)
+            _ = try? badges?.evaluateAfterSave()
+        }
         legacy = LegacyMomentStore(context: context, calendar: clock.calendar)
         if guardLegacyWrites, let coordinator = context.persistentStoreCoordinator {
             legacyWriteGuard = LegacyWriteGuard(coordinator: coordinator)
