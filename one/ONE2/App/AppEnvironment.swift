@@ -13,6 +13,7 @@ import CoreData
 final class AppEnvironment {
     let clock: AppClock
     let content: ContentRepository
+    let profile: ProfileStore
     let journal: JournalStore
     let mood: MoodStore
     let day: DayStore
@@ -23,9 +24,10 @@ final class AppEnvironment {
     private let legacyWriteGuard: LegacyWriteGuard?
 
     init(context: NSManagedObjectContext, clock: AppClock = SystemClock(), guardLegacyWrites: Bool = true,
-         content: ContentRepository? = nil) {
+         content: ContentRepository? = nil, profile: ProfileStore? = nil) {
         self.clock = clock
         self.content = content ?? ContentRepository(clock: clock)
+        self.profile = profile ?? ProfileStore()
         journal = JournalStore(context: context, clock: clock)
         mood = MoodStore(context: context, clock: clock)
         day = DayStore(context: context, clock: clock)
