@@ -12,8 +12,6 @@
 	<array>
 		<string>applinks:one.forvibe.app</string>
 	</array>
-	<key>com.apple.developer.associated-domains.mdm-managed</key>
-	<true/>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
 		<string>iCloud.com.batu.ones</string>
