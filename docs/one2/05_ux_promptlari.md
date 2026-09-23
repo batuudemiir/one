@@ -17,10 +17,12 @@ Kaynaklar (UX oturumunun okuyacakları):
 | `one/ONE2/Core/` | Yazar | Dokunmaz |
 | `one/ONE2/App/AppEnvironment.swift` | Yazar | Dokunmaz |
 | `one/ONE2/App/ONE2RootView.swift`, `Router.swift` (Route/SheetRoute case'leri) | Dokunmaz | Yazar |
+| `one/ONE2/App/DeepLink.swift`, `ONE2Flag.swift`, `ONE2Tab` enum'u | Dokunmaz | Yazar |
 | `one/ONE2/DesignSystem/` | Dokunmaz | Yazar |
 | `one/ONE2/Features/` | Dokunmaz | Yazar |
 | `one/ONE2/Resources/Fonts/`, Info.plist `UIAppFonts` | Dokunmaz | Yazar |
 | `docs/one2/design-system/`, `CLAUDE.md` tasarım bölümü | Dokunmaz | Yazar |
+| `oneTests/ONE2ShellTests.swift` | Dokunmaz | Yazar |
 | `oneTests/` | Kendi motor testleri | Kendi token/görünüm testleri, ayrı dosyalar |
 
 Veri sözleşmesi: UX oturumu ekranları motor tiplerine değil, kendi düz **view data** struct'larına (`Features/Shared/ViewData/`) ve **fixture**'lara (`Features/Shared/Fixtures/`) göre kurar. Motor tipleri ile view data arasındaki eşleme UX-11'de, iki oturum bittikten sonra yazılır.
@@ -156,7 +158,7 @@ Commit, rapor, dur.
 ```
 UX-5: Features/Checkin/ — tam ekran check-in akışı (fullScreenCover), 4 adım, üstte ince ilerleme çizgileri ve kapatma.
 
-1. Skor: "Şu an nasılsın?" (title) + ScoreScale 1–5 (rakam + etiket: Çok zor, Zor, İdare, İyi, Çok iyi). Seçimle selection haptiği ve 300 ms sonra otomatik ileri.
+1. Skor: "Şu an nasılsın?" (title) + ScoreScale 1–5 (rakam + etiket: Çok zor, Zor, İdare eder, İyi, Çok iyi; "İdare" kısaltması yalnız kompakt skor diskinin altında). Seçimle selection haptiği ve 300 ms sonra otomatik ileri.
 2. Duygular: "Hangi duygular?" label + EmotionChip akışı (aile sırasıyla, sarılarak), "Atla" ve "Devam". En fazla seçim sınırı yok; 3'ten sonra ipucu yok.
 3. Nedenler: "Ne etkiliyor?" + CauseTag + "+ Ekle" (inline alan).
 4. Not (isteğe bağlı): tek satırdan büyüyen serif alan, "Kaydet".
