@@ -19,6 +19,7 @@ final class AppEnvironment {
     let day: DayStore
     let library: LibraryStore
     let exposure: ExposureStore
+    let quotes: LiveQuoteEngine
     let legacy: LegacyMomentStore
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
     private let legacyWriteGuard: LegacyWriteGuard?
@@ -33,6 +34,10 @@ final class AppEnvironment {
         day = DayStore(context: context, clock: clock)
         library = LibraryStore(context: context, clock: clock)
         exposure = ExposureStore(context: context, clock: clock)
+        let mood = self.mood
+        // Premium: EntitlementStore gelene kadar kapalı (ADR §8).
+        quotes = LiveQuoteEngine(content: self.content, exposure: exposure, profile: self.profile, clock: clock,
+                                 moodScore: { [clock] in (try? mood.logs(on: clock.today))?.last?.score })
         legacy = LegacyMomentStore(context: context, calendar: clock.calendar)
         if guardLegacyWrites, let coordinator = context.persistentStoreCoordinator {
             legacyWriteGuard = LegacyWriteGuard(coordinator: coordinator)
