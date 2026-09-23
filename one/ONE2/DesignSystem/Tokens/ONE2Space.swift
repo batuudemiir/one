@@ -65,6 +65,21 @@ enum ONE2Size {
     /// ContentCard kemer görseli.
     static let contentArt: CGFloat = 88
 
+    /// İkonlar: varsayılan, hap içi ve büyük (söz kartı çubuğu, + hapı).
+    static let icon: CGFloat = 22
+    static let iconSmall: CGFloat = 18
+    static let iconLarge: CGFloat = 26
+
+    /// Hap yatay dolgusu (`.o-pill` 18px) ve mood hapı (`.o-moodpill`).
+    static let pillPadding: CGFloat = 18
+    static let moodPillGap: CGFloat = 10
+    /// CauseTag görünür yüksekliği ve yatay dolgusu (`.o-tag`); dokunma
+    /// alanı yine `minTouch`.
+    static let tagHeight: CGFloat = 36
+    static let tagPadding: CGFloat = 14
+    /// İskelet çubuğu yüksekliği (`.o-skel`).
+    static let skeletonLine: CGFloat = 14
+
     /// Dekoratif kenar (`line`) ve anlamlı kenar (`lineStrong`).
     static let hairline: CGFloat = 1
     /// Odak halkası, seçili PlanCard kenarı.

@@ -1,0 +1,23 @@
+/* ONE 2.0 UI strings (table: ONE2). Placeholder English; other languages before relaunch. */
+
+"one2.score.1" = "Very hard";
+"one2.score.2" = "Hard";
+"one2.score.3" = "Getting by";
+"one2.score.3.compact" = "Okay";
+"one2.score.4" = "Good";
+"one2.score.5" = "Very good";
+
+"one2.emotion.family.nese" = "Joy";
+"one2.emotion.family.huzur" = "Calm";
+"one2.emotion.family.enerji" = "Energy";
+"one2.emotion.family.sevgi" = "Love";
+"one2.emotion.family.kaygi" = "Anxiety";
+"one2.emotion.family.huzun" = "Sadness";
+"one2.emotion.family.ofke" = "Anger";
+"one2.emotion.family.yorgun" = "Tiredness";
+
+"one2.section.seeAll" = "See all";
+
+"one2.state.loading" = "Loading";
+"one2.state.offline" = "You're offline. Your writing stays on this device.";
+"one2.action.retry" = "Try again";

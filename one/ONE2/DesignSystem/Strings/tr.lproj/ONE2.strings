@@ -1,0 +1,27 @@
+/* ONE 2.0 arayüz dizeleri (tablo: ONE2). Yalnız tr + en; diğer diller relaunch öncesi. */
+
+/* Mood skoru 1–5 */
+"one2.score.1" = "Çok zor";
+"one2.score.2" = "Zor";
+"one2.score.3" = "İdare eder";
+"one2.score.3.compact" = "İdare";
+"one2.score.4" = "İyi";
+"one2.score.5" = "Çok iyi";
+
+/* Duygu aileleri */
+"one2.emotion.family.nese" = "Neşe";
+"one2.emotion.family.huzur" = "Huzur";
+"one2.emotion.family.enerji" = "Enerji";
+"one2.emotion.family.sevgi" = "Sevgi";
+"one2.emotion.family.kaygi" = "Kaygı";
+"one2.emotion.family.huzun" = "Hüzün";
+"one2.emotion.family.ofke" = "Öfke";
+"one2.emotion.family.yorgun" = "Yorgunluk";
+
+/* Bölüm başlığı */
+"one2.section.seeAll" = "Tümünü gör";
+
+/* Durumlar */
+"one2.state.loading" = "Yükleniyor";
+"one2.state.offline" = "Çevrimdışısın. Yazdıkların cihazında duruyor.";
+"one2.action.retry" = "Yeniden dene";

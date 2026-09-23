@@ -32,6 +32,11 @@ enum ONE2Motion {
         }
     }
 
+    /// İskelet nefesi (bir yön). Dört süreden biri değil: yükleniyor
+    /// durumu için yavaş, sakin bir döngü. Reduce Motion'da yok.
+    static let breathDuration: Double = 1.2
+    static let breathLowOpacity: Double = 0.55
+
     /// Basışta ölçek.
     static let pressScale: CGFloat = 0.97
     /// Mühür başlangıç ölçeği (0.9 → 1.0).
