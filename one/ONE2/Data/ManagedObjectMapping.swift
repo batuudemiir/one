@@ -70,6 +70,8 @@ extension EntryMO {
             contentRef: contentRef,
             contentSnapshot: contentSnapshot,
             isBackfilled: isBackfilled,
+            sourceContext: sourceContext.flatMap(EntrySource.init(rawValue:)),
+            comparedEntryID: comparedEntryID,
             moodID: mood?.id,
             tagIDs: Set(((tags as? Set<TagMO>) ?? []).compactMap(\.id)),
             answers: answers

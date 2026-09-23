@@ -79,6 +79,20 @@ final class JournalStore {
         return rows.compactMap(\.value)
     }
 
+    /// Türe ve içerik referansına göre girdiler, eskiden yeniye (E4 soru
+    /// geçmişi, karşılaştırma, rozetler).
+    func entries(kind: EntryKind? = nil, contentRef: String? = nil) throws -> [JournalEntry] {
+        var predicates: [NSPredicate] = []
+        if let kind { predicates.append(NSPredicate(format: "kind == %@", kind.rawValue)) }
+        if let contentRef { predicates.append(NSPredicate(format: "contentRef == %@", contentRef)) }
+        let rows: [EntryMO] = try context.fetchAll(
+            ONE2Entity.entry,
+            where: predicates.isEmpty ? nil : NSCompoundPredicate(andPredicateWithSubpredicates: predicates),
+            sortedBy: [NSSortDescriptor(key: "createdAt", ascending: true)]
+        )
+        return rows.compactMap(\.value)
+    }
+
     // MARK: - Private
 
     private func apply(_ draft: EntryDraft, to entry: EntryMO) {
@@ -87,6 +101,8 @@ final class JournalStore {
         entry.wordCount = Int32(clamping: WordCounter.count(draft.body))
         entry.contentRef = draft.contentRef
         entry.contentSnapshot = draft.contentSnapshot
+        entry.sourceContext = draft.sourceContext?.rawValue
+        entry.comparedEntryID = draft.comparedEntryID
         replaceAnswers(draft.answers, on: entry)
         try? setTags(draft.tagIDs, on: entry)
     }

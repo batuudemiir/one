@@ -17,6 +17,11 @@ nonisolated enum AnswerKind: String, Codable, Sendable, CaseIterable {
     case text, scale5, yesNo, singleChoice, multiChoice, focus, todo
 }
 
+/// Girdinin nereden başladığı (04 › E4, E17): analitik ve içgörü.
+nonisolated enum EntrySource: String, Codable, Sendable, CaseIterable {
+    case theme, quote, free, suggestion, comparison, guided
+}
+
 nonisolated enum MoodSource: String, Codable, Sendable, CaseIterable {
     case launch, checkIn, emotionCheckIn, widget, shortcut
 }
@@ -47,6 +52,9 @@ nonisolated struct JournalEntry: Identifiable, Hashable, Sendable {
     let contentRef: String?
     let contentSnapshot: String?
     let isBackfilled: Bool
+    let sourceContext: EntrySource?
+    /// Karşılaştırma zincirinde önceki cevap (E4).
+    let comparedEntryID: UUID?
     let moodID: UUID?
     let tagIDs: Set<UUID>
     /// `order` sırasında.
@@ -62,13 +70,17 @@ nonisolated struct EntryDraft: Sendable {
     var contentSnapshot: String?
     var answers: [EntryAnswer] = []
     var tagIDs: Set<UUID> = []
+    var sourceContext: EntrySource?
+    var comparedEntryID: UUID?
 
     init(kind: EntryKind, title: String? = nil, body: String? = nil,
          contentRef: String? = nil, contentSnapshot: String? = nil,
-         answers: [EntryAnswer] = [], tagIDs: Set<UUID> = []) {
+         answers: [EntryAnswer] = [], tagIDs: Set<UUID> = [],
+         sourceContext: EntrySource? = nil, comparedEntryID: UUID? = nil) {
         self.kind = kind; self.title = title; self.body = body
         self.contentRef = contentRef; self.contentSnapshot = contentSnapshot
         self.answers = answers; self.tagIDs = tagIDs
+        self.sourceContext = sourceContext; self.comparedEntryID = comparedEntryID
     }
 }
 
