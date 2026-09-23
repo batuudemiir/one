@@ -1,6 +1,8 @@
 # Guard'lar — ONE 2.0 ile çelişen kurallar
 
-Tarih: 23 Eylül 2026 · Prompt 1b · Yalnız liste; guard dosyaları **değiştirilmedi**.
+Tarih: 23 Eylül 2026 · Prompt 1b.
+
+**Durum: uygulandı** (Faz 1, madde 4, 23 Eylül 2026). V1–V7 ve U1–U3, U5 guard dosyalarında yapıldı; V6 kararı: süre vaadi yasağı kaldırıldı. U2 kapsamında `one/ONE2/` taramaya eklendi. ADR-001 §2'deki `one2_imports_v3` sayacı eklendi (eşik 0). U4 için eşikler 23 Eylül'de `--update` ile çekildi; v3 silinince tekrar çekilecek.
 Ölçüt: yeni `CLAUDE.md` (ONE 2.0). v3 kuralları: `docs/archive/CLAUDE_v3.md`.
 
 ## tooling/voice_guard.py
