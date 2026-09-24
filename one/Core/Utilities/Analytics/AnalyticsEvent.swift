@@ -73,6 +73,10 @@ enum AnalyticsEvent {
     /// MetricKit tarafından raporlanan cold/warm launch histogram özeti.
     case launchMetricReport(p50Ms: Int, p95Ms: Int, sampleCount: Int, isResume: Bool)
 
+    // ── ONE 2.0 (04 › E17) ─────────────────────────────────────────
+    /// Adlar `one2_` önekli; katalog ve metin içermeme kuralı `ONE2Event`'te.
+    case one2(ONE2Event)
+
     // ── Name + properties for dispatch ─────────────────────────────
 
     /// Stable event name emitted to analytics backends.
@@ -117,6 +121,7 @@ enum AnalyticsEvent {
         case .smartNotificationScheduled:       return "smart_notification_scheduled"
         case .onboardingFirstColorPicked:       return "onboarding_first_color_picked"
         case .launchMetricReport:               return "launch_metric_report"
+        case .one2(let event):                  return event.name
         }
     }
 
@@ -124,6 +129,8 @@ enum AnalyticsEvent {
     /// counts, and booleans. User identity flows through `AppAnalytics.identify`.
     var properties: [String: Any] {
         switch self {
+        case .one2(let event):
+            return event.properties
         case .onboardingStarted, .circleOpened,
              .friendRequestSent, .friendRequestAccepted, .friendShareViewed,
              .monthlyPosterShared, .songSelected,

@@ -1,0 +1,4 @@
+id,week,title,summary,tags,day1,day2,day3,day4,day5,day6,day7,premium,active,addedIn,lang
+# PLACEHOLDER CONTENT — week boşsa evergreen tema (id t_ev_NNN); dolu ise id t_YYYYwNN,,,,,,,,,,,,,,,
+t_2026w42,2026-W42,Merak,Bu hafta soru sormaya yer açıyoruz.,merak,Bugün neyi merak ettin?,Son öğrendiğin şaşırtıcı şey ne?,Kimi daha yakından tanımak isterdin?,Hangi soruya cevap arıyorsun?,Denemek istediğin yeni bir şey var mı?,Çocukken neyi merak ederdin?,Merakın bu hafta seni nereye götürdü?,false,true,2,tr
+t_ev_101,,Sabır,Evergreen tema: sabır.,sabir,Neyi beklemekte zorlanıyorsun?,Sabrın en çok nerede sınanıyor?,Zamanla gelen bir kazancını anlat.,Acele etmediğinde ne değişiyor?,Kime karşı daha sabırlı olmak isterdin?,Sabrı nasıl öğrendin?,Bu hafta neyi zamana bıraktın?,false,true,2,tr

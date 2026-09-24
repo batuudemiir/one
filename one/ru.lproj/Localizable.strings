@@ -1060,3 +1060,15 @@ one day.";
 "notif.one2.streak.body" = "Ты здесь уже %d дн. Достаточно короткой записи.";
 "notif.one2.comparison.title" = "Ты уже отвечал(а) на этот вопрос";
 "notif.one2.resurface.title" = "Ты уже писал(а) об этой цитате";
+
+/* ONE 2.0 — Markdown dışa aktarma (04 › E16) */
+"export.md.focus" = "Фокус";
+"export.md.kind.freeform" = "Свободная запись";
+"export.md.kind.prompt" = "Вопрос";
+"export.md.kind.guided" = "С подсказками";
+"export.md.kind.template" = "Шаблон";
+"export.md.kind.dailyCheckIn" = "День";
+"export.md.kind.morning" = "Утро";
+"export.md.kind.evening" = "Вечер";
+"export.md.kind.emotionCheckIn" = "Эмоция";
+"export.md.kind.quoteReflection" = "Цитата";

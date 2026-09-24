@@ -34,6 +34,8 @@ Pods/
 # Logs
 *.log
 tooling/__pycache__/
+__pycache__/
+*.pyc
 
 # Gerçek kullanıcı verisi (CloudKit dökümleri) — repo public, asla commitleme
 tooling/appusers.json

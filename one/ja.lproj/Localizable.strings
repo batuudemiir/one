@@ -1059,3 +1059,15 @@ one day.";
 "notif.one2.streak.body" = "%d日続いています。短い記録で十分です。";
 "notif.one2.comparison.title" = "この問いには以前答えました";
 "notif.one2.resurface.title" = "この言葉について以前書きました";
+
+/* ONE 2.0 — Markdown dışa aktarma (04 › E16) */
+"export.md.focus" = "フォーカス";
+"export.md.kind.freeform" = "自由記述";
+"export.md.kind.prompt" = "問い";
+"export.md.kind.guided" = "ガイド";
+"export.md.kind.template" = "テンプレート";
+"export.md.kind.dailyCheckIn" = "デイリー";
+"export.md.kind.morning" = "朝";
+"export.md.kind.evening" = "夜";
+"export.md.kind.emotionCheckIn" = "感情";
+"export.md.kind.quoteReflection" = "言葉";

@@ -1057,3 +1057,15 @@ one day.";
 "notif.one2.streak.body" = "你已坚持 %d 天。简短记录就够了。";
 "notif.one2.comparison.title" = "你以前回答过这个问题";
 "notif.one2.resurface.title" = "你以前写过这句话";
+
+/* ONE 2.0 — Markdown dışa aktarma (04 › E16) */
+"export.md.focus" = "专注";
+"export.md.kind.freeform" = "自由书写";
+"export.md.kind.prompt" = "问题";
+"export.md.kind.guided" = "引导";
+"export.md.kind.template" = "模板";
+"export.md.kind.dailyCheckIn" = "每日";
+"export.md.kind.morning" = "早晨";
+"export.md.kind.evening" = "晚上";
+"export.md.kind.emotionCheckIn" = "情绪";
+"export.md.kind.quoteReflection" = "语句";

@@ -1059,3 +1059,15 @@ one day.";
 "notif.one2.streak.body" = "Du bist seit %d Tagen dabei. Ein kurzer Eintrag reicht.";
 "notif.one2.comparison.title" = "Diese Frage hast du schon einmal beantwortet";
 "notif.one2.resurface.title" = "Zu diesem Zitat hast du schon geschrieben";
+
+/* ONE 2.0 — Markdown dışa aktarma (04 › E16) */
+"export.md.focus" = "Fokus";
+"export.md.kind.freeform" = "Freies Schreiben";
+"export.md.kind.prompt" = "Frage";
+"export.md.kind.guided" = "Geführt";
+"export.md.kind.template" = "Vorlage";
+"export.md.kind.dailyCheckIn" = "Täglich";
+"export.md.kind.morning" = "Morgen";
+"export.md.kind.evening" = "Abend";
+"export.md.kind.emotionCheckIn" = "Gefühl";
+"export.md.kind.quoteReflection" = "Zitat";

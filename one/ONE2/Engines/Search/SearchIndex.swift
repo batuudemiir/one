@@ -29,21 +29,16 @@ nonisolated enum SearchText {
         String(lowered(text).map { fold($0) })
     }
 
+    /// Tek karakteri aksansızlaştırır; sonuç her zaman tek karakter (vurgu
+    /// aralıkları 1:1 kalsın). Noktasız ı sistem katlamasında kalıyor, ayrıca i.
     private static func fold(_ c: Character) -> Character {
-        switch c {
-        case "ş": return "s"
-        case "ı", "î", "ï", "í", "ì": return "i"
-        case "ğ": return "g"
-        case "ü", "û", "ú", "ù": return "u"
-        case "ö", "ô", "ó", "ò": return "o"
-        case "ç": return "c"
-        case "â", "á", "à", "ä": return "a"
-        case "é", "è", "ê", "ë": return "e"
-        default:
+        if c == "\u{0131}" { return "i" }
+        let folded = String(c).folding(options: .diacriticInsensitive, locale: turkish)
+        guard folded.count == 1, let first = folded.first else {
             // "i̇" gibi birleşik işaretli harfler ilk skalerine indirgenir.
-            if c.unicodeScalars.count > 1, let first = c.unicodeScalars.first { return Character(first) }
-            return c
+            return c.unicodeScalars.first.map { Character($0) } ?? c
         }
+        return first
     }
 
     /// `Entry.searchText` içeriği: küçük harf metin + aksansız kopya.

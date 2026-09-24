@@ -14,7 +14,6 @@ import SwiftUI
 struct ONE2RootView: View {
     @Bindable var router: Router
     let environment: AppEnvironment
-    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         TabView(selection: $router.tab) {
@@ -32,7 +31,6 @@ struct ONE2RootView: View {
         .sheet(item: $router.sheet) { ONE2SheetPlaceholder(sheet: $0) }
         .environment(\.one2, environment)
         .environment(router)
-        .onChange(of: scenePhase) { _, phase in environment.handleScenePhase(phase) }
     }
 
     private func pathBinding(for tab: ONE2Tab) -> Binding<[Route]> {

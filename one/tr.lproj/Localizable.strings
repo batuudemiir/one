@@ -1201,3 +1201,15 @@ bir gün.";
 "notif.one2.streak.body" = "%d gündür buradasın. Kısa bir kayıt yeter.";
 "notif.one2.comparison.title" = "Bu soruya daha önce cevap vermiştin";
 "notif.one2.resurface.title" = "Bu söze daha önce yazmıştın";
+
+/* ONE 2.0 — Markdown dışa aktarma (04 › E16) */
+"export.md.focus" = "Odak";
+"export.md.kind.freeform" = "Serbest";
+"export.md.kind.prompt" = "Soru";
+"export.md.kind.guided" = "Rehberli";
+"export.md.kind.template" = "Şablon";
+"export.md.kind.dailyCheckIn" = "Günlük";
+"export.md.kind.morning" = "Sabah";
+"export.md.kind.evening" = "Akşam";
+"export.md.kind.emotionCheckIn" = "Duygu";
+"export.md.kind.quoteReflection" = "Söz";

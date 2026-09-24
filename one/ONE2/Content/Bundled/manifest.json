@@ -16,8 +16,8 @@
     },
     {
       "path": "catalogs/emotions.tr.json",
-      "sha256": "616cce2f5aafda57812beb5db7255f7c6840e0fb1eef7b60af14a8dfe50128fc",
-      "bytes": 7253
+      "sha256": "103f3587674a41a0aac912e06cc13aee8b56f0b482b7c5905f9cac0d4af8ddfd",
+      "bytes": 6922
     },
     {
       "path": "catalogs/paths.tr.json",
@@ -26,8 +26,8 @@
     },
     {
       "path": "echoes.tr.json",
-      "sha256": "7b58d775182c28ff756e04590f6cba6a158018b219d72b465775063a56bb57dc",
-      "bytes": 11935
+      "sha256": "bc3718e7ba8df1c9d0517898b9eed3cbe1e61ba2e0d23617b6d48aae14030015",
+      "bytes": 11933
     },
     {
       "path": "guided/g_bosalt_01.tr.json",
@@ -46,13 +46,13 @@
     },
     {
       "path": "prompts.tr.json",
-      "sha256": "f34cb7294d123edf5a9ab16e7ebffbe8640bfcbd4a0c1393b352f20f7ffb1e7f",
-      "bytes": 15530
+      "sha256": "679e8df0561c1dc4dc79922383884307d17d8617839555ea1668654941a57c55",
+      "bytes": 15528
     },
     {
       "path": "quotes.tr.json",
-      "sha256": "cbc8a980cc0346829cc4573eb4eb599e1b8129192310cf04c340946930f3d897",
-      "bytes": 25464
+      "sha256": "606dd350a2646413f66918875d0e70d289c80541d5e9c2ef38eac4ca17aa3b7d",
+      "bytes": 25450
     },
     {
       "path": "themes/2026-w39.tr.json",
