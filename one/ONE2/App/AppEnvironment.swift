@@ -32,6 +32,8 @@ final class AppEnvironment {
     let legacy: LegacyMomentStore
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
     private let legacyWriteGuard: LegacyWriteGuard?
+    /// Arka plandan dönüşte yeni söz oturumu açmak için.
+    private var isBackgrounded = false
 
     init(context: NSManagedObjectContext, clock: AppClock = SystemClock(), guardLegacyWrites: Bool = true,
          content: ContentRepository? = nil, profile: ProfileStore? = nil) {
@@ -80,6 +82,23 @@ final class AppEnvironment {
     func refreshSurfaces() async {
         widget.write(await widgetSource.snapshot())
         await notifications.rebuild()
+    }
+
+    /// Oturum sınırı: arka plana geçişte söz oturumu kapanır (hızlı geçilen
+    /// kartlar kuyruğa döner) ve birikmiş görülmeler yazılır (E2.2, E3);
+    /// geri gelişte yeni oturum başlar.
+    func handleScenePhase(_ phase: ScenePhase) {
+        switch phase {
+        case .background:
+            quotes.endSession()
+            try? exposure.flush()
+            isBackgrounded = true
+        case .active where isBackgrounded:
+            quotes.startSession()
+            isBackgrounded = false
+        default:
+            break
+        }
     }
 
     /// Uygulamanın gerçek store'u.

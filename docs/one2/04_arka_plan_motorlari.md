@@ -139,6 +139,8 @@ Garanti cihazlar arası geçerli: maruz kalma kaydı CloudKit ile senkron (E3). 
 ```swift
 protocol QuoteEngine {
     func nextBatch(mode: QuoteFeedMode, count: Int) async -> [Quote]
+    func nextItems(mode: QuoteFeedMode, count: Int) async -> [QuoteFeedItem]   // ekranın akışı: söz + künye
+    func feedState(mode: QuoteFeedMode) async -> QuoteFeedState                // kilitli / görülmemiş / döngü 2 / tükendi
     func markSeen(_ id: QuoteID, dwell: Duration) async
     func record(_ action: QuoteAction, for id: QuoteID) async   // .liked, .unliked, .shared, .wroteAbout(entryID)
     func dailyQuote(for day: DayKey) async -> Quote
@@ -147,6 +149,14 @@ protocol QuoteEngine {
 }
 enum QuoteFeedMode: Hashable { case forYou, path(String), theme(String), kind(QuoteKind), favorites, written }
 ```
+
+**Ekran sözleşmesi (UX-7, UX-11):**
+- `nextItems` her kartı künyesiyle verir: `reason` (`regular`, `daily`, `resurfaced(writtenAt:entryID:)`), `liked`, `writtenCount` ("Bu söze 2 kez yazdın").
+- "Sana özel"de cihazın o günkü ilk akışı günün sözüyle başlar (E2.4); yazılan sözün geri dönüşü (E2.2 kural 4) aynı gün akışa bir kez, 3. sıradan girer. İkisi de kuyruğa girmez.
+- `feedState`: `locked`, `available(unseen:)`, `revisiting(count:)` (döngü 2), `exhausted(alternatives:)`, `list(count:)`, `empty`. Tükenen modda en fazla 3 erişilebilir mod önerilir: önce kullanıcının yolları, sonra diğer yollar, en son "Sana özel". Kilitli yol önerilmez.
+- "Görüldü" ölçümü `QuoteVisibilityTracker` (saf): ekran kartın görünür oranını bildirir, ölçer `seen(id, dwell)` / `skipped(id)` üretir; hareketsiz kart için `tick`.
+- Oturum sınırı sahne evresine bağlı: arka plana geçişte oturum kapanır ve maruz kalma kaydı yazılır; dönüşte yeni oturum açılır.
+- Kalıcı kuyruk haftalık tema değişince de yeniden kurulur (tema puanı eskimesin).
 
 ### E2.6 İçerik hacmi ve yıpranma
 

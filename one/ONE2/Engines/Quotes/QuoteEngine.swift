@@ -15,6 +15,9 @@
 //    bitince kuyruğun sonuna döner.
 //  - Günün sözü: `quote.daily.<dayKey>` KVS anahtarı; ilk seçen cihaz
 //    belirler, diğerleri okur. Seçim kullanıcı tuzu + gün ile tohumlanır.
+//  - Ekran akışı `nextItems` ile alır: "Sana özel"de günün ilk kartı günün
+//    sözü, sonra (varsa) yazılan sözün geri dönüşü; her kart künyesiyle.
+//    Modun tükenip tükenmediği `feedState` ile (E2.2 kural 3, UX-7).
 //
 
 import Foundation
@@ -34,6 +37,8 @@ nonisolated struct ResurfacedQuote: Hashable, Sendable {
 
 protocol QuoteEngine: AnyObject {
     func nextBatch(mode: QuoteFeedMode, count: Int) async -> [Quote]
+    func nextItems(mode: QuoteFeedMode, count: Int) async -> [QuoteFeedItem]
+    func feedState(mode: QuoteFeedMode) async -> QuoteFeedState
     func markSeen(_ id: QuoteID, dwell: Duration) async
     func record(_ action: QuoteAction, for id: QuoteID) async
     func dailyQuote(for day: DayKey) async -> Quote?
@@ -44,7 +49,11 @@ protocol QuoteEngine: AnyObject {
 final class LiveQuoteEngine: QuoteEngine {
     static let queueTarget = 30
     static let queueRefillThreshold = 10
-    static let seenDwell: Duration = .milliseconds(1200)
+    static let seenDwell = QuoteVisibilityTracker.seenDwell
+    /// Geri dönen söz akışta bu sıraya girer (günün sözünden sonra, hemen değil).
+    static let resurfacePosition = 2
+    /// Tükenen modun boş durumunda önerilen en fazla mod sayısı.
+    static let alternativeLimit = 3
     static let poolLowThreshold = 150
     static let resurfaceAfter: TimeInterval = 90 * 86_400
 
@@ -124,6 +133,65 @@ final class LiveQuoteEngine: QuoteEngine {
             sessionUnseen[mode.key, default: []].append(q.id)
         }
         return batch
+    }
+
+    /// Ekranın akışı: `nextBatch` + künye. "Sana özel"de, cihazda günün ilk
+    /// akışında önce günün sözü (UX-7), sonra varsa geri dönen söz (E2.2 kural
+    /// 4) bir kez yer alır. İkisi de zaten görülmüş sayılır; kuyruğa girmez.
+    func nextItems(mode: QuoteFeedMode, count: Int) async -> [QuoteFeedItem] {
+        guard count > 0 else { return [] }
+        let today = clock.today
+        var daily: Quote?
+        var resurfaced: ResurfacedQuote?
+        if mode == .forYou {
+            if local.object(forKey: Self.dailyShownKey) as? String != today.string,
+               let q = await dailyQuote(for: today), !sessionShown.contains(q.id) {
+                local.set(today.string, forKey: Self.dailyShownKey)
+                sessionShown.insert(q.id)
+                daily = q
+            }
+            let lead = daily == nil ? 0 : 1
+            if count - lead > 1, local.object(forKey: Self.resurfaceShownKey) as? String != today.string,
+               let r = await resurfacingCandidate(on: today), r.quote.id != daily?.id, !sessionShown.contains(r.quote.id) {
+                local.set(today.string, forKey: Self.resurfaceShownKey)
+                sessionShown.insert(r.quote.id)
+                resurfaced = r
+            }
+        }
+        let special = (daily == nil ? 0 : 1) + (resurfaced == nil ? 0 : 1)
+        let regular = await nextBatch(mode: mode, count: count - special)
+        let snapshot = (try? exposure.snapshot(.quote)) ?? ExposureSnapshot(kind: .quote)
+        func item(_ q: Quote, _ reason: QuoteFeedReason) -> QuoteFeedItem {
+            let r = snapshot[q.id]
+            return QuoteFeedItem(quote: q, reason: reason, liked: r?.liked ?? false, writtenCount: r?.writtenCount ?? 0)
+        }
+        var items = regular.map { item($0, .regular) }
+        if let resurfaced {
+            items.insert(item(resurfaced.quote, .resurfaced(writtenAt: resurfaced.writtenAt, entryID: resurfaced.entryID)),
+                         at: min(Self.resurfacePosition, items.count))
+        }
+        if let daily { items.insert(item(daily, .daily), at: 0) }
+        return items
+    }
+
+    /// Modun durumu (E2.2 kural 3). Tükenen modda görülmemiş sözü kalan
+    /// erişilebilir modlar önerilir: önce kullanıcının yolları, sonra diğer
+    /// yollar (en çok görülmemişi olan önce), en son "Sana özel".
+    func feedState(mode: QuoteFeedMode) async -> QuoteFeedState {
+        let context = makeContext()
+        guard QuoteSelection.isAccessible(mode, context: context) else { return .locked }
+        guard let snapshot = try? exposure.snapshot(.quote) else { return .empty }
+        if mode.isList {
+            let count = snapshot.records.values.filter { mode == .favorites ? $0.liked : $0.wasWritten }
+                .filter { content.catalog.quote($0.contentID) != nil }.count
+            return count == 0 ? .empty : .list(count: count)
+        }
+        let eligible = QuoteSelection.eligible(content.catalog.quotes, mode: mode, context: context)
+        guard !eligible.isEmpty else { return .empty }
+        let (pool, cycle) = QuoteSelection.candidates(eligible, exposure: snapshot, excluding: [], now: context.now)
+        if cycle == 1 { return .available(unseen: pool.count) }
+        if !pool.isEmpty { return .revisiting(count: pool.count) }
+        return .exhausted(alternatives: alternatives(to: mode, context: context, snapshot: snapshot))
     }
 
     func markSeen(_ id: QuoteID, dwell: Duration) async {
@@ -223,6 +291,28 @@ final class LiveQuoteEngine: QuoteEngine {
 
     // MARK: - Private
 
+    private static let dailyShownKey = "quote.feed.dailyShown"
+    private static let resurfaceShownKey = "quote.feed.resurfaceShown"
+
+    private func alternatives(to mode: QuoteFeedMode, context: QuoteContext, snapshot: ExposureSnapshot) -> [QuoteFeedMode] {
+        let catalog = content.catalog
+        let own = context.quotePaths
+        let others = catalog.paths.filter { $0.active && $0.lang == context.lang && !own.contains($0.id) }
+            .map(\.id).sorted()
+        let modes: [QuoteFeedMode] = [.forYou] + (own + others).map { .path($0) }
+        let unseen: [(mode: QuoteFeedMode, count: Int, rank: Int)] = modes.compactMap { m in
+            guard m != mode, QuoteSelection.isAccessible(m, context: context) else { return nil }
+            let n = QuoteSelection.eligible(catalog.quotes, mode: m, context: context)
+                .filter { snapshot[$0.id]?.wasSeen != true }.count
+            guard n > 0 else { return nil }
+            guard case .path(let id) = m else { return (m, n, 2) }
+            return (m, n, own.contains(id) ? 0 : 1)
+        }
+        return unseen
+            .sorted { ($0.rank, -$0.count, $0.mode.key) < ($1.rank, -$1.count, $1.mode.key) }
+            .prefix(Self.alternativeLimit).map(\.mode)
+    }
+
     private func seen(_ id: QuoteID) {
         exposure.recordSeen(id, kind: .quote)
         for key in sessionUnseen.keys { sessionUnseen[key]?.removeAll { $0 == id } }
@@ -235,10 +325,11 @@ final class LiveQuoteEngine: QuoteEngine {
     private func makeContext() -> QuoteContext {
         let p = profile.profile
         let today = clock.today
-        let tags = ThemeCalendar.theme(for: today, catalog: content.catalog, salt: p.userSalt).map { Set($0.theme.tags) } ?? []
+        let week = ThemeCalendar.theme(for: today, catalog: content.catalog, salt: p.userSalt)
         let hour = clock.calendar.component(.hour, from: clock.now)
         return QuoteContext(quotePaths: p.quotePaths, lang: p.contentLang, hasPremium: hasPremium(),
-                            weekThemeTags: tags, dayPart: .of(hour: hour), moodScore: moodScore(), now: clock.now)
+                            weekThemeTags: week.map { Set($0.theme.tags) } ?? [], weekThemeID: week?.theme.id,
+                            dayPart: .of(hour: hour), moodScore: moodScore(), now: clock.now)
     }
 
     private func dailyContext(for day: DayKey) -> QuoteContext {
@@ -269,7 +360,7 @@ final class LiveQuoteEngine: QuoteEngine {
     }
 
     private func fingerprint(_ context: QuoteContext, catalog: ContentCatalog) -> String {
-        "\(catalog.contentVersion)|\(context.hasPremium)|\(context.lang)|\(context.quotePaths.joined(separator: ","))"
+        "\(catalog.contentVersion)|\(context.hasPremium)|\(context.lang)|\(context.quotePaths.joined(separator: ","))|\(context.weekThemeID ?? "")"
     }
 
     private func validQueue(_ mode: QuoteFeedMode, context: QuoteContext, catalog: ContentCatalog) -> Queue {
