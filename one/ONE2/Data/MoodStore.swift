@@ -10,6 +10,8 @@ import CoreData
 final class MoodStore {
     private let context: NSManagedObjectContext
     private let clock: AppClock
+    /// Her check-in'den sonra (widget, bildirim penceresi, analitik).
+    var didSave: ((MoodCheckIn) -> Void)?
 
     init(context: NSManagedObjectContext, clock: AppClock = SystemClock()) {
         self.context = context
@@ -52,6 +54,7 @@ final class MoodStore {
         }
         try context.saveIfNeeded()
         guard let value = row.value else { throw StoreError.invalidValue("mapping") }
+        didSave?(value)
         return value
     }
 

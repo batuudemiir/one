@@ -11,6 +11,7 @@ import CoreData
 import CloudKit
 import UserNotifications
 import MetricKit
+import Combine
 // MARK: - App Delegate for Push Notifications
 
 class AppDelegate: NSObject, UIApplicationDelegate {
@@ -249,6 +250,19 @@ struct oneApp: App {
                     case .background:  appLock.handleWillResignActive()
                     @unknown default:  break
                     }
+                    // ONE 2.0 yaşam döngüsü (AppEnvironment): söz oturumu,
+                    // görülme kayıtları, gün değişimi, bildirim penceresi.
+                    if let env = one2Environment {
+                        switch phase {
+                        case .active:     Task { await env.onForeground() }
+                        case .background: env.onBackground()
+                        default:          break
+                        }
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged).receive(on: RunLoop.main)) { _ in
+                    // Gece yarısı: widget'ın hafta şeridi, seri ve yeni günün bildirimleri.
+                    if let env = one2Environment { Task { await env.onDayChange() } }
                 }
                 .onAppear {
                     // Cold start: kilit açıksa içerik hiç görünmeden kapansın.
@@ -261,6 +275,12 @@ struct oneApp: App {
                     // Tier 1 — anında, ucuz, UI'a senkronize
                     if #available(iOS 16.1, *) {
                         Task { await LiveActivityManager.shared.endAllActivities() }
+                    }
+
+                    // Tier 2 (ONE 2.0) — içerik kontrolü, sessiz rozetler,
+                    // widget ve bildirim penceresi. Ana aktörde, ilk kareden sonra.
+                    if let env = one2Environment {
+                        Task { await env.onLaunch() }
                     }
 
                     // Tier 2 — bir tick gecikmeli (ilk frame paint olduktan sonra)

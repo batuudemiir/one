@@ -22,6 +22,8 @@ nonisolated enum RitualCard: String, Sendable, CaseIterable {
 final class DayStore {
     private let context: NSManagedObjectContext
     private let clock: AppClock
+    /// Kart tamamlandıktan sonra: (kart, gün, bu çağrıyla gün tamamlandı mı).
+    var didComplete: ((RitualCard, DayCompletion, Bool) -> Void)?
 
     init(context: NSManagedObjectContext, clock: AppClock = SystemClock()) {
         self.context = context
@@ -40,6 +42,7 @@ final class DayStore {
         }
 
         let record = try recordForWriting(target)
+        let wasComplete = record.completion.map { c in RitualMode.allCases.contains { c.isComplete(in: $0) } } ?? false
         let now = clock.now
         switch card {
         case .daily:   if record.dailyCompletedAt == nil { record.dailyCompletedAt = now }
@@ -50,6 +53,7 @@ final class DayStore {
         if record.completedBy == nil { record.completedBy = DayCompletionSource.ritual.rawValue }
         try context.saveIfNeeded()
         guard let completion = record.completion else { throw StoreError.invalidValue("mapping") }
+        didComplete?(card, completion, !wasComplete)
         return completion
     }
 
