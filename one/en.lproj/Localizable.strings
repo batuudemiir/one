@@ -1043,3 +1043,15 @@ one day.";
 "notif.one2.streak.body" = "You've been here %d days. A short entry is enough.";
 "notif.one2.comparison.title" = "You answered this question before";
 "notif.one2.resurface.title" = "You wrote about this quote before";
+
+/* ONE 2.0 — Markdown dışa aktarma (04 › E16) */
+"export.md.focus" = "Focus";
+"export.md.kind.freeform" = "Free writing";
+"export.md.kind.prompt" = "Prompt";
+"export.md.kind.guided" = "Guided";
+"export.md.kind.template" = "Template";
+"export.md.kind.dailyCheckIn" = "Daily";
+"export.md.kind.morning" = "Morning";
+"export.md.kind.evening" = "Evening";
+"export.md.kind.emotionCheckIn" = "Emotion";
+"export.md.kind.quoteReflection" = "Quote";

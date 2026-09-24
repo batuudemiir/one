@@ -917,3 +917,15 @@ one day.";
 "notif.one2.streak.body" = "%d일째 함께하고 있어요. 짧은 기록이면 충분해요.";
 "notif.one2.comparison.title" = "이 질문에 전에 답한 적이 있어요";
 "notif.one2.resurface.title" = "이 문장에 대해 전에 쓴 적이 있어요";
+
+/* ONE 2.0 — Markdown dışa aktarma (04 › E16) */
+"export.md.focus" = "집중";
+"export.md.kind.freeform" = "자유 글쓰기";
+"export.md.kind.prompt" = "질문";
+"export.md.kind.guided" = "가이드";
+"export.md.kind.template" = "템플릿";
+"export.md.kind.dailyCheckIn" = "데일리";
+"export.md.kind.morning" = "아침";
+"export.md.kind.evening" = "저녁";
+"export.md.kind.emotionCheckIn" = "감정";
+"export.md.kind.quoteReflection" = "문장";

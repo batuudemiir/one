@@ -266,7 +266,7 @@ enum MarkdownArchive {
         let focusByDay = Dictionary(export.days.compactMap { d in d.focus.map { (d.date, $0) } }, uniquingKeysWith: { a, _ in a })
         for day in Set(entriesByDay.keys).union(moodsByDay.keys).sorted() {
             var md = "# \(day)\n"
-            if let focus = focusByDay[day] { md += "\n**Odak:** \(focus)\n" }
+            if let focus = focusByDay[day] { md += "\n**\(focusLabel):** \(focus)\n" }
             for m in moodsByDay[day] ?? [] {
                 let time = String(m.timestamp.dropFirst(11).prefix(5))
                 let emotions = m.emotions.map { $0.label ?? $0.id }.joined(separator: ", ")
@@ -309,14 +309,14 @@ enum MarkdownArchive {
         return files
     }
 
-    /// Başlıksız girdinin başlığı: tür adı (dosya dilden bağımsız, sabit).
+    /// Başlıksız girdinin başlığı: tür adı, kullanıcının dilinde.
     static func heading(for kind: String) -> String {
-        [
-            "freeform": "Serbest", "prompt": "Soru", "guided": "Rehberli", "template": "Şablon",
-            "dailyCheckIn": "Günlük", "morning": "Sabah", "evening": "Akşam",
-            "emotionCheckIn": "Duygu", "quoteReflection": "Söz",
-        ][kind] ?? kind
+        let key = "export.md.kind.\(kind)"
+        let value = NSLocalizedString(key, comment: "Markdown export heading for entry kind")
+        return value == key ? kind : value
     }
+
+    static var focusLabel: String { NSLocalizedString("export.md.focus", comment: "Markdown export focus label") }
 }
 
 // MARK: - Yazıcı
@@ -399,7 +399,7 @@ final class DataExporter {
         } catch let error as ExportError {
             throw error
         } catch {
-            ONELogger.error("Dışa aktarma v2 yazılamadı", error: error, category: .general)
+            ONELogger.error("Export v2 write failed", error: error, category: .general)
             throw ExportError.writeFailed
         }
     }

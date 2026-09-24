@@ -123,7 +123,7 @@ struct ExportV2Tests {
         let files = MarkdownArchive.render(try r.exporter.makeExport().0)
         let today = try #require(files["2026-09-23.md"])
         #expect(today.hasPrefix("# 2026-09-23"))
-        #expect(today.contains("**Odak:** sakin kal"))
+        #expect(today.contains("**\(MarkdownArchive.focusLabel):** sakin kal"))
         #expect(today.contains("> İnsanları rahatsız eden"))
         #expect(today.contains("**Bu söz ne hatırlatıyor?**") && today.contains("Sabrı"))
         #expect(today.contains("4/5 · huzurlu · Uyku"))

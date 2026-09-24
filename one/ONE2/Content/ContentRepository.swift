@@ -99,7 +99,7 @@ final class ContentRepository {
             : try? ContentLoader.load(from: LayeredContentSource(top: cacheSource, base: bundle))
         if let cached, cached.contentVersion >= (bundled?.contentVersion ?? -1) { return (cached, .cache) }
         if let bundled { return (bundled, .bundle) }
-        ONELogger.error("[content] bundle içeriği yüklenemedi")
+        ONELogger.error("[content] bundled content failed to load")
         return (.empty, .none)
     }
 
@@ -149,7 +149,7 @@ final class ContentRepository {
         let loaded: ContentCatalog
         do { loaded = try ContentLoader.load(from: candidate) }
         catch let error as ContentLoadError {
-            ONELogger.error("[content] uzak içerik reddedildi: \(String(describing: error))")
+            ONELogger.error("[content] remote content rejected: \(String(describing: error))")
             return .rejected(error)
         } catch { return .failed }
 
