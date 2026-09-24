@@ -1,22 +1,20 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><title>ONE 2.0 quote reflection</title>
 <link rel="stylesheet" href="fonts.css">
-<style>html,body{margin:0;background:#faf9f5}canvas{display:block}</style>
+<style>html,body{margin:0;background:#000}canvas{display:block}</style>
 </head><body><canvas id="c" width="1080" height="1920"></canvas>
 <script>
-// 1080×1920; sahne 180×320 pikselde çizilip 6 kat büyütülür. Krem zemin, metalik telefon.
+// 1080×1920; sahne 180×320 pikselde çizilip 6 kat büyütülür. Piksel şehir, akşamdan geceye.
 const W=1080,H=1920,P=6,LW=180,LH=320;
 const c=document.getElementById('c'),x=c.getContext('2d');
 const lo=document.createElement('canvas');lo.width=LW;lo.height=LH;const base=lo.getContext('2d');let l=base;
 const hl=document.createElement('canvas');hl.width=LW;hl.height=LH;const hctx=hl.getContext('2d');
 const FONT="'Pixelify Sans'";
 
-// uygulama içi: ONE 2.0 gece token'ları · dış zemin: krem ve kil tonları
+// ONE 2.0 token'ları (gece)
 const T={ground:'#000000',surface:'#141416',raised:'#1E1E21',line:'#26262A',lineStrong:'#66666E',
   ink:'#F4F4F5',muted:'#A3A3AA',faint:'#85858D',primary:'#E8E8EA',onPrimary:'#111113',
   brand:'#9AA6FF',brandSoft:'#232B57',onBrandSoft:'#C9CFFF',aksam:'#7D8BE0',success:'#5CC08C'};
-const BG={cream:'#FAF9F5',cream2:'#F0EEE6',clay:'#D97757',ink:'#141413',mid:'#B0AEA5',blue:'#6A9BCC',green:'#788C5D'};
-const METAL=['#2E3138','#555A64','#7F8590','#AAB0BA','#D2D7DE','#F4F6F9'];
 
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 const prog=(t,a,d)=>clamp((t-a)/d);
@@ -24,7 +22,7 @@ const eo=p=>1-Math.pow(1-p,3);
 const eio=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
 const lerp=(a,b,p)=>a+(b-a)*p;
 function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
-const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+function hex(h){return[1,3,5].map(i=>parseInt(h.slice(i,i+2),16))}
 const BAYER=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5].map(v=>(v+.5)/16);
 const bay=(i,j)=>BAYER[(j&3)*4+(i&3)];
 
@@ -35,23 +33,12 @@ function sprite(rows,X,Y,pal,a=1){rows.forEach((r,j)=>[...r].forEach((ch,i)=>{if
 
 // yazı kuyruğu (yüksek çözünürlükte basılır)
 const txtQ=[];let TF=null;
-function tx(s,X,Y,{size=8,color=T.ink,align='left',weight=400,a=1,metal=false}={}){
-  if(TF){X=TF.cx+(X-TF.cx)*TF.s+TF.dx;Y=TF.cy+(Y-TF.cy)*TF.s+TF.dy;size*=TF.s}txtQ.push([s,X,Y,size,color,align,weight,a,metal])}
-let NOW=0;
+function tx(s,X,Y,{size=8,color=T.ink,align='left',weight=400,a=1}={}){
+  if(TF){X=TF.cx+(X-TF.cx)*TF.s+TF.dx;Y=TF.cy+(Y-TF.cy)*TF.s+TF.dy;size*=TF.s}txtQ.push([s,X,Y,size,color,align,weight,a])}
 function flushText(){
-  for(const [s,X,Y,size,color,align,weight,a,metal] of txtQ){if(a<=0)continue;x.globalAlpha=a;
+  for(const [s,X,Y,size,color,align,weight,a] of txtQ){if(a<=0)continue;x.globalAlpha=a;
     x.font=`${weight} ${size*P}px ${FONT}`;x.textAlign=align;x.textBaseline='alphabetic';
-    if(metal){ // metalik dolgu: bantlı gri + kayan parıltı
-      const top=Y*P-size*P*.8,g=x.createLinearGradient(0,top,0,Y*P);
-      [[0,METAL[5]],[.35,METAL[3]],[.5,METAL[1]],[.55,METAL[4]],[1,METAL[2]]].forEach(([o,cc])=>g.addColorStop(o,cc));
-      x.fillStyle=g;x.fillText(s,X*P,Y*P);
-      const w=x.measureText(s).width,x0=align==='center'?X*P-w/2:X*P,sh=x0-200+((NOW*500)%(w+600));
-      x.save();x.globalCompositeOperation='source-atop';
-      const g2=x.createLinearGradient(sh,0,sh+160,0);g2.addColorStop(0,'rgba(255,255,255,0)');g2.addColorStop(.5,'rgba(255,255,255,.85)');g2.addColorStop(1,'rgba(255,255,255,0)');
-      x.fillStyle=g2;x.fillText(s,X*P,Y*P);x.restore();
-      // ince koyu kontur okunurluk için
-      
-    }else{x.fillStyle=color;x.fillText(s,X*P,Y*P)}}
+    {x.fillStyle=color;x.fillText(s,X*P,Y*P)}}
   x.globalAlpha=1;txtQ.length=0;
 }
 const typed=(s,t,a,cps=16)=>s.slice(0,Math.floor(clamp((t-a)*cps,0,s.length)));
@@ -60,38 +47,40 @@ function wrap(s,n){const w=s.split(' '),out=[];let cur='';for(const v of w){if((
 // ——— zaman çizelgesi ———
 const K={hook:0,Q:2.4,R:6,S:11.6,J:13.8,E:16.2,END:19.5};
 
-// ——— krem zemin: dither geçiş + yüzen pikseller ———
-const bgC=document.createElement('canvas');bgC.width=LW;bgC.height=LH;
-(function(){const g=bgC.getContext('2d'),im=g.createImageData(LW,LH),A=hex(BG.cream),B=hex(BG.cream2),Cc=hex('#F3DDD2');
-  for(let j=0;j<LH;j++)for(let i=0;i<LW;i++){const f=j/LH,k=(i+j*LW)*4;
-    // üst krem → alt açık kil, 4 kademe dither
-    const v=f*3,lvl=Math.floor(v)+(v%1>bay(i,j)?1:0),cols=[A,A,B,Cc];const cc=cols[Math.min(3,lvl)];
-    im.data[k]=cc[0];im.data[k+1]=cc[1];im.data[k+2]=cc[2];im.data[k+3]=255}
-  g.putImageData(im,0,0)})();
-function background(t){
-  l.drawImage(bgC,0,0);
-  const r=rng(12),cols=[BG.clay,BG.blue,BG.green,BG.mid,BG.clay];
-  for(let i=0;i<22;i++){const s=2+Math.floor(r()*4),X=(r()*LW+t*(2+r()*3))%(LW+10)-5,Y=(r()*LH-t*(4+r()*6)%LH+LH)%LH;
-    px(X,Y,s,s,cols[i%5],.55)}
+function mix(a,b,p){const A=hex(a),B=hex(b);return'#'+A.map((v,i)=>Math.round(lerp(v,B[i],p)).toString(16).padStart(2,'0')).join('')}
+const SKY=[[0,'#070A1E','#141A3A'],[.25,'#2B2F6E','#E9A45A'],[.5,'#4D86D0','#A9CBEE'],[.75,'#3E2C6E','#E0783A'],[1,'#070A1E','#141A3A']];
+function sky(d){let i=0;while(i<SKY.length-2&&d>SKY[i+1][0])i++;const [a,t1,b1]=SKY[i],[b,t2,b2]=SKY[i+1],p=(d-a)/(b-a);return[mix(t1,t2,p),mix(b1,b2,p)]}
+const night=d=>clamp(1-Math.min(Math.abs(d-0)/.2,Math.abs(d-1)/.2));
+
+function scene(t){
+  const d=tod(t),[top,bot]=sky(d);
+  // bantlı gökyüzü (piksel geçiş)
+  const bands=14;for(let i=0;i<bands;i++)px(0,i*16,LW,16,mix(top,bot,i/(bands-1)));
+  // yıldızlar
+  const r=rng(4),n=night(d);for(let i=0;i<40;i++){const sx=r()*LW,sy=r()*150,tw=.5+.5*Math.sin(t*3+i);px(sx,sy,1,1,'#FFFFFF',n*tw)}
+  // güneş ve ay yay üstünde
+  const sa=(d-.2)/.6*Math.PI,sx=lerp(20,160,(d-.2)/.6),sy=190-Math.sin(clamp(sa,0,Math.PI))*150;
+  if(d>.18&&d<.82){px(sx-6,sy-4,12,8,'#FFD479');px(sx-4,sy-6,8,12,'#FFD479');px(sx-5,sy-5,10,10,'#FFE6A6')}
+  const ma=eo(prog(d,.82,.1));if(ma>0){const my=lerp(160,40,ma);sprite(['...####.....','..###.......','.###........','.##.........','###.........','###.........','###.........','###.........','.###......#.','.####....##.','..#########.','....#####...'],138,my,{'#':'#E8ECFF'},ma)}
+  // bulutlar
+  for(let i=0;i<3;i++){const cx=((i*70+t*4*(i+1))%240)-30,cy=40+i*28;const cc=mix('#FFFFFF',top,.35+.5*n);px(cx,cy,24,4,cc,.8);px(cx+5,cy-3,12,3,cc,.8)}
+  // şehir silueti
+  const rr=rng(9);let bx=0;const bc=mix('#141726','#05060C',n);
+  while(bx<LW){const w=10+Math.floor(rr()*16),h=40+Math.floor(rr()*70);px(bx,LH-h-80,w,h+80,bc);
+    for(let wy=LH-h-74;wy<LH-90;wy+=6)for(let wx=bx+2;wx<bx+w-2;wx+=4){const lit=rr()<lerp(.15,.55,n);if(lit)px(wx,wy,2,3,'#F2B84B',lerp(.35,.9,n))}
+    bx+=w+1}
+  px(0,LH-84,LW,84,'#05060A');
 }
 
-// ——— metalik telefon ———
+// akşamdan geceye: söze yazı günün sonunda
+const tod=t=>lerp(.74,.97,eio(prog(t,0,K.S)));
+function background(t){scene(t)}
+
+// ——— telefon ———
 const PH={x:36,y:40,w:108,h:196},SC={x:41,y:49,w:98,h:178};
-const metalC=document.createElement('canvas');metalC.width=PH.w;metalC.height=PH.h;
-function metalPhone(t){
-  const g=metalC.getContext('2d'),im=g.createImageData(PH.w,PH.h),sh=((t*40)%(PH.w+PH.h+80))-40;
-  for(let j=0;j<PH.h;j++)for(let i=0;i<PH.w;i++){const k=(i+j*PH.w)*4;
-    // yuvarlak köşe
-    const cx=Math.min(i,PH.w-1-i),cy=Math.min(j,PH.h-1-j);if(cx<4&&cy<4&&Math.hypot(4-cx,4-cy)>4.2){im.data[k+3]=0;continue}
-    let v=.5+.32*Math.cos((i/PH.w-.35)*Math.PI*1.6)+.08*Math.sin(j*.9)*.3;
-    const d=i+j*.6-sh;v+=Math.max(0,1-Math.abs(d)/9)*.55; // kayan parıltı
-    const q=clamp(v)*(METAL.length-1),lv=Math.min(METAL.length-1,Math.floor(q)+((q%1)>bay(i,j)?1:0));
-    const cc=hex(METAL[lv]);im.data[k]=cc[0];im.data[k+1]=cc[1];im.data[k+2]=cc[2];im.data[k+3]=255}
-  g.putImageData(im,0,0);l.drawImage(metalC,PH.x,PH.y);
-  frame(PH.x,PH.y,PH.w,PH.h,'#1C1E22');
-  px(SC.x,SC.y,SC.w,SC.h,T.ground);px(PH.x+PH.w/2-10,PH.y+3,20,3,'#15171B');
-  // yan tuşlar
-  px(PH.x-2,PH.y+40,2,14,METAL[2]);px(PH.x+PH.w,PH.y+50,2,22,METAL[2]);
+function phone(t,alpha=1){
+  box(PH.x-1,PH.y-1,PH.w+2,PH.h+2,'#3A3A40',alpha);box(PH.x,PH.y,PH.w,PH.h,'#1B1B1F',alpha);
+  px(SC.x,SC.y,SC.w,SC.h,T.ground,alpha);px(PH.x+PH.w/2-10,PH.y+3,20,3,'#000',alpha);
 }
 
 // el imleci
@@ -177,18 +166,18 @@ function journey(t){
 
 function caption(t,lines,at,dur){
   const a=eo(prog(t,at,.3))*(1-eo(prog(t,at+dur-.3,.3)));
-  lines.forEach((ln,i)=>tx(typed(ln,t,at+i*.2,40),LW/2,264+i*14,{size:11,weight:700,align:'center',a,color:BG.ink}));
+  lines.forEach((ln,i)=>tx(typed(ln,t,at+i*.2,40),LW/2,264+i*14,{size:11,weight:700,align:'center',a,color:T.ink}));
 }
 
 function draw(t){
-  NOW=t;l=base;l.clearRect(0,0,LW,LH);txtQ.length=0;
+  l=base;l.clearRect(0,0,LW,LH);txtQ.length=0;
   background(t);
   const inY=Math.round(lerp(LH,0,eo(prog(t,.3,1))));
   const outP=eio(prog(t,K.E,.9));
   TF=t<K.E?{cx:0,cy:0,s:1,dx:0,dy:inY}:{cx:LW/2,cy:PH.y+PH.h/2,s:1,dx:0,dy:Math.round(lerp(0,LH,outP))};
   l.save();l.translate(0,TF.dy);
   if(t<K.E+1){
-    metalPhone(t);
+    phone(t);
     if(t<K.Q){ // Sözler sekmesi ilk kart
       quotesTab(t,0);
     }else if(t<K.R){
@@ -215,15 +204,16 @@ function draw(t){
   caption(t,['Come back to it','in Journey.'],K.J+.1,2.3);
   // kapanış
   if(t>=K.E+.4){const a=eo(prog(t,K.E+.5,.6));
-    box(LW/2-62,104,124,48,BG.ink,a);frame(LW/2-62,104,124,48,METAL[2],a);
-    tx('ONE 2.0',LW/2,138,{size:26,weight:700,align:'center',a,metal:true});
-    tx('Quotes · Write on a quote',LW/2,168,{size:8,color:BG.ink,align:'center',a:eo(prog(t,K.E+1,.5))});
-    tx('Coming soon to the App Store.',LW/2,272,{size:10,weight:700,align:'center',color:BG.ink,a:eo(prog(t,K.E+1.4,.5))});
+    box(LW/2-46,62,20,20,T.brand,a);
+    tx('ONE',LW/2+8,82,{size:26,weight:700,align:'center',a});
+    tx('2.0',LW/2+46,68,{size:8,weight:700,color:T.brand,a});
+    tx('Quotes · Write on a quote',LW/2,100,{size:8,color:T.muted,align:'center',a:eo(prog(t,K.E+1,.5))});
+    tx('Coming soon to the App Store.',LW/2,272,{size:10,weight:700,align:'center',color:T.ink,a:eo(prog(t,K.E+1.4,.5))});
   }
   x.imageSmoothingEnabled=false;x.drawImage(lo,0,0,W,H);
   flushText();
   x.drawImage(hl,0,0,W,H);
-  if(t>K.END-.5){x.fillStyle=`rgba(250,249,245,${eo(prog(t,K.END-.5,.5))})`;x.fillRect(0,0,W,H)}
+  if(t>K.END-.5){x.fillStyle=`rgba(0,0,0,${eo(prog(t,K.END-.5,.5))})`;x.fillRect(0,0,W,H)}
 }
 window.TOTAL=K.END;window.draw=draw;
 window.ready=document.fonts.ready.then(()=>Promise.all(["400 48px 'Pixelify Sans'","700 48px 'Pixelify Sans'"].map(f=>document.fonts.load(f,'AğşıİçöüÇŞÖÜ’·⌄…'))));

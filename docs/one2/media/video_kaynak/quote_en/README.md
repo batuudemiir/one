@@ -1,7 +1,7 @@
 # ONE 2.0 — Quotes / Write on a quote (EN, kısa)
 
 `../../one2_quote_reflection_en.mp4`: 1080×1920, 30 fps, 19,5 sn, İngilizce.
-Krem zemin (dither'lı), yüzen pikseller, metalik piksel telefon ve metalik kapanış yazısı.
+Türkçe günlük akışı videosuyla aynı piksel dil: şehir silueti, akşamdan geceye dönen gökyüzü, koyu telefon.
 
 Akış (`05_ux_promptlari.md` UX-7, `design-system/components/QuoteCard.md`, `QuoteReflection.md`):
 Sözler sekmesi (Quotes, "For you") → dikey kaydırmayla söz kartı → "Write about this" →
