@@ -312,7 +312,7 @@ Faz 1 #6'daki saf fonksiyonların üstüne kurallar:
 
 - Hesap Core Data'da `propertiesToFetch` + dönem filtresiyle; sonuç dönem başına bellekte önbellek, veri değişince geçersiz.
 - Ay kapanışında (`BGAppRefreshTask` ya da ilk açılış) aylık özet önceden hesaplanır.
-- Minimum veri yoksa ilgili kart "Henüz erken" boş durumuna düşer; motor `InsightState.insufficient(needed:)` döner.
+- Minimum veri yoksa ilgili kart "Henüz erken" boş durumuna düşer; motor `InsightResult.insufficient(needed:)` döner.
 
 **Test:** 5 yıllık sentetik veride 365 günlük hesap < 200 ms; etiket ilişkisi eşiği; boş veri.
 
