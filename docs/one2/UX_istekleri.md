@@ -58,6 +58,17 @@ Toplam 38 duygu (her ailede 4–5).
 
 View data her içgörü kartı için `InsightState.insufficient(required:current:)`
 taşır (E10 eşikleri: çizgi 3, ortalama 7, dağılım 5, etiket ilişkisi 21).
-E10'un `InsightState.insufficient(needed:)` dönüşü UX-11'deki adaptörde bu
-iki değere çevrilecek; motorun `needed`'ı **eşik** mi **kalan** mı döndürdüğü
-netleşirse adaptör ona göre yazılır.
+
+**Kapandı (24 Eylül 2026, motor oturumu):** E10 `InsightResult.insufficient(needed:have:)`
+döndürüyor; `needed` **eşiğin kendisi** (ör. 7), `have` mevcut sayı. UX-11
+adaptörü: `required = needed`, `current = have`.
+
+**Ad çakışması:** faz1 ile birleşince view data'daki `InsightState`,
+`WritingStats`, `ChangePair` motor tipleriyle çakıştı. Motor tarafı
+`InsightResult`, `WritingSummary`, `AnswerChangePair` olarak adlandırıldı
+(faz1 1641f5a); view data adları olduğu gibi. Yeni tip eklerken bu altı addan kaçın.
+
+## 1 durumu
+
+§1'deki duygu kataloğu motor tarafında bundle'a girdi (38 duygu, aynı ID'ler).
+`EmotionCatalogFixture` UX-11'e kadar kalıyor; adaptörde katalog okuyucuya geçilir.
