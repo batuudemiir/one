@@ -2,137 +2,116 @@
 //  TodayViewData.swift
 //  ONE 2.0
 //
-//  Bugün ekranının view data'sı (06_giris_akislari.md › Bugün ekranı).
-//  Saat kuralları (selamlama, kart sırası, kaçırılan sabah) burada saf.
+//  Bugün ekranının parçaları (07 §5.1): ritüel kartları, pratikler,
+//  haftalık tema (E5 + E4 günlük soru), seri (E8), geri dönüş kartı (§5.11).
 //
 
 import Foundation
 
-// MARK: - Hafta şeridi
-
-nonisolated enum WeekDayStatus: Hashable, Sendable {
-    case done
-    /// Sabah ya da akşamdan yalnız biri yapıldı.
-    case half
-    /// Geçmiş, kapanmamış gün.
-    case gap
-    /// Bugün, henüz kapanmadı.
-    case today
-    case future
-}
-
-nonisolated struct WeekDayViewData: Hashable, Sendable, Identifiable {
-    /// `yyyy-MM-dd`.
+/// Bir check-in'in görünür özeti. `echo`: E6'nın tek cümlesi.
+nonisolated struct CheckInSummary: Identifiable, Equatable, Sendable {
     let id: String
-    /// "Pzt".
-    let weekdayLabel: String
-    let dayNumber: Int
-    let status: WeekDayStatus
-    let isToday: Bool
-    /// `gap` ve 7 gün içinde: dokununca doldurma sheet'i.
-    let canBackfill: Bool
-    /// VoiceOver ve sheet başlığı: "Salı, 22 Eylül".
-    let longLabel: String
-    /// Dünse "Dün", değilse gün adı (doldurma cümlesinde).
-    let relativeLabel: String
-}
-
-// MARK: - Ritüel kartları
-
-nonisolated enum RitualLayout: Hashable, Sendable {
-    case daily, morningEvening
-}
-
-nonisolated struct MoodPillViewData: Hashable, Sendable {
+    let time: Date
+    let slot: RitualSlot
     /// 1–5.
     let score: Int
-    let label: String
-    var emotions: [String] = []
+    let emotions: [EmotionItem]
+    let causes: [String]
+    let echo: String?
 }
 
-nonisolated enum RitualCardState: Hashable, Sendable {
+/// Ritüel modu (Profil › Günlük akış).
+nonisolated enum RitualModeData: String, Hashable, Sendable {
+    /// Günde bir kez: tek kart, Akış 2.
+    case daily
+    /// Sabah ve akşam: iki kart, Akış 3 ve 4.
+    case morningEvening
+}
+
+/// Ritüel kartının durumu (07 §5.1).
+nonisolated enum RitualStatus: Equatable, Sendable {
+    /// Başlık + mono süre + `Başla`.
     case notStarted
+    /// "Devam et · n/m" + ilerleme çizgisi; `step` 1'den.
     case inProgress(step: Int, total: Int)
-    case done(echo: String, mood: MoodPillViewData?, summary: String?)
-    /// Sabah kartı 14:00'ten sonra yapılmadıysa.
+    /// Yankı + MoodPill + tek satır özet (sabah → odak, akşam → "4/5 pratik").
+    case done(CheckInSummary, detail: String?)
+    /// Sabah 14:00 sonrası yapılmadı: sönük + "Yine de yap".
     case missed
+    /// Geçmiş günde kayıt yok ve doldurma penceresi dışında.
+    case empty
 }
 
-nonisolated struct RitualCardViewData: Hashable, Sendable, Identifiable {
+/// Ritüel kartı: yuva başına bir kart (sabah+akşam modunda iki).
+nonisolated struct CheckInCardData: Identifiable, Equatable, Sendable {
+    let slot: RitualSlot
     let flow: FlowKind
-    let title: String
-    /// Mono "2 dk".
-    let durationLabel: String
-    let state: RitualCardState
+    let status: RitualStatus
+    /// Mono süre ("2 dk").
+    let minutes: Int
 
-    var id: String { flow.rawValue }
+    var id: RitualSlot { slot }
+
+    var summary: CheckInSummary? {
+        if case .done(let summary, _) = status { return summary }
+        return nil
+    }
 }
 
-// MARK: - Pratikler ve tema
-
-nonisolated struct PracticeTileViewData: Hashable, Sendable, Identifiable {
+/// "Pratiklerin" ızgarasındaki kısayol. Dokunma bugün için işaretler.
+nonisolated struct PracticeTileData: Identifiable, Equatable, Sendable {
     let id: String
     let title: String
-    let symbol: String
+    let icon: ONE2Icon
+    /// Açılacak içerik (rehberli günlük, ritüel şablonu).
+    let contentID: String
+    let isDoneToday: Bool
 }
 
-nonisolated struct WeeklyThemeViewData: Hashable, Sendable {
+/// Haftalık tema kartı. `day`: 1…7; `unlockedDays`: bugüne dek açılanlar.
+nonisolated struct ThemeCardData: Identifiable, Equatable, Sendable {
+    let id: String
     let name: String
-    /// 1–7.
-    let dayIndex: Int
-    let prompt: String
-    /// Yazıldıysa ilk satır ("Devam et" + önizleme).
-    var writtenFirstLine: String?
+    let day: Int
+    let unlockedDays: Int
+    let promptID: String
+    let question: String
+    let isWritten: Bool
+    /// Yazıldıysa ilk satır ("Devam et" önizlemesi).
+    let firstLine: String?
 }
 
-// MARK: - Ekran
-
-nonisolated struct TodayViewData: Hashable, Sendable {
-    /// `nil`: seri gizli (profil ayarı).
-    var streak: Int?
-    /// 0–23; selamlama ve kart sırası.
-    var hour: Int
-    var week: [WeekDayViewData]
-    var layout: RitualLayout
-    /// Günlük: [daily]. Sabah+akşam: [morning, evening] (sıra `TodayRules.ordered`).
-    var rituals: [RitualCardViewData]
-    var practices: [PracticeTileViewData]
-    var theme: WeeklyThemeViewData?
-    /// Üstte kapatılabilir tek satırlık not (eski Çevre bağlantısı).
-    var notice: String?
+/// Seri (E8). Gizliyken motor saymaya devam eder; hap gösterilmez.
+nonisolated struct StreakData: Equatable, Sendable {
+    let current: Int
+    let longest: Int
+    let isVisible: Bool
+    /// Bugün henüz tamamlanmadı; seri dünden sayılıyor.
+    let isAtRisk: Bool
 }
 
-nonisolated enum TodayViewState: Hashable, Sendable {
-    case loading
-    case loaded(TodayViewData)
+/// Bugün ekranının bir günü.
+nonisolated struct TodayData: Equatable, Sendable {
+    /// Selamlamanın ikinci satırı ve profil yuvarlağının baş harfi.
+    let userName: String?
+    let mode: RitualModeData
+    /// İlk gün: seri hapı yok, hafta şeridinde yalnız bugün.
+    let isFirstDay: Bool
+    let streak: StreakData
+    let resurface: ResurfaceCardData?
+    let checkIns: [CheckInCardData]
+    let practices: [PracticeTileData]
+    let theme: ThemeCardData?
 }
 
-// MARK: - Kurallar
-
-nonisolated enum TodayRules {
-    /// Selamlama: 05–12 günaydın, 12–18 iyi günler, 18–05 iyi akşamlar.
-    static func greeting(hour: Int) -> String {
-        switch hour {
-        case 5..<12:  return NSLocalizedString("one2.greeting.morning", comment: "Greeting 05-12")
-        case 12..<18: return NSLocalizedString("one2.greeting.day", comment: "Greeting 12-18")
-        default:      return NSLocalizedString("one2.greeting.evening", comment: "Greeting 18-05")
+extension FlowKind {
+    /// Akışın ve ritüel kartının başlığı.
+    var title: String {
+        switch self {
+        case .moodCheckIn:  return one2String("one2.flow.moodCheckIn")
+        case .dailyCheckIn: return one2String("one2.flow.dailyCheckIn")
+        case .morning:      return one2String("one2.flow.morning")
+        case .evening:      return one2String("one2.flow.evening")
         }
     }
-
-    /// Sabah+akşam: 05–14 sabah önde, sonrası akşam önde.
-    static func ordered(_ cards: [RitualCardViewData], hour: Int) -> [RitualCardViewData] {
-        let morningFirst = (5..<14).contains(hour)
-        return cards.sorted { a, b in
-            let rank = { (c: RitualCardViewData) -> Int in c.flow == .morning ? (morningFirst ? 0 : 1) : (morningFirst ? 1 : 0) }
-            return rank(a) < rank(b)
-        }
-    }
-
-    /// Sabah 14:00'ten sonra başlamadıysa kaçırıldı.
-    static func morningState(_ state: RitualCardState, hour: Int) -> RitualCardState {
-        state == .notStarted && hour >= 14 ? .missed : state
-    }
-
-    /// Geriye dönük doldurma penceresi (gün).
-    static let backfillDays = 7
 }

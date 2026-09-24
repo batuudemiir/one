@@ -35,17 +35,21 @@ struct DeepLinkTests {
 
     @Test("v3 widget linki bugün + check-in açar")
     func widgetLink() {
-        #expect(dest("ones://today") == .init(tab: .today, sheet: .checkIn))
-        #expect(dest("ones://checkin") == .init(tab: .today, sheet: .checkIn))
+        #expect(dest("ones://today") == .init(tab: .today, cover: .flow(.moodCheckIn, day: nil)))
+        #expect(dest("ones://checkin") == .init(tab: .today, cover: .flow(.moodCheckIn, day: nil)))
     }
 
     @Test("v3 sekme linkleri yeni karşılıklarına düşer")
     func v3Tabs() {
-        #expect(dest("ones://entry") == .init(tab: .today, path: [.newEntry(prompt: nil)]))
+        #expect(dest("ones://entry") == .init(tab: .today, cover: .journalEditor(.blank)))
         #expect(dest("ones://archive") == .init(tab: .journey))
-        #expect(dest("ones://echo") == .init(tab: .journey, path: [.insights]))
-        #expect(dest("ones://profile") == .init(tab: .profile))
-        #expect(dest("ones://quotes") == .init(tab: .quotes))
+        #expect(dest("ones://echo") == .init(tab: .insights))
+        #expect(dest("ones://insights") == .init(tab: .insights))
+    }
+
+    @Test("Profil Bugün sekmesinde profil ekranını açar")
+    func profile() {
+        #expect(dest("ones://profile") == .init(tab: .today, path: [.profile]))
     }
 
     @Test("Çevre ve davet linkleri bilgi notuyla bugüne düşer")
@@ -59,16 +63,21 @@ struct DeepLinkTests {
     @Test("Yeni linkler: prompt'lu girdi, tema, paywall")
     func newLinks() {
         #expect(dest("ones://journal/new?prompt=theme:2026-w40:d3")
-                == .init(tab: .today, path: [.newEntry(prompt: "theme:2026-w40:d3")]))
-        #expect(dest("ones://journal/new?prompt=") == .init(tab: .today, path: [.newEntry(prompt: nil)]))
+                == .init(tab: .today, cover: .journalEditor(.prompt("theme:2026-w40:d3"))))
+        #expect(dest("ones://journal/new?prompt=") == .init(tab: .today, cover: .journalEditor(.blank)))
+        #expect(dest("ones://journal") == .init(tab: .today))
         #expect(dest("ones://theme/2026-w40") == .init(tab: .explore, path: [.theme("2026-w40")]))
         #expect(dest("ones://theme") == .init(tab: .explore))
-        #expect(dest("ones://paywall") == .init(tab: .profile, sheet: .paywall))
+    }
+
+    @Test("Paywall sekmeyi değiştirmeden sheet açar")
+    func paywall() {
+        #expect(dest("ones://paywall") == .init(tab: nil, sheet: .paywall(source: DeepLink.paywallSource)))
     }
 
     @Test("Universal link: mood etkinliği check-in açar")
     func universalMood() {
-        #expect(dest("https://one.forvibe.app/event/mood") == .init(tab: .today, sheet: .checkIn))
+        #expect(dest("https://one.forvibe.app/event/mood") == .init(tab: .today, cover: .flow(.moodCheckIn, day: nil)))
     }
 
     @Test("Tanınmayanlar ve Spotify dönüşü nil")
@@ -81,31 +90,59 @@ struct DeepLinkTests {
 
     @Test("Şema ve host büyük/küçük harf duyarsız")
     func caseInsensitive() {
-        #expect(dest("ONES://Today") == .init(tab: .today, sheet: .checkIn))
+        #expect(dest("ONES://Today") == .init(tab: .today, cover: .flow(.moodCheckIn, day: nil)))
     }
 }
 
 @MainActor
 struct RouterTests {
 
-    @Test("Link sekmeyi seçer, yığını değiştirir, sheet'i açar")
+    @Test("Beş sekme, README sırasıyla")
+    func tabs() {
+        #expect(ONE2Tab.allCases == [.today, .quotes, .explore, .journey, .insights])
+    }
+
+    @Test("Link sekmeyi seçer, yığını değiştirir, tam ekran akışı açar")
     func handleOpens() {
         let router = Router()
-        router.push(.insights, on: .journey)
+        router.push(.dayDetail(DayKey("2026-09-23")!), on: .journey)
         #expect(router.handle(URL(string: "ones://theme/w40")!))
         #expect(router.tab == .explore)
         #expect(router.path(for: .explore) == [.theme("w40")])
-        #expect(router.path(for: .journey) == [.insights]) // diğer sekmenin yığını korunur
+        #expect(router.path(for: .journey) == [.dayDetail(DayKey("2026-09-23")!)]) // diğer sekmenin yığını korunur
         router.handle(URL(string: "ones://today")!)
-        #expect(router.sheet == .checkIn)
+        #expect(router.cover == .flow(.moodCheckIn, day: nil))
+        #expect(router.sheet == nil)
+    }
+
+    @Test("Paywall linki sekmeyi ve yığını korur")
+    func paywallKeepsTab() {
+        let router = Router()
+        router.push(.settings, on: .journey)
+        router.handle(URL(string: "ones://paywall")!)
+        #expect(router.tab == .journey)
+        #expect(router.path(for: .journey) == [.settings])
+        #expect(router.sheet == .paywall(source: DeepLink.paywallSource))
+    }
+
+    @Test("pop yalnız verilen sekmenin yığınından çıkarır")
+    func pop() {
+        let router = Router()
+        router.push(.profile, on: .today)
+        router.push(.settings, on: .today)
+        router.pop(on: .today)
+        #expect(router.path(for: .today) == [.profile])
+        router.pop(on: .today)
+        router.pop(on: .today)
+        #expect(router.path(for: .today).isEmpty)
     }
 
     @Test("Tanınmayan link durumu değiştirmez")
     func unknownIsNoop() {
         let router = Router()
-        router.tab = .profile
+        router.tab = .insights
         #expect(!router.handle(URL(string: "ones://spotify-callback")!))
-        #expect(router.tab == .profile)
+        #expect(router.tab == .insights)
     }
 
     @Test("Bilgi notu bir linkle gelir, kapatılana dek kalır")

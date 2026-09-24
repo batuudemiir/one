@@ -1,0 +1,198 @@
+/* ONE 2.0 UI strings (table: ONE2). Placeholder English; other languages before relaunch. */
+
+"one2.score.1" = "Very hard";
+"one2.score.2" = "Hard";
+"one2.score.3" = "Getting by";
+"one2.score.3.compact" = "Okay";
+"one2.score.4" = "Good";
+"one2.score.5" = "Very good";
+
+"one2.emotion.family.nese" = "Joy";
+"one2.emotion.family.huzur" = "Calm";
+"one2.emotion.family.enerji" = "Energy";
+"one2.emotion.family.sevgi" = "Love";
+"one2.emotion.family.kaygi" = "Anxiety";
+"one2.emotion.family.huzun" = "Sadness";
+"one2.emotion.family.ofke" = "Anger";
+"one2.emotion.family.yorgun" = "Tiredness";
+
+"one2.section.seeAll" = "See all";
+
+"one2.state.loading" = "Loading";
+"one2.state.offline" = "You're offline. Your writing stays on this device.";
+"one2.action.retry" = "Try again";
+
+"one2.tab.today" = "Today";
+"one2.tab.quotes" = "Quotes";
+"one2.tab.explore" = "Explore";
+"one2.tab.journey" = "Journey";
+"one2.tab.insights" = "Trends";
+
+"one2.screen.explore" = "explore";
+"one2.screen.journey" = "journey";
+"one2.screen.insights" = "trends";
+
+"one2.greeting.morning" = "good morning";
+"one2.greeting.day" = "good afternoon";
+"one2.greeting.evening" = "good evening";
+
+"one2.weekday.short.1" = "Mon";
+"one2.weekday.short.2" = "Tue";
+"one2.weekday.short.3" = "Wed";
+"one2.weekday.short.4" = "Thu";
+"one2.weekday.short.5" = "Fri";
+"one2.weekday.short.6" = "Sat";
+"one2.weekday.short.7" = "Sun";
+
+"one2.today.practices" = "Your practices";
+"one2.today.weeklyTheme" = "Weekly theme";
+"one2.quotes.mode.forYou" = "For you";
+"one2.journey.period.days" = "Days";
+"one2.insights.period.days14" = "14 days";
+"one2.insights.general" = "overview";
+
+"one2.action.profile" = "Profile";
+"one2.action.search" = "Search";
+"one2.action.filter" = "Filter";
+"one2.action.background" = "Background";
+"one2.action.play" = "Play";
+"one2.action.add" = "New entry";
+"one2.action.close" = "Close";
+"one2.action.back" = "Back";
+
+"one2.plus.blank" = "Blank page";
+"one2.plus.blank.detail" = "No prompt, just you and the page.";
+"one2.plus.checkIn" = "Mood check-in";
+"one2.plus.checkIn.detail" = "How are you right now, in one tap.";
+"one2.plus.prompt" = "Daily prompt";
+"one2.plus.prompt.detail" = "One question for today.";
+"one2.plus.templates" = "Templates";
+"one2.plus.templates.detail" = "Morning, evening and guided flows.";
+"one2.plus.library" = "Library";
+"one2.plus.library.detail" = "Journals and quotes you saved.";
+
+"one2.route.profile" = "profile";
+"one2.route.settings" = "settings";
+"one2.route.themeList" = "weekly themes";
+"one2.route.templates" = "templates";
+"one2.route.library" = "library";
+"one2.route.theme" = "theme";
+"one2.route.content" = "content";
+"one2.route.day" = "day";
+"one2.route.entry" = "entry";
+"one2.route.journal" = "write";
+"one2.route.quoteReflection" = "write on a quote";
+"one2.route.paywall" = "%@";
+
+"one2.notice.circleUnavailable" = "Circle isn't part of this version.";
+"one2.debug.useV3" = "Switch to the old interface";
+"one2.debug.restart" = "Takes effect after restarting the app.";
+
+/* Today (UX-4) */
+"one2.weekday.long.1" = "Monday";
+"one2.weekday.long.2" = "Tuesday";
+"one2.weekday.long.3" = "Wednesday";
+"one2.weekday.long.4" = "Thursday";
+"one2.weekday.long.5" = "Friday";
+"one2.weekday.long.6" = "Saturday";
+"one2.weekday.long.7" = "Sunday";
+"one2.today.week.a11y" = "Week";
+"one2.today.week.today" = "today";
+"one2.today.week.done" = "done";
+"one2.today.week.half" = "half";
+"one2.today.week.gap" = "empty";
+"one2.today.streak.a11y" = "%d-day streak";
+"one2.today.backToToday" = "Back to today";
+"one2.today.practice.add" = "Add";
+"one2.today.practice.moveFirst" = "Move to start";
+"one2.today.practice.moveLast" = "Move to end";
+"one2.today.practice.remove" = "Remove";
+"one2.today.theme.label" = "Weekly theme · Day %d/%d";
+"one2.today.theme.days.a11y" = "%d of %d days open";
+"one2.today.theme.write" = "Write";
+"one2.today.theme.continue" = "Continue";
+"one2.today.backfill.yesterday" = "Yesterday stayed empty.";
+"one2.today.backfill.day" = "%@ stayed empty.";
+"one2.today.backfill.body" = "You can fill it in now if you like.";
+"one2.today.error.title" = "Couldn't load.";
+"one2.today.error.message" = "Try again in a few seconds.";
+
+/* Bugün (UX-4, 07 §5.1, §5.11) */
+"one2.flow.moodCheckIn" = "Mood check-in";
+"one2.flow.dailyCheckIn" = "Daily check-in";
+"one2.flow.morning" = "Morning prep";
+"one2.flow.evening" = "Evening review";
+"one2.today.ritual.start" = "Start";
+"one2.today.ritual.resume" = "Continue · %d/%d";
+"one2.today.ritual.anyway" = "Do it anyway";
+"one2.today.ritual.empty" = "Nothing recorded for this day.";
+"one2.today.ritual.minutes" = "%d min";
+"one2.today.practice.done" = "done today";
+"one2.today.streak.unit" = "days";
+"one2.resurface.yearAgo" = "One year ago today";
+"one2.resurface.daysAgo" = "%d days ago";
+"one2.resurface.hide" = "Hide for today";
+"one2.resurface.rewrite" = "Write again";
+"one2.resurface.read" = "Read";
+"one2.today.backfill.checkIn" = "Check in";
+"one2.today.backfill.write" = "Write";
+
+/* Giriş akışları ve mühür (UX-5, 07 §5.2, §5.5) */
+"one2.flow.q.nowFeeling" = "How are you right now?";
+"one2.flow.q.todayFeeling" = "How are you today?";
+"one2.flow.q.startingDay" = "How are you starting the day?";
+"one2.flow.q.dayWas" = "How was your day?";
+"one2.flow.q.emotions" = "Which feelings?";
+"one2.flow.q.causes" = "What's affecting you?";
+"one2.flow.q.anythingElse" = "Anything you'd like to add?";
+"one2.flow.q.anythingElseShort" = "Anything to add?";
+"one2.flow.q.sleep" = "How did you sleep?";
+"one2.flow.q.focus" = "What are you focusing on today?";
+"one2.flow.q.intention" = "This morning you said '%@'. How did it go?";
+"one2.flow.q.practices" = "Today's practices";
+"one2.flow.label.note" = "Note";
+"one2.flow.label.dailyQuestion" = "Today's question";
+"one2.flow.label.gratitude" = "Gratitude";
+"one2.flow.label.quote" = "Today's quote";
+"one2.flow.label.topThree" = "Today's three things";
+"one2.flow.label.challenge" = "Challenge";
+"one2.flow.label.goodThing" = "What went well";
+"one2.flow.label.different" = "If you could redo it";
+"one2.flow.causes.add" = "+ Add";
+"one2.flow.causes.placeholder" = "Type a tag";
+"one2.flow.focus.calm" = "Calm";
+"one2.flow.focus.patience" = "Patience";
+"one2.flow.focus.discipline" = "Discipline";
+"one2.flow.focus.courage" = "Courage";
+"one2.flow.focus.kindness" = "Kindness";
+"one2.flow.focus.gratitude" = "Gratitude";
+"one2.flow.focus.focus" = "Focus";
+"one2.flow.focus.selfCare" = "Be kind to yourself";
+"one2.flow.focus.custom" = "+ Your own word";
+"one2.flow.focus.placeholder" = "Your own word";
+"one2.flow.sleep.1" = "Very poorly";
+"one2.flow.sleep.2" = "Poorly";
+"one2.flow.sleep.3" = "Okay";
+"one2.flow.sleep.4" = "Well";
+"one2.flow.sleep.5" = "Very well";
+"one2.flow.sleep.addHours" = "Add hours";
+"one2.flow.sleep.hours" = "%@ h";
+"one2.flow.sleep.less" = "Less";
+"one2.flow.sleep.more" = "More";
+"one2.flow.intention.kept" = "Kept it";
+"one2.flow.intention.partly" = "Partly";
+"one2.flow.intention.notKept" = "Didn't";
+"one2.flow.previous" = "Last time you wrote:";
+"one2.flow.placeholder" = "Write…";
+"one2.flow.skip" = "Skip";
+"one2.flow.continue" = "Continue";
+"one2.flow.done" = "Done";
+"one2.flow.previousStep" = "Previous step";
+"one2.flow.progress.a11y" = "Step %d of %d";
+"one2.flow.carry.question" = "Carry these to tomorrow?";
+"one2.flow.carry.carry" = "Carry";
+"one2.flow.carry.drop" = "Let go";
+"one2.seal.dayClosed" = "day closed.";
+"one2.seal.dayReady" = "day's ready.";
+"one2.seal.entrySaved" = "your writing is saved.";
+"one2.seal.firstDay" = "Today began.";

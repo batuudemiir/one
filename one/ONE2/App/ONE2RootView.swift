@@ -2,11 +2,11 @@
 //  ONE2RootView.swift
 //  ONE 2.0
 //
-//  ONE 2.0 kabuğu (ADR-001 §3, §4): sekme başına `NavigationStack`, gezinme
-//  `Router`'da, bağımlılıklar `AppEnvironment`'ta. Ekranlar henüz yer
-//  tutucu; her biri ekran spesifikasyonuyla (03_ekran_spesifikasyonu.md)
-//  gerçek içeriğine kavuşacak. Başlıkları sistem çubuğu değil v3 kabukları
-//  çiziyor (CLAUDE.md).
+//  ONE 2.0 kabuğu (ADR-001 §3, §4; ADR-002): sekme başına `NavigationStack`,
+//  gezinme `Router`'da, bağımlılıklar `AppEnvironment`'ta. Sistem tab bar'ı
+//  gizli; alta yüzen cam dock (5 sekme + + hapı). İçerik dock'un altından
+//  kayar, ekranlar dock yüksekliği kadar alt boşluk bırakır
+//  (`one2DockInset`). Yığına ekran itilince dock gizlenir.
 //
 
 import SwiftUI
@@ -15,175 +15,182 @@ struct ONE2RootView: View {
     @Bindable var router: Router
     let environment: AppEnvironment
 
+    @State private var dockHeight: CGFloat = 0
+    /// Kabuk oturumundaki akış taslakları ve bitişleri (UX-11'de motorda).
+    @State private var flowDrafts: [FlowKind: FlowDraftData] = [:]
+    @State private var finishedFlows: [FlowKind: FlowSession] = [:]
+    /// Açılış check-in'i bu süreçte bir kez denenir (günün ilk açılışı motordan).
+    @State private var didCheckLaunch = false
+    /// + sayfası kapanınca açılacak hedef (sheet ile cover aynı anda sunulmaz).
+    @State private var pendingPlus: PlusAction?
+
+    private var showsDock: Bool { router.path(for: router.tab).isEmpty }
+
     var body: some View {
         TabView(selection: $router.tab) {
             ForEach(ONE2Tab.allCases, id: \.self) { tab in
                 NavigationStack(path: pathBinding(for: tab)) {
-                    ONE2TabRoot(tab: tab)
-                        .navigationDestination(for: Route.self) { ONE2RouteView(route: $0) }
+                    tabRoot(tab)
+                        .navigationDestination(for: Route.self) { routeScreen($0, on: tab) }
                         .toolbar(.hidden, for: .navigationBar)
                 }
-                .tabItem { Label(tab.title, systemImage: tab.symbol) }
+                .toolbar(.hidden, for: .tabBar)
                 .tag(tab)
             }
         }
-        .tint(V3Tokens.ink)
-        .sheet(item: $router.sheet) { ONE2SheetPlaceholder(sheet: $0) }
+        .environment(\.one2DockInset, showsDock ? dockHeight : 0)
+        .overlay(alignment: .bottom) {
+            if showsDock {
+                ONE2Dock(
+                    items: ONE2Tab.allCases.map { ONE2TabBarItem(tab: $0, title: $0.title, icon: $0.icon) },
+                    selection: $router.tab,
+                    addLabel: one2String("one2.action.add"),
+                    onAdd: { router.sheet = .plusMenu }
+                )
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { dockHeight = $0 }
+                .ignoresSafeArea(.container, edges: .bottom)
+                .ignoresSafeArea(.keyboard)
+            }
+        }
+        .sheet(item: $router.sheet, onDismiss: runPendingPlus) { sheetScreen($0) }
+        .fullScreenCover(item: $router.cover) { coverScreen($0) }
+        .tint(ONE2Color.ink)
         .environment(\.one2, environment)
         .environment(router)
+        .task { await openLaunchCheckInIfNeeded() }
     }
+
+    /// Bağlantının açılışı yakalaması için kısa bir bekleme; sonra 07 §5.2 kuralı.
+    private func openLaunchCheckInIfNeeded() async {
+        guard !didCheckLaunch else { return }
+        didCheckLaunch = true
+        try? await Task.sleep(for: .milliseconds(Self.launchCheckInDelayMS))
+        let hour = environment.clock.calendar.component(.hour, from: environment.clock.now)
+        let open = LaunchCheckIn.shouldOpen(
+            isEnabled: TodayFixture.launchCheckInEnabled,
+            isFirstOpenToday: true,
+            openedViaLink: router.openedFromLink,
+            mode: TodayFixture.notStarted.mode,
+            hour: hour
+        )
+        guard open, router.cover == nil, router.sheet == nil else { return }
+        router.cover = .flow(.moodCheckIn, day: nil)
+    }
+
+    static let launchCheckInDelayMS = 600
 
     private func pathBinding(for tab: ONE2Tab) -> Binding<[Route]> {
         Binding(get: { router.path(for: tab) }, set: { router.setPath($0, for: tab) })
     }
+
+    // MARK: - Ekranlar
+
+    @ViewBuilder
+    private func tabRoot(_ tab: ONE2Tab) -> some View {
+        switch tab {
+        case .today:    TodayScreen(clock: environment.clock, source: TodayFixture.app(drafts: flowDrafts, finished: finishedFlows))
+        case .quotes:   QuotesScreen()
+        case .explore:  ExploreScreen()
+        case .journey:  JourneyScreen()
+        case .insights: InsightsScreen()
+        }
+    }
+
+    @ViewBuilder
+    private func routeScreen(_ route: Route, on tab: ONE2Tab) -> some View {
+        switch route {
+        case .profile:
+            ProfileScreen { router.pop(on: tab) }
+        default:
+            RoutePlaceholderScreen(title: route.title) { router.pop(on: tab) }
+        }
+    }
+
+    @ViewBuilder
+    private func sheetScreen(_ sheet: SheetRoute) -> some View {
+        switch sheet {
+        case .plusMenu:
+            PlusSheet { action in
+                pendingPlus = action
+                router.sheet = nil
+            }
+        case .paywall:
+            CoverPlaceholderScreen(title: String(format: one2String("one2.route.paywall"), AppBrand.plusName)) { router.sheet = nil }
+                .presentationCornerRadius(ONE2Radius.xl)
+        }
+    }
+
+    @ViewBuilder
+    private func coverScreen(_ cover: CoverRoute) -> some View {
+        switch cover {
+        case .flow(let kind, let day):
+            // Geri doldurmada taslak kullanılmaz; taslaklar yalnız bugüne ait.
+            FlowScreen(
+                flow: FlowFixture.flow(kind, day: day ?? FixtureClock.today, draft: day == nil ? flowDrafts[kind] : nil),
+                onDraft: { draft in if day == nil { flowDrafts[kind] = draft } },
+                onFinish: { session in
+                    guard day == nil else { return }
+                    flowDrafts[kind] = nil
+                    finishedFlows[kind] = session
+                },
+                onClose: { router.cover = nil }
+            )
+        default:
+            CoverPlaceholderScreen(title: cover.title) { router.cover = nil }
+        }
+    }
+
+    private func runPendingPlus() {
+        guard let action = pendingPlus else { return }
+        pendingPlus = nil
+        switch action {
+        case .blank:       router.cover = .journalEditor(.blank)
+        case .checkIn:     router.cover = .flow(.moodCheckIn, day: nil)
+        case .dailyPrompt: router.cover = .journalEditor(.prompt(TodayFixture.freePromptID))
+        case .templates:   router.push(.templates)
+        case .library:     router.push(.library)
+        }
+    }
 }
 
-// MARK: - Sekme
+// MARK: - Başlık ve ikonlar
 
 extension ONE2Tab {
+    var title: String { one2String("one2.tab.\(rawValue)") }
+
+    var icon: ONE2Icon {
+        switch self {
+        case .today:    return .today
+        case .quotes:   return .quotes
+        case .explore:  return .explore
+        case .journey:  return .journey
+        case .insights: return .insights
+        }
+    }
+}
+
+extension Route {
     var title: String {
         switch self {
-        case .today:   return NSLocalizedString("one2.tab.today", comment: "ONE 2.0 tab")
-        case .quotes:  return NSLocalizedString("one2.tab.quotes", comment: "ONE 2.0 tab")
-        case .journey: return NSLocalizedString("one2.tab.journey", comment: "ONE 2.0 tab")
-        case .explore: return NSLocalizedString("one2.tab.explore", comment: "ONE 2.0 tab")
-        case .profile: return NSLocalizedString("one2.tab.profile", comment: "ONE 2.0 tab")
-        }
-    }
-
-    var symbol: String {
-        switch self {
-        case .today:   return "sun.max"
-        case .quotes:  return "quote.opening"
-        case .journey: return "book.closed"
-        case .explore: return "sparkles"
-        case .profile: return "person.crop.circle"
+        case .profile:       return one2String("one2.route.profile")
+        case .settings:      return one2String("one2.route.settings")
+        case .themeList:     return one2String("one2.route.themeList")
+        case .templates:     return one2String("one2.route.templates")
+        case .library:       return one2String("one2.route.library")
+        case .theme:         return one2String("one2.route.theme")
+        case .contentDetail: return one2String("one2.route.content")
+        case .dayDetail:     return one2String("one2.route.day")
+        case .entry:         return one2String("one2.route.entry")
         }
     }
 }
 
-extension SheetRoute {
+extension CoverRoute {
     var title: String {
         switch self {
-        case .checkIn: return NSLocalizedString("one2.sheet.checkIn", comment: "ONE 2.0 mood check-in sheet")
-        case .paywall: return NSLocalizedString("one2.sheet.paywall", comment: "ONE 2.0 paywall sheet")
-        }
-    }
-}
-
-// MARK: - Yer tutucular
-
-private struct ONE2TabRoot: View {
-    let tab: ONE2Tab
-
-    var body: some View {
-        switch tab {
-        case .today:  TodayScreen()
-        case .quotes: QuotesScreen()
-        default:      placeholder
-        }
-    }
-
-    private var placeholder: some View {
-        VStack(spacing: 0) {
-            V3TopBar(style: .root, title: tab.title)
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
-                    Text(NSLocalizedString("one2.placeholder.body", comment: "ONE 2.0 placeholder"))
-                        .bodyMD()
-                        .foregroundColor(V3Tokens.mutedText)
-                    if tab == .profile, ONE2Flag.canOverride {
-                        ShellSwitchRow()
-                    }
-                }
-                .padding(.top, V3Tokens.spacingLG)
-                .oneScreenBody()
-            }
-        }
-        .oneScreenGround()
-    }
-}
-
-/// Rota → ekran. Ekranı henüz olmayan rotalar yer tutucuda.
-private struct ONE2RouteView: View {
-    let route: Route
-
-    var body: some View {
-        switch route {
-        case .quoteReflection(let id): QuoteReflectionScreen(quoteID: id)
-        case .entry(let id):           EntryDetailScreen(entryID: id)
-        case .newEntry(let prompt):    JournalWriteScreen(ref: prompt)
-        default:                       ONE2RoutePlaceholder(route: route)
-        }
-    }
-}
-
-private struct ONE2RoutePlaceholder: View {
-    let route: Route
-    @Environment(Router.self) private var router
-
-    var body: some View {
-        SubScreen(title: title, onBack: popOne) {
-            Text(NSLocalizedString("one2.placeholder.body", comment: "ONE 2.0 placeholder"))
-                .bodyMD()
-                .foregroundColor(V3Tokens.mutedText)
-        }
-        .toolbar(.hidden, for: .navigationBar)
-    }
-
-    private var title: String {
-        switch route {
-        case .newEntry, .entry: return ONE2Tab.today.title
-        case .theme:            return ONE2Tab.explore.title
-        case .insights:         return ONE2Tab.journey.title
-        case .quoteReflection:  return ONE2Tab.quotes.title
-        }
-    }
-
-    private func popOne() {
-        var path = router.path(for: router.tab)
-        guard !path.isEmpty else { return }
-        path.removeLast()
-        router.setPath(path, for: router.tab)
-    }
-}
-
-private struct ONE2SheetPlaceholder: View {
-    let sheet: SheetRoute
-    @Environment(Router.self) private var router
-
-    var body: some View {
-        V3SheetScreen(title: sheet.title, onClose: { router.sheet = nil }) {
-            Text(NSLocalizedString("one2.placeholder.body", comment: "ONE 2.0 placeholder"))
-                .bodyMD()
-                .foregroundColor(V3Tokens.mutedText)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-}
-
-/// Yalnız geliştirme ve TestFlight: bir sonraki açılışta v3 kabuğuna dön.
-private struct ShellSwitchRow: View {
-    @State private var didSwitch = false
-    @State private var showUXPreview = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
-            V3OutlineButton(title: NSLocalizedString("one2.debug.uxPreview", comment: "Debug: new Today preview")) {
-                showUXPreview = true
-            }
-            V3OutlineButton(title: NSLocalizedString("one2.debug.useV3", comment: "Switch back to the v3 interface on next launch")) {
-                ONE2Flag.setOverride(false)
-                didSwitch = true
-            }
-            if didSwitch {
-                Text(NSLocalizedString("one2.debug.restart", comment: "Restart required"))
-                    .bodySM()
-                    .foregroundColor(V3Tokens.mutedText)
-            }
-        }
-        .sheet(isPresented: $showUXPreview) {
-            UXPreviewSheet(onClose: { showUXPreview = false })
+        case .flow(let kind, _): return kind.title
+        case .journalEditor:   return one2String("one2.route.journal")
+        case .quoteReflection: return one2String("one2.route.quoteReflection")
         }
     }
 }

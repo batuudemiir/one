@@ -1,0 +1,211 @@
+/* ONE 2.0 arayüz dizeleri (tablo: ONE2). Yalnız tr + en; diğer diller relaunch öncesi. */
+
+/* Mood skoru 1–5 */
+"one2.score.1" = "Çok zor";
+"one2.score.2" = "Zor";
+"one2.score.3" = "İdare eder";
+"one2.score.3.compact" = "İdare";
+"one2.score.4" = "İyi";
+"one2.score.5" = "Çok iyi";
+
+/* Duygu aileleri */
+"one2.emotion.family.nese" = "Neşe";
+"one2.emotion.family.huzur" = "Huzur";
+"one2.emotion.family.enerji" = "Enerji";
+"one2.emotion.family.sevgi" = "Sevgi";
+"one2.emotion.family.kaygi" = "Kaygı";
+"one2.emotion.family.huzun" = "Hüzün";
+"one2.emotion.family.ofke" = "Öfke";
+"one2.emotion.family.yorgun" = "Yorgunluk";
+
+/* Bölüm başlığı */
+"one2.section.seeAll" = "Tümünü gör";
+
+/* Durumlar */
+"one2.state.loading" = "Yükleniyor";
+"one2.state.offline" = "Çevrimdışısın. Yazdıkların cihazında duruyor.";
+"one2.action.retry" = "Tekrar dene";
+
+/* Sekmeler */
+"one2.tab.today" = "Bugün";
+"one2.tab.quotes" = "Sözler";
+"one2.tab.explore" = "Keşfet";
+"one2.tab.journey" = "Yolculuk";
+"one2.tab.insights" = "Eğilimler";
+
+/* Sekme başlıkları: küçük harf, noktasız */
+"one2.screen.explore" = "keşfet";
+"one2.screen.journey" = "yolculuk";
+"one2.screen.insights" = "eğilimler";
+
+/* Selamlama */
+"one2.greeting.morning" = "günaydın";
+"one2.greeting.day" = "iyi günler";
+"one2.greeting.evening" = "iyi akşamlar";
+
+/* Hafta şeridi: gün kısaltmaları (1 = pazartesi) */
+"one2.weekday.short.1" = "Pzt";
+"one2.weekday.short.2" = "Sal";
+"one2.weekday.short.3" = "Çar";
+"one2.weekday.short.4" = "Per";
+"one2.weekday.short.5" = "Cum";
+"one2.weekday.short.6" = "Cmt";
+"one2.weekday.short.7" = "Paz";
+
+/* Bölümler ve haplar */
+"one2.today.practices" = "Pratiklerin";
+"one2.today.weeklyTheme" = "Haftalık tema";
+"one2.quotes.mode.forYou" = "Sana özel";
+"one2.journey.period.days" = "Günler";
+"one2.insights.period.days14" = "14 gün";
+"one2.insights.general" = "genel içgörüler";
+
+/* Eylem etiketleri */
+"one2.action.profile" = "Profil";
+"one2.action.search" = "Ara";
+"one2.action.filter" = "Filtrele";
+"one2.action.background" = "Arka plan";
+"one2.action.play" = "Oynat";
+"one2.action.add" = "Yeni girdi";
+"one2.action.close" = "Kapat";
+"one2.action.back" = "Geri";
+
+/* + sayfası */
+"one2.plus.blank" = "Boş sayfa";
+"one2.plus.blank.detail" = "Soru yok, yalnız sen ve sayfa.";
+"one2.plus.checkIn" = "Mood check-in";
+"one2.plus.checkIn.detail" = "Şu an nasılsın, bir dokunuşla.";
+"one2.plus.prompt" = "Günlük önerisi";
+"one2.plus.prompt.detail" = "Bugün için tek bir soru.";
+"one2.plus.templates" = "Şablonlar";
+"one2.plus.templates.detail" = "Sabah, akşam ve rehberli akışlar.";
+"one2.plus.library" = "Kütüphane";
+"one2.plus.library.detail" = "Kaydettiğin günlükler ve sözler.";
+
+/* Hedef ekran başlıkları (henüz boş) */
+"one2.route.profile" = "profil";
+"one2.route.settings" = "ayarlar";
+"one2.route.themeList" = "haftalık temalar";
+"one2.route.templates" = "şablonlar";
+"one2.route.library" = "kütüphane";
+"one2.route.theme" = "tema";
+"one2.route.content" = "içerik";
+"one2.route.day" = "gün";
+"one2.route.entry" = "girdi";
+"one2.route.journal" = "yaz";
+"one2.route.quoteReflection" = "söze yaz";
+"one2.route.paywall" = "%@";
+
+/* Bilgi ve geliştirici */
+"one2.notice.circleUnavailable" = "Çevre bu sürümde yok.";
+"one2.debug.useV3" = "Eski arayüze dön";
+"one2.debug.restart" = "Uygulamayı yeniden başlatınca geçerli olur.";
+
+/* Bugün (UX-4) */
+"one2.weekday.long.1" = "Pazartesi";
+"one2.weekday.long.2" = "Salı";
+"one2.weekday.long.3" = "Çarşamba";
+"one2.weekday.long.4" = "Perşembe";
+"one2.weekday.long.5" = "Cuma";
+"one2.weekday.long.6" = "Cumartesi";
+"one2.weekday.long.7" = "Pazar";
+"one2.today.week.a11y" = "Hafta";
+"one2.today.week.today" = "bugün";
+"one2.today.week.done" = "tamamlandı";
+"one2.today.week.half" = "yarım";
+"one2.today.week.gap" = "boş";
+"one2.today.streak.a11y" = "%d günlük seri";
+"one2.today.backToToday" = "Bugüne dön";
+"one2.today.practice.add" = "Ekle";
+"one2.today.practice.moveFirst" = "Başa al";
+"one2.today.practice.moveLast" = "Sona al";
+"one2.today.practice.remove" = "Kaldır";
+"one2.today.theme.label" = "Haftalık tema · Gün %d/%d";
+"one2.today.theme.days.a11y" = "%d/%d gün açıldı";
+"one2.today.theme.write" = "Yaz";
+"one2.today.theme.continue" = "Devam et";
+"one2.today.backfill.yesterday" = "Dün boş kaldı.";
+"one2.today.backfill.day" = "%@ boş kaldı.";
+"one2.today.backfill.body" = "İstersen şimdi doldurabilirsin.";
+"one2.today.error.title" = "Yüklenemedi.";
+"one2.today.error.message" = "Birkaç saniye sonra tekrar dene.";
+
+/* Bugün (UX-4, 07 §5.1, §5.11) */
+"one2.flow.moodCheckIn" = "Mood check-in";
+"one2.flow.dailyCheckIn" = "Günlük check-in";
+"one2.flow.morning" = "Sabah hazırlığı";
+"one2.flow.evening" = "Akşam değerlendirmesi";
+"one2.today.ritual.start" = "Başla";
+"one2.today.ritual.resume" = "Devam et · %d/%d";
+"one2.today.ritual.anyway" = "Yine de yap";
+"one2.today.ritual.empty" = "Bu güne kayıt yok.";
+"one2.today.ritual.minutes" = "%d dk";
+"one2.today.practice.done" = "bugün yapıldı";
+"one2.today.streak.unit" = "gün";
+"one2.resurface.yearAgo" = "Bir yıl önce bugün";
+"one2.resurface.daysAgo" = "%d gün önce";
+"one2.resurface.hide" = "Bugün için gizle";
+"one2.resurface.rewrite" = "Tekrar yaz";
+"one2.resurface.read" = "Oku";
+"one2.today.backfill.checkIn" = "Check-in yap";
+"one2.today.backfill.write" = "Yaz";
+
+/* Giriş akışları ve mühür (UX-5, 07 §5.2, §5.5) */
+"one2.flow.q.nowFeeling" = "Şu an nasılsın?";
+"one2.flow.q.todayFeeling" = "Bugün nasılsın?";
+"one2.flow.q.startingDay" = "Güne nasıl başlıyorsun?";
+"one2.flow.q.dayWas" = "Günün nasıldı?";
+"one2.flow.q.emotions" = "Hangi duygular?";
+"one2.flow.q.causes" = "Ne etkiliyor?";
+"one2.flow.q.anythingElse" = "Eklemek istediğin bir şey var mı?";
+"one2.flow.q.anythingElseShort" = "Eklemek istediğin bir şey?";
+"one2.flow.q.sleep" = "Nasıl uyudun?";
+"one2.flow.q.focus" = "Bugün neye odaklanıyorsun?";
+"one2.flow.q.intention" = "Sabah '%@' demiştin. Nasıl gitti?";
+"one2.flow.q.practices" = "Bugünkü pratiklerin";
+"one2.flow.label.note" = "Not";
+"one2.flow.label.dailyQuestion" = "Günün sorusu";
+"one2.flow.label.gratitude" = "Minnet";
+"one2.flow.label.quote" = "Günün sözü";
+"one2.flow.label.topThree" = "Bugünün üç şeyi";
+"one2.flow.label.challenge" = "Zorluk";
+"one2.flow.label.goodThing" = "İyi giden";
+"one2.flow.label.different" = "Farklı olsaydı";
+"one2.flow.causes.add" = "+ Ekle";
+"one2.flow.causes.placeholder" = "Etiket yaz";
+"one2.flow.focus.calm" = "Sakinlik";
+"one2.flow.focus.patience" = "Sabır";
+"one2.flow.focus.discipline" = "Disiplin";
+"one2.flow.focus.courage" = "Cesaret";
+"one2.flow.focus.kindness" = "Nezaket";
+"one2.flow.focus.gratitude" = "Minnet";
+"one2.flow.focus.focus" = "Odak";
+"one2.flow.focus.selfCare" = "Kendine iyi davran";
+"one2.flow.focus.custom" = "+ Kendi kelimen";
+"one2.flow.focus.placeholder" = "Kendi kelimen";
+"one2.flow.sleep.1" = "Çok kötü";
+"one2.flow.sleep.2" = "Kötü";
+"one2.flow.sleep.3" = "İdare eder";
+"one2.flow.sleep.4" = "İyi";
+"one2.flow.sleep.5" = "Çok iyi";
+"one2.flow.sleep.addHours" = "Süre ekle";
+"one2.flow.sleep.hours" = "%@ sa";
+"one2.flow.sleep.less" = "Azalt";
+"one2.flow.sleep.more" = "Artır";
+"one2.flow.intention.kept" = "Tuttum";
+"one2.flow.intention.partly" = "Yarım";
+"one2.flow.intention.notKept" = "Olmadı";
+"one2.flow.previous" = "Geçen sefer şöyle yazmıştın:";
+"one2.flow.placeholder" = "Yaz…";
+"one2.flow.skip" = "Atla";
+"one2.flow.continue" = "Devam et";
+"one2.flow.done" = "Bitti";
+"one2.flow.previousStep" = "Önceki adım";
+"one2.flow.progress.a11y" = "Adım %d / %d";
+"one2.flow.carry.question" = "Yarına taşıyayım mı?";
+"one2.flow.carry.carry" = "Taşı";
+"one2.flow.carry.drop" = "Bırak";
+"one2.seal.dayClosed" = "bugün kapandı.";
+"one2.seal.dayReady" = "gün hazır.";
+"one2.seal.entrySaved" = "yazın kaydedildi.";
+"one2.seal.firstDay" = "Bugün başladı.";

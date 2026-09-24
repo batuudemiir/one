@@ -369,12 +369,14 @@ struct QuoteEngineTests {
 
     @Test("Günün sözü Sözler'in o günkü ilk kartı; bir kez, yalnız Sana özel'de")
     func dailyFirstCard() async throws {
-        let rig = QuoteFixture.rig(QuoteFixture.quotes(200))
+        let rig = QuoteFixture.rig(QuoteFixture.quotes(200), premium: true)
         rig.engine.startSession()
-        #expect(await rig.engine.nextItems(mode: .path("sakin"), count: 5).allSatisfy { $0.reason == .regular })
-
         let today = rig.clock.today
         let daily = try #require(await rig.engine.dailyQuote(for: today))
+        // Yol akışında günün sözü kartı yok (günün sözünün yolu dışında bir yol).
+        let other = try #require(QuoteFixture.paths.first { !daily.paths.contains($0) })
+        #expect(await rig.engine.nextItems(mode: .path(other), count: 5).allSatisfy { $0.reason == .regular })
+
         let first = await rig.engine.nextItems(mode: .forYou, count: 5)
         #expect(first.count == 5 && Set(first.map(\.id)).count == 5)
         #expect(first[0].quote == daily && first[0].reason == .daily)
@@ -414,22 +416,23 @@ struct QuoteEngineTests {
 
     @Test("Mod durumu: kilitli, görülmemiş var, döngü 2, tükendi (diğer yollar), liste")
     func feedStates() async throws {
-        let quotes = QuoteFixture.quotes(20) // yol = i % 5: sakin 4, cesur 4
-        let free = QuoteFixture.rig(quotes, paths: ["sakin", "cesur"])
-        #expect(await free.engine.feedState(mode: .kind(.proverb)) == .locked)
+        let quotes = QuoteFixture.quotes(20) // yol = i % 5: stoacilar 4, antik_yunan 4
+        let free = QuoteFixture.rig(quotes, paths: ["stoacilar", "antik_yunan"])
+        #expect(await free.engine.feedState(mode: .theme("minnet")) == .locked)
 
-        let rig = QuoteFixture.rig(quotes, paths: ["sakin", "cesur"], premium: true)
-        #expect(await rig.engine.feedState(mode: .path("sakin")) == .available(unseen: 4))
+        let rig = QuoteFixture.rig(quotes, paths: ["stoacilar", "antik_yunan"], premium: true)
+        #expect(await rig.engine.feedState(mode: .path("stoacilar")) == .available(unseen: 4))
         #expect(await rig.engine.feedState(mode: .path("yok")) == .empty)
-        for q in quotes where q.paths.contains("sakin") { rig.exposure.recordSeen(q.id, kind: .quote) }
-        #expect(await rig.engine.feedState(mode: .path("sakin")) == .exhausted(alternatives: [.path("cesur"), .forYou]))
+        for q in quotes where q.paths.contains("stoacilar") { rig.exposure.recordSeen(q.id, kind: .quote) }
+        #expect(await rig.engine.feedState(mode: .path("stoacilar")) == .exhausted(alternatives: [.path("antik_yunan"), .forYou]))
 
         rig.clock.advance(hours: 24 * 61)
-        #expect(await rig.engine.feedState(mode: .path("sakin")) == .revisiting(count: 4))
+        #expect(await rig.engine.feedState(mode: .path("stoacilar")) == .revisiting(count: 4))
 
-        // Ücretsiz kullanıcıya kilitli yol ("cesur", ikinci yol) önerilmez.
-        for q in quotes where q.paths.contains("sakin") { free.exposure.recordSeen(q.id, kind: .quote) }
-        #expect(await free.engine.feedState(mode: .path("sakin")) == .exhausted(alternatives: [.forYou]))
+        // Ücretsizde kilitli yol ("antik_yunan") önerilmez; Sana özel de yalnız
+        // açık yoldan beslendiği için (08 §3.3) önerilecek mod kalmaz.
+        for q in quotes where q.paths.contains("stoacilar") { free.exposure.recordSeen(q.id, kind: .quote) }
+        #expect(await free.engine.feedState(mode: .path("stoacilar")) == .exhausted(alternatives: []))
 
         #expect(await rig.engine.feedState(mode: .favorites) == .empty)
         await rig.engine.record(.liked, for: quotes[0].id)

@@ -3,29 +3,65 @@
 //  ONE 2.0
 //
 //  Gezinme durumu tek yerde (ADR-001 §4): seçili sekme, sekme başına
-//  yığın, üstte açık sheet. Ekranlar birbirini doğrudan açmaz; `Route`
-//  üzerinden ister. Sekme kümesi ekran spesifikasyonunda kesinleşecek.
+//  yığın, üstte açık sheet ya da tam ekran akış. Ekranlar birbirini
+//  doğrudan açmaz; `Route` / `SheetRoute` / `CoverRoute` üzerinden ister.
+//  Sekmeler: Bugün · Sözler · Keşfet · Yolculuk · Eğilimler (README).
 //
 
 import Foundation
 import Observation
 
 nonisolated enum ONE2Tab: String, CaseIterable, Hashable, Sendable {
-    case today, quotes, journey, explore, profile
+    case today, quotes, explore, journey, insights
 }
 
+/// Editörün hangi kapıdan açıldığı (README: yazmanın üç kapısı).
+nonisolated enum JournalContext: Hashable, Sendable {
+    /// Boş sayfa: soru yok.
+    case blank
+    /// Serbest ya da günün önerisi; içerik referansı (`ones://journal/new?prompt=`).
+    case prompt(String)
+    /// Haftalık temanın bugünkü sorusu.
+    case weeklyTheme(themeID: String, day: Int)
+    /// Rehberli günlük (Keşfet).
+    case guided(contentID: String)
+}
+
+/// Sekme yığınına itilen ekranlar.
 nonisolated enum Route: Hashable, Sendable {
-    case newEntry(prompt: String?)
-    case entry(UUID)
+    case profile
+    case settings
+    case themeList
+    case templates
+    case library
     case theme(String)
-    case insights
-    /// Söze yazı (QuoteReflection, UX-6).
-    case quoteReflection(QuoteID)
+    case contentDetail(String)
+    case dayDetail(DayKey)
+    case entry(UUID)
 }
 
-nonisolated enum SheetRoute: String, Hashable, Identifiable, Sendable {
-    case checkIn, paywall
-    var id: String { rawValue }
+/// Alttan açılan sayfalar.
+nonisolated enum SheetRoute: Hashable, Identifiable, Sendable {
+    case plusMenu
+    /// `source`: paywall'ı açan yer (analitik, UX-11).
+    case paywall(source: String)
+
+    var id: String {
+        switch self {
+        case .plusMenu: return "plusMenu"
+        case .paywall(let source): return "paywall.\(source)"
+        }
+    }
+}
+
+/// Tam ekran akışlar.
+nonisolated enum CoverRoute: Hashable, Identifiable, Sendable {
+    /// Giriş akışı (07 §5.2). `day`: geri doldurulan gün; `nil` bugün.
+    case flow(FlowKind, day: DayKey?)
+    case journalEditor(JournalContext)
+    case quoteReflection(quoteID: String)
+
+    var id: Self { self }
 }
 
 /// Kullanıcıya bir kez gösterilecek bilgi.
@@ -39,7 +75,11 @@ final class Router {
     var tab: ONE2Tab = .today
     var paths: [ONE2Tab: [Route]] = [:]
     var sheet: SheetRoute?
+    var cover: CoverRoute?
     var notice: RouterNotice?
+    /// Uygulama bu oturumda bir bağlantıyla (bildirim, widget, derin bağlantı)
+    /// açıldı: açılış check-in'i kendiliğinden açılmaz (07 §5.2).
+    private(set) var openedFromLink = false
 
     func path(for tab: ONE2Tab) -> [Route] { paths[tab] ?? [] }
 
@@ -51,23 +91,24 @@ final class Router {
         self.tab = target
     }
 
-    func popToRoot(_ tab: ONE2Tab? = nil) { paths[tab ?? self.tab] = [] }
-
-    /// Yazma bitti (Seal kapandı): yazılan yer kapanır, Bugün kökünde
-    /// o günün yazıları görünür.
-    func finishWriting() {
-        paths[tab] = []
-        paths[.today] = []
-        sheet = nil
-        tab = .today
+    func pop(on tab: ONE2Tab? = nil) {
+        let target = tab ?? self.tab
+        guard paths[target]?.isEmpty == false else { return }
+        paths[target]?.removeLast()
     }
 
-    /// Deep link hedefini uygular: sekme seçilir, yığın hedefle değiştirilir,
-    /// açık sheet kapanıp istenen açılır.
+    func popToRoot(_ tab: ONE2Tab? = nil) { paths[tab ?? self.tab] = [] }
+
+    /// Deep link hedefini uygular: sekme verildiyse seçilir ve yığını
+    /// hedefle değiştirilir; açık sheet ve tam ekran akış hedefinkilerle
+    /// değişir.
     func open(_ destination: DeepLink.Destination) {
-        tab = destination.tab
-        paths[destination.tab] = destination.path
+        if let target = destination.tab {
+            tab = target
+            paths[target] = destination.path
+        }
         sheet = destination.sheet
+        cover = destination.cover
         if let notice = destination.notice { self.notice = notice }
     }
 
@@ -75,6 +116,7 @@ final class Router {
     @discardableResult
     func handle(_ url: URL) -> Bool {
         guard let destination = DeepLink.destination(for: url) else { return false }
+        openedFromLink = true
         open(destination)
         return true
     }

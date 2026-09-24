@@ -52,25 +52,59 @@ StoreKit ürün ID'leri `com.batudemir.ones.oneplus.*` (bkz. `ONEPlus.storekit`)
 - Kaldırılan bir bildirim türünün kimliği `NotificationOrchestrator`'ın
   emekli listesine eklenir — kod silmek bekleyen isteği silmez.
 
+## Tasarım (ONE 2.0)
+
+**Kaynak `docs/one2/design-system/`:** `README.md` (marka kitabı),
+`tokens.json`, `components/*.md` (bileşen kuralları), `components/*.preview.html`
+(ölçüler), `Screen*.preview.html` (referans ekranlar). Kararın kaydı
+`docs/one2/ADR-002-design-system.md`: ADR-001 §7'deki "V3Tokens taşı" kararı
+ONE 2.0 için geçersiz.
+
+- **Token'lar `one/ONE2/DesignSystem/Tokens/`:** renk `ONE2Color` (47 renk,
+  tokens.json adlarının camelCase hâli), tipografi `.one2Type(_:)`
+  (`ONE2Type` rolleri), boşluk `ONE2Space`, ölçü `ONE2Size`, köşe
+  `ONE2Radius`, gölge `.one2FloatShadow()`, hareket `ONE2Motion`, haptik
+  `ONE2Haptics`. Yeni kod yalnız bunları kullanır; elle sayı ya da hex yok.
+- **Renk değeri yalnız `ONE2Palette`'te** ve tokens.json ile birebir
+  (`ONE2TokenTests`). Yeni renk önce tokens.json'a, sonra palete girer.
+  Renkler `UIColor` dynamic provider ile: gece/gün ve Increased Contrast
+  (`line` → `lineStrong`, `inkFaint` → `inkMuted`).
+- **Fontlar** `one/ONE2/Resources/Fonts/` (OFL, lisanslar yanında): Plus
+  Jakarta Sans 500/600/700, Literata 400 ve 400 italik (statik), IBM Plex
+  Mono 400/500. Literata yalnız yazının kendisinde (soru, kullanıcı metni,
+  söz, yankı). `label` metnini `ONE2Type.uppercased(_:)` ile büyüt (i → İ).
+- `brand` ekran başına tek yerde; birincil buton renkli değil kontrastlı
+  (`primary`); kartlar gölgesiz, gölge yalnız dock'ta.
+- Bileşenler `one/ONE2/DesignSystem/Components/`, bileşen başına bir dosya;
+  her bileşen ve ekranda `#Preview`: gece, gün ve Dynamic Type
+  `.accessibility3`. Galeri: `DesignSystemGallery` (yalnız DEBUG).
+- Reduce Motion: yalnız opaklık (`ONE2Motion`). Reduce Transparency:
+  `glass` → `raised`.
+
 ## v3'ten korunan kod kuralları
 
-- **Token'lar:** renk, boşluk, yarıçap `V3Tokens`; font `V3Typography` /
-  `ONETypography` rolleri; hareket `ONEAnimation`; haptik `ONEHaptics`.
-  Ekran gövdesi yatay payı `oneScreenBody()`; elle sayı yazma.
-- **Hardcoded hex yok.** Yeni renk `V3Tokens`'a adaptive token olarak girer
-  (açık/koyu değeri `UIColor { trait in … }` dynamic provider ile). Tek
+- **Token'lar (yalnız legacy ekranlar):** `V3Tokens`, `V3Typography` /
+  `ONETypography`, `ONEAnimation`, `ONEHaptics`, `oneScreenBody()` yalnız v3
+  kabuğunda ve ONE 2.0'daki legacy "ONE 1" kartlarında. Yeni ONE 2.0 kodu
+  yukarıdaki ONE2 token'larını kullanır.
+- **Hardcoded hex yok.** v3'te yeni renk `V3Tokens`'a, ONE 2.0'da
+  tokens.json + `ONE2Palette`'e girer; ikisi de dynamic provider ile. Tek
   istisna dışa aktarılan yüzeyler (`V3Tokens.Export`, `*Fixed` fontlar).
-- **Her `Button` label'ına `.contentShape(Rectangle())`.** Buton stili
-  `.onePressable`; `.plain` yok. Dokunma hedefi ≥ 44pt.
-- **Önce mevcut bileşen:** `V3TopBar`, `SubScreen`, `V3Sheet*`,
-  `V3PrimaryButton` / `V3OutlineButton`, `.oneCardBackground`, `V3Loading`,
-  `ONEErrorView`, `ONEToastView`. Yeni bileşen ancak karşılığı yoksa.
+- **Her `Button` label'ına `.contentShape(Rectangle())`.** v3'te buton stili
+  `.onePressable`; ONE 2.0'da ONE2 buton stilleri. `.plain` yok. Dokunma
+  hedefi ≥ 44pt.
+- **Önce mevcut bileşen:** ONE 2.0'da `one/ONE2/DesignSystem/Components/`.
+  `V3TopBar`, `SubScreen`, `V3Sheet*`, `V3PrimaryButton` / `V3OutlineButton`,
+  `.oneCardBackground`, `V3Loading`, `ONEErrorView`, `ONEToastView` yalnız
+  legacy ekranlar içindir. Yeni bileşen ancak karşılığı yoksa.
 - Sistem `navigationTitle` / `ToolbarItem` kullanılmaz; başlığı kabuk çizer.
 - Her ekranın yükleniyor, boş ve hata durumu tanımlı.
 - **Sormadan yeni SPM bağımlılığı yok.**
 - **İşlevsiz kontrol yok:** hiçbir yerin okumadığı toggle/ayar eklenmez.
 - Kullanıcıya görünen her dize `NSLocalizedString`; yeni anahtar dokuz dile
-  birden (de · en · es · fr · ja · ko · ru · tr · zh-Hans).
+  birden (de · en · es · fr · ja · ko · ru · tr · zh-Hans). **Geçici istisna
+  (ONE 2.0 UX işi):** yeni anahtarlar yalnız `tr` ve yanında `en` yer
+  tutucusuyla girer; diğer 7 dil relaunch öncesi ayrı bir iş.
 - İkon butonunda `accessibilityLabel`; dekoratif öğe `accessibilityHidden`.
   WCAG AA kontrast; Reduce Motion ve Dynamic Type desteklenir.
 
@@ -84,7 +118,14 @@ trendler), rehberli ve destekleyici dil, uygulamanın soru sorması.
 - Emoji yok (durum işareti ✓ muaf).
 - Üst üste ünlem yok (`!!`, `?!`). Tek ünlem idareli.
 - Türkçe kopya **sen** diliyle, kısa: cümle 5–12 kelime.
-- Butonlar cümle düzeninde ("Kaydet", "Devam et"); başlıklar cümle düzeninde.
+- Butonlar cümle düzeninde, 1–3 kelimelik fiil ("Kaydet", "Devam et").
+- ONE 2.0 başlıkları küçük harf ve noktasız: sekme başlığı ("keşfet",
+  "yolculuk"), selamlama ("iyi akşamlar"), kapanış ("bugün kapandı"). Bölüm
+  ve kart başlıkları cümle düzeninde ("Pratiklerin", "Haftalık tema").
+  Başlık sonunda nokta yok.
+- Ekran başına en fazla bir ünlem. Ton sakin yol arkadaşı: öğüt yerine
+  soru, sonuç vaadi yok, seri kırılınca suçlama yok (README "Ses ve kopya").
+- Mono `label` büyük harf ve Türkçe kurala göre ("GENEL İÇGÖRÜLER").
 - Teşhis koyan dil yok ("depresyondasın"); duyguyu kullanıcı adlandırır.
 - Suçlayan ya da yalvaran geri kazanım dili yok ("seni özledik").
 
