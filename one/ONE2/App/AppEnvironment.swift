@@ -29,13 +29,17 @@ final class AppEnvironment {
     let notifications: ONE2NotificationScheduler
     let widget: WidgetBridge
     let widgetSource: WidgetSnapshotSource
+    let exporter: DataExporter
+    let analytics: EventTracking
     let legacy: LegacyMomentStore
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
     private let legacyWriteGuard: LegacyWriteGuard?
 
     init(context: NSManagedObjectContext, clock: AppClock = SystemClock(), guardLegacyWrites: Bool = true,
-         content: ContentRepository? = nil, profile: ProfileStore? = nil) {
+         content: ContentRepository? = nil, profile: ProfileStore? = nil,
+         analytics: EventTracking = AppAnalyticsTracker()) {
         self.clock = clock
+        self.analytics = analytics
         self.content = content ?? ContentRepository(clock: clock)
         self.profile = profile ?? ProfileStore()
         journal = JournalStore(context: context, clock: clock)
@@ -62,15 +66,25 @@ final class AppEnvironment {
         widgetSource = WidgetSnapshotSource(quotes: quotes, prompts: prompts, content: self.content, day: day,
                                             mood: mood, exposure: exposure, profile: self.profile, clock: clock)
         legacy = LegacyMomentStore(context: context, calendar: clock.calendar)
+        exporter = DataExporter(context: context, journal: journal, mood: mood, day: day, library: library,
+                                exposure: exposure, legacy: legacy, content: self.content, clock: clock)
         if guardLegacyWrites, let coordinator = context.persistentStoreCoordinator {
             legacyWriteGuard = LegacyWriteGuard(coordinator: coordinator)
         } else {
             legacyWriteGuard = nil
         }
         // Her kayıttan sonra: E8 yazıyla tamamlama, E9 rozet, widget ve bildirim penceresi.
-        journal.didSave = { [day, weak badges, weak self] entry in
-            _ = try? day.recordWriting(entry)
-            _ = try? badges?.evaluateAfterSave()
+        quotes.onPoolLow = { [analytics] mode, remaining in
+            analytics.track(.contentPoolLow(mode: mode.key, remaining: remaining))
+        }
+        journal.didSave = { [day, weak badges, weak self, analytics] entry in
+            analytics.track(.entrySaved(kind: entry.kind, words: entry.wordCount, source: entry.sourceContext))
+            if (try? day.recordWriting(entry)) == true {
+                analytics.track(.dayCompleted(by: .writing, backfilled: entry.isBackfilled))
+            }
+            for award in (try? badges?.evaluateAfterSave()) ?? [] {
+                analytics.track(.badgeAwarded(badgeID: award.badge.id, announced: award.announce))
+            }
             Task { @MainActor in await self?.refreshSurfaces() }
         }
     }
@@ -80,6 +94,17 @@ final class AppEnvironment {
     func refreshSurfaces() async {
         widget.write(await widgetSource.snapshot())
         await notifications.rebuild()
+    }
+
+    /// Tier 2: günde bir uzak içerik kontrolü (ADR §5) ve içerik sağlığı olayları (E17).
+    func refreshContent() async {
+        let result = await content.refreshIfNeeded()
+        if let reason = ONE2Event.updateFailureReason(result) { analytics.track(.contentUpdateFailed(reason: reason)) }
+        let today = clock.today
+        if ThemeCalendar.isNextWeekMissing(catalog: content.catalog, today: today) {
+            analytics.track(.themeMissingNextWeek(week: ISOWeek(containing: today).adding(weeks: 1).description))
+        }
+        if case .updated = result { await refreshSurfaces() }
     }
 
     /// Uygulamanın gerçek store'u.
