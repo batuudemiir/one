@@ -11,13 +11,20 @@
 import Foundation
 import SwiftUI
 
+/// Eylemler. İsteğe bağlı olanlar verilmezse karşılık gelen kontrol
+/// çizilmez (işlevsiz kontrol yok).
 struct TodayActions {
-    /// Doldurma sheet'inde "Doldur": o gün için akış.
+    /// Doldurma sheet'inde "Doldur": o gün için akış. `backfillFlow`
+    /// verilmişse akış burada açılır; verilmemişse bu çağrılır.
     var fillDay: (WeekDayViewData) -> Void = { _ in }
-    var openPractice: (PracticeTileViewData) -> Void = { _ in }
-    var addPractice: () -> Void = {}
-    var openTheme: () -> Void = {}
+    var backfillFlow: ((WeekDayViewData) -> FlowViewModel?)?
+    var openPractice: ((PracticeTileViewData) -> Void)?
+    var addPractice: (() -> Void)?
+    var openTheme: (() -> Void)?
     var openProfile: () -> Void = {}
+    var dismissNotice: () -> Void = {}
+    /// Tam ekran akış kapandı (tamamlandı ya da kapatıldı): veri tazelenir.
+    var flowDismissed: () -> Void = {}
     /// Ritüel kartı: "Başla", "Devam et", "Yine de yap". `flowProvider`
     /// verilmişse akış tam ekran burada açılır; verilmemişse bu çağrılır.
     var startFlow: (FlowKind) -> Void = { _ in }
@@ -50,12 +57,19 @@ struct ONE2TodayView: View {
         .sheet(item: $backfillDay) { day in
             BackfillSheet(day: day, onFill: {
                 backfillDay = nil
-                actions.fillDay(day)
+                if let model = actions.backfillFlow?(day) {
+                    presentedFlow = FlowPresentation(model: model)
+                } else {
+                    actions.fillDay(day)
+                }
             }, onClose: { backfillDay = nil })
             .presentationDetents([.medium])
         }
         .fullScreenCover(item: $presentedFlow) { presentation in
-            FlowShellView(model: presentation.model, onDismiss: { presentedFlow = nil })
+            FlowShellView(model: presentation.model, onDismiss: {
+                presentedFlow = nil
+                actions.flowDismissed()
+            })
         }
     }
 
@@ -70,9 +84,14 @@ struct ONE2TodayView: View {
     private func content(_ data: TodayViewData) -> some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: V3Tokens.spacingXL3) {
+                if let notice = data.notice {
+                    TodayNoticeCard(text: notice, onDismiss: actions.dismissNotice)
+                }
                 WeekStripView(days: data.week, onBackfill: { backfillDay = $0 })
                 RitualArea(layout: data.layout, cards: data.rituals, onStart: start)
-                PracticesSection(practices: data.practices, onOpen: actions.openPractice, onAdd: actions.addPractice)
+                if !data.practices.isEmpty || actions.addPractice != nil {
+                    PracticesSection(practices: data.practices, onOpen: actions.openPractice, onAdd: actions.addPractice)
+                }
                 if let theme = data.theme {
                     WeeklyThemeSection(theme: theme, onOpen: actions.openTheme)
                 }
@@ -88,8 +107,8 @@ struct ONE2TodayView: View {
 
 struct PracticesSection: View {
     let practices: [PracticeTileViewData]
-    let onOpen: (PracticeTileViewData) -> Void
-    let onAdd: () -> Void
+    let onOpen: ((PracticeTileViewData) -> Void)?
+    let onAdd: (() -> Void)?
 
     private let columns = [GridItem(.flexible(), spacing: V3Tokens.spacingMD),
                            GridItem(.flexible(), spacing: V3Tokens.spacingMD)]
@@ -102,16 +121,22 @@ struct PracticesSection: View {
                 .accessibilityAddTraits(.isHeader)
             LazyVGrid(columns: columns, spacing: V3Tokens.spacingMD) {
                 ForEach(practices) { practice in
-                    Button { onOpen(practice) } label: {
+                    if let onOpen {
+                        Button { onOpen(practice) } label: {
+                            PracticeTileView(title: practice.title, symbol: practice.symbol, isAdd: false)
+                        }
+                        .buttonStyle(.onePressable)
+                    } else {
                         PracticeTileView(title: practice.title, symbol: practice.symbol, isAdd: false)
+                    }
+                }
+                if let onAdd {
+                    Button(action: onAdd) {
+                        PracticeTileView(title: NSLocalizedString("one2.practices.add", comment: "Add a practice"),
+                                         symbol: "plus", isAdd: true)
                     }
                     .buttonStyle(.onePressable)
                 }
-                Button(action: onAdd) {
-                    PracticeTileView(title: NSLocalizedString("one2.practices.add", comment: "Add a practice"),
-                                     symbol: "plus", isAdd: true)
-                }
-                .buttonStyle(.onePressable)
             }
         }
     }
@@ -165,7 +190,7 @@ private struct PracticeTileBackground: ViewModifier {
 
 struct WeeklyThemeSection: View {
     let theme: WeeklyThemeViewData
-    let onOpen: () -> Void
+    let onOpen: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {
@@ -192,10 +217,12 @@ struct WeeklyThemeSection: View {
                         .foregroundColor(V3Tokens.mutedText)
                         .lineLimit(1)
                 }
-                V3PrimaryButton(title: theme.writtenFirstLine == nil
-                                ? NSLocalizedString("one2.theme.write", comment: "Write the weekly theme question")
-                                : NSLocalizedString("one2.theme.continue", comment: "Continue the weekly theme entry"),
-                                isFullWidth: true, action: onOpen)
+                if let onOpen {
+                    V3PrimaryButton(title: theme.writtenFirstLine == nil
+                                    ? NSLocalizedString("one2.theme.write", comment: "Write the weekly theme question")
+                                    : NSLocalizedString("one2.theme.continue", comment: "Continue the weekly theme entry"),
+                                    isFullWidth: true, action: onOpen)
+                }
             }
             .padding(V3Tokens.spacingXL)
             .oneCardBackground(radius: V3Tokens.radiusTile)
@@ -219,6 +246,33 @@ private struct ThemeDaysLine: View {
         }
         .frame(height: V3Tokens.spacingXS)
         .accessibilityHidden(true)
+    }
+}
+
+// MARK: - Not
+
+struct TodayNoticeCard: View {
+    let text: String
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: V3Tokens.spacingMD) {
+            Text(text)
+                .bodySM()
+                .foregroundColor(V3Tokens.ink)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .iconSM()
+                    .foregroundColor(V3Tokens.mutedText)
+                    .frame(width: V3Tokens.minTouchTarget, height: V3Tokens.minTouchTarget)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.onePressable)
+            .accessibilityLabel(NSLocalizedString("one2.action.dismiss", comment: "Dismiss notice"))
+        }
+        .padding(V3Tokens.spacingMD)
+        .oneCardBackground()
     }
 }
 
@@ -272,18 +326,26 @@ struct TodaySkeleton: View {
 
 // MARK: - Önizlemeler
 
+extension TodayActions {
+    /// Önizleme ve geliştirici ekranı: tüm kontroller görünür, akışlar fixture.
+    static var fixture: TodayActions {
+        TodayActions(openPractice: { _ in }, addPractice: {}, openTheme: {},
+                     flowProvider: { FlowFixtureModels.model($0) })
+    }
+}
+
 #Preview("Daily · not started") {
     ONE2TodayView(state: .loaded(TodayFixtures.dailyNotStarted()),
-              actions: TodayActions(flowProvider: { FlowFixtureModels.model($0) }))
+              actions: .fixture)
 }
 
 #Preview("Morning+evening · morning done") {
     ONE2TodayView(state: .loaded(TodayFixtures.morningDone()),
-              actions: TodayActions(flowProvider: { FlowFixtureModels.model($0) }))
+              actions: .fixture)
 }
 
 #Preview("Morning+evening · both done") {
-    ONE2TodayView(state: .loaded(TodayFixtures.bothDone()))
+    ONE2TodayView(state: .loaded(TodayFixtures.bothDone()), actions: .fixture)
 }
 
 #Preview("Loading") {
@@ -291,11 +353,11 @@ struct TodaySkeleton: View {
 }
 
 #Preview("Morning missed · light") {
-    ONE2TodayView(state: .loaded(TodayFixtures.morningMissed()))
+    ONE2TodayView(state: .loaded(TodayFixtures.morningMissed()), actions: .fixture)
         .preferredColorScheme(.light)
 }
 
 #Preview("Daily · in progress · AX3") {
-    ONE2TodayView(state: .loaded(TodayFixtures.dailyInProgress()))
+    ONE2TodayView(state: .loaded(TodayFixtures.dailyInProgress()), actions: .fixture)
         .dynamicTypeSize(.accessibility3)
 }

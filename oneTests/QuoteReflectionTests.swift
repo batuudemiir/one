@@ -3,7 +3,7 @@
 //  oneTests
 //
 //  UX-6: söze yazı → kayıt sözleşmesi, taslak, "başka soru", kapanış;
-//  hafta şeridi; Bugün'e dönüş ve bugünkü yazılar.
+//  hafta şeridi; Bugün'e dönüş.
 //
 
 import Testing
@@ -170,37 +170,6 @@ struct QuoteReflectionTests {
     }
 
     // MARK: - Bugün
-
-    @Test("Bugün: yazılar en yeni önce, söze yazıda söz metni; günün sözüne yazıldı mı")
-    func todayModel() async {
-        let fakes = ReflectionFakes()
-        let day = DayKey("2026-09-24")!
-        let t0 = Date(timeIntervalSince1970: 1_790_000_000)
-        let quoteEntry = ReflectionFakes.entry(EntryDraft(kind: .quoteReflection, body: "Söze", contentRef: "q_000007"), at: t0)
-        let later = ReflectionFakes.entry(EntryDraft(kind: .freeform, body: "Serbest"), at: t0.addingTimeInterval(60))
-        var fail = false
-        let model = TodayModel(services: TodayServices(
-            today: { day },
-            week: { WeekStripModel.week(containing: day, completions: [], mode: .daily) },
-            dailyQuote: { _ in fakes.quote },
-            entries: { _ in if fail { throw StoreError.notFound }; return [quoteEntry, later] },
-            quote: { $0 == fakes.quote.id ? fakes.quote : nil }))
-        #expect(model.phase == .loading)
-        await model.load()
-        #expect(model.phase == .ready && model.week.count == 7)
-        #expect(model.entries.map(\.id) == [later.id, quoteEntry.id])
-        #expect(model.entries[1].quoteText == fakes.quote.text && model.entries[0].quoteText == nil)
-        #expect(model.wroteAboutDailyQuote)
-
-        fail = true
-        await model.load()
-        #expect(model.phase == .ready) // yüklü ekran hata yüzünden boşalmaz
-        let fresh = TodayModel(services: TodayServices(
-            today: { day }, week: { [] }, dailyQuote: { _ in nil },
-            entries: { _ in throw StoreError.notFound }, quote: { _ in nil }))
-        await fresh.load()
-        #expect(fresh.phase == .failed)
-    }
 
     @Test("Yazma bitti: yazılan sekmenin yığını kapanır, Bugün köküne geçilir")
     func finishWriting() {

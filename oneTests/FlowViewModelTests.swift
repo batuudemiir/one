@@ -111,6 +111,28 @@ struct FlowViewModelTests {
         #expect(result?.carryOver == false && result?.answers.count == 1)
     }
 
+    @Test("Bitişte kayıt: kapanış kayıttan gelir; kayıt hata verirse akış adımda kalır, taslak korunur")
+    func finishHook() {
+        let drafts = InMemoryFlowDraftStore()
+        let m = Self.model(.moodCheckIn, drafts: drafts)
+        var saved: [FlowResult] = []
+        var fail = true
+        m.onFinish = { result in
+            if fail { throw StoreError.invalidValue("test") }
+            saved.append(result)
+            return FlowClosingViewData(seal: .none, echo: "kayıttan")
+        }
+        m.setAnswer(.score(4), for: "moodCheckIn.score")
+        m.next(); m.skip(); m.skip()
+        m.next()
+        #expect(m.phase == .steps && m.saveFailed && drafts.load(.moodCheckIn) != nil)
+        fail = false
+        m.next()
+        #expect(m.phase == .closing && !m.saveFailed && m.closing.echo == "kayıttan")
+        #expect(saved.count == 1 && saved[0].answers["moodCheckIn.score"] == .score(4))
+        #expect(drafts.load(.moodCheckIn) == nil)
+    }
+
     @Test("Bozuk taslak: adım sayısını aşan indeks son adıma çekilir")
     func clampedDraft() {
         let drafts = InMemoryFlowDraftStore([.daily: FlowProgress(flow: .daily, stepIndex: 40)])

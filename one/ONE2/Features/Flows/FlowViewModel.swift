@@ -33,14 +33,23 @@ final class FlowViewModel {
     let flow: FlowViewData
     private(set) var progress: FlowProgress
     private(set) var phase: FlowPhase = .steps
+    /// Kapanış ekranının verisi; `onFinish` kayıttan sonra günceller.
+    private(set) var closing: FlowClosingViewData
+    /// Son adım bitince, kapanıştan önce bir kez: sonucu kaydeder ve
+    /// gerçek kapanışı (yankı, güncel hafta) döndürür. `nil`: veri
+    /// kapanışı kalır. Hata atarsa akış adımlarda kalır, taslak korunur.
+    @ObservationIgnored var onFinish: ((FlowResult) throws -> FlowClosingViewData?)?
     /// Kapanıştaki "Bitti" / "Taşı" / "Bırak" ile bir kez çağrılır.
     @ObservationIgnored var onComplete: (FlowResult) -> Void
+    /// Son kayıt denemesi başarısız oldu (alt butonun üstünde tek satır).
+    private(set) var saveFailed = false
 
     @ObservationIgnored private let drafts: FlowDraftStoring
     @ObservationIgnored private var completed = false
 
     init(flow: FlowViewData, drafts: FlowDraftStoring, onComplete: @escaping (FlowResult) -> Void = { _ in }) {
         self.flow = flow
+        self.closing = flow.closing
         self.drafts = drafts
         self.onComplete = onComplete
         var restored = drafts.load(flow.kind) ?? FlowProgress(flow: flow.kind)
@@ -132,6 +141,14 @@ final class FlowViewModel {
 
     private func advance() {
         if isLastStep {
+            do {
+                if let saved = try onFinish?(result) { closing = saved }
+            } catch {
+                saveFailed = true
+                drafts.save(progress)
+                return
+            }
+            saveFailed = false
             drafts.clear(flow.kind)
             phase = .closing
         } else {
@@ -154,7 +171,7 @@ final class FlowViewModel {
         guard phase == .closing, !completed else { return }
         completed = true
         var r = result
-        r.carryOver = flow.closing.carryOver.isEmpty ? nil : carryOver
+        r.carryOver = closing.carryOver.isEmpty ? nil : carryOver
         onComplete(r)
     }
 }

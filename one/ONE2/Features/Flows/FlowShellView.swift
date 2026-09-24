@@ -23,7 +23,7 @@ struct FlowShellView: View {
                     onDismiss()
                 })
             case .closing:
-                FlowClosingView(closing: model.flow.closing) { carryOver in
+                FlowClosingView(closing: model.closing) { carryOver in
                     model.complete(carryOver: carryOver)
                     onDismiss()
                 }
@@ -110,12 +110,19 @@ private struct FlowStepsView: View {
     @ViewBuilder
     private func bottomButton(_ step: FlowStepViewData) -> some View {
         // Skor adımı dokunuşla ilerler; VoiceOver'da otomatik ileri yok, "Devam" var.
-        if step.kind != .score || voiceOver {
-            V3PrimaryButton(title: model.isLastStep
-                            ? NSLocalizedString("one2.reflection.done", comment: "Finish")
-                            : NSLocalizedString("one2.flow.next", comment: "Next step"),
-                            isEnabled: model.canContinue, isFullWidth: true) {
-                model.next()
+        if step.kind != .score || voiceOver || model.saveFailed {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
+                if model.saveFailed {
+                    Text(NSLocalizedString("one2.reflection.saveFailed", comment: "Saving failed, try again"))
+                        .bodySMMedium()
+                        .foregroundColor(V3Tokens.korText)
+                }
+                V3PrimaryButton(title: model.isLastStep
+                                ? NSLocalizedString("one2.reflection.done", comment: "Finish")
+                                : NSLocalizedString("one2.flow.next", comment: "Next step"),
+                                isEnabled: model.canContinue, isFullWidth: true) {
+                    model.next()
+                }
             }
             .padding(.vertical, V3Tokens.spacingMD)
             .oneScreenBody()

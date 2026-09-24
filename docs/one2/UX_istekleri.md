@@ -77,3 +77,22 @@ Durum işaretleri: **Var** (motorda hazır, yalnız eşleme) · **Kısmen** ·
 | Akış bitti → gün durumu (günlük: done; sabah: half; akşam: sabah da yapıldıysa done) | `DayStore.markCompleted(.daily/.morning/.evening)` | Var |
 | Geriye dönük doldurma (sheet → akış o gün için) | `JournalStore.create(_, on:)`, `markCompleted(_, on:)` | Var (7 gün kuralı `DayCompletionRules`) |
 | Yankı cümlesi | `FlowClosingViewData.echo` | Var: `EchoEngine` |
+
+## Bağlama durumu (24 Eylül 2026)
+
+Bugün sekmesi `ONE2TodayView`'ı gerçek veriyle gösteriyor (`TodayScreen` →
+`TodayLive`); akışlar `LiveFlows` ile motora yazıyor. Adaptörler:
+`one/ONE2/Features/Shared/Adapters/`.
+
+| Konu | Canlıda | Eksik / karar |
+|---|---|---|
+| Adım seed'i | `FlowFixtures.steps` şablonu + canlı içerik (`LiveFlows.seed`) | Kişiselleştirme (UX-10) |
+| Günün sorusu | `PromptEngine.dailyPrompt` (haftalık tema günü) | Tema yoksa soru adımı başlıksız sorusuz kalır; `freePrompt` yedeği **karar gerekli** |
+| Önceki cevap | Aynı soru metnine günlük check-in'deki son cevap | — |
+| Taslak | Cihazda, `one2.flow.draft.<akış>.<gün>` | — |
+| Kayıt | Mood, girdi (adım başına `EntryAnswer`), odak, söze yazı + maruz kalma, ritüel tamamlama | Uyku saati `<adım>.hours` cevabında (alan yok) |
+| Yankı | `EchoEngine`, kart için cihazda saklanır | Başka cihazda tamamlanan kartta yankı yok (mood hapı görünür) |
+| Taşınan maddeler | Canlıda soru çıkmaz | Madde işaretleme verisi yok: **karar gerekli** |
+| Pratikler | `LibraryStore.practices()` karoları, dokunulamaz; "+ Ekle" gizli | Pratik ekleme/açma ekranı yok (Keşfet) |
+| Haftalık tema | Ad, gün, soru, yazıldıysa ilk satır | "Yaz" gizli: tema yazma ekranı yok |
+| Geriye dönük doldurma | Günlük modda günlük check-in, sabah+akşam modunda akşam akışı, o gün için | Sabah+akşamda gün yarım kalır |

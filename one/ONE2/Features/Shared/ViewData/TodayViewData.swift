@@ -98,6 +98,8 @@ nonisolated struct TodayViewData: Hashable, Sendable {
     var rituals: [RitualCardViewData]
     var practices: [PracticeTileViewData]
     var theme: WeeklyThemeViewData?
+    /// Üstte kapatılabilir tek satırlık not (eski Çevre bağlantısı).
+    var notice: String?
 }
 
 nonisolated enum TodayViewState: Hashable, Sendable {

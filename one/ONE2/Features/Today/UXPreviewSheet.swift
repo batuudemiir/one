@@ -31,7 +31,7 @@ struct UXPreviewSheet: View {
             }
             .fixedSize(horizontal: false, vertical: true)
             ONE2TodayView(state: .loaded(TodayFixtures.morningMissed()),
-                      actions: TodayActions(flowProvider: { FlowFixtureModels.model($0) }))
+                      actions: .fixture)
         }
         .oneScreenGround()
         .fullScreenCover(item: $presentedFlow) { presentation in

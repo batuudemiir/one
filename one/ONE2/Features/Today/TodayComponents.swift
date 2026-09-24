@@ -154,11 +154,13 @@ struct RitualCardView: View {
             }
         case .done(let echo, let mood, let summary):
             VStack(spacing: V3Tokens.spacingMD) {
-                Text(echo)
-                    .font(V3Typography.quote(22))
-                    .italic()
-                    .foregroundColor(V3Tokens.mutedText)
-                    .fixedSize(horizontal: false, vertical: true)
+                if !echo.isEmpty {
+                    Text(echo)
+                        .font(V3Typography.quote(22))
+                        .italic()
+                        .foregroundColor(V3Tokens.mutedText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 if let mood { MoodPillView(mood: mood) }
                 if let summary {
                     Text(summary)
