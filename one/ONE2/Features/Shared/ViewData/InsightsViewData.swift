@@ -14,7 +14,7 @@ nonisolated enum InsightState<Value: Equatable & Sendable>: Equatable, Sendable 
     case ready(Value)
     /// `required`: kartın eşiği; `current`: mevcut kayıt sayısı.
     case insufficient(required: Int, current: Int)
-    /// Premium kilitli: bulanık değil; başlık + açıklama + "ONE+ ile aç".
+    /// Premium kilitli: bulanık değil; başlık + açıklama + "{AppBrand.plusName} ile aç".
     case locked
 
     var remaining: Int? {
@@ -81,11 +81,24 @@ nonisolated struct WritingStats: Equatable, Sendable {
 }
 
 /// Aynı soruya ya da söze farklı zamanlarda verilen iki cevap.
+/// Aynı soruya ya da söze iki cevap (07 §5.4 değişim kartı, §5.9, §5.10).
 nonisolated struct ChangePair: Identifiable, Equatable, Sendable {
+    enum Source: Equatable, Sendable {
+        case prompt
+        /// Söze yazı: kartın üstünde söz künyesi.
+        case quote(QuoteCardData)
+    }
+
     let id: String
     let prompt: String
+    let source: Source
     let earlier: HistoryItem
     let later: HistoryItem
+    /// İki cevabın ilk cümleleri (değişim kartında yan yana).
+    let earlierFirstSentence: String
+    let laterFirstSentence: String
+    /// Aradaki gün ("214 gün sonra").
+    let daysBetween: Int
 }
 
 nonisolated struct InsightsData: Equatable, Sendable {

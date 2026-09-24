@@ -95,7 +95,7 @@
 "one2.route.checkIn" = "check-in";
 "one2.route.journal" = "yaz";
 "one2.route.quoteReflection" = "söze yaz";
-"one2.route.paywall" = "ONE+";
+"one2.route.paywall" = "%@";
 
 /* Bilgi ve geliştirici */
 "one2.notice.circleUnavailable" = "Çevre bu sürümde yok.";

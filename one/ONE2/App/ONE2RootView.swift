@@ -90,7 +90,7 @@ struct ONE2RootView: View {
                 router.sheet = nil
             }
         case .paywall:
-            CoverPlaceholderScreen(title: one2String("one2.route.paywall")) { router.sheet = nil }
+            CoverPlaceholderScreen(title: String(format: one2String("one2.route.paywall"), AppBrand.plusName)) { router.sheet = nil }
                 .presentationCornerRadius(ONE2Radius.xl)
         }
     }

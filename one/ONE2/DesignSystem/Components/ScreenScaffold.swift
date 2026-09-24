@@ -5,7 +5,7 @@
 //  Sekme ekranı iskeleti (README Ekran anatomisi): üst çubuk slotları,
 //  büyük küçük-harf başlık (`screenTitle`, sol hizalı; Bugün'de yok),
 //  içerik, dock inseti, isteğe bağlı pull-to-refresh. İçerik yüzen dock'un
-//  altından kayar; son öğe dock'un üstünde biter (`one2DockInset`).
+//  altından kayar; son öğe dock + 24pt üstünde biter (`one2DockInset`, 07 §4.2).
 //
 
 import SwiftUI
@@ -68,7 +68,7 @@ struct ScreenScaffold<Leading: View, Center: View, Trailing: View, Content: View
             .padding(.top, ONE2Space.s2)
         }
         .scrollIndicators(.hidden)
-        .contentMargins(.bottom, dockInset + ONE2Space.s4, for: .scrollContent)
+        .contentMargins(.bottom, dockInset + ONE2Space.s6, for: .scrollContent)
         .background(ONE2Color.ground.ignoresSafeArea())
         .modifier(RefreshModifier(action: onRefresh))
     }

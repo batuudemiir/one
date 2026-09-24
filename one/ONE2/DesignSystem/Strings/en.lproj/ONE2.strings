@@ -83,7 +83,7 @@
 "one2.route.checkIn" = "check-in";
 "one2.route.journal" = "write";
 "one2.route.quoteReflection" = "write on a quote";
-"one2.route.paywall" = "ONE+";
+"one2.route.paywall" = "%@";
 
 "one2.notice.circleUnavailable" = "Circle isn't part of this version.";
 "one2.debug.useV3" = "Switch to the old interface";

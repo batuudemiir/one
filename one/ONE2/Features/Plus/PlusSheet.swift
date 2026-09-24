@@ -27,7 +27,7 @@ struct PlusSheet: View {
             .padding(.vertical, ONE2Space.s6)
         }
         .scrollIndicators(.hidden)
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(ONE2Radius.xl)
         .presentationBackground(ONE2Color.surface)

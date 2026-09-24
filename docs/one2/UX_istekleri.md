@@ -59,6 +59,10 @@ Toplam 38 duygu (her ailede 4–5).
 View data her içgörü kartı için `InsightState.insufficient(required:current:)`
 taşır (E10 eşikleri: çizgi 3, ortalama 7, dağılım 5, etiket ilişkisi 21).
 
+Soru (UX-3): E10'un `insufficient(needed:)` dönüşü UX-11'deki adaptörde bu
+iki değere çevrilecek; motorun `needed`'ı **eşik** mi **kalan** mı döndürdüğü
+netleşirse adaptör ona göre yazılır.
+
 **Kapandı (24 Eylül 2026, motor oturumu):** E10 `InsightResult.insufficient(needed:have:)`
 döndürüyor; `needed` **eşiğin kendisi** (ör. 7), `have` mevcut sayı. UX-11
 adaptörü: `required = needed`, `current = have`.
