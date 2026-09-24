@@ -86,3 +86,25 @@ struct FlowStepGallery: View {
 #Preview("Morning · AX3") {
     FlowStepGallery(kind: .morning).dynamicTypeSize(.accessibility3)
 }
+
+// MARK: - Akış 4: Akşam değerlendirmesi
+
+#Preview("Evening · dark") {
+    FlowStepGallery(kind: .evening).preferredColorScheme(.dark)
+}
+
+#Preview("Evening · light") {
+    FlowStepGallery(kind: .evening).preferredColorScheme(.light)
+}
+
+#Preview("Evening · AX3") {
+    FlowStepGallery(kind: .evening).dynamicTypeSize(.accessibility3)
+}
+
+#Preview("Evening · without morning") {
+    FlowStepGallery(kind: .evening, variant: .withoutMorning)
+}
+
+#Preview("Evening · without practices") {
+    FlowStepGallery(kind: .evening, variant: .withoutPractices)
+}

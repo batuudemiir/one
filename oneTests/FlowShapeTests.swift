@@ -65,6 +65,21 @@ struct FlowShapeTests {
         #expect(SleepHours.adjusted(7, by: SleepHours.step) == 7.5)
     }
 
+    @Test("Akış 4 · akşam: skor → duygular → nedenler → niyet → pratikler → iyi giden → farklı → minnet → not; tam mühür + taşıma")
+    func evening() {
+        #expect(Self.kinds(.evening) == [.score, .emotions, .causes, .intentionReview, .practices,
+                                         .text, .text, .list3, .text])
+        let steps = FlowFixtures.steps(.evening)
+        #expect(steps[3].options?.map(\.id) == ["kept", "partly", "missed"])
+        #expect(steps[3].title.contains(FlowFixtures.focusLabel(UXFixtures.content.morningFocus)))
+        let closing = FlowFixtures.flow(.evening).closing
+        #expect(closing.seal == .full)
+        let c = UXFixtures.content
+        #expect(closing.carryOver.count == c.morningList.count - c.morningDoneItems.count)
+        #expect(Self.kinds(.evening, variant: .withoutMorning).first { $0 == .intentionReview } == nil)
+        #expect(Self.kinds(.evening, variant: .withoutPractices).first { $0 == .practices } == nil)
+    }
+
     @Test("Duygular aile sırasıyla gelir")
     func emotionsByFamily() {
         let families = (FlowFixtures.steps(.moodCheckIn)[1].options ?? []).compactMap(\.group)

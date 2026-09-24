@@ -422,3 +422,107 @@ struct QuoteStep: View {
         )
     }
 }
+
+// MARK: - intentionReview
+
+/// "Sabah '{odak}' demiştin. Nasıl gitti?" — Tuttum / Yarım / Olmadı.
+struct IntentionReviewStep: View {
+    let step: FlowStepViewData
+    let model: FlowViewModel
+
+    var body: some View {
+        VStack(spacing: V3Tokens.spacingSM) {
+            ForEach(step.options ?? []) { option in
+                let isSelected = selected == option.id
+                Button {
+                    ONEHaptics.pick()
+                    model.setAnswer(.intention(option.id), for: step.id)
+                } label: {
+                    HStack {
+                        Text(option.label)
+                            .bodyLGSemibold()
+                            .foregroundColor(isSelected ? V3Tokens.onBrandSoft : V3Tokens.ink)
+                        Spacer(minLength: 0)
+                        if isSelected {
+                            Image(systemName: "checkmark")
+                                .iconSM(weight: .semibold)
+                                .foregroundColor(V3Tokens.onBrandSoft)
+                                .accessibilityHidden(true)
+                        }
+                    }
+                    .padding(.horizontal, V3Tokens.spacingLG)
+                    .frame(maxWidth: .infinity, minHeight: V3Tokens.spacingXL5)
+                    .background(
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
+                            .fill(isSelected ? V3Tokens.brandSoft : Color.clear)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
+                            .strokeBorder(isSelected ? Color.clear : V3Tokens.lineStrong, lineWidth: 1)
+                    )
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.onePressable)
+                .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+            }
+        }
+    }
+
+    private var selected: String? {
+        if case .intention(let id) = model.answer(for: step.id) { return id }
+        return nil
+    }
+}
+
+// MARK: - practices
+
+/// Bugünkü pratikler: her biri bir toggle. "Hepsi tamam" yok.
+struct PracticesStep: View {
+    let step: FlowStepViewData
+    let model: FlowViewModel
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(step.options ?? []) { option in
+                Toggle(isOn: binding(option.id)) {
+                    HStack(spacing: V3Tokens.spacingMD) {
+                        Image(systemName: option.group ?? "circle")
+                            .iconMD()
+                            .foregroundColor(V3Tokens.ink)
+                            .frame(width: V3Tokens.minTouchTarget, height: V3Tokens.minTouchTarget)
+                            .background(Circle().fill(V3Tokens.wash))
+                            .accessibilityHidden(true)
+                        Text(option.label)
+                            .bodyLGMedium()
+                            .foregroundColor(V3Tokens.ink)
+                    }
+                }
+                .toggleStyle(.one)
+                .frame(minHeight: V3Tokens.spacingXL5)
+                .padding(.vertical, V3Tokens.spacingXS)
+                if option.id != step.options?.last?.id {
+                    Rectangle()
+                        .fill(V3Tokens.hairline)
+                        .frame(height: 1)
+                        .accessibilityHidden(true)
+                }
+            }
+        }
+    }
+
+    private var done: [String] {
+        if case .practices(let ids) = model.answer(for: step.id) { return ids }
+        return []
+    }
+
+    private func binding(_ id: String) -> Binding<Bool> {
+        Binding(
+            get: { done.contains(id) },
+            set: { isOn in
+                var ids = done.filter { $0 != id }
+                if isOn { ids.append(id) }
+                model.setAnswer(ids.isEmpty ? nil : .practices(ids), for: step.id)
+            }
+        )
+    }
+}

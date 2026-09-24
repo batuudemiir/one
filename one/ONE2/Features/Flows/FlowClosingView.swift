@@ -88,10 +88,31 @@ struct FlowClosingView: View {
         .oneScreenBody()
     }
 
+    /// Akşam: sabah maddelerinden işaretlenmeyenler varsa "Taşı" / "Bırak";
+    /// yoksa "Bitti".
     @ViewBuilder
     private var actions: some View {
-        V3PrimaryButton(title: NSLocalizedString("one2.reflection.done", comment: "Finish"), isFullWidth: true) {
-            finish(nil)
+        if closing.carryOver.isEmpty {
+            V3PrimaryButton(title: NSLocalizedString("one2.reflection.done", comment: "Finish"), isFullWidth: true) {
+                finish(nil)
+            }
+        } else {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {
+                Text(NSLocalizedString("one2.flow.carry.question", comment: "Carry unchecked items to tomorrow?"))
+                    .bodyLGSemibold()
+                    .foregroundColor(V3Tokens.ink)
+                Text(closing.carryOver.joined(separator: " · "))
+                    .bodyMD()
+                    .foregroundColor(V3Tokens.mutedText)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: V3Tokens.spacingMD) {
+                    V3OutlineButton(title: NSLocalizedString("one2.flow.carry.drop", comment: "Let the items go"),
+                                    isFullWidth: true) { finish(false) }
+                    V3PrimaryButton(title: NSLocalizedString("one2.flow.carry.move", comment: "Carry items to tomorrow"),
+                                    isFullWidth: true) { finish(true) }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 

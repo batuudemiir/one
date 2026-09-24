@@ -151,7 +151,8 @@ struct FlowStepContent: View {
         case .sleep:    SleepStep(step: step, model: model)
         case .focus:    FocusStep(step: step, model: model)
         case .quote:    QuoteStep(step: step, model: model)
-        default:        EmptyView()
+        case .practices: PracticesStep(step: step, model: model)
+        case .intentionReview: IntentionReviewStep(step: step, model: model)
         }
     }
 }
