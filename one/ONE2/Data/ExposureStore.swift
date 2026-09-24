@@ -36,14 +36,28 @@ nonisolated struct ExposureRecord: Hashable, Sendable {
     var lastEntryID: UUID?
     var lastWrittenAt: Date?
     var writtenCount: Int = 0
+    /// Düşünür yakınlığı olayları (08 §4.5): sayı + son olay zamanı.
+    var shareCount: Int = 0
+    var lastSharedAt: Date?
+    /// ≥ 4 sn bakış.
+    var longLookCount: Int = 0
+    var lastLongLookAt: Date?
+    /// Hızlı geçiş (görülme eşiğinin altında).
+    var skipCount: Int = 0
+    var lastSkippedAt: Date?
 
     init(contentID: String, kind: ContentKind, firstSeenAt: Date? = nil, lastSeenAt: Date? = nil,
          seenCount: Int = 0, liked: Bool = false, likedAt: Date? = nil, lastEntryID: UUID? = nil,
-         lastWrittenAt: Date? = nil, writtenCount: Int = 0) {
+         lastWrittenAt: Date? = nil, writtenCount: Int = 0,
+         shareCount: Int = 0, lastSharedAt: Date? = nil, longLookCount: Int = 0, lastLongLookAt: Date? = nil,
+         skipCount: Int = 0, lastSkippedAt: Date? = nil) {
         self.contentID = contentID; self.kind = kind
         self.firstSeenAt = firstSeenAt; self.lastSeenAt = lastSeenAt; self.seenCount = seenCount
         self.liked = liked; self.likedAt = likedAt
         self.lastEntryID = lastEntryID; self.lastWrittenAt = lastWrittenAt; self.writtenCount = writtenCount
+        self.shareCount = shareCount; self.lastSharedAt = lastSharedAt
+        self.longLookCount = longLookCount; self.lastLongLookAt = lastLongLookAt
+        self.skipCount = skipCount; self.lastSkippedAt = lastSkippedAt
     }
 
     var wasSeen: Bool { seenCount > 0 || firstSeenAt != nil }
@@ -71,7 +85,10 @@ nonisolated struct ExposureRecord: Hashable, Sendable {
             likedAt: a.liked || b.liked ? earliest(a.liked ? a.likedAt : nil, b.liked ? b.likedAt : nil) : nil,
             lastEntryID: written.1,
             lastWrittenAt: written.0,
-            writtenCount: a.writtenCount + b.writtenCount
+            writtenCount: a.writtenCount + b.writtenCount,
+            shareCount: a.shareCount + b.shareCount, lastSharedAt: latest(a.lastSharedAt, b.lastSharedAt),
+            longLookCount: a.longLookCount + b.longLookCount, lastLongLookAt: latest(a.lastLongLookAt, b.lastLongLookAt),
+            skipCount: a.skipCount + b.skipCount, lastSkippedAt: latest(a.lastSkippedAt, b.lastSkippedAt)
         )
     }
 
@@ -124,8 +141,28 @@ final class ExposureStore {
 
     func recordSeen(_ id: String, kind: ContentKind, at date: Date? = nil) {
         let now = date ?? clock.now
-        let key = Key(kind: kind, id: id)
-        let delta = ExposureRecord(contentID: id, kind: kind, firstSeenAt: now, lastSeenAt: now, seenCount: 1)
+        buffer(ExposureRecord(contentID: id, kind: kind, firstSeenAt: now, lastSeenAt: now, seenCount: 1))
+    }
+
+    /// ≥ 4 sn bakış (08 §4.5). Görülmeyi ayrıca kaydetmez.
+    func recordLongLook(_ id: String, kind: ContentKind, at date: Date? = nil) {
+        let now = date ?? clock.now
+        buffer(ExposureRecord(contentID: id, kind: kind, longLookCount: 1, lastLongLookAt: now))
+    }
+
+    /// Hızlı geçiş: görülmüş sayılmaz, yakınlığı düşürür.
+    func recordSkipped(_ id: String, kind: ContentKind, at date: Date? = nil) {
+        let now = date ?? clock.now
+        buffer(ExposureRecord(contentID: id, kind: kind, skipCount: 1, lastSkippedAt: now))
+    }
+
+    func recordShared(_ id: String, kind: ContentKind, at date: Date? = nil) {
+        let now = date ?? clock.now
+        buffer(ExposureRecord(contentID: id, kind: kind, shareCount: 1, lastSharedAt: now))
+    }
+
+    private func buffer(_ delta: ExposureRecord) {
+        let key = Key(kind: delta.kind, id: delta.contentID)
         pending[key] = pending[key].map { ExposureRecord.merged($0, delta) } ?? delta
         pendingEvents += 1
         if pendingEvents >= Self.batchSize { try? flush() }
@@ -160,10 +197,7 @@ final class ExposureStore {
         pendingEvents = 0
         for (key, delta) in batch {
             let row = try rowForWriting(id: key.id, kind: key.kind)
-            let merged = ExposureRecord.merged(row.record ?? ExposureRecord(contentID: key.id, kind: key.kind), delta)
-            row.firstSeenAt = merged.firstSeenAt
-            row.lastSeenAt = merged.lastSeenAt
-            row.seenCount = Int32(clamping: merged.seenCount)
+            row.apply(ExposureRecord.merged(row.record ?? ExposureRecord(contentID: key.id, kind: key.kind), delta))
         }
         try context.saveIfNeeded()
     }
@@ -191,7 +225,7 @@ final class ExposureStore {
         request.propertiesToFetch = ["contentID"]
         request.predicate = NSPredicate(format: "contentKind == %@ AND seenCount > 0", kind.rawValue)
         var ids = Set(try context.fetch(request).compactMap { $0["contentID"] as? String })
-        for key in pending.keys where key.kind == kind { ids.insert(key.id) }
+        for (key, delta) in pending where key.kind == kind && delta.wasSeen { ids.insert(key.id) }
         return ids
     }
 
@@ -256,7 +290,10 @@ extension ContentExposureMO {
             contentID: contentID, kind: kind,
             firstSeenAt: firstSeenAt, lastSeenAt: lastSeenAt, seenCount: Int(seenCount),
             liked: liked, likedAt: likedAt,
-            lastEntryID: lastEntryID, lastWrittenAt: lastWrittenAt, writtenCount: Int(writtenCount)
+            lastEntryID: lastEntryID, lastWrittenAt: lastWrittenAt, writtenCount: Int(writtenCount),
+            shareCount: Int(shareCount), lastSharedAt: lastSharedAt,
+            longLookCount: Int(longLookCount), lastLongLookAt: lastLongLookAt,
+            skipCount: Int(skipCount), lastSkippedAt: lastSkippedAt
         )
     }
 
@@ -269,5 +306,11 @@ extension ContentExposureMO {
         lastEntryID = record.lastEntryID
         lastWrittenAt = record.lastWrittenAt
         writtenCount = Int16(clamping: record.writtenCount)
+        shareCount = Int16(clamping: record.shareCount)
+        lastSharedAt = record.lastSharedAt
+        longLookCount = Int16(clamping: record.longLookCount)
+        lastLongLookAt = record.lastLongLookAt
+        skipCount = Int16(clamping: record.skipCount)
+        lastSkippedAt = record.lastSkippedAt
     }
 }

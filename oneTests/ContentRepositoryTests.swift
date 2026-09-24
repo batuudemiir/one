@@ -56,7 +56,10 @@ struct ContentRepositoryTests {
         #expect((20...50).contains(catalog.causes.count))
         #expect((20...50).contains(catalog.badges.count))
         #expect((20...50).contains(catalog.evergreenThemes.count))
-        #expect(catalog.paths.count == 5)
+        // 08 §3.3: yedi düşünce yolu; ücretsiz varsayılan Stoacılar.
+        #expect(catalog.paths.map(\.id) == ["stoacilar", "antik_yunan", "varoluscular", "dogu_bilgeligi",
+                                             "islam_anadolu", "psikologlar", "modern_dusunce"])
+        #expect(catalog.paths.filter { !$0.premium }.map(\.id) == [QuotePath.defaultFreeID])
         #expect(!catalog.themes.isEmpty && !catalog.guided.isEmpty)
         #expect(Set(catalog.quotes.map(\.kind)) == Set(QuoteKind.allCases))
         #expect(catalog.duplicateIDs.isEmpty)
@@ -119,11 +122,12 @@ struct ContentRepositoryTests {
         #expect(throws: ContentLoadError.hashMismatch(ContentFiles.quotes)) { try ContentLoader.load(from: source) }
     }
 
-    @Test("schemaVersion major'ı büyükse reddediliyor")
+    @Test("schemaVersion major'ı büyükse reddediliyor (v1 ve v2 okunur, 08)")
     func schemaTooNew() {
-        let source = ContentFixture.source([:], schema: "2.0")
-        #expect(throws: ContentLoadError.unsupportedSchema("2.0")) { try ContentLoader.load(from: source) }
+        let source = ContentFixture.source([:], schema: "3.0")
+        #expect(throws: ContentLoadError.unsupportedSchema("3.0")) { try ContentLoader.load(from: source) }
         #expect((try? ContentLoader.load(from: ContentFixture.source([:], schema: "1.7"))) != nil)
+        #expect((try? ContentLoader.load(from: ContentFixture.source([:], schema: "2.0"))) != nil)
     }
 
     @Test("Manifestteki dosya eksikse reddediliyor")

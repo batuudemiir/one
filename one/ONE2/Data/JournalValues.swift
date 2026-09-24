@@ -97,6 +97,19 @@ nonisolated struct MoodCheckIn: Identifiable, Hashable, Sendable {
     let source: MoodSource
     let healthKitSampleID: String?
     let entryID: UUID?
+    /// Bağlı girdinin türü: check-in'in ritüel dilimi buradan (`slot`).
+    var entryKind: EntryKind? = nil
+    /// Bu check-in'e gösterilen yankı (E6); yeniden açılışta aynı cümle.
+    var echoID: String? = nil
+
+    /// Bugün kartının dilimi: sabah/akşam ritüeli ya da günlük check-in.
+    var slot: RitualCard {
+        switch entryKind {
+        case .morning: return .morning
+        case .evening: return .evening
+        default: return .daily
+        }
+    }
 }
 
 nonisolated struct JournalTag: Identifiable, Hashable, Sendable {

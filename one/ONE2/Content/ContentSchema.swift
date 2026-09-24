@@ -20,7 +20,7 @@ import Foundation
 
 nonisolated enum ContentSchema {
     /// Uygulamanın okuyabildiği en büyük şema major'ı.
-    static let supportedMajor = 1
+    static let supportedMajor = 2
 }
 
 nonisolated struct ContentManifest: Codable, Hashable, Sendable {
@@ -116,17 +116,65 @@ nonisolated enum QuoteLength: String, Codable, Sendable, CaseIterable {
     }
 }
 
+/// Kaynak (08 §3.2). Kartta yazmaz; kaynak sheet'inde görünür.
+nonisolated struct SourceRef: Codable, Hashable, Sendable {
+    /// Eser, Türkçe yerleşik adıyla ("Ahlak Mektupları").
+    var work: String
+    /// Mektup/bölüm/paragraf/sayfa ("Mektup 1, 1"). v1 dosyalarında boş.
+    var locator: String
+    var translation: QuoteTranslation
+    var translator: String?
+    var verifiedBy: String?
+    /// `yyyy-MM-dd`.
+    var verifiedAt: String?
+
+    init(work: String, locator: String = "", translation: QuoteTranslation = .original,
+         translator: String? = nil, verifiedBy: String? = nil, verifiedAt: String? = nil) {
+        self.work = work; self.locator = locator; self.translation = translation
+        self.translator = translator; self.verifiedBy = verifiedBy; self.verifiedAt = verifiedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(work: try c.decode(String.self, forKey: .work),
+                  locator: try c.decodeIfPresent(String.self, forKey: .locator) ?? "",
+                  translation: try c.decodeIfPresent(QuoteTranslation.self, forKey: .translation) ?? .original,
+                  translator: try c.decodeIfPresent(String.self, forKey: .translator),
+                  verifiedBy: try c.decodeIfPresent(String.self, forKey: .verifiedBy),
+                  verifiedAt: try c.decodeIfPresent(String.self, forKey: .verifiedAt))
+    }
+}
+
+/// Söz tonu (08 §3.2): eski "ses" yolları buraya taşındı.
+nonisolated enum QuoteTone: String, Codable, Sendable, CaseIterable {
+    case sakin, cesur, sefkatli, uretken, derin
+
+    /// v1 yol ID'si → ton (`filozof` → `derin`).
+    static func fromV1Path(_ id: String) -> QuoteTone? {
+        id == "filozof" ? .derin : QuoteTone(rawValue: id)
+    }
+}
+
 nonisolated struct Quote: ContentItem, Hashable {
     let id: QuoteID
     let text: String
     let kind: QuoteKind
-    let author: String?
-    let source: String?
-    let translation: QuoteTranslation?
+    /// Düşünür (08 §3.2); `quote` için zorunlu.
+    var authorID: ThinkerID?
+    /// Kartın ad satırı: düşünürün `displayName`'i (UX başına "— " ekler).
+    /// Katalog doldurur; düşünür bilinmiyorsa v1 ad metni.
+    var attribution: String?
+    var sourceRef: SourceRef?
     let license: ContentLicense
     let licenseNote: String?
+    /// `false` ise yayın yok (akışa girmez).
+    let verified: Bool
+    /// Eserdeki cümlenin kısaltılmış/yaygın biçimi: kaynak sheet'inde "uyarlama".
+    let paraphrase: Bool
+    let tones: [String]
     let themes: [String]
-    let paths: [String]
+    /// Düşünce yolları (08 §3.3); boşsa düşünürün `pathIDs`'i.
+    var paths: [String]
     let emotionFit: [String]
     let moodFit: [Int]
     let timeOfDay: DayPart
@@ -134,37 +182,96 @@ nonisolated struct Quote: ContentItem, Hashable {
     let length: QuoteLength
     let reflectionPromptIDs: [String]?
     let premium: Bool
-    let active: Bool
+    var active: Bool
     let addedIn: Int
     let lang: String
+    /// v1 dosyasındaki serbest `author` metni; katalog `authorID`'ye eşler.
+    /// Kodlanmaz.
+    var legacyAuthorName: String?
 
-    init(id: QuoteID, text: String, kind: QuoteKind, author: String? = nil, source: String? = nil,
-         translation: QuoteTranslation? = nil, license: ContentLicense = .original, licenseNote: String? = nil,
+    // MARK: Eski (v1) erişimler — mevcut çağıranlar için
+
+    /// Görünen ad (v1'deki `author`).
+    var author: String? { attribution }
+    /// Eser adı (v1'deki `source`).
+    var source: String? { sourceRef?.work }
+    var translation: QuoteTranslation? { sourceRef?.translation }
+
+    init(id: QuoteID, text: String, kind: QuoteKind,
+         authorID: ThinkerID? = nil, attribution: String? = nil, sourceRef: SourceRef? = nil,
+         license: ContentLicense = .original, licenseNote: String? = nil,
+         verified: Bool = true, paraphrase: Bool = false, tones: [String] = [],
          themes: [String] = [], paths: [String] = [], emotionFit: [String] = [], moodFit: [Int] = [],
          timeOfDay: DayPart = .any, length: QuoteLength? = nil, reflectionPromptIDs: [String]? = nil,
          premium: Bool = false, active: Bool = true, addedIn: Int = 1, lang: String = "tr") {
-        self.id = id; self.text = text; self.kind = kind; self.author = author; self.source = source
-        self.translation = translation; self.license = license; self.licenseNote = licenseNote
+        self.id = id; self.text = text; self.kind = kind
+        self.authorID = authorID; self.attribution = attribution; self.sourceRef = sourceRef
+        self.license = license; self.licenseNote = licenseNote
+        self.verified = verified; self.paraphrase = paraphrase; self.tones = tones
         self.themes = themes; self.paths = paths; self.emotionFit = emotionFit; self.moodFit = moodFit
         self.timeOfDay = timeOfDay; self.length = length ?? .of(text)
         self.reflectionPromptIDs = reflectionPromptIDs
         self.premium = premium; self.active = active; self.addedIn = addedIn; self.lang = lang
     }
 
+    /// v1 biçimli kurucu (ad metni + eser adı). Ad eşleme tablosunda varsa o
+    /// düşünüre, yoksa addan türetilen kararlı bir ID'ye bağlanır.
+    init(id: QuoteID, text: String, kind: QuoteKind, author: String?, source: String? = nil,
+         translation: QuoteTranslation? = nil, license: ContentLicense = .original, licenseNote: String? = nil,
+         themes: [String] = [], paths: [String] = [], emotionFit: [String] = [], moodFit: [Int] = [],
+         timeOfDay: DayPart = .any, length: QuoteLength? = nil, reflectionPromptIDs: [String]? = nil,
+         premium: Bool = false, active: Bool = true, addedIn: Int = 1, lang: String = "tr") {
+        self.init(id: id, text: text, kind: kind,
+                  authorID: author.map { ThinkerNames.id(for: $0) ?? ThinkerNames.syntheticID(for: $0) },
+                  attribution: author,
+                  sourceRef: source.map { SourceRef(work: $0, translation: translation ?? .original) },
+                  license: license, licenseNote: licenseNote, themes: themes, paths: paths,
+                  emotionFit: emotionFit, moodFit: moodFit, timeOfDay: timeOfDay, length: length,
+                  reflectionPromptIDs: reflectionPromptIDs, premium: premium, active: active,
+                  addedIn: addedIn, lang: lang)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, text, kind, authorID, author, source, translation, license, licenseNote, verified, paraphrase
+        case tones, themes, paths, emotionFit, moodFit, timeOfDay, length, reflectionPromptIDs
+        case premium, active, addedIn, lang
+    }
+
+    /// v1 ve v2'yi okur (08 §3.2): v1 `author` metni → `legacyAuthorName`,
+    /// v1 `source` metni + üst düzey `translation` → `SourceRef`, v1 ses
+    /// yolları (`tones` yokken `paths` içindekiler) → `tones`.
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let text = try c.decode(String.self, forKey: .text)
+        let kind = try c.decode(QuoteKind.self, forKey: .kind)
+        let sourceRef: SourceRef?
+        if let object = try? c.decodeIfPresent(SourceRef.self, forKey: .source) {
+            sourceRef = object
+        } else if let work = try? c.decodeIfPresent(String.self, forKey: .source) {
+            sourceRef = SourceRef(work: work,
+                                  translation: try c.decodeIfPresent(QuoteTranslation.self, forKey: .translation) ?? .original)
+        } else {
+            sourceRef = nil
+        }
+        var paths = try c.decodeIfPresent([String].self, forKey: .paths) ?? []
+        var tones = try c.decodeIfPresent([String].self, forKey: .tones)
+        if tones == nil {
+            tones = paths.compactMap { QuoteTone.fromV1Path($0)?.rawValue }
+            paths.removeAll { QuoteTone.fromV1Path($0) != nil }
+        }
         self.init(
             id: try c.decode(String.self, forKey: .id),
-            text: text,
-            kind: try c.decode(QuoteKind.self, forKey: .kind),
-            author: try c.decodeIfPresent(String.self, forKey: .author),
-            source: try c.decodeIfPresent(String.self, forKey: .source),
-            translation: try c.decodeIfPresent(QuoteTranslation.self, forKey: .translation),
+            text: text, kind: kind,
+            authorID: try c.decodeIfPresent(String.self, forKey: .authorID),
+            sourceRef: sourceRef,
             license: try c.decode(ContentLicense.self, forKey: .license),
             licenseNote: try c.decodeIfPresent(String.self, forKey: .licenseNote),
+            // v1'de alan yok: v1 doğrulayıcısı `quote` için kaynağı zaten şart koşuyordu.
+            verified: try c.decodeIfPresent(Bool.self, forKey: .verified) ?? (kind != .quote || sourceRef != nil),
+            paraphrase: try c.decodeIfPresent(Bool.self, forKey: .paraphrase) ?? false,
+            tones: tones ?? [],
             themes: try c.decodeIfPresent([String].self, forKey: .themes) ?? [],
-            paths: try c.decodeIfPresent([String].self, forKey: .paths) ?? [],
+            paths: paths,
             emotionFit: try c.decodeIfPresent([String].self, forKey: .emotionFit) ?? [],
             moodFit: try c.decodeIfPresent([Int].self, forKey: .moodFit) ?? [],
             timeOfDay: try c.decodeIfPresent(DayPart.self, forKey: .timeOfDay) ?? .any,
@@ -175,20 +282,198 @@ nonisolated struct Quote: ContentItem, Hashable {
             addedIn: try c.decodeIfPresent(Int.self, forKey: .addedIn) ?? 1,
             lang: try c.decodeIfPresent(String.self, forKey: .lang) ?? "tr"
         )
+        if authorID == nil { legacyAuthorName = try c.decodeIfPresent(String.self, forKey: .author) }
+    }
+
+    /// Her zaman v2 biçiminde yazar (`attribution` ve `legacyAuthorName` yazılmaz).
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id); try c.encode(text, forKey: .text); try c.encode(kind, forKey: .kind)
+        try c.encodeIfPresent(authorID, forKey: .authorID)
+        try c.encodeIfPresent(sourceRef, forKey: .source)
+        try c.encode(license, forKey: .license); try c.encodeIfPresent(licenseNote, forKey: .licenseNote)
+        try c.encode(verified, forKey: .verified); try c.encode(paraphrase, forKey: .paraphrase)
+        try c.encode(tones, forKey: .tones); try c.encode(themes, forKey: .themes); try c.encode(paths, forKey: .paths)
+        try c.encode(emotionFit, forKey: .emotionFit); try c.encode(moodFit, forKey: .moodFit)
+        try c.encode(timeOfDay, forKey: .timeOfDay); try c.encode(length, forKey: .length)
+        try c.encodeIfPresent(reflectionPromptIDs, forKey: .reflectionPromptIDs)
+        try c.encode(premium, forKey: .premium); try c.encode(active, forKey: .active)
+        try c.encode(addedIn, forKey: .addedIn); try c.encode(lang, forKey: .lang)
     }
 }
 
-/// Söz yolu: onboarding'de seçilen "ses" (`filozof`, `sakin`…).
+/// Düşünce yolu (08 §3.3). v1'deki "ses" yolları `QuoteTone`'a taşındı.
 nonisolated struct QuotePath: ContentItem, Hashable {
     let id: String
     let title: String
     let summary: String
-    /// Bu yolda tür ağırlıkları (E2.3 yol uyumu); yoksa eşit.
+    /// v1 alanı; v2 yollarında yok.
     let kindWeights: [String: Double]?
     let premium: Bool
     let active: Bool
     let addedIn: Int
     let lang: String
+
+    /// Onboarding'de yol seçilmediyse ücretsiz yol.
+    static let defaultFreeID = "stoacilar"
+}
+
+// MARK: - Düşünürler (08 §3.1)
+
+typealias ThinkerID = String
+typealias PathID = String
+
+nonisolated enum ThinkerKind: String, Codable, Sendable, CaseIterable {
+    case philosopher, psychologist, thinker, mystic, writer
+}
+
+nonisolated enum RightsStatus: String, Codable, Sendable {
+    case publicDomain, protected
+
+    /// 08 §5: ölüm yılı + 70 < bu yıl → kamu malı; yaşayan ya da yılı
+    /// bilinmeyen → korumalı. Hukuki görüş değildir.
+    static func of(deathYear: Int?, currentYear: Int) -> RightsStatus {
+        guard let deathYear else { return .protected }
+        return deathYear + 70 < currentYear ? .publicDomain : .protected
+    }
+}
+
+nonisolated struct Thinker: ContentItem, Hashable {
+    let id: ThinkerID
+    let displayName: String
+    let shortName: String
+    let aliases: [String]
+    let kind: ThinkerKind
+    /// MÖ için negatif.
+    let birthYear: Int?
+    let deathYear: Int?
+    let eraDisplay: String
+    let pathIDs: [PathID]
+    let coreIdea: String
+    let bioShort: String
+    let portraitAsset: String?
+    let rights: RightsStatus
+    let premium: Bool
+    let active: Bool
+    let addedIn: Int
+    let lang: String
+
+    init(id: ThinkerID, displayName: String, shortName: String? = nil, aliases: [String] = [],
+         kind: ThinkerKind = .philosopher, birthYear: Int? = nil, deathYear: Int? = nil, eraDisplay: String = "",
+         pathIDs: [PathID] = [], coreIdea: String = "", bioShort: String = "", portraitAsset: String? = nil,
+         rights: RightsStatus? = nil, premium: Bool = false, active: Bool = true, addedIn: Int = 1,
+         lang: String = "tr", currentYear: Int = Thinker.currentYear) {
+        self.id = id; self.displayName = displayName; self.shortName = shortName ?? displayName
+        self.aliases = aliases; self.kind = kind; self.birthYear = birthYear; self.deathYear = deathYear
+        self.eraDisplay = eraDisplay; self.pathIDs = pathIDs; self.coreIdea = coreIdea; self.bioShort = bioShort
+        self.portraitAsset = portraitAsset
+        self.rights = rights ?? .of(deathYear: deathYear, currentYear: currentYear)
+        self.premium = premium; self.active = active; self.addedIn = addedIn; self.lang = lang
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let name = try c.decode(String.self, forKey: .displayName)
+        self.init(
+            id: try c.decode(String.self, forKey: .id), displayName: name,
+            shortName: try c.decodeIfPresent(String.self, forKey: .shortName),
+            aliases: try c.decodeIfPresent([String].self, forKey: .aliases) ?? [],
+            kind: try c.decodeIfPresent(ThinkerKind.self, forKey: .kind) ?? .thinker,
+            birthYear: try c.decodeIfPresent(Int.self, forKey: .birthYear),
+            deathYear: try c.decodeIfPresent(Int.self, forKey: .deathYear),
+            eraDisplay: try c.decodeIfPresent(String.self, forKey: .eraDisplay) ?? "",
+            pathIDs: try c.decodeIfPresent([String].self, forKey: .pathIDs) ?? [],
+            coreIdea: try c.decodeIfPresent(String.self, forKey: .coreIdea) ?? "",
+            bioShort: try c.decodeIfPresent(String.self, forKey: .bioShort) ?? "",
+            portraitAsset: try c.decodeIfPresent(String.self, forKey: .portraitAsset),
+            rights: try c.decodeIfPresent(RightsStatus.self, forKey: .rights),
+            premium: try c.decodeIfPresent(Bool.self, forKey: .premium) ?? false,
+            active: try c.decodeIfPresent(Bool.self, forKey: .active) ?? true,
+            addedIn: try c.decodeIfPresent(Int.self, forKey: .addedIn) ?? 1,
+            lang: try c.decodeIfPresent(String.self, forKey: .lang) ?? "tr"
+        )
+    }
+
+    static var currentYear: Int { Calendar(identifier: .gregorian).component(.year, from: Date()) }
+}
+
+/// v1 ad metni → düşünür ID'si (08 §3.2 eşleme tablosu). Başlangıç listesi
+/// (08 §3.4) ve yaygın yazımlar; katalogdaki `displayName` ve `aliases` de
+/// eşlemede kullanılır (`ContentCatalog`). Karşılaştırma TR küçük harf +
+/// aksansız: "İbn Sînâ" = "ibn sina". Tablo bu normalize biçimde yazılı.
+nonisolated enum ThinkerNames {
+    static let table: [String: ThinkerID] = {
+        let rows: [(ThinkerID, [String])] = [
+            ("th_seneca", ["seneca", "lucius annaeus seneca"]),
+            ("th_epiktetos", ["epiktetos", "epictetus", "epiktet"]),
+            ("th_marcus_aurelius", ["marcus aurelius", "markus aurelius", "marcus aurelius antoninus"]),
+            ("th_zenon", ["zenon", "kitionlu zenon", "zeno"]),
+            ("th_musonius_rufus", ["musonius rufus"]),
+            ("th_platon", ["platon", "eflatun", "plato"]),
+            ("th_sokrates", ["sokrates", "sokrat", "socrates"]),
+            ("th_aristoteles", ["aristoteles", "aristo", "aristotle"]),
+            ("th_epikuros", ["epikuros", "epikur", "epicurus"]),
+            ("th_herakleitos", ["herakleitos", "heraklitos", "heraclitus"]),
+            ("th_diogenes", ["diogenes", "sinoplu diogenes"]),
+            ("th_kierkegaard", ["kierkegaard", "soren kierkegaard", "soren kierkegaard"]),
+            ("th_nietzsche", ["nietzsche", "friedrich nietzsche"]),
+            ("th_dostoyevski", ["dostoyevski", "fyodor dostoyevski", "dostoevsky"]),
+            ("th_camus", ["camus", "albert camus"]),
+            ("th_sartre", ["sartre", "jean-paul sartre"]),
+            ("th_beauvoir", ["simone de beauvoir", "beauvoir"]),
+            ("th_lao_tzu", ["lao tzu", "lao tse", "laozi"]),
+            ("th_konfucyus", ["konfucyus", "konfucyus", "confucius"]),
+            ("th_buda", ["buda", "buddha"]),
+            ("th_zhuangzi", ["zhuangzi", "chuang tzu"]),
+            ("th_tagore", ["tagore", "rabindranath tagore"]),
+            ("th_mevlana", ["mevlana", "mevlana", "rumi", "celaleddin rumi"]),
+            ("th_yunus_emre", ["yunus emre"]),
+            ("th_farabi", ["farabi", "farabi", "al-farabi"]),
+            ("th_ibn_sina", ["ibn sina", "ibn sina", "avicenna"]),
+            ("th_gazali", ["gazali", "gazali", "al-ghazali"]),
+            ("th_ibn_arabi", ["ibn arabi", "ibnu'l-arabi", "ibn arabi"]),
+            ("th_ibn_haldun", ["ibn haldun", "ibn khaldun"]),
+            ("th_haci_bektas_veli", ["haci bektas veli", "haci bektas-i veli"]),
+            ("th_sems_i_tebrizi", ["sems-i tebrizi", "sems", "shams tabrizi"]),
+            ("th_william_james", ["william james"]),
+            ("th_freud", ["freud", "sigmund freud"]),
+            ("th_adler", ["adler", "alfred adler"]),
+            ("th_horney", ["karen horney", "horney"]),
+            ("th_jung", ["jung", "carl jung", "carl gustav jung"]),
+            ("th_frankl", ["viktor frankl", "frankl"]),
+            ("th_fromm", ["erich fromm", "fromm"]),
+            ("th_rogers", ["carl rogers"]),
+            ("th_maslow", ["abraham maslow", "maslow"]),
+            ("th_rollo_may", ["rollo may"]),
+            ("th_montaigne", ["montaigne", "michel de montaigne"]),
+            ("th_pascal", ["pascal", "blaise pascal"]),
+            ("th_spinoza", ["spinoza", "baruch spinoza"]),
+            ("th_kant", ["kant", "immanuel kant"]),
+            ("th_schopenhauer", ["schopenhauer", "arthur schopenhauer"]),
+            ("th_goethe", ["goethe", "johann wolfgang von goethe"]),
+            ("th_emerson", ["emerson", "ralph waldo emerson"]),
+            ("th_thoreau", ["thoreau", "henry david thoreau"]),
+            ("th_simone_weil", ["simone weil"]),
+            ("th_wittgenstein", ["wittgenstein", "ludwig wittgenstein"]),
+            ("th_russell", ["bertrand russell", "russell"]),
+        ]
+        var map: [String: ThinkerID] = [:]
+        for (id, names) in rows { for name in names { map[key(name)] = id } }
+        return map
+    }()
+
+    static func id(for name: String) -> ThinkerID? { table[key(name)] }
+
+    /// Tablo dışı ad için kararlı ID (yalnız kod içi v1 kurucusu; dosyadan
+    /// gelen eşleşmeyen ad pasifleşir).
+    static func syntheticID(for name: String) -> ThinkerID {
+        "th_" + key(name).map { $0.isLetter || $0.isNumber ? String($0) : "_" }.joined()
+    }
+
+    /// TR küçük harf, aksansız, tek boşluk.
+    static func key(_ name: String) -> String {
+        SearchText.folded(name).split(whereSeparator: \.isWhitespace).joined(separator: " ")
+    }
 }
 
 // MARK: - Sorular (E4)

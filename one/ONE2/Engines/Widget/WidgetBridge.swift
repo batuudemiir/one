@@ -173,7 +173,8 @@ final class WidgetSnapshotSource {
         }
         if let last = (try? mood.logs(on: today))?.last {
             let label = last.emotionIDs.first.flatMap { id in catalog.emotions.first { $0.id == id }?.label }
-            s.todayCheckIn = WidgetCheckIn(score: last.score, label: label, echo: todaysEcho(catalog))
+            let saved = last.echoID.flatMap { id in catalog.echoes.first { $0.id == id }?.text }
+            s.todayCheckIn = WidgetCheckIn(score: last.score, label: label, echo: saved ?? todaysEcho(catalog))
         }
         if let theme = ThemeCalendar.theme(for: today, catalog: catalog, salt: p.userSalt) {
             s.theme = WidgetTheme(title: theme.theme.title, prompt: await prompts.dailyPrompt(for: today)?.text)

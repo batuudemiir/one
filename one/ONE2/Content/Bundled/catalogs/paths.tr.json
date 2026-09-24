@@ -2,76 +2,64 @@
   "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
   "items": [
     {
-      "id": "filozof",
-      "title": "Filozof",
-      "summary": "Düşünmeye davet eden eski sesler.",
-      "kindWeights": {
-        "quote": 0.6,
-        "reflection": 0.3,
-        "proverb": 0.1,
-        "affirmation": 0.0
-      },
+      "id": "stoacilar",
+      "title": "Stoacılar",
+      "summary": "Kontrol, erdem ve dinginlik üzerine.",
       "premium": false,
       "active": true,
       "addedIn": 1,
       "lang": "tr"
     },
     {
-      "id": "sakin",
-      "title": "Sakin",
-      "summary": "Yavaşlatan, nefes aldıran cümleler.",
-      "kindWeights": {
-        "reflection": 0.4,
-        "affirmation": 0.3,
-        "proverb": 0.2,
-        "quote": 0.1
-      },
-      "premium": false,
+      "id": "antik_yunan",
+      "title": "Antik Yunan",
+      "summary": "Soru sormanın ve iyi yaşamın kökleri.",
+      "premium": true,
       "active": true,
       "addedIn": 1,
       "lang": "tr"
     },
     {
-      "id": "cesur",
-      "title": "Cesur",
-      "summary": "Adım atmana eşlik eden sözler.",
-      "kindWeights": {
-        "affirmation": 0.4,
-        "quote": 0.3,
-        "reflection": 0.2,
-        "proverb": 0.1
-      },
-      "premium": false,
+      "id": "varoluscular",
+      "title": "Varoluşçular",
+      "summary": "Özgürlük, anlam ve kaygı.",
+      "premium": true,
       "active": true,
       "addedIn": 1,
       "lang": "tr"
     },
     {
-      "id": "sefkatli",
-      "title": "Şefkatli",
-      "summary": "Kendine yumuşak davranmanı hatırlatır.",
-      "kindWeights": {
-        "affirmation": 0.5,
-        "reflection": 0.4,
-        "proverb": 0.1,
-        "quote": 0.0
-      },
-      "premium": false,
+      "id": "dogu_bilgeligi",
+      "title": "Doğu bilgeliği",
+      "summary": "Akış, denge ve sadelik.",
+      "premium": true,
       "active": true,
       "addedIn": 1,
       "lang": "tr"
     },
     {
-      "id": "uretken",
-      "title": "Üretken",
-      "summary": "Odak ve küçük adımlar üzerine.",
-      "kindWeights": {
-        "reflection": 0.4,
-        "proverb": 0.3,
-        "quote": 0.2,
-        "affirmation": 0.1
-      },
-      "premium": false,
+      "id": "islam_anadolu",
+      "title": "İslam ve Anadolu düşüncesi",
+      "summary": "Sevgi, bilgi ve yol.",
+      "premium": true,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "psikologlar",
+      "title": "Psikologlar",
+      "summary": "Zihni ve duyguyu anlamak.",
+      "premium": true,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "modern_dusunce",
+      "title": "Modern düşünce",
+      "summary": "Akıl, doğa ve kendilik.",
+      "premium": true,
       "active": true,
       "addedIn": 1,
       "lang": "tr"

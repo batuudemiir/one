@@ -76,9 +76,29 @@ final class EchoEngine {
     private let exposure: ExposureStore
     private let profile: ProfileStore
     private let clock: AppClock
+    private let mood: MoodStore?
 
-    init(content: ContentRepository, exposure: ExposureStore, profile: ProfileStore, clock: AppClock) {
-        self.content = content; self.exposure = exposure; self.profile = profile; self.clock = clock
+    init(content: ContentRepository, exposure: ExposureStore, profile: ProfileStore, clock: AppClock,
+         mood: MoodStore? = nil) {
+        self.content = content; self.exposure = exposure; self.profile = profile; self.clock = clock; self.mood = mood
+    }
+
+    /// Kaydedilmiş check-in'in yankısı: önce saklanan, yoksa seçip saklar.
+    /// Aynı check-in her açılışta aynı cümleyi gösterir.
+    func echo(for checkIn: MoodCheckIn, recentDailyScores: [Double] = [], isFirstCheckin: Bool = false) -> Echo? {
+        if let id = checkIn.echoID, let saved = content.catalog.echoes.first(where: { $0.id == id }) { return saved }
+        let input = EchoInput(score: checkIn.score, emotionIDs: checkIn.emotionIDs, causeIDs: checkIn.causeIDs,
+                              dayPart: .of(hour: clock.calendar.component(.hour, from: checkIn.timestamp)),
+                              isFirstCheckin: isFirstCheckin, recentDailyScores: recentDailyScores,
+                              checkInID: checkIn.id.uuidString)
+        guard let echo = echo(for: input) else { return nil }
+        try? mood?.setEchoID(echo.id, for: checkIn.id)
+        return echo
+    }
+
+    /// Kayıtlı bir yankı metni (ID ile).
+    func echoText(_ id: String?) -> String? {
+        id.flatMap { id in content.catalog.echoes.first { $0.id == id }?.text }
     }
 
     /// Yankıyı seçer ve gösterildi olarak kaydeder.

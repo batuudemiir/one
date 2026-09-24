@@ -54,6 +54,18 @@ nonisolated struct BadgeStats: Equatable, Sendable {
     }
 }
 
+/// Profil'deki rozet: kazanıldıysa tarih, değilse ilerleme.
+nonisolated struct BadgeStatus: Equatable, Sendable {
+    let badge: BadgeDefinition
+    let earnedAt: Date?
+    let current: Int
+    let target: Int
+
+    var isEarned: Bool { earnedAt != nil }
+    /// Kilitliyse kalan miktar (gün, girdi, kelime…).
+    var remaining: Int? { isEarned ? nil : max(target - current, 0) }
+}
+
 nonisolated struct BadgeAwardDecision: Equatable, Sendable {
     let badge: BadgeDefinition
     /// Kapanış ekranında duyurulsun mu.
@@ -71,6 +83,20 @@ nonisolated enum BadgeRules {
         case .bothRituals(let n): return s.bothRitualDays >= n
         case .comparison(let n): return s.comparisons >= n
         case .firstOf(let kind): return (s.entriesByKind[kind] ?? 0) >= 1
+        }
+    }
+
+    /// Kilitli rozetin ilerlemesi: (şimdiki, hedef). Profil'de "kalan" ve
+    /// diskteki değer için.
+    static func progress(_ rule: BadgeRule, stats s: BadgeStats) -> (current: Int, target: Int) {
+        switch rule {
+        case .streak(let n): return (s.longestStreak, n)
+        case .entries(let kind, let n): return (kind.map { s.entriesByKind[$0] ?? 0 } ?? s.totalEntries, n)
+        case .words(let n): return (s.totalWords, n)
+        case .themeComplete(let n): return (s.themesCompleted, n)
+        case .bothRituals(let n): return (s.bothRitualDays, n)
+        case .comparison(let n): return (s.comparisons, n)
+        case .firstOf(let kind): return (min(s.entriesByKind[kind] ?? 0, 1), 1)
         }
     }
 
@@ -111,6 +137,17 @@ final class BadgeEngine {
     func evaluateAfterSave() throws -> [BadgeAwardDecision] {
         if lastStats == nil { lastStats = try currentStats() } // ilk kayıttan önceki durum bilinmiyorsa açılış gibi
         return try evaluate(previous: lastStats)
+    }
+
+    /// Profil rozet ızgarası: katalog sırasıyla her rozet, kazanıldıysa tarihi,
+    /// değilse ilerlemesi.
+    func overview() throws -> [BadgeStatus] {
+        let stats = try currentStats()
+        let earned = Dictionary(try library.badges().map { ($0.badgeID, $0.earnedAt) }, uniquingKeysWith: { min($0, $1) })
+        return content.catalog.badges.filter(\.active).map { def in
+            let p = BadgeRules.progress(def.rule, stats: stats)
+            return BadgeStatus(badge: def, earnedAt: earned[def.id], current: min(p.current, p.target), target: p.target)
+        }
     }
 
     func currentStats() throws -> BadgeStats {

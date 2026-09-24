@@ -38,6 +38,8 @@ nonisolated enum ContentFiles {
     static let causes = "catalogs/causes.tr.json"
     static let badges = "catalogs/badges.tr.json"
     static let paths = "catalogs/paths.tr.json"
+    /// Şema v2 (08 §3.1).
+    static let thinkers = "catalogs/thinkers.tr.json"
 
     static func isWeeklyTheme(_ path: String) -> Bool {
         path.hasPrefix("themes/") && path != evergreen
@@ -95,7 +97,8 @@ nonisolated enum ContentLoader {
             emotions: try items(ContentFiles.emotions),
             causes: try items(ContentFiles.causes),
             badges: try items(ContentFiles.badges),
-            paths: try items(ContentFiles.paths)
+            paths: try items(ContentFiles.paths),
+            thinkers: try items(ContentFiles.thinkers)
         )
         let duplicates = catalog.duplicateIDs
         guard duplicates.isEmpty else { throw ContentLoadError.duplicateIDs(duplicates) }

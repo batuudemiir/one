@@ -21,8 +21,13 @@
     },
     {
       "path": "catalogs/paths.tr.json",
-      "sha256": "ee85c440fab97edfb065af108a81bab9cc713cb2a2516c62bce3d56c796b8da3",
-      "bytes": 1821
+      "sha256": "c198bf237b93aa0518b49f361e4fffbd7eec734f60dee5f152e2d4067b4c1940",
+      "bytes": 1608
+    },
+    {
+      "path": "catalogs/thinkers.tr.json",
+      "sha256": "18f5023d734f955470310204e6aef7c8c56977ae030229ba67e9c364ad5f75f7",
+      "bytes": 6874
     },
     {
       "path": "echoes.tr.json",
@@ -51,8 +56,8 @@
     },
     {
       "path": "quotes.tr.json",
-      "sha256": "606dd350a2646413f66918875d0e70d289c80541d5e9c2ef38eac4ca17aa3b7d",
-      "bytes": 25450
+      "sha256": "46719d86814d7dca813e34224488630a6d43a2dcfa4778f5659adb569604a56b",
+      "bytes": 26368
     },
     {
       "path": "themes/2026-w39.tr.json",

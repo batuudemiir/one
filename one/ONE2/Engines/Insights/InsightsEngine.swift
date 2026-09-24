@@ -25,7 +25,7 @@
 import Foundation
 import CoreData
 
-nonisolated enum InsightState<Value: Sendable & Equatable>: Sendable, Equatable {
+nonisolated enum InsightResult<Value: Sendable & Equatable>: Sendable, Equatable {
     case ready(Value)
     /// `needed`: bu içgörü için gereken toplam; `have`: şu anki sayı.
     case insufficient(needed: Int, have: Int)
@@ -78,7 +78,7 @@ nonisolated struct CauseRelation: Equatable, Sendable {
     let samples: Int
 }
 
-nonisolated struct WritingStats: Equatable, Sendable {
+nonisolated struct WritingSummary: Equatable, Sendable {
     let entries: Int
     let words: Int
     let longestStreak: Int
@@ -91,7 +91,7 @@ nonisolated struct HourDistribution: Equatable, Sendable {
     let entries: [Int]
 }
 
-nonisolated struct ChangePair: Equatable, Sendable {
+nonisolated struct AnswerChangePair: Equatable, Sendable {
     let ref: String
     let earlier: UUID
     let later: UUID
@@ -107,7 +107,7 @@ nonisolated enum Insights {
     static let minHours = 10
     static let minQuoteInteractions = 5
 
-    static func moodLine(_ logs: [MoodCheckIn], period: InsightPeriod, today: DayKey) -> InsightState<[MoodPoint]> {
+    static func moodLine(_ logs: [MoodCheckIn], period: InsightPeriod, today: DayKey) -> InsightResult<[MoodPoint]> {
         let range = period.range(endingAt: today)
         let inRange = logs.filter { range.contains($0.day) && $0.score > 0 }
         guard inRange.count >= minMoodLine else { return .insufficient(needed: minMoodLine, have: inRange.count) }
@@ -117,7 +117,33 @@ nonisolated enum Insights {
         return .ready(points)
     }
 
-    static func averageChange(_ logs: [MoodCheckIn], period: InsightPeriod, today: DayKey) -> InsightState<AverageChange> {
+    /// Aylık ortalama serisi (son `months` ay); nokta günü ayın ilk günü.
+    /// Eğilimler › "Aylar". Eşik mood çizgisiyle aynı.
+    static func monthlySeries(_ logs: [MoodCheckIn], months: Int = 12, today: DayKey) -> InsightResult<[MoodPoint]> {
+        guard let thisMonth = DayKey(year: today.year, month: today.month, day: 1) else { return .insufficient(needed: minMoodLine, have: 0) }
+        var start = thisMonth
+        for _ in 1..<max(months, 1) { start = firstOfPreviousMonth(start) }
+        return bucketed(logs.filter { $0.day >= start && $0.day <= today }) { DayKey(year: $0.year, month: $0.month, day: 1)! }
+    }
+
+    /// Yıllık ortalama serisi (tüm zamanlar); nokta günü yılın ilk günü. Eğilimler › "Yıllar".
+    static func yearlySeries(_ logs: [MoodCheckIn], today: DayKey) -> InsightResult<[MoodPoint]> {
+        bucketed(logs.filter { $0.day <= today }) { DayKey(year: $0.year, month: 1, day: 1)! }
+    }
+
+    private static func bucketed(_ logs: [MoodCheckIn], key: (DayKey) -> DayKey) -> InsightResult<[MoodPoint]> {
+        let valid = logs.filter { $0.score > 0 }
+        guard valid.count >= minMoodLine else { return .insufficient(needed: minMoodLine, have: valid.count) }
+        return .ready(Dictionary(grouping: valid, by: { key($0.day) }).map { day, group in
+            MoodPoint(day: day, average: Double(group.map(\.score).reduce(0, +)) / Double(group.count), count: group.count)
+        }.sorted { $0.day < $1.day })
+    }
+
+    private static func firstOfPreviousMonth(_ d: DayKey) -> DayKey {
+        d.month == 1 ? DayKey(year: d.year - 1, month: 12, day: 1)! : DayKey(year: d.year, month: d.month - 1, day: 1)!
+    }
+
+    static func averageChange(_ logs: [MoodCheckIn], period: InsightPeriod, today: DayKey) -> InsightResult<AverageChange> {
         let current = logs.filter { period.range(endingAt: today).contains($0.day) && $0.score > 0 }
         guard current.count >= minAverage else { return .insufficient(needed: minAverage, have: current.count) }
         let previous = logs.filter { period.previousRange(endingAt: today).contains($0.day) && $0.score > 0 }
@@ -126,7 +152,7 @@ nonisolated enum Insights {
     }
 
     static func emotionDistribution(_ logs: [MoodCheckIn], period: InsightPeriod, today: DayKey,
-                                    familyOf: (String) -> String?) -> InsightState<EmotionDistribution> {
+                                    familyOf: (String) -> String?) -> InsightResult<EmotionDistribution> {
         let inRange = logs.filter { period.range(endingAt: today).contains($0.day) }
         guard inRange.count >= minDistribution else { return .insufficient(needed: minDistribution, have: inRange.count) }
         let emotions = inRange.flatMap(\.emotionIDs)
@@ -134,7 +160,7 @@ nonisolated enum Insights {
     }
 
     /// Neden etiketleriyle skor ilişkisi; yalnız ≥ 5 örnekli etiketler, fark büyükten küçüğe.
-    static func causeRelations(_ logs: [MoodCheckIn], period: InsightPeriod, today: DayKey) -> InsightState<[CauseRelation]> {
+    static func causeRelations(_ logs: [MoodCheckIn], period: InsightPeriod, today: DayKey) -> InsightResult<[CauseRelation]> {
         let inRange = logs.filter { period.range(endingAt: today).contains($0.day) && $0.score > 0 }
         guard inRange.count >= minCauseRelation else { return .insufficient(needed: minCauseRelation, have: inRange.count) }
         let causes = Set(inRange.flatMap(\.causeIDs))
@@ -150,16 +176,16 @@ nonisolated enum Insights {
         })
     }
 
-    static func writing(_ entries: [JournalEntry], days: [DayCompletion], mode: RitualMode) -> InsightState<WritingStats> {
+    static func writing(_ entries: [JournalEntry], days: [DayCompletion], mode: RitualMode) -> InsightResult<WritingSummary> {
         guard !entries.isEmpty else { return .insufficient(needed: 1, have: 0) }
         let kinds = Dictionary(grouping: entries, by: \.kind).mapValues(\.count)
         let top = kinds.max { ($0.value, $1.key.rawValue) < ($1.value, $0.key.rawValue) }?.key
-        return .ready(WritingStats(entries: entries.count, words: entries.map(\.wordCount).reduce(0, +),
+        return .ready(WritingSummary(entries: entries.count, words: entries.map(\.wordCount).reduce(0, +),
                                    longestStreak: Streak.longest(completed: Streak.completedDays(days, mode: mode)),
                                    topKind: top))
     }
 
-    static func hours(_ logs: [MoodCheckIn], _ entries: [JournalEntry], calendar: Calendar) -> InsightState<HourDistribution> {
+    static func hours(_ logs: [MoodCheckIn], _ entries: [JournalEntry], calendar: Calendar) -> InsightResult<HourDistribution> {
         let total = logs.count + entries.count
         guard total >= minHours else { return .insufficient(needed: minHours, have: total) }
         var c = [Int](repeating: 0, count: 24), e = [Int](repeating: 0, count: 24)
@@ -169,7 +195,7 @@ nonisolated enum Insights {
     }
 
     /// En çok beğenilen ve yazılan söz temaları (yazma ×2).
-    static func quoteThemes(_ exposure: ExposureSnapshot, catalog: ContentCatalog) -> InsightState<[Share]> {
+    static func quoteThemes(_ exposure: ExposureSnapshot, catalog: ContentCatalog) -> InsightResult<[Share]> {
         let interactions = exposure.records.values.filter { $0.liked || $0.wasWritten }
         guard interactions.count >= minQuoteInteractions else {
             return .insufficient(needed: minQuoteInteractions, have: interactions.count)
@@ -184,7 +210,7 @@ nonisolated enum Insights {
     }
 
     /// Geçen yıl ve geçen ay bugün yazılan girdiler.
-    static func onThisDay(_ entries: [JournalEntry], today: DayKey) -> InsightState<[JournalEntry]> {
+    static func onThisDay(_ entries: [JournalEntry], today: DayKey) -> InsightResult<[JournalEntry]> {
         let lastYear = DayKey(year: today.year - 1, month: today.month, day: today.day)
         let monthDate = today.month == 1 ? (today.year - 1, 12) : (today.year, today.month - 1)
         let lastMonth = DayKey(year: monthDate.0, month: monthDate.1, day: today.day)
@@ -194,12 +220,12 @@ nonisolated enum Insights {
     }
 
     /// Aynı soruya/söze farklı zamanlardaki cevaplar: ilk ve son cevap yan yana.
-    static func changePairs(_ entries: [JournalEntry]) -> InsightState<[ChangePair]> {
+    static func changePairs(_ entries: [JournalEntry]) -> InsightResult<[AnswerChangePair]> {
         let answered = entries.filter { $0.contentRef != nil && [.prompt, .quoteReflection].contains($0.kind) }
-        let pairs: [ChangePair] = Dictionary(grouping: answered, by: { $0.contentRef! }).compactMap { ref, group in
+        let pairs: [AnswerChangePair] = Dictionary(grouping: answered, by: { $0.contentRef! }).compactMap { ref, group in
             let sorted = group.sorted { $0.createdAt < $1.createdAt }
             guard sorted.count >= 2, let first = sorted.first, let last = sorted.last, first.day != last.day else { return nil }
-            return ChangePair(ref: ref, earlier: first.id, later: last.id, daysApart: first.day.days(to: last.day))
+            return AnswerChangePair(ref: ref, earlier: first.id, later: last.id, daysApart: first.day.days(to: last.day))
         }.sorted { ($0.daysApart, $1.ref) > ($1.daysApart, $0.ref) }
         return pairs.isEmpty ? .insufficient(needed: 2, have: answered.isEmpty ? 0 : 1) : .ready(pairs)
     }
@@ -265,46 +291,65 @@ final class InsightsEngine {
         return logs
     }
 
-    func moodLine(_ period: InsightPeriod) -> InsightState<[MoodPoint]> {
+    func moodLine(_ period: InsightPeriod) -> InsightResult<[MoodPoint]> {
         Insights.moodLine(logs(period), period: period, today: clock.today)
     }
 
-    func averageChange(_ period: InsightPeriod) -> InsightState<AverageChange> {
+    /// Eğilimler › Aylar (son 12 ay) ve Yıllar (tüm zamanlar).
+    func monthlySeries() -> InsightResult<[MoodPoint]> {
+        let today = clock.today
+        let logs = (try? mood.logs(from: today.adding(days: -400), through: today)) ?? []
+        return Insights.monthlySeries(logs, today: today)
+    }
+
+    func yearlySeries() -> InsightResult<[MoodPoint]> {
+        let today = clock.today
+        let logs = (try? mood.logs(from: DayKey(year: 2000, month: 1, day: 1)!, through: today)) ?? []
+        return Insights.yearlySeries(logs, today: today)
+    }
+
+    /// Dönemdeki check-in sayısı (boş durum ve başlık için).
+    func checkInCount(_ period: InsightPeriod) -> Int {
+        let range = period.range(endingAt: clock.today)
+        return logs(period).filter { range.contains($0.day) }.count
+    }
+
+    func averageChange(_ period: InsightPeriod) -> InsightResult<AverageChange> {
         Insights.averageChange(logs(period), period: period, today: clock.today)
     }
 
-    func emotionDistribution(_ period: InsightPeriod) -> InsightState<EmotionDistribution> {
+    func emotionDistribution(_ period: InsightPeriod) -> InsightResult<EmotionDistribution> {
         let catalog = content.catalog
         return Insights.emotionDistribution(logs(period), period: period, today: clock.today, familyOf: catalog.emotionFamily)
     }
 
-    func causeRelations(_ period: InsightPeriod) -> InsightState<[CauseRelation]> {
+    func causeRelations(_ period: InsightPeriod) -> InsightResult<[CauseRelation]> {
         Insights.causeRelations(logs(period), period: period, today: clock.today)
     }
 
-    func writing() -> InsightState<WritingStats> {
+    func writing() -> InsightResult<WritingSummary> {
         Insights.writing((try? journal.entries()) ?? [], days: (try? day.allCompletions()) ?? [],
                          mode: profile.profile.ritualMode)
     }
 
-    func hours(_ period: InsightPeriod) -> InsightState<HourDistribution> {
+    func hours(_ period: InsightPeriod) -> InsightResult<HourDistribution> {
         let today = clock.today
         let range = period.range(endingAt: today)
         let entries = (try? journal.entries(from: range.lowerBound, through: today)) ?? []
         return Insights.hours(logs(period).filter { range.contains($0.day) }, entries, calendar: clock.calendar)
     }
 
-    func quoteThemes() -> InsightState<[Share]> {
+    func quoteThemes() -> InsightResult<[Share]> {
         Insights.quoteThemes((try? exposure.snapshot(.quote)) ?? ExposureSnapshot(kind: .quote), catalog: content.catalog)
     }
 
-    func onThisDay() -> InsightState<[JournalEntry]> {
+    func onThisDay() -> InsightResult<[JournalEntry]> {
         let today = clock.today
         let start = DayKey(year: today.year - 1, month: today.month, day: 1) ?? today.adding(days: -400)
         return Insights.onThisDay((try? journal.entries(from: start, through: today)) ?? [], today: today)
     }
 
-    func changePairs() -> InsightState<[ChangePair]> {
+    func changePairs() -> InsightResult<[AnswerChangePair]> {
         Insights.changePairs((try? journal.entries()) ?? [])
     }
 }

@@ -10,10 +10,7 @@
         "kabul",
         "odak"
       ],
-      "paths": [
-        "filozof",
-        "sakin"
-      ],
+      "paths": [],
       "emotionFit": [
         "kaygi"
       ],
@@ -29,7 +26,11 @@
       "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin",
+        "sakin"
+      ]
     },
     {
       "id": "q_000002",
@@ -40,9 +41,7 @@
         "kabul",
         "sinirlar"
       ],
-      "paths": [
-        "filozof"
-      ],
+      "paths": [],
       "emotionFit": [
         "kaygi",
         "ofke"
@@ -60,7 +59,10 @@
       "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin"
+      ]
     },
     {
       "id": "q_000003",
@@ -71,10 +73,7 @@
         "odak",
         "anlam"
       ],
-      "paths": [
-        "filozof",
-        "uretken"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [
         3,
@@ -89,7 +88,11 @@
       "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin",
+        "uretken"
+      ]
     },
     {
       "id": "q_000004",
@@ -100,10 +103,7 @@
         "dinlenme",
         "sinirlar"
       ],
-      "paths": [
-        "filozof",
-        "sakin"
-      ],
+      "paths": [],
       "emotionFit": [
         "yorgun"
       ],
@@ -120,7 +120,11 @@
       "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin",
+        "sakin"
+      ]
     },
     {
       "id": "q_000005",
@@ -131,10 +135,7 @@
         "sinirlar",
         "iliskiler"
       ],
-      "paths": [
-        "filozof",
-        "cesur"
-      ],
+      "paths": [],
       "emotionFit": [
         "ofke"
       ],
@@ -150,7 +151,11 @@
       "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin",
+        "cesur"
+      ]
     },
     {
       "id": "q_000006",
@@ -161,9 +166,7 @@
         "degisim",
         "anlam"
       ],
-      "paths": [
-        "filozof"
-      ],
+      "paths": [],
       "emotionFit": [
         "enerji"
       ],
@@ -180,7 +183,10 @@
       "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin"
+      ]
     },
     {
       "id": "q_000007",
@@ -190,10 +196,7 @@
       "themes": [
         "degisim"
       ],
-      "paths": [
-        "filozof",
-        "sakin"
-      ],
+      "paths": [],
       "emotionFit": [
         "enerji"
       ],
@@ -210,7 +213,11 @@
       "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin",
+        "sakin"
+      ]
     },
     {
       "id": "q_000008",
@@ -221,9 +228,7 @@
         "iliskiler",
         "umut"
       ],
-      "paths": [
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "sevgi"
       ],
@@ -240,7 +245,10 @@
       "licenseNote": "PLACEHOLDER — beyit kaynağı içerik ekibince doğrulanacak",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000009",
@@ -250,10 +258,7 @@
       "themes": [
         "yavaslik"
       ],
-      "paths": [
-        "sakin",
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "yorgun"
       ],
@@ -265,7 +270,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin",
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000010",
@@ -276,9 +285,7 @@
         "kabul",
         "ozsefkat"
       ],
-      "paths": [
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "huzun",
         "kaygi"
@@ -291,7 +298,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000011",
@@ -301,10 +311,7 @@
       "themes": [
         "cesaret"
       ],
-      "paths": [
-        "cesur",
-        "uretken"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [
         1,
@@ -315,7 +322,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "cesur",
+        "uretken"
+      ]
     },
     {
       "id": "q_000012",
@@ -325,9 +336,7 @@
       "themes": [
         "ozsefkat"
       ],
-      "paths": [
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "huzun"
       ],
@@ -340,7 +349,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000013",
@@ -350,10 +362,7 @@
       "themes": [
         "dinlenme"
       ],
-      "paths": [
-        "sakin",
-        "uretken"
-      ],
+      "paths": [],
       "emotionFit": [
         "yorgun"
       ],
@@ -366,7 +375,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin",
+        "uretken"
+      ]
     },
     {
       "id": "q_000014",
@@ -377,10 +390,7 @@
         "kabul",
         "yavaslik"
       ],
-      "paths": [
-        "sakin",
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "kaygi"
       ],
@@ -392,7 +402,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin",
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000015",
@@ -402,10 +416,7 @@
       "themes": [
         "sinirlar"
       ],
-      "paths": [
-        "cesur",
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "ofke"
       ],
@@ -417,7 +428,11 @@
       "premium": true,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "cesur",
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000016",
@@ -428,9 +443,7 @@
         "merak",
         "cesaret"
       ],
-      "paths": [
-        "cesur"
-      ],
+      "paths": [],
       "emotionFit": [
         "enerji"
       ],
@@ -442,7 +455,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "cesur"
+      ]
     },
     {
       "id": "q_000017",
@@ -453,9 +469,7 @@
         "yavaslik",
         "dinlenme"
       ],
-      "paths": [
-        "sakin"
-      ],
+      "paths": [],
       "emotionFit": [
         "kaygi"
       ],
@@ -468,7 +482,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin"
+      ]
     },
     {
       "id": "q_000018",
@@ -479,10 +496,7 @@
         "kabul",
         "umut"
       ],
-      "paths": [
-        "sefkatli",
-        "cesur"
-      ],
+      "paths": [],
       "emotionFit": [
         "huzun",
         "yorgun"
@@ -495,7 +509,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sefkatli",
+        "cesur"
+      ]
     },
     {
       "id": "q_000019",
@@ -505,10 +523,7 @@
       "themes": [
         "minnet"
       ],
-      "paths": [
-        "uretken",
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "nese"
       ],
@@ -521,7 +536,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "uretken",
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000020",
@@ -532,10 +551,7 @@
         "degisim",
         "sabir"
       ],
-      "paths": [
-        "sakin",
-        "cesur"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [
         2,
@@ -546,7 +562,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin",
+        "cesur"
+      ]
     },
     {
       "id": "q_000021",
@@ -557,9 +577,7 @@
         "kabul",
         "degisim"
       ],
-      "paths": [
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "kaygi"
       ],
@@ -571,7 +589,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000022",
@@ -581,10 +602,7 @@
       "themes": [
         "ozsefkat"
       ],
-      "paths": [
-        "sefkatli",
-        "cesur"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [
         1,
@@ -595,7 +613,11 @@
       "premium": true,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sefkatli",
+        "cesur"
+      ]
     },
     {
       "id": "q_000023",
@@ -606,9 +628,7 @@
         "umut",
         "degisim"
       ],
-      "paths": [
-        "cesur"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [
         2,
@@ -619,7 +639,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "cesur"
+      ]
     },
     {
       "id": "q_000024",
@@ -630,9 +653,7 @@
         "dinlenme",
         "kabul"
       ],
-      "paths": [
-        "sakin"
-      ],
+      "paths": [],
       "emotionFit": [
         "yorgun"
       ],
@@ -645,7 +666,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin"
+      ]
     },
     {
       "id": "q_000025",
@@ -656,10 +680,7 @@
         "sabir",
         "odak"
       ],
-      "paths": [
-        "uretken",
-        "sakin"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -667,7 +688,11 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "uretken",
+        "sakin"
+      ]
     },
     {
       "id": "q_000026",
@@ -677,10 +702,7 @@
       "themes": [
         "sabir"
       ],
-      "paths": [
-        "sakin",
-        "filozof"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -688,7 +710,11 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin",
+        "derin"
+      ]
     },
     {
       "id": "q_000027",
@@ -698,9 +724,7 @@
       "themes": [
         "degisim"
       ],
-      "paths": [
-        "uretken"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -708,7 +732,10 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "uretken"
+      ]
     },
     {
       "id": "q_000028",
@@ -718,9 +745,7 @@
       "themes": [
         "iliskiler"
       ],
-      "paths": [
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -728,7 +753,10 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000029",
@@ -738,9 +766,7 @@
       "themes": [
         "yavaslik"
       ],
-      "paths": [
-        "sakin"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -748,7 +774,10 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin"
+      ]
     },
     {
       "id": "q_000030",
@@ -758,9 +787,7 @@
       "themes": [
         "iliskiler"
       ],
-      "paths": [
-        "filozof"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -768,7 +795,10 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin"
+      ]
     },
     {
       "id": "q_000031",
@@ -778,9 +808,7 @@
       "themes": [
         "sinirlar"
       ],
-      "paths": [
-        "uretken"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -788,7 +816,10 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "uretken"
+      ]
     },
     {
       "id": "q_000032",
@@ -799,10 +830,7 @@
         "kabul",
         "umut"
       ],
-      "paths": [
-        "sakin",
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -810,7 +838,11 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin",
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000033",
@@ -821,10 +853,7 @@
         "yavaslik",
         "sinirlar"
       ],
-      "paths": [
-        "filozof",
-        "sakin"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -832,7 +861,11 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin",
+        "sakin"
+      ]
     },
     {
       "id": "q_000034",
@@ -843,9 +876,7 @@
         "odak",
         "anlam"
       ],
-      "paths": [
-        "uretken"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -853,7 +884,10 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "uretken"
+      ]
     },
     {
       "id": "q_000035",
@@ -864,9 +898,7 @@
         "iliskiler",
         "degisim"
       ],
-      "paths": [
-        "filozof"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -874,7 +906,10 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin"
+      ]
     },
     {
       "id": "q_000036",
@@ -885,10 +920,7 @@
         "yavaslik",
         "sabir"
       ],
-      "paths": [
-        "sakin",
-        "uretken"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [],
       "timeOfDay": "any",
@@ -896,7 +928,11 @@
       "translation": "original",
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin",
+        "uretken"
+      ]
     },
     {
       "id": "q_000037",
@@ -906,10 +942,7 @@
       "themes": [
         "kabul"
       ],
-      "paths": [
-        "filozof",
-        "sakin"
-      ],
+      "paths": [],
       "emotionFit": [
         "kaygi",
         "ofke"
@@ -926,7 +959,11 @@
       ],
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin",
+        "sakin"
+      ]
     },
     {
       "id": "q_000038",
@@ -936,9 +973,7 @@
       "themes": [
         "dinlenme"
       ],
-      "paths": [
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "yorgun"
       ],
@@ -950,7 +985,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000039",
@@ -960,10 +998,7 @@
       "themes": [
         "odak"
       ],
-      "paths": [
-        "uretken",
-        "filozof"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [
         3,
@@ -974,7 +1009,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "uretken",
+        "derin"
+      ]
     },
     {
       "id": "q_000040",
@@ -984,10 +1023,7 @@
       "themes": [
         "minnet"
       ],
-      "paths": [
-        "sakin",
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "sevgi"
       ],
@@ -1000,7 +1036,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin",
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000041",
@@ -1011,9 +1051,7 @@
         "degisim",
         "sabir"
       ],
-      "paths": [
-        "filozof"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [
         2,
@@ -1024,7 +1062,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "derin"
+      ]
     },
     {
       "id": "q_000042",
@@ -1034,9 +1075,7 @@
       "themes": [
         "kabul"
       ],
-      "paths": [
-        "sakin"
-      ],
+      "paths": [],
       "emotionFit": [
         "huzun"
       ],
@@ -1049,7 +1088,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin"
+      ]
     },
     {
       "id": "q_000043",
@@ -1059,10 +1101,7 @@
       "themes": [
         "sinirlar"
       ],
-      "paths": [
-        "cesur",
-        "uretken"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [
         2,
@@ -1073,7 +1112,11 @@
       "premium": true,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "cesur",
+        "uretken"
+      ]
     },
     {
       "id": "q_000044",
@@ -1083,10 +1126,7 @@
       "themes": [
         "kayip"
       ],
-      "paths": [
-        "sefkatli",
-        "filozof"
-      ],
+      "paths": [],
       "emotionFit": [
         "huzun"
       ],
@@ -1101,7 +1141,11 @@
       ],
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sefkatli",
+        "derin"
+      ]
     },
     {
       "id": "q_000045",
@@ -1112,9 +1156,7 @@
         "merak",
         "cesaret"
       ],
-      "paths": [
-        "cesur"
-      ],
+      "paths": [],
       "emotionFit": [
         "enerji",
         "kaygi"
@@ -1128,7 +1170,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "cesur"
+      ]
     },
     {
       "id": "q_000046",
@@ -1138,10 +1183,7 @@
       "themes": [
         "yavaslik"
       ],
-      "paths": [
-        "sakin",
-        "filozof"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [
         2,
@@ -1152,7 +1194,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin",
+        "derin"
+      ]
     },
     {
       "id": "q_000047",
@@ -1162,9 +1208,7 @@
       "themes": [
         "anlam"
       ],
-      "paths": [
-        "uretken"
-      ],
+      "paths": [],
       "emotionFit": [],
       "moodFit": [
         2,
@@ -1176,7 +1220,10 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "uretken"
+      ]
     },
     {
       "id": "q_000048",
@@ -1186,10 +1233,7 @@
       "themes": [
         "minnet"
       ],
-      "paths": [
-        "sakin",
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "nese",
         "huzur"
@@ -1203,7 +1247,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sakin",
+        "sefkatli"
+      ]
     },
     {
       "id": "q_000049",
@@ -1213,10 +1261,7 @@
       "themes": [
         "umut"
       ],
-      "paths": [
-        "sefkatli",
-        "cesur"
-      ],
+      "paths": [],
       "emotionFit": [
         "huzun"
       ],
@@ -1228,7 +1273,11 @@
       "premium": false,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sefkatli",
+        "cesur"
+      ]
     },
     {
       "id": "q_000050",
@@ -1238,9 +1287,7 @@
       "themes": [
         "iliskiler"
       ],
-      "paths": [
-        "sefkatli"
-      ],
+      "paths": [],
       "emotionFit": [
         "sevgi",
         "huzun"
@@ -1254,7 +1301,10 @@
       "premium": true,
       "active": true,
       "addedIn": 1,
-      "lang": "tr"
+      "lang": "tr",
+      "tones": [
+        "sefkatli"
+      ]
     }
   ]
 }
