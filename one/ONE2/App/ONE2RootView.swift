@@ -166,9 +166,13 @@ private struct ONE2SheetPlaceholder: View {
 /// Yalnız geliştirme ve TestFlight: bir sonraki açılışta v3 kabuğuna dön.
 private struct ShellSwitchRow: View {
     @State private var didSwitch = false
+    @State private var showUXPreview = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
+            V3OutlineButton(title: NSLocalizedString("one2.debug.uxPreview", comment: "Debug: new Today preview")) {
+                showUXPreview = true
+            }
             V3OutlineButton(title: NSLocalizedString("one2.debug.useV3", comment: "Switch back to the v3 interface on next launch")) {
                 ONE2Flag.setOverride(false)
                 didSwitch = true
@@ -178,6 +182,9 @@ private struct ShellSwitchRow: View {
                     .bodySM()
                     .foregroundColor(V3Tokens.mutedText)
             }
+        }
+        .sheet(isPresented: $showUXPreview) {
+            UXPreviewSheet(onClose: { showUXPreview = false })
         }
     }
 }

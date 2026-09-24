@@ -17,8 +17,10 @@ struct TodayActions {
     var addPractice: () -> Void = {}
     var openTheme: () -> Void = {}
     var openProfile: () -> Void = {}
-    /// Ritüel kartı: "Başla", "Devam et", "Yine de yap".
+    /// Ritüel kartı: "Başla", "Devam et", "Yine de yap". `flowProvider`
+    /// verilmişse akış tam ekran burada açılır; verilmemişse bu çağrılır.
     var startFlow: (FlowKind) -> Void = { _ in }
+    var flowProvider: ((FlowKind) -> FlowViewModel)?
 }
 
 struct TodayView: View {
@@ -26,6 +28,7 @@ struct TodayView: View {
     var actions = TodayActions()
 
     @State private var backfillDay: WeekDayViewData?
+    @State private var presentedFlow: FlowPresentation?
 
     /// Yüzen dock'un altında kalmasın diye son öğeden sonraki boşluk.
     static let dockInset: CGFloat = V3Tokens.spacingXL5 * 2
@@ -50,13 +53,24 @@ struct TodayView: View {
             }, onClose: { backfillDay = nil })
             .presentationDetents([.medium])
         }
+        .fullScreenCover(item: $presentedFlow) { presentation in
+            FlowShellView(model: presentation.model, onDismiss: { presentedFlow = nil })
+        }
+    }
+
+    private func start(_ flow: FlowKind) {
+        if let provider = actions.flowProvider {
+            presentedFlow = FlowPresentation(model: provider(flow))
+        } else {
+            actions.startFlow(flow)
+        }
     }
 
     private func content(_ data: TodayViewData) -> some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: V3Tokens.spacingXL3) {
                 WeekStripView(days: data.week, onBackfill: { backfillDay = $0 })
-                RitualArea(layout: data.layout, cards: data.rituals, onStart: actions.startFlow)
+                RitualArea(layout: data.layout, cards: data.rituals, onStart: start)
                 PracticesSection(practices: data.practices, onOpen: actions.openPractice, onAdd: actions.addPractice)
                 if let theme = data.theme {
                     WeeklyThemeSection(theme: theme, onOpen: actions.openTheme)
@@ -258,11 +272,13 @@ struct TodaySkeleton: View {
 // MARK: - Önizlemeler
 
 #Preview("Daily · not started") {
-    TodayView(state: .loaded(TodayFixtures.dailyNotStarted()))
+    TodayView(state: .loaded(TodayFixtures.dailyNotStarted()),
+              actions: TodayActions(flowProvider: { FlowFixtureModels.model($0) }))
 }
 
 #Preview("Morning+evening · morning done") {
-    TodayView(state: .loaded(TodayFixtures.morningDone()))
+    TodayView(state: .loaded(TodayFixtures.morningDone()),
+              actions: TodayActions(flowProvider: { FlowFixtureModels.model($0) }))
 }
 
 #Preview("Morning+evening · both done") {

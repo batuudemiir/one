@@ -101,6 +101,8 @@ enum V3Tokens {
     /// Tek vurgu, mürekkep mavisi. Bugün ekranında yalnız seri sayısı.
     static let brand       = adaptive(light: "#2438C8", dark: "#9AA6FF")
     /// Seçili etiket zemini ve üstündeki metin.
+    /// `brand` dolgu üstündeki metin/ikon (mühür tiki).
+    static let onBrand     = adaptive(light: "#FFFFFF", dark: "#0F1218")
     static let brandSoft   = adaptive(light: "#E4E7FB", dark: "#232B57")
     static let onBrandSoft = adaptive(light: "#2438C8", dark: "#C9CFFF")
     /// Anlam taşıyan sınır: seçilmemiş kontrol, bugün hücresi (3:1+).
