@@ -91,6 +91,10 @@ nonisolated struct ThemeWeek: Equatable, Sendable {
     let theme: WeeklyTheme
     let source: ThemeSource
 
+    /// Haftanın ilk ve son günü (Keşfet › öne çıkan kartın tarih aralığı).
+    var firstDay: DayKey? { week.days.first }
+    var lastDay: DayKey? { week.days.last }
+
     func prompt(on day: DayKey) -> String? {
         guard ISOWeek(containing: day) == week else { return nil }
         return theme.prompt(forWeekday: day.isoWeekday)

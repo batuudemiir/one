@@ -117,6 +117,32 @@ nonisolated enum Insights {
         return .ready(points)
     }
 
+    /// Aylık ortalama serisi (son `months` ay); nokta günü ayın ilk günü.
+    /// Eğilimler › "Aylar". Eşik mood çizgisiyle aynı.
+    static func monthlySeries(_ logs: [MoodCheckIn], months: Int = 12, today: DayKey) -> InsightState<[MoodPoint]> {
+        guard let thisMonth = DayKey(year: today.year, month: today.month, day: 1) else { return .insufficient(needed: minMoodLine, have: 0) }
+        var start = thisMonth
+        for _ in 1..<max(months, 1) { start = firstOfPreviousMonth(start) }
+        return bucketed(logs.filter { $0.day >= start && $0.day <= today }) { DayKey(year: $0.year, month: $0.month, day: 1)! }
+    }
+
+    /// Yıllık ortalama serisi (tüm zamanlar); nokta günü yılın ilk günü. Eğilimler › "Yıllar".
+    static func yearlySeries(_ logs: [MoodCheckIn], today: DayKey) -> InsightState<[MoodPoint]> {
+        bucketed(logs.filter { $0.day <= today }) { DayKey(year: $0.year, month: 1, day: 1)! }
+    }
+
+    private static func bucketed(_ logs: [MoodCheckIn], key: (DayKey) -> DayKey) -> InsightState<[MoodPoint]> {
+        let valid = logs.filter { $0.score > 0 }
+        guard valid.count >= minMoodLine else { return .insufficient(needed: minMoodLine, have: valid.count) }
+        return .ready(Dictionary(grouping: valid, by: { key($0.day) }).map { day, group in
+            MoodPoint(day: day, average: Double(group.map(\.score).reduce(0, +)) / Double(group.count), count: group.count)
+        }.sorted { $0.day < $1.day })
+    }
+
+    private static func firstOfPreviousMonth(_ d: DayKey) -> DayKey {
+        d.month == 1 ? DayKey(year: d.year - 1, month: 12, day: 1)! : DayKey(year: d.year, month: d.month - 1, day: 1)!
+    }
+
     static func averageChange(_ logs: [MoodCheckIn], period: InsightPeriod, today: DayKey) -> InsightState<AverageChange> {
         let current = logs.filter { period.range(endingAt: today).contains($0.day) && $0.score > 0 }
         guard current.count >= minAverage else { return .insufficient(needed: minAverage, have: current.count) }
@@ -267,6 +293,25 @@ final class InsightsEngine {
 
     func moodLine(_ period: InsightPeriod) -> InsightState<[MoodPoint]> {
         Insights.moodLine(logs(period), period: period, today: clock.today)
+    }
+
+    /// Eğilimler › Aylar (son 12 ay) ve Yıllar (tüm zamanlar).
+    func monthlySeries() -> InsightState<[MoodPoint]> {
+        let today = clock.today
+        let logs = (try? mood.logs(from: today.adding(days: -400), through: today)) ?? []
+        return Insights.monthlySeries(logs, today: today)
+    }
+
+    func yearlySeries() -> InsightState<[MoodPoint]> {
+        let today = clock.today
+        let logs = (try? mood.logs(from: DayKey(year: 2000, month: 1, day: 1)!, through: today)) ?? []
+        return Insights.yearlySeries(logs, today: today)
+    }
+
+    /// Dönemdeki check-in sayısı (boş durum ve başlık için).
+    func checkInCount(_ period: InsightPeriod) -> Int {
+        let range = period.range(endingAt: clock.today)
+        return logs(period).filter { range.contains($0.day) }.count
     }
 
     func averageChange(_ period: InsightPeriod) -> InsightState<AverageChange> {

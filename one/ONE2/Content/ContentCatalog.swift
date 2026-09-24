@@ -41,6 +41,11 @@ nonisolated struct ContentCatalog: Sendable {
 
     var contentVersion: Int { manifest.contentVersion }
 
+    /// Son içerik güncellemesiyle eklendi mi (Keşfet "Yeni" rozeti).
+    func isNew<T: ContentItem>(_ item: T) -> Bool {
+        contentVersion > 1 && item.addedIn >= contentVersion
+    }
+
     func quote(_ id: QuoteID) -> Quote? { quoteIndex[id] }
     func prompt(_ id: PromptID) -> Prompt? { promptIndex[id] }
     /// `2026-W40` biçiminde ISO hafta.

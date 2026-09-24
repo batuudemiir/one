@@ -35,6 +35,7 @@ final class AppEnvironment {
     let widget: WidgetBridge
     let widgetSource: WidgetSnapshotSource
     let exporter: DataExporter
+    let journey: JourneyFeed
     let analytics: EventTracking
     let legacy: LegacyMomentStore
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
@@ -85,6 +86,7 @@ final class AppEnvironment {
         widgetSource = WidgetSnapshotSource(quotes: quotes, prompts: prompts, content: self.content, day: day,
                                             mood: mood, exposure: exposure, profile: self.profile, clock: clock)
         legacy = LegacyMomentStore(context: context, calendar: clock.calendar)
+        journey = JourneyFeed(context: context, journal: journal, mood: mood, legacy: legacy)
         exporter = DataExporter(context: context, journal: journal, mood: mood, day: day, library: library,
                                 exposure: exposure, legacy: legacy, content: self.content, clock: clock)
         if guardLegacyWrites, let coordinator = context.persistentStoreCoordinator {
