@@ -903,3 +903,16 @@ one day.";
 "one2.action.dismiss" = "Fermer";
 "one2.debug.useV3" = "Passer à la v3";
 "one2.debug.restart" = "Prend effet au redémarrage de l'app.";
+
+/* ONE 2.0 — bildirim planlayıcı (04 › E13) */
+"notif.one2.morning.title" = "La citation du jour";
+"notif.one2.morning.fallback.1" = "Commence la journée par une courte pause.";
+"notif.one2.morning.fallback.2" = "Choisis une intention pour aujourd’hui.";
+"notif.one2.morning.fallback.3" = "Tu peux écrire la première ligne du matin.";
+"notif.one2.evening.title" = "C’est l’heure de clore la journée.";
+"notif.one2.evening.body" = "Tu peux laisser la journée en quelques lignes.";
+"notif.one2.weeklyTheme.title" = "Thème de la semaine : %@";
+"notif.one2.streak.title" = "Ta série peut continuer aujourd’hui";
+"notif.one2.streak.body" = "Tu es là depuis %d jours. Une courte note suffit.";
+"notif.one2.comparison.title" = "Tu as déjà répondu à cette question";
+"notif.one2.resurface.title" = "Tu as déjà écrit sur cette citation";

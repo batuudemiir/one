@@ -901,3 +901,16 @@ one day.";
 "one2.action.dismiss" = "关闭";
 "one2.debug.useV3" = "切换到 v3";
 "one2.debug.restart" = "重启应用后生效。";
+
+/* ONE 2.0 — bildirim planlayıcı (04 › E13) */
+"notif.one2.morning.title" = "今日一句";
+"notif.one2.morning.fallback.1" = "以片刻停顿开始今天。";
+"notif.one2.morning.fallback.2" = "为今天选一个意图。";
+"notif.one2.morning.fallback.3" = "你可以写下清晨的第一行。";
+"notif.one2.evening.title" = "该为今天收尾了。";
+"notif.one2.evening.body" = "用几行字留下今天。";
+"notif.one2.weeklyTheme.title" = "本周主题：%@";
+"notif.one2.streak.title" = "今天也可以延续你的连续记录";
+"notif.one2.streak.body" = "你已坚持 %d 天。简短记录就够了。";
+"notif.one2.comparison.title" = "你以前回答过这个问题";
+"notif.one2.resurface.title" = "你以前写过这句话";

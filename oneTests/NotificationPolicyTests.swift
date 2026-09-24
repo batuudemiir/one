@@ -65,9 +65,9 @@ struct NotificationPolicyTests {
     /// v4'te 21 tür 13'e indi. Sayı bir "hedef" değil, bir sözleşme: bu test
     /// kırıldıysa ya bir tür geri geldi ya da bilerek kaldırıldı — ikisi de
     /// gözden geçirilmeli.
-    @Test("v4'te 9 bildirim türü var")
+    @Test("v4'ün 9 türü + ONE 2.0'ın 5 türü (ADR-001 §6)")
     func kindCount() {
-        #expect(NotificationKind.allCases.count == 9)
+        #expect(NotificationKind.allCases.count == 14)
     }
 
     @Test("Silinen seriler geri gelmedi")

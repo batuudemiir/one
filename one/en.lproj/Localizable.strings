@@ -1030,3 +1030,16 @@ one day.";
 "one2.action.dismiss" = "Dismiss";
 "one2.debug.useV3" = "Switch to v3";
 "one2.debug.restart" = "Takes effect after you restart the app.";
+
+/* ONE 2.0 — bildirim planlayıcı (04 › E13) */
+"notif.one2.morning.title" = "Today's quote";
+"notif.one2.morning.fallback.1" = "Start the day with a short pause.";
+"notif.one2.morning.fallback.2" = "Choose one intention for today.";
+"notif.one2.morning.fallback.3" = "You can write the first line of the morning.";
+"notif.one2.evening.title" = "Time to close the day.";
+"notif.one2.evening.body" = "You can leave today in a few lines.";
+"notif.one2.weeklyTheme.title" = "This week's theme: %@";
+"notif.one2.streak.title" = "Your streak can continue today";
+"notif.one2.streak.body" = "You've been here %d days. A short entry is enough.";
+"notif.one2.comparison.title" = "You answered this question before";
+"notif.one2.resurface.title" = "You wrote about this quote before";

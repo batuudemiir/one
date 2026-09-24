@@ -904,3 +904,16 @@ one day.";
 "one2.action.dismiss" = "Закрыть";
 "one2.debug.useV3" = "Перейти на v3";
 "one2.debug.restart" = "Вступит в силу после перезапуска приложения.";
+
+/* ONE 2.0 — bildirim planlayıcı (04 › E13) */
+"notif.one2.morning.title" = "Цитата дня";
+"notif.one2.morning.fallback.1" = "Начни день с короткой паузы.";
+"notif.one2.morning.fallback.2" = "Выбери одно намерение на сегодня.";
+"notif.one2.morning.fallback.3" = "Можно написать первую строку утра.";
+"notif.one2.evening.title" = "Время завершить день.";
+"notif.one2.evening.body" = "Можно оставить этот день в нескольких строках.";
+"notif.one2.weeklyTheme.title" = "Тема недели: %@";
+"notif.one2.streak.title" = "Твоя серия может продолжиться сегодня";
+"notif.one2.streak.body" = "Ты здесь уже %d дн. Достаточно короткой записи.";
+"notif.one2.comparison.title" = "Ты уже отвечал(а) на этот вопрос";
+"notif.one2.resurface.title" = "Ты уже писал(а) об этой цитате";

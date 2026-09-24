@@ -904,3 +904,16 @@ one day.";
 "one2.action.dismiss" = "닫기";
 "one2.debug.useV3" = "v3로 전환";
 "one2.debug.restart" = "앱을 다시 시작하면 적용됩니다.";
+
+/* ONE 2.0 — bildirim planlayıcı (04 › E13) */
+"notif.one2.morning.title" = "오늘의 문장";
+"notif.one2.morning.fallback.1" = "짧은 쉼으로 하루를 시작해 보세요.";
+"notif.one2.morning.fallback.2" = "오늘의 의도를 하나 골라 보세요.";
+"notif.one2.morning.fallback.3" = "아침의 첫 줄을 써 볼 수 있어요.";
+"notif.one2.evening.title" = "하루를 마무리할 시간이에요.";
+"notif.one2.evening.body" = "몇 줄로 오늘을 남겨 둘 수 있어요.";
+"notif.one2.weeklyTheme.title" = "이번 주 주제: %@";
+"notif.one2.streak.title" = "오늘도 연속 기록을 이어 갈 수 있어요";
+"notif.one2.streak.body" = "%d일째 함께하고 있어요. 짧은 기록이면 충분해요.";
+"notif.one2.comparison.title" = "이 질문에 전에 답한 적이 있어요";
+"notif.one2.resurface.title" = "이 문장에 대해 전에 쓴 적이 있어요";

@@ -1045,3 +1045,16 @@ bir gün.";
 "one2.action.dismiss" = "Kapat";
 "one2.debug.useV3" = "Eski arayüze dön";
 "one2.debug.restart" = "Uygulamayı yeniden başlatınca geçerli olur.";
+
+/* ONE 2.0 — bildirim planlayıcı (04 › E13) */
+"notif.one2.morning.title" = "Günün sözü";
+"notif.one2.morning.fallback.1" = "Güne kısa bir durakla başla.";
+"notif.one2.morning.fallback.2" = "Bugün için tek bir niyet seç.";
+"notif.one2.morning.fallback.3" = "Sabahın ilk satırını yazabilirsin.";
+"notif.one2.evening.title" = "Günü kapatma vakti.";
+"notif.one2.evening.body" = "Bugünü birkaç satırla bırakabilirsin.";
+"notif.one2.weeklyTheme.title" = "Bu haftanın teması: %@";
+"notif.one2.streak.title" = "Serin bugün de sürebilir";
+"notif.one2.streak.body" = "%d gündür buradasın. Kısa bir kayıt yeter.";
+"notif.one2.comparison.title" = "Bu soruya daha önce cevap vermiştin";
+"notif.one2.resurface.title" = "Bu söze daha önce yazmıştın";

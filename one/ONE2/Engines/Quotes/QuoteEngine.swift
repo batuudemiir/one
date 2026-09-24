@@ -153,6 +153,18 @@ final class LiveQuoteEngine: QuoteEngine {
         return q
     }
 
+    /// Günün sözünü yazmadan önizler: KVS'de varsa o, yoksa aynı deterministik
+    /// seçim. Bildirim penceresi ve widget'ın ertesi gün sözü için (E13, E14).
+    func previewDailyQuote(for day: DayKey) -> Quote? {
+        let catalog = content.catalog
+        if let id = cloud.object(forKey: "quote.daily.\(day.string)") as? String, let q = catalog.quote(id), q.active {
+            return q
+        }
+        return Self.chooseDaily(for: day, catalog: catalog, context: dailyContext(for: day),
+                                exposure: (try? exposure.snapshot(.quote)) ?? ExposureSnapshot(kind: .quote),
+                                salt: profile.profile.userSalt)
+    }
+
     func remainingUnseen(mode: QuoteFeedMode) async -> Int {
         let context = makeContext()
         guard let snapshot = try? exposure.snapshot(.quote) else { return 0 }

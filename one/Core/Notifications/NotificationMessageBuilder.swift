@@ -212,6 +212,9 @@ enum NotificationMessageBuilder {
         case .friendReaction:   return friendReactionVariants(ctx)
         case .friendRequest:    return friendRequestVariants(ctx)
         case .friendAccepted:   return friendAcceptedVariants(ctx)
+        // ONE 2.0 türlerinin metnini `NotificationPlanner` üretir.
+        case .morningRitual, .eveningRitual, .weeklyTheme, .streakReminder, .contentSuggestion:
+            return []
         }
     }
 

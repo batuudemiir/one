@@ -49,6 +49,13 @@ enum NotificationKind: String, CaseIterable {
     case friendReaction
     case friendRequest
     case friendAccepted
+    // ONE 2.0 (ADR-001 §6). Metni `NotificationPlanner` üretir; 7 günlük
+    // pencere planlayıcının bütçesiyle `decisionOverride` üzerinden kurulur.
+    case morningRitual
+    case eveningRitual
+    case weeklyTheme
+    case streakReminder
+    case contentSuggestion
     // Yorum türleri (commentReceived/Reply/Mention/Batch) kaldırıldı: kalıcı
     // yorum sistemi sökülüp yerine efemer karşılık (tepki + yanıt) geldi,
     // dördünü de üreten hiçbir çağrı yeri kalmamıştı. Gelen karşılıklar
@@ -64,6 +71,8 @@ enum NotificationKind: String, CaseIterable {
             return .high
         case .dailyReminder, .weeklySummary, .monthEndSummary:
             return .normal
+        case .morningRitual, .eveningRitual, .weeklyTheme, .streakReminder, .contentSuggestion:
+            return .normal
         }
     }
 
@@ -77,6 +86,8 @@ enum NotificationKind: String, CaseIterable {
         switch self {
         case .dailyReminder, .weeklySummary, .monthEndSummary:
             return true
+        // ONE 2.0 türlerinin bütçesini `NotificationPlanner` uygular (7 günlük
+        // pencere, ≤ 17 istek); haftalık proactive cap'e girmezler.
         default:
             return false
         }
@@ -89,6 +100,11 @@ enum NotificationKind: String, CaseIterable {
         case .friendRequest:          return "FRIEND_REQUEST"
         case .friendReaction, .friendAccepted: return "FRIEND_ACCEPTED"
         case .moodResonance:          return "MOOD_RESONANCE"
+        case .morningRitual:          return "ONE2_MORNINGRITUAL"
+        case .eveningRitual:          return "ONE2_EVENINGRITUAL"
+        case .weeklyTheme:            return "ONE2_WEEKLYTHEME"
+        case .streakReminder:         return "ONE2_STREAKREMINDER"
+        case .contentSuggestion:      return "ONE2_CONTENTSUGGESTION"
         default:                      return ""
         }
     }

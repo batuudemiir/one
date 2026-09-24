@@ -26,6 +26,9 @@ final class AppEnvironment {
     let badges: BadgeEngine
     let insights: InsightsEngine
     let search: SearchIndex
+    let notifications: ONE2NotificationScheduler
+    let widget: WidgetBridge
+    let widgetSource: WidgetSnapshotSource
     let legacy: LegacyMomentStore
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
     private let legacyWriteGuard: LegacyWriteGuard?
@@ -53,17 +56,30 @@ final class AppEnvironment {
         insights = InsightsEngine(context: context, mood: mood, journal: journal, day: day, exposure: exposure,
                                   content: self.content, profile: self.profile, clock: clock)
         search = SearchIndex(context: context)
-        // Her kayıttan sonra: E8 yazıyla tamamlama, E9 rozet değerlendirmesi.
-        journal.didSave = { [day, weak badges] entry in
-            _ = try? day.recordWriting(entry)
-            _ = try? badges?.evaluateAfterSave()
-        }
+        notifications = ONE2NotificationScheduler(quotes: quotes, prompts: prompts, content: self.content, day: day,
+                                                  profile: self.profile, clock: clock)
+        widget = WidgetBridge()
+        widgetSource = WidgetSnapshotSource(quotes: quotes, prompts: prompts, content: self.content, day: day,
+                                            mood: mood, exposure: exposure, profile: self.profile, clock: clock)
         legacy = LegacyMomentStore(context: context, calendar: clock.calendar)
         if guardLegacyWrites, let coordinator = context.persistentStoreCoordinator {
             legacyWriteGuard = LegacyWriteGuard(coordinator: coordinator)
         } else {
             legacyWriteGuard = nil
         }
+        // Her kayıttan sonra: E8 yazıyla tamamlama, E9 rozet, widget ve bildirim penceresi.
+        journal.didSave = { [day, weak badges, weak self] entry in
+            _ = try? day.recordWriting(entry)
+            _ = try? badges?.evaluateAfterSave()
+            Task { @MainActor in await self?.refreshSurfaces() }
+        }
+    }
+
+    /// Widget (`w2_*`) ve bildirim penceresi (E13, E14). Her kayıt, gün
+    /// değişimi ve içerik güncellemesinde çağrılır.
+    func refreshSurfaces() async {
+        widget.write(await widgetSource.snapshot())
+        await notifications.rebuild()
     }
 
     /// Uygulamanın gerçek store'u.
