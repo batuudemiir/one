@@ -30,7 +30,7 @@ struct UXPreviewSheet: View {
                 .padding(.vertical, V3Tokens.spacingSM)
             }
             .fixedSize(horizontal: false, vertical: true)
-            TodayView(state: .loaded(TodayFixtures.morningMissed()),
+            ONE2TodayView(state: .loaded(TodayFixtures.morningMissed()),
                       actions: TodayActions(flowProvider: { FlowFixtureModels.model($0) }))
         }
         .oneScreenGround()

@@ -1,5 +1,5 @@
 //
-//  TodayView.swift
+//  ONE2TodayView.swift
 //  ONE 2.0
 //
 //  Bugün ekranı (06_giris_akislari.md › Bugün ekranı), view data ile.
@@ -23,7 +23,7 @@ struct TodayActions {
     var flowProvider: ((FlowKind) -> FlowViewModel)?
 }
 
-struct TodayView: View {
+struct ONE2TodayView: View {
     let state: TodayViewState
     var actions = TodayActions()
 
@@ -272,29 +272,29 @@ struct TodaySkeleton: View {
 // MARK: - Önizlemeler
 
 #Preview("Daily · not started") {
-    TodayView(state: .loaded(TodayFixtures.dailyNotStarted()),
+    ONE2TodayView(state: .loaded(TodayFixtures.dailyNotStarted()),
               actions: TodayActions(flowProvider: { FlowFixtureModels.model($0) }))
 }
 
 #Preview("Morning+evening · morning done") {
-    TodayView(state: .loaded(TodayFixtures.morningDone()),
+    ONE2TodayView(state: .loaded(TodayFixtures.morningDone()),
               actions: TodayActions(flowProvider: { FlowFixtureModels.model($0) }))
 }
 
 #Preview("Morning+evening · both done") {
-    TodayView(state: .loaded(TodayFixtures.bothDone()))
+    ONE2TodayView(state: .loaded(TodayFixtures.bothDone()))
 }
 
 #Preview("Loading") {
-    TodayView(state: .loading)
+    ONE2TodayView(state: .loading)
 }
 
 #Preview("Morning missed · light") {
-    TodayView(state: .loaded(TodayFixtures.morningMissed()))
+    ONE2TodayView(state: .loaded(TodayFixtures.morningMissed()))
         .preferredColorScheme(.light)
 }
 
 #Preview("Daily · in progress · AX3") {
-    TodayView(state: .loaded(TodayFixtures.dailyInProgress()))
+    ONE2TodayView(state: .loaded(TodayFixtures.dailyInProgress()))
         .dynamicTypeSize(.accessibility3)
 }
