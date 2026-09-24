@@ -73,7 +73,7 @@ enum TodayLive {
         case .daily:       return completion?.dailyCompletedAt != nil
         case .morning:     return completion?.morningCompletedAt != nil
         case .evening:     return completion?.eveningCompletedAt != nil
-        case .moodCheckIn: return false
+        case .moodCheckIn, .guided: return false
         }
     }
 

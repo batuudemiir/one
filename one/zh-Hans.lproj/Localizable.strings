@@ -1044,6 +1044,15 @@ one day.";
 "one2.intention.partly" = "一半";
 "one2.intention.missed" = "没做到";
 "one2.debug.uxPreview" = "新“今天”预览";
+"one2.ritual.guided.title" = "引导日记";
+"one2.answer.yes" = "是";
+"one2.answer.no" = "否";
+"one2.practices.pickerTitle" = "添加练习";
+"one2.practices.remove" = "移除";
+"one2.practices.added" = "已添加";
+"one2.practices.empty" = "没有可添加的练习了。";
+"one2.write.context.theme" = "每周主题 · %@";
+"one2.write.context.blank" = "空白页";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "今日一句";

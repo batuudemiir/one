@@ -94,6 +94,9 @@ nonisolated enum FlowFixtures {
         }
 
         switch kind {
+        case .guided:
+            // Rehberli günlüğün adımları içerikten gelir (GuidedFlows).
+            return []
         case .moodCheckIn:
             return [score("one2.flow.score.now"), emotions, causes,
                     text("note", "one2.flow.note.title", "one2.flow.prompt.moodNote")]
@@ -146,6 +149,7 @@ nonisolated enum FlowFixtures {
         let seal: FlowSeal
         switch kind {
         case .moodCheckIn: seal = .none
+        case .guided:      seal = .saved
         case .morning:     seal = .half
         case .daily, .evening: seal = .full
         }

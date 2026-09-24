@@ -1046,6 +1046,15 @@ one day.";
 "one2.intention.partly" = "En partie";
 "one2.intention.missed" = "Pas cette fois";
 "one2.debug.uxPreview" = "Aperçu du nouvel Aujourd'hui";
+"one2.ritual.guided.title" = "Journal guidé";
+"one2.answer.yes" = "Oui";
+"one2.answer.no" = "Non";
+"one2.practices.pickerTitle" = "Ajouter une pratique";
+"one2.practices.remove" = "Retirer";
+"one2.practices.added" = "Ajoutée";
+"one2.practices.empty" = "Il n'y a plus de pratique à ajouter.";
+"one2.write.context.theme" = "Thème de la semaine · %@";
+"one2.write.context.blank" = "Page blanche";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "La citation du jour";

@@ -20,7 +20,7 @@ struct UXPreviewSheet: View {
                      title: NSLocalizedString("one2.debug.uxPreview", comment: "Debug: new Today preview"))
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: V3Tokens.spacingSM) {
-                    ForEach(FlowKind.allCases) { flow in
+                    ForEach(FlowKind.rituals) { flow in
                         V3OutlineButton(title: RitualCopy.title(flow)) {
                             presentedFlow = FlowPresentation(model: FlowFixtureModels.model(flow))
                         }

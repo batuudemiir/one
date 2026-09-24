@@ -19,17 +19,22 @@ enum FlowStorage {
 
 // MARK: - Taslak
 
-/// Akış taslağı cihazda, `one2.flow.draft.<akış>.<gün>`.
+/// Akış taslağı cihazda, `one2.flow.draft.<akış>[.<kapsam>].<gün>`.
+/// Kapsam: aynı türün farklı içerikleri (rehberli günlük ID'si).
 final class DefaultsFlowDraftStore: FlowDraftStoring {
     private let day: DayKey
+    private let scope: String?
     private let backing: KeyValueBacking
 
-    init(day: DayKey, backing: KeyValueBacking = FlowStorage.backing) {
+    init(day: DayKey, scope: String? = nil, backing: KeyValueBacking = FlowStorage.backing) {
         self.day = day
+        self.scope = scope
         self.backing = backing
     }
 
-    private func key(_ flow: FlowKind) -> String { "one2.flow.draft.\(flow.rawValue).\(day.string)" }
+    private func key(_ flow: FlowKind) -> String {
+        "one2.flow.draft.\(flow.rawValue)\(scope.map { "." + $0 } ?? "").\(day.string)"
+    }
 
     func load(_ flow: FlowKind) -> FlowProgress? {
         guard let data = backing.object(forKey: key(flow)) as? Data else { return nil }
@@ -69,5 +74,30 @@ final class FlowCompletionStore {
 
     func save(_ record: FlowCompletionRecord, _ flow: FlowKind, on day: DayKey) {
         backing.set(try? JSONEncoder().encode(record), forKey: key(flow, day))
+    }
+}
+
+// MARK: - Taşınan maddeler
+
+/// Akşam "Taşı" dediği sabah maddeleri; ertesi sabahın öncelik listesine
+/// başlangıç cevabı olur, sabah tamamlanınca silinir. `one2.flow.carry.<gün>`.
+final class CarryOverStore {
+    private let backing: KeyValueBacking
+
+    init(backing: KeyValueBacking = FlowStorage.backing) { self.backing = backing }
+
+    private func key(_ day: DayKey) -> String { "one2.flow.carry.\(day.string)" }
+
+    func items(for day: DayKey) -> [String] {
+        (backing.object(forKey: key(day)) as? [String]) ?? []
+    }
+
+    func carry(_ items: [String], to day: DayKey) {
+        let filled = items.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        backing.set(filled.isEmpty ? nil : Array(filled.prefix(3)), forKey: key(day))
+    }
+
+    func clear(_ day: DayKey) {
+        backing.set(nil, forKey: key(day))
     }
 }

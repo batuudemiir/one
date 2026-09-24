@@ -15,6 +15,7 @@ nonisolated enum RitualCopy {
         case .daily:       return NSLocalizedString("one2.ritual.daily.title", comment: "Flow title: daily check-in")
         case .morning:     return NSLocalizedString("one2.ritual.morning.title", comment: "Flow title: morning preparation")
         case .evening:     return NSLocalizedString("one2.ritual.evening.title", comment: "Flow title: evening review")
+        case .guided:      return NSLocalizedString("one2.ritual.guided.title", comment: "Flow title: guided journal")
         }
     }
 

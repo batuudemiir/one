@@ -1047,6 +1047,15 @@ one day.";
 "one2.intention.partly" = "Частично";
 "one2.intention.missed" = "Не вышло";
 "one2.debug.uxPreview" = "Предпросмотр нового «Сегодня»";
+"one2.ritual.guided.title" = "Дневник с подсказками";
+"one2.answer.yes" = "Да";
+"one2.answer.no" = "Нет";
+"one2.practices.pickerTitle" = "Добавить практику";
+"one2.practices.remove" = "Убрать";
+"one2.practices.added" = "Добавлено";
+"one2.practices.empty" = "Больше нечего добавить.";
+"one2.write.context.theme" = "Тема недели · %@";
+"one2.write.context.blank" = "Пустая страница";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "Цитата дня";

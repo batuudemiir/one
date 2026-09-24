@@ -47,12 +47,15 @@ final class FlowViewModel {
     @ObservationIgnored private let drafts: FlowDraftStoring
     @ObservationIgnored private var completed = false
 
-    init(flow: FlowViewData, drafts: FlowDraftStoring, onComplete: @escaping (FlowResult) -> Void = { _ in }) {
+    /// - Parameter initialAnswers: taslak yoksa başlangıç cevapları (ertesi
+    ///   sabaha taşınan maddeler). Taslak varsa taslak geçerli.
+    init(flow: FlowViewData, drafts: FlowDraftStoring, initialAnswers: [String: FlowAnswer] = [:],
+         onComplete: @escaping (FlowResult) -> Void = { _ in }) {
         self.flow = flow
         self.closing = flow.closing
         self.drafts = drafts
         self.onComplete = onComplete
-        var restored = drafts.load(flow.kind) ?? FlowProgress(flow: flow.kind)
+        var restored = drafts.load(flow.kind) ?? FlowProgress(flow: flow.kind, answers: initialAnswers)
         restored.enabledSteps.formIntersection(flow.steps.map(\.id))
         progress = restored
         progress.stepIndex = min(max(0, restored.stepIndex), max(0, steps.count - 1))

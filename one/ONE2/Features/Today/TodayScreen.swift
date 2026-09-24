@@ -16,12 +16,19 @@ struct TodayScreen: View {
 
     @State private var state: TodayViewState = .loading
     @State private var seed = FlowSeedContent()
+    @State private var pickerItems: [PracticePickerItem]?
 
     var body: some View {
         ONE2TodayView(state: state, actions: actions)
             // Her görünüşte: akıştan ya da söze yazıdan dönünce güncel.
             .task { await reload() }
             .onChange(of: router.notice) { _, _ in Task { await reload() } }
+            .sheet(isPresented: Binding(get: { pickerItems != nil }, set: { if !$0 { pickerItems = nil } })) {
+                PracticePickerSheet(items: pickerItems ?? [], onAdd: addPractice, onLocked: {
+                    pickerItems = nil
+                    router.sheet = .paywall
+                }, onClose: { pickerItems = nil })
+            }
     }
 
     private var actions: TodayActions {
@@ -33,11 +40,39 @@ struct TodayScreen: View {
                 guard let key = DayKey(day.id) else { return nil }
                 return LiveFlows.model(backfillKind, on: key, env: env, seed: seed)
             },
+            practiceFlow: { practice in
+                let id = GuidedFlows.id(from: practice.id)
+                guard let journal = env.content.catalog.guided.first(where: { $0.id == id }) else { return nil }
+                return GuidedFlows.model(journal, on: today, env: env)
+            },
+            removePractice: { practice in
+                try? env.library.removePractice(practice.id)
+                Task { await reload() }
+            },
+            addPractice: { showPicker(env) },
+            openTheme: {
+                guard let theme = WriteContexts.todayTheme(env) else { return }
+                router.push(.newEntry(prompt: theme.ref), on: .today)
+            },
             openProfile: { router.tab = .profile },
             dismissNotice: { router.notice = nil },
             flowDismissed: { Task { await reload() } },
             flowProvider: { kind in LiveFlows.model(kind, on: today, env: env, seed: seed) }
         )
+    }
+
+    private func showPicker(_ env: AppEnvironment) {
+        let added = Set(((try? env.library.practices()) ?? []).map(\.contentRef))
+        // Premium: EntitlementStore gelene kadar kapalı (ADR §8).
+        pickerItems = GuidedFlows.pickerItems(env.content.catalog.guided, added: added,
+                                              lang: env.profile.profile.contentLang, hasPremium: false)
+    }
+
+    private func addPractice(_ item: PracticePickerItem) {
+        guard let env = environment else { return }
+        _ = try? env.library.addPractice(item.id)
+        pickerItems = nil
+        Task { await reload() }
     }
 
     private func reload() async {

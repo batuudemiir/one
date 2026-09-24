@@ -11,7 +11,8 @@
 //  - Son adımda kayıt: mood check-in, girdi, odak, söze yazı, ritüel
 //    tamamlama; yankı `EchoEngine`'den. Bugün kartının "tamam" hâli için
 //    yankı ve mood cihazda saklanır (`FlowCompletionStore`).
-//  - Taşınan maddeler için veri yok (karar gerekli): canlıda soru çıkmaz.
+//  - Taşınan maddeler: akşam kapanışında sabahın öncelikleri sorulur;
+//    "Taşı" → ertesi sabahın öncelik listesi dolu gelir (`CarryOverStore`).
 //
 
 import Foundation
@@ -29,7 +30,10 @@ enum LiveFlows {
             .map { FlowOptionViewData(id: $0.id, label: $0.label, group: $0.family) }
         c.causes = catalog.causes.filter { $0.active && $0.lang == lang }
             .map { FlowOptionViewData(id: $0.id, label: $0.label, group: $0.icon) }
-        if let prompt = await env.prompts.dailyPrompt(for: day) {
+        // Günün sorusu: haftalık temanın günü; tema yoksa serbest soru (04 › E7 sırası).
+        var prompt = await env.prompts.dailyPrompt(for: day)
+        if prompt == nil { prompt = await env.prompts.freePrompt(context: PromptContext()) }
+        if let prompt {
             c.dailyPrompts = [prompt.text]
             c.previousAnswer = previousAnswer(to: prompt.text, env: env)
         }
@@ -56,7 +60,7 @@ enum LiveFlows {
     static func practices(_ env: AppEnvironment) -> [FlowOptionViewData] {
         let catalog = env.content.catalog
         return ((try? env.library.practices()) ?? []).map { item in
-            let id = item.contentRef.hasPrefix("guided:") ? String(item.contentRef.dropFirst("guided:".count)) : item.contentRef
+            let id = GuidedFlows.id(from: item.contentRef)
             let title = catalog.guided.first { $0.id == id }?.title ?? item.contentRef
             return FlowOptionViewData(id: item.contentRef, label: title, group: "book")
         }
@@ -76,11 +80,18 @@ enum LiveFlows {
         let steps = steps(kind, on: day, env: env, seed: seed)
         let flow = FlowViewData(kind: kind, steps: steps,
                                 closing: FlowClosingViewData(seal: FlowEntryMapping.seal(kind), echo: ""))
-        let model = FlowViewModel(flow: flow, drafts: DefaultsFlowDraftStore(day: day))
+        // Akşam "Taşı" dediyse sabahın öncelik listesi dolu gelir.
+        let carried = kind == .morning ? CarryOverStore().items(for: day) : []
+        let initial: [String: FlowAnswer] = carried.isEmpty ? [:] : [FlowEntryMapping.prioritiesStepID: .list(carried)]
+        let model = FlowViewModel(flow: flow, drafts: DefaultsFlowDraftStore(day: day), initialAnswers: initial)
         model.onFinish = { result in
             let closing = try save(result, steps: steps, on: day, env: env)
             onSaved()
             return closing
+        }
+        model.onComplete = { [weak model] result in
+            guard kind == .evening, result.carryOver == true, let items = model?.closing.carryOver else { return }
+            CarryOverStore().carry(items, to: day.adding(days: 1))
         }
         return model
     }
@@ -118,6 +129,11 @@ enum LiveFlows {
         if let card = FlowEntryMapping.ritualCard(result.flow) {
             _ = try env.day.markCompleted(card, on: day)
         }
+        if result.flow == .morning { CarryOverStore().clear(day) }
+        // Akşam kapanışı: sabahın öncelik maddeleri yarına taşınabilir.
+        let carryOver = result.flow == .evening
+            ? FlowEntryMapping.priorities(in: (try? env.journal.entries(on: day)) ?? [])
+            : []
 
         let echo = checkIn.flatMap {
             env.echoes.echo(for: EchoInput(score: $0.score, emotionIDs: $0.emotionIDs, causeIDs: $0.causeIDs,
@@ -128,6 +144,6 @@ enum LiveFlows {
                                                         practicesDone: FlowEntryMapping.practicesDone(result, steps: steps)),
                                    result.flow, on: day)
         return FlowClosingViewData(seal: FlowEntryMapping.seal(result.flow), echo: echo,
-                                   week: WeekStripAdapter.viewData(WeekStripModel.load(env)))
+                                   week: WeekStripAdapter.viewData(WeekStripModel.load(env)), carryOver: carryOver)
     }
 }

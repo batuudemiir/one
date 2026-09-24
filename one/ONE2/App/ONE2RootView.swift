@@ -112,6 +112,7 @@ private struct ONE2RouteView: View {
         switch route {
         case .quoteReflection(let id): QuoteReflectionScreen(quoteID: id)
         case .entry(let id):           EntryDetailScreen(entryID: id)
+        case .newEntry(let prompt):    JournalWriteScreen(ref: prompt)
         default:                       ONE2RoutePlaceholder(route: route)
         }
     }

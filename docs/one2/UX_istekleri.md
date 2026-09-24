@@ -82,17 +82,18 @@ Durum işaretleri: **Var** (motorda hazır, yalnız eşleme) · **Kısmen** ·
 
 Bugün sekmesi `ONE2TodayView`'ı gerçek veriyle gösteriyor (`TodayScreen` →
 `TodayLive`); akışlar `LiveFlows` ile motora yazıyor. Adaptörler:
-`one/ONE2/Features/Shared/Adapters/`.
+`one/ONE2/Features/Shared/Adapters/`. Açık kararlar plana göre kapatıldı.
 
-| Konu | Canlıda | Eksik / karar |
+| Konu | Canlıda | Plandaki dayanak |
 |---|---|---|
-| Adım seed'i | `FlowFixtures.steps` şablonu + canlı içerik (`LiveFlows.seed`) | Kişiselleştirme (UX-10) |
-| Günün sorusu | `PromptEngine.dailyPrompt` (haftalık tema günü) | Tema yoksa soru adımı başlıksız sorusuz kalır; `freePrompt` yedeği **karar gerekli** |
-| Önceki cevap | Aynı soru metnine günlük check-in'deki son cevap | — |
-| Taslak | Cihazda, `one2.flow.draft.<akış>.<gün>` | — |
-| Kayıt | Mood, girdi (adım başına `EntryAnswer`), odak, söze yazı + maruz kalma, ritüel tamamlama | Uyku saati `<adım>.hours` cevabında (alan yok) |
-| Yankı | `EchoEngine`, kart için cihazda saklanır | Başka cihazda tamamlanan kartta yankı yok (mood hapı görünür) |
-| Taşınan maddeler | Canlıda soru çıkmaz | Madde işaretleme verisi yok: **karar gerekli** |
-| Pratikler | `LibraryStore.practices()` karoları, dokunulamaz; "+ Ekle" gizli | Pratik ekleme/açma ekranı yok (Keşfet) |
-| Haftalık tema | Ad, gün, soru, yazıldıysa ilk satır | "Yaz" gizli: tema yazma ekranı yok |
-| Geriye dönük doldurma | Günlük modda günlük check-in, sabah+akşam modunda akşam akışı, o gün için | Sabah+akşamda gün yarım kalır |
+| Adım seed'i | `FlowFixtures.steps` şablonu + canlı içerik (`LiveFlows.seed`) | 06 › Akış 1–4; kişiselleştirme UX-10 |
+| Günün sorusu | Haftalık temanın günü; tema yoksa serbest soru | 04 › E7 öneri sırası (tema → serbest) |
+| Önceki cevap | Aynı soru metnine günlük check-in'deki son cevap | 06 › Akış 2 |
+| Taslak | Cihazda, `one2.flow.draft.<akış>[.<kapsam>].<gün>` | 06 › Akış kabuğu |
+| Kayıt | Mood, girdi (adım başına `EntryAnswer`), odak, söze yazı + maruz kalma, ritüel tamamlama | 02 › Entry, EntryAnswer, DayRecord |
+| Uyku | Kalite `scale5` cevabı; saat `<adım>.hours` cevabının `number` alanı | 02 › EntryAnswer (`number`); yeni alan açılmadı |
+| Yankı | `EchoEngine`, kart için cihazda saklanır | 04 › E6 |
+| Taşınan maddeler | Akşam kapanışında sabahın öncelikleri; "Taşı" → ertesi sabahın listesi dolu gelir (`CarryOverStore`), sabah bitince silinir | 06 › Akış 4. Maddeleri gün içinde işaretleme planda yok: sorulan liste sabahın bütün öncelikleri |
+| Pratikler | Karoya dokun → rehberli günlük akış kabuğunda (`GuidedFlows`, `guided` girdisi); uzun bas › Kaldır; "+ Ekle" → rehberli günlük listesi, premium kilitli (ONE+) | 06 › Bugün 4; PracticeTile.md; ADR §8. Sıralama (uzun basma) sonra |
+| Haftalık tema | "Yaz" → editör (`Route.newEntry`, `prompt` girdisi, `contentRef` tema günü); yazıldıysa "Devam et" aynı girdiyi düzenler | 06 › Bugün 5; 05 › UX-6 JournalEditor |
+| Geriye dönük doldurma | Günlük modda günlük check-in, sabah+akşam modunda akşam akışı, o gün için | 06 › Bugün 2; E8 7 gün |

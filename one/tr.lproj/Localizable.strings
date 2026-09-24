@@ -1188,6 +1188,15 @@ bir gün.";
 "one2.intention.partly" = "Yarım";
 "one2.intention.missed" = "Olmadı";
 "one2.debug.uxPreview" = "Yeni Bugün önizlemesi";
+"one2.ritual.guided.title" = "Rehberli günlük";
+"one2.answer.yes" = "Evet";
+"one2.answer.no" = "Hayır";
+"one2.practices.pickerTitle" = "Pratik ekle";
+"one2.practices.remove" = "Kaldır";
+"one2.practices.added" = "Eklendi";
+"one2.practices.empty" = "Eklenecek pratik kalmadı.";
+"one2.write.context.theme" = "Haftalık tema · %@";
+"one2.write.context.blank" = "Boş sayfa";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "Günün sözü";

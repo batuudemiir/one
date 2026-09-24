@@ -1046,6 +1046,15 @@ one day.";
 "one2.intention.partly" = "半分";
 "one2.intention.missed" = "できなかった";
 "one2.debug.uxPreview" = "新しい「今日」のプレビュー";
+"one2.ritual.guided.title" = "ガイド付き日記";
+"one2.answer.yes" = "はい";
+"one2.answer.no" = "いいえ";
+"one2.practices.pickerTitle" = "習慣を追加";
+"one2.practices.remove" = "外す";
+"one2.practices.added" = "追加済み";
+"one2.practices.empty" = "追加できる習慣はもうありません。";
+"one2.write.context.theme" = "今週のテーマ · %@";
+"one2.write.context.blank" = "白紙";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "今日の言葉";

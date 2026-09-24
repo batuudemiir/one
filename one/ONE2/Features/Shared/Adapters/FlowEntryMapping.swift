@@ -23,13 +23,15 @@ nonisolated enum FlowEntryMapping {
         case .daily:       return .dailyCheckIn
         case .morning:     return .morning
         case .evening:     return .evening
+        case .guided:      return .guided
         }
     }
 
-    /// Gün kaydındaki ritüel kartı; mood check-in günü tamamlamaz.
+    /// Gün kaydındaki ritüel kartı; mood check-in ve rehberli günlük günü
+    /// ritüel olarak tamamlamaz (rehberli yazı ≥ 20 kelimeyse yazıyla tamamlar).
     static func ritualCard(_ flow: FlowKind) -> RitualCard? {
         switch flow {
-        case .moodCheckIn: return nil
+        case .moodCheckIn, .guided: return nil
         case .daily:       return .daily
         case .morning:     return .morning
         case .evening:     return .evening
@@ -41,6 +43,7 @@ nonisolated enum FlowEntryMapping {
         case .moodCheckIn:     return .none
         case .morning:         return .half
         case .daily, .evening: return .full
+        case .guided:          return .saved
         }
     }
 
@@ -63,10 +66,13 @@ nonisolated enum FlowEntryMapping {
         return Mood(score: score, emotionIDs: choices(.emotions), causeIDs: choices(.causes))
     }
 
-    /// Mood dışındaki anlamlı cevaplar, adım sırasıyla.
-    static func answers(_ result: FlowResult, steps: [FlowStepViewData]) -> [EntryAnswer] {
+    /// Mood dışındaki anlamlı cevaplar, adım sırasıyla. `includeMoodSteps`:
+    /// skor ve seçim adımları da girdiye yazılır (rehberli günlük; mood
+    /// check-in değildir).
+    static func answers(_ result: FlowResult, steps: [FlowStepViewData],
+                        includeMoodSteps: Bool = false) -> [EntryAnswer] {
         var out: [EntryAnswer] = []
-        for step in steps where ![.score, .emotions, .causes].contains(step.kind) {
+        for step in steps where includeMoodSteps || ![.score, .emotions, .causes].contains(step.kind) {
             guard let answer = result.answers[step.id], answer.isMeaningful else { continue }
             let question = step.prompt ?? step.title
             switch answer {
@@ -90,8 +96,10 @@ nonisolated enum FlowEntryMapping {
                 out.append(EntryAnswer(kind: .multiChoice, stepRef: step.id, questionSnapshot: question, choices: ids))
             case .intention(let id):
                 out.append(EntryAnswer(kind: .singleChoice, stepRef: step.id, questionSnapshot: question, choices: [id]))
-            case .score, .choices:
-                continue
+            case .score(let value):
+                out.append(EntryAnswer(kind: .scale5, stepRef: step.id, questionSnapshot: question, number: Double(value)))
+            case .choices(let ids):
+                out.append(EntryAnswer(kind: .multiChoice, stepRef: step.id, questionSnapshot: question, choices: ids))
             }
         }
         for index in out.indices { out[index].order = index }
@@ -130,6 +138,14 @@ nonisolated enum FlowEntryMapping {
             }
         }
         return nil
+    }
+
+    /// Sabahın öncelik maddeleri (akşam "Yarına taşıyayım mı?").
+    static let prioritiesStepID = "morning.priorities"
+
+    static func priorities(in entries: [JournalEntry]) -> [String] {
+        entries.filter { $0.kind == .morning }
+            .flatMap { $0.answers.filter { $0.stepRef == prioritiesStepID }.flatMap(\.choices) }
     }
 
     /// Akşam özeti: tamamlanan pratik sayısı; pratik adımı yoksa nil.

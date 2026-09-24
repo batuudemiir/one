@@ -51,7 +51,7 @@ struct TodayViewDataTests {
 
     @Test("Adım listeleri: yalnız skor zorunlu; sabahta duygular kapalı; akşam varyantları")
     func stepLists() {
-        for kind in FlowKind.allCases {
+        for kind in FlowKind.rituals {
             let steps = FlowFixtures.steps(kind)
             #expect(steps.filter { !$0.optional }.allSatisfy { $0.kind == .score })
             #expect(Set(steps.map(\.id)).count == steps.count)

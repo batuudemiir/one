@@ -65,17 +65,17 @@ struct FlowClosingView: View {
                 .scaleEffect(appeared || reduceMotion ? 1 : 0.9)
                 .opacity(appeared ? 1 : 0)
             VStack(spacing: V3Tokens.spacingSM) {
-                Text(closing.seal == .half
-                     ? NSLocalizedString("one2.seal.ready", comment: "Seal title after the morning flow")
-                     : NSLocalizedString("one2.seal.dayClosed", comment: "Seal title: the day is complete"))
+                Text(title)
                     .displayMD()
                     .foregroundColor(V3Tokens.ink)
                     .accessibilityAddTraits(.isHeader)
-                Text(closing.echo)
-                    .font(V3Typography.quote(20))
-                    .italic()
-                    .foregroundColor(V3Tokens.mutedText)
-                    .fixedSize(horizontal: false, vertical: true)
+                if !closing.echo.isEmpty {
+                    Text(closing.echo)
+                        .font(V3Typography.quote(20))
+                        .italic()
+                        .foregroundColor(V3Tokens.mutedText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             .multilineTextAlignment(.center)
             if !closing.week.isEmpty {
@@ -90,6 +90,14 @@ struct FlowClosingView: View {
 
     /// Akşam: sabah maddelerinden işaretlenmeyenler varsa "Taşı" / "Bırak";
     /// yoksa "Bitti".
+    private var title: String {
+        switch closing.seal {
+        case .half:  return NSLocalizedString("one2.seal.ready", comment: "Seal title after the morning flow")
+        case .saved: return NSLocalizedString("one2.seal.saved", comment: "Seal title: writing saved")
+        default:     return NSLocalizedString("one2.seal.dayClosed", comment: "Seal title: the day is complete")
+        }
+    }
+
     @ViewBuilder
     private var actions: some View {
         if closing.carryOver.isEmpty {

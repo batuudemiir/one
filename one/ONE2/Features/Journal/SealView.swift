@@ -33,7 +33,7 @@ struct SealView: View {
                     Text(JournalCopy.sealTitle(completedDay: seal.completedDay))
                         .displaySM()
                         .foregroundColor(V3Tokens.ink)
-                    Text(verbatim: "\(JournalCopy.words(seal.wordCount)) · \(JournalCopy.kindTitle(.quoteReflection))")
+                    Text(verbatim: "\(JournalCopy.words(seal.wordCount)) · \(JournalCopy.kindTitle(seal.kind))")
                         .font(V3Typography.journal(17))
                         .italic()
                         .foregroundColor(V3Tokens.mutedText)

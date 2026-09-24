@@ -19,6 +19,10 @@ struct TodayActions {
     var fillDay: (WeekDayViewData) -> Void = { _ in }
     var backfillFlow: ((WeekDayViewData) -> FlowViewModel?)?
     var openPractice: ((PracticeTileViewData) -> Void)?
+    /// Pratiğin akışı (rehberli günlük); verilmişse karo akışı burada açar.
+    var practiceFlow: ((PracticeTileViewData) -> FlowViewModel?)?
+    /// Uzun basma › Kaldır.
+    var removePractice: ((PracticeTileViewData) -> Void)?
     var addPractice: (() -> Void)?
     var openTheme: (() -> Void)?
     var openProfile: () -> Void = {}
@@ -73,6 +77,15 @@ struct ONE2TodayView: View {
         }
     }
 
+    private var openPractice: ((PracticeTileViewData) -> Void)? {
+        if let provider = actions.practiceFlow {
+            return { practice in
+                if let model = provider(practice) { presentedFlow = FlowPresentation(model: model) }
+            }
+        }
+        return actions.openPractice
+    }
+
     private func start(_ flow: FlowKind) {
         if let provider = actions.flowProvider {
             presentedFlow = FlowPresentation(model: provider(flow))
@@ -90,7 +103,8 @@ struct ONE2TodayView: View {
                 WeekStripView(days: data.week, onBackfill: { backfillDay = $0 })
                 RitualArea(layout: data.layout, cards: data.rituals, onStart: start)
                 if !data.practices.isEmpty || actions.addPractice != nil {
-                    PracticesSection(practices: data.practices, onOpen: actions.openPractice, onAdd: actions.addPractice)
+                    PracticesSection(practices: data.practices, onOpen: openPractice,
+                                     onRemove: actions.removePractice, onAdd: actions.addPractice)
                 }
                 if let theme = data.theme {
                     WeeklyThemeSection(theme: theme, onOpen: actions.openTheme)
@@ -108,6 +122,7 @@ struct ONE2TodayView: View {
 struct PracticesSection: View {
     let practices: [PracticeTileViewData]
     let onOpen: ((PracticeTileViewData) -> Void)?
+    var onRemove: ((PracticeTileViewData) -> Void)?
     let onAdd: (() -> Void)?
 
     private let columns = [GridItem(.flexible(), spacing: V3Tokens.spacingMD),
@@ -121,14 +136,15 @@ struct PracticesSection: View {
                 .accessibilityAddTraits(.isHeader)
             LazyVGrid(columns: columns, spacing: V3Tokens.spacingMD) {
                 ForEach(practices) { practice in
-                    if let onOpen {
-                        Button { onOpen(practice) } label: {
-                            PracticeTileView(title: practice.title, symbol: practice.symbol, isAdd: false)
+                    tile(practice)
+                        .contextMenu {
+                            if let onRemove {
+                                Button(role: .destructive) { onRemove(practice) } label: {
+                                    Label(NSLocalizedString("one2.practices.remove", comment: "Remove practice"),
+                                          systemImage: "minus.circle")
+                                }
+                            }
                         }
-                        .buttonStyle(.onePressable)
-                    } else {
-                        PracticeTileView(title: practice.title, symbol: practice.symbol, isAdd: false)
-                    }
                 }
                 if let onAdd {
                     Button(action: onAdd) {
@@ -182,6 +198,20 @@ private struct PracticeTileBackground: ViewModifier {
             )
         } else {
             content.oneCardBackground(radius: V3Tokens.radiusTile)
+        }
+    }
+}
+
+extension PracticesSection {
+    @ViewBuilder
+    fileprivate func tile(_ practice: PracticeTileViewData) -> some View {
+        if let onOpen {
+            Button { onOpen(practice) } label: {
+                PracticeTileView(title: practice.title, symbol: practice.symbol, isAdd: false)
+            }
+            .buttonStyle(.onePressable)
+        } else {
+            PracticeTileView(title: practice.title, symbol: practice.symbol, isAdd: false)
         }
     }
 }

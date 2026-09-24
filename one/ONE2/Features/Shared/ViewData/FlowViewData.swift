@@ -11,7 +11,12 @@ import Foundation
 
 nonisolated enum FlowKind: String, CaseIterable, Hashable, Sendable, Codable, Identifiable {
     case moodCheckIn, daily, morning, evening
+    /// Rehberli günlük (pratik karosu); adımları içerikten gelir.
+    case guided
     var id: String { rawValue }
+
+    /// Günün ritüelleri ve check-in (06'daki dört akış).
+    static let rituals: [FlowKind] = [.moodCheckIn, .daily, .morning, .evening]
 }
 
 nonisolated enum FlowStepKind: String, CaseIterable, Hashable, Sendable, Codable {
@@ -121,6 +126,8 @@ nonisolated enum FlowSeal: String, Hashable, Sendable, Codable {
     case half
     /// Tam mühür: gün "done".
     case full
+    /// Tam mühür, günü kapatmaz: "Yazın kaydedildi." (rehberli günlük).
+    case saved
 }
 
 nonisolated struct FlowClosingViewData: Hashable, Sendable {

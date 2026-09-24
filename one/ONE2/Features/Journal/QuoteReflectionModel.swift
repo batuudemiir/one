@@ -41,6 +41,8 @@ nonisolated struct ReflectionSeal: Hashable, Sendable {
     let wordCount: Int
     let badges: [String]
     let week: [WeekDayCell]
+    /// Özet satırındaki tür ("Söze yazı", "Soruya yazı", "Günlük").
+    var kind: EntryKind = .quoteReflection
 }
 
 nonisolated enum ReflectionPhase: Hashable, Sendable {

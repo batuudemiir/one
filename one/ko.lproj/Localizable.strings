@@ -1047,6 +1047,15 @@ one day.";
 "one2.intention.partly" = "절반";
 "one2.intention.missed" = "잘 안 됐어요";
 "one2.debug.uxPreview" = "새 오늘 미리보기";
+"one2.ritual.guided.title" = "가이드 일기";
+"one2.answer.yes" = "예";
+"one2.answer.no" = "아니요";
+"one2.practices.pickerTitle" = "실천 추가";
+"one2.practices.remove" = "삭제";
+"one2.practices.added" = "추가됨";
+"one2.practices.empty" = "추가할 실천이 더 없어요.";
+"one2.write.context.theme" = "이번 주 주제 · %@";
+"one2.write.context.blank" = "빈 페이지";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "오늘의 문장";
