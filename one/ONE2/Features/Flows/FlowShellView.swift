@@ -143,8 +143,11 @@ struct FlowStepContent: View {
 
     var body: some View {
         switch step.kind {
-        default:
-            EmptyView()
+        case .score:    ScoreStep(step: step, model: model, onAutoAdvance: onAutoAdvance)
+        case .emotions: EmotionsStep(step: step, model: model)
+        case .causes:   CausesStep(step: step, model: model)
+        case .text:     TextStep(step: step, model: model)
+        default:        EmptyView()
         }
     }
 }
