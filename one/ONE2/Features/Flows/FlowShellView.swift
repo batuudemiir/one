@@ -148,6 +148,9 @@ struct FlowStepContent: View {
         case .causes:   CausesStep(step: step, model: model)
         case .text:     TextStep(step: step, model: model)
         case .list3:    List3Step(step: step, model: model)
+        case .sleep:    SleepStep(step: step, model: model)
+        case .focus:    FocusStep(step: step, model: model)
+        case .quote:    QuoteStep(step: step, model: model)
         default:        EmptyView()
         }
     }

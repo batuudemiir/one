@@ -8,6 +8,7 @@
 //  tam ekran açılır. Motor bağlaması UX-11'de.
 //
 
+import Foundation
 import SwiftUI
 
 struct TodayActions {

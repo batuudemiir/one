@@ -196,14 +196,16 @@ struct GrowingSerifField: View {
     @Binding var text: String
     var placeholder = NSLocalizedString("one2.reflection.placeholder", comment: "Empty editor placeholder")
     var accessibilityLabel: String?
+    /// "Tek satır" cevap (sabahın söz adımı): büyümez.
+    var singleLine = false
 
     var body: some View {
-        TextField(placeholder, text: $text, axis: .vertical)
+        TextField(placeholder, text: $text, axis: singleLine ? .horizontal : .vertical)
             .font(V3Typography.journal())
             .foregroundColor(V3Tokens.ink)
             .tint(V3Tokens.ink)
             .lineSpacing(11)
-            .lineLimit(1...)
+            .lineLimit(singleLine ? 1...1 : 1...Int.max)
             .padding(.vertical, V3Tokens.spacingSM)
             .overlay(alignment: .bottom) {
                 Rectangle()

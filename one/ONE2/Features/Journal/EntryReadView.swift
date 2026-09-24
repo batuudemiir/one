@@ -7,6 +7,7 @@
 //  Düzenle / sil, Yolculuk'un girdi detayıyla (UX-9) gelir.
 //
 
+import Foundation
 import SwiftUI
 
 struct EntryReadContent: View {

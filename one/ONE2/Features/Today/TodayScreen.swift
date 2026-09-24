@@ -7,6 +7,7 @@
 //  görünür. Check-in kartı, Pratiklerin ve Haftalık tema UX-4/UX-5 ile gelir.
 //
 
+import Foundation
 import SwiftUI
 
 struct TodayScreen: View {

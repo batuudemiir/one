@@ -45,6 +45,26 @@ struct FlowShapeTests {
         #expect(m.answer(for: "daily.gratitude")?.isMeaningful == true)
     }
 
+    @Test("Akış 3 · sabah: uyku → skor → (duygular kapalı) → odak → söz → öncelikler → hazırlık; yarım mühür")
+    func morning() {
+        #expect(Self.kinds(.morning) == [.sleep, .score, .focus, .quote, .list3, .text])
+        let all = FlowFixtures.steps(.morning)
+        #expect(all.map(\.kind) == [.sleep, .score, .emotions, .focus, .quote, .list3, .text])
+        #expect(all[3].options?.count == 9 && all[3].options?.last?.id == "custom")
+        #expect(all[4].quote != nil)
+        let closing = FlowFixtures.flow(.morning).closing
+        #expect(closing.seal == .half && closing.week.first { $0.isToday }?.status == .half)
+    }
+
+    @Test("Uyku: yalnız saat de cevaptır; saat 4–12 arasında 0,5 adımla")
+    func sleepAnswer() {
+        #expect(!FlowAnswer.sleep(score: 0, hours: nil).isMeaningful)
+        #expect(FlowAnswer.sleep(score: 0, hours: 7).isMeaningful && FlowAnswer.sleep(score: 3, hours: nil).isMeaningful)
+        #expect(SleepHours.adjusted(12, by: SleepHours.step) == 12)
+        #expect(SleepHours.adjusted(4, by: -SleepHours.step) == 4)
+        #expect(SleepHours.adjusted(7, by: SleepHours.step) == 7.5)
+    }
+
     @Test("Duygular aile sırasıyla gelir")
     func emotionsByFamily() {
         let families = (FlowFixtures.steps(.moodCheckIn)[1].options ?? []).compactMap(\.group)

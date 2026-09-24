@@ -6,6 +6,7 @@
 //  profil), ritüel kartları (CheckInCard) ve mood hapı.
 //
 
+import Foundation
 import SwiftUI
 
 // MARK: - Üst çubuk

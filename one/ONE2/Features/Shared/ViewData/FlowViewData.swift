@@ -74,6 +74,7 @@ nonisolated enum FlowAnswer: Hashable, Sendable, Codable {
     case score(Int)
     /// Duygu / neden ID'leri.
     case choices([String])
+    /// Uyku kalitesi 1–5 (0 = seçilmedi) ve isteğe bağlı saat (4–12, 0,5 adım).
     case sleep(score: Int, hours: Double?)
     /// Odak seçeneği ID'si ya da kendi kelimesi (`custom` true).
     case focus(String, custom: Bool)
@@ -87,7 +88,8 @@ nonisolated enum FlowAnswer: Hashable, Sendable, Codable {
     /// Adımı "yapılmış" sayar mı (boş metin, boş liste cevap değildir).
     var isMeaningful: Bool {
         switch self {
-        case .score, .sleep, .intention: return true
+        case .score, .intention: return true
+        case .sleep(let score, let hours): return score > 0 || hours != nil
         case .choices(let ids), .practices(let ids): return !ids.isEmpty
         case .focus(let value, _): return !value.trimmingCharacters(in: .whitespaces).isEmpty
         case .text(let value): return !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -138,6 +140,17 @@ nonisolated struct FlowViewData: Hashable, Sendable {
 }
 
 /// Tamamlanan akışın sonucu; motor bağlaması kaydeder.
+/// Uyku saati seçicisinin aralığı (06 › Akış 3).
+nonisolated enum SleepHours {
+    static let range: ClosedRange<Double> = 4...12
+    static let step = 0.5
+    static let initial = 7.0
+
+    static func adjusted(_ hours: Double, by delta: Double) -> Double {
+        min(range.upperBound, max(range.lowerBound, hours + delta))
+    }
+}
+
 nonisolated struct FlowResult: Hashable, Sendable {
     let flow: FlowKind
     let answers: [String: FlowAnswer]

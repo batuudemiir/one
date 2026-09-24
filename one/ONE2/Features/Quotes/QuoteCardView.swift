@@ -8,6 +8,7 @@
 //  kartın asıl amacı.
 //
 
+import Foundation
 import SwiftUI
 
 struct QuoteCardView: View {

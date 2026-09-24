@@ -72,3 +72,17 @@ struct FlowStepGallery: View {
 #Preview("Daily · AX3") {
     FlowStepGallery(kind: .daily).dynamicTypeSize(.accessibility3)
 }
+
+// MARK: - Akış 3: Sabah hazırlığı
+
+#Preview("Morning · dark") {
+    FlowStepGallery(kind: .morning).preferredColorScheme(.dark)
+}
+
+#Preview("Morning · light") {
+    FlowStepGallery(kind: .morning).preferredColorScheme(.light)
+}
+
+#Preview("Morning · AX3") {
+    FlowStepGallery(kind: .morning).dynamicTypeSize(.accessibility3)
+}
