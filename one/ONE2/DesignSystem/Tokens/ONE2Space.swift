@@ -58,6 +58,16 @@ nonisolated enum ONE2Size {
     static let badgeDisc: CGFloat = 64
     /// Seal diski.
     static let sealDisc: CGFloat = 96
+    /// PracticeTile kuyu içi ikon (`.o-tile__well .o-ico`).
+    static let iconWellGlyph: CGFloat = 34
+    /// Hafta şeridi: hücre arası (`.o-week` 2px), tarih/tik satırı.
+    static let weekCellGap: CGFloat = 2
+    static let weekGlyph: CGFloat = 24
+    /// Haftalık tema gün çizgileri (`.o-theme__days`): yükseklik ve ara.
+    static let themeBar: CGFloat = 6
+    static let themeBarGap: CGFloat = 6
+    /// Yatay sayfalı kartlarda bir sonraki kartın görünen payı.
+    static let pagePeek: CGFloat = 16
     /// EmotionChip aile noktası.
     static let emotionDot: CGFloat = 10
     /// CheckInCard en küçük yükseklik.

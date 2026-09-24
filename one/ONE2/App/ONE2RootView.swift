@@ -63,7 +63,7 @@ struct ONE2RootView: View {
     @ViewBuilder
     private func tabRoot(_ tab: ONE2Tab) -> some View {
         switch tab {
-        case .today:    TodayScreen(clock: environment.clock)
+        case .today:    TodayScreen(clock: environment.clock, source: TodayFixture.app)
         case .quotes:   QuotesScreen()
         case .explore:  ExploreScreen()
         case .journey:  JourneyScreen()

@@ -16,9 +16,11 @@ struct ScoreDisc: View {
     let score: Int
     var size: Size = .regular
     var isSelected = false
+    /// Dar yerleşimde (`ScoreScale`) küçültülmüş çap; yoksa boyutun çapı.
+    var fittedDiameter: CGFloat? = nil
 
     private var diameter: CGFloat {
-        size == .regular ? ONE2Size.scoreDisc : ONE2Size.scoreDiscSmall
+        fittedDiameter ?? (size == .regular ? ONE2Size.scoreDisc : ONE2Size.scoreDiscSmall)
     }
 
     var body: some View {

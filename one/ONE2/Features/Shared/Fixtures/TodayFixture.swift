@@ -116,6 +116,75 @@ nonisolated enum TodayFixture {
         theme: theme
     )
 
+    // MARK: - Hafta şeridi ve gün kaynağı
+
+    /// Son dört haftanın tamamlanması: bu hafta `weekFew` ile aynı (çarşamba
+    /// boş), önceki haftalarda birkaç boşluk ve yarım gün.
+    static var completions: [DayKey: WeekDayState.Completion] {
+        var result: [DayKey: WeekDayState.Completion] = [:]
+        let pattern: [WeekDayState.Completion] = [.done, .done, .none, .done, .half, .done, .none]
+        for offset in 4...27 {
+            result[today.adding(days: -offset)] = pattern[offset % pattern.count]
+        }
+        result[today.adding(days: -3)] = .done
+        result[today.adding(days: -2)] = .done
+        return result
+    }
+
+    /// Eskiden yeniye dört hafta; sonuncusu bu hafta.
+    static var weeks: [WeekStripData] {
+        let done = completions
+        return (0..<4).reversed().map { back in
+            WeekStripData.week(containing: today.adding(days: -7 * back), today: today, completions: done)
+        }
+    }
+
+    /// Geçmiş bir günün görünümü: tamamlandıysa check-in özeti, değilse boş.
+    static func pastDay(_ day: DayKey) -> TodayData {
+        let completion = completions[day] ?? .none
+        let echoes = [
+            "Yavaş bir gündü; yavaşlık da bir cevap.",
+            "Yorgunluğunu adlandırmak onu biraz hafifletti.",
+            "Küçük bir şey iyi gitti ve bunu gördün.",
+        ]
+        let seed = day.string.unicodeScalars.reduce(0) { $0 + Int($1.value) }
+        let summary = completion == .none ? nil : CheckInSummary(
+            id: "fx_checkin_\(day.string)",
+            time: FixtureClock.daysAgo(day.days(to: today), 21, 10),
+            slot: .daily,
+            score: [2, 3, 4, 4, 5][seed % 5],
+            emotions: [EmotionCatalogFixture.emotion("huzur.sakin")],
+            causes: ["İş"],
+            echo: echoes[seed % echoes.count]
+        )
+        return TodayData(
+            week: few.week,
+            streak: few.streak,
+            checkIns: [CheckInCardData(slot: .daily, summary: summary)],
+            practices: few.practices,
+            theme: nil
+        )
+    }
+
+    /// Bugün `data`, geçmiş günler `pastDay`.
+    static func source(_ data: TodayData, isOffline: Bool = false) -> TodaySource {
+        let today = today
+        return TodaySource(today: today, weeks: weeks, isOffline: isOffline) { day in
+            .loaded(day == today ? data : pastDay(day))
+        }
+    }
+
+    /// Uygulamanın kabukta gösterdiği varsayılan (UX-11'e kadar).
+    static var app: TodaySource { source(few) }
+
+    static var loading: TodaySource {
+        TodaySource(today: today, weeks: weeks) { _ in .loading }
+    }
+
+    static var failed: TodaySource {
+        TodaySource(today: today, weeks: weeks) { _ in .failed(message: "fixture") }
+    }
+
     /// Seri profil ayarından gizli.
     static let streakHidden = TodayData(
         week: many.week,
