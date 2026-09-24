@@ -1,0 +1,277 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>ONE 2.0 bugün ve takvim</title>
+<link rel="stylesheet" href="fonts.css">
+<style>html,body{margin:0;background:#000}canvas{display:block}</style>
+</head><body><canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// 1080×1920; sahne 180×320 pikselde çizilip 6 kat büyütülür. Piksel şehir, akşamdan geceye.
+const W=1080,H=1920,P=6,LW=180,LH=320;
+const c=document.getElementById('c'),x=c.getContext('2d');
+const lo=document.createElement('canvas');lo.width=LW;lo.height=LH;const base=lo.getContext('2d');let l=base;
+const hl=document.createElement('canvas');hl.width=LW;hl.height=LH;const hctx=hl.getContext('2d');
+const FONT="'Pixelify Sans'";
+// dil: ?lang=tr ya da varsayılan en
+// dil: ?lang=tr ya da varsayılan en
+const STR={en:{"days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], "dshort": ["M", "T", "W", "T", "F", "S", "S"], "greet": "Good evening", "echo": "Step by step still gets you there; today was a step.", "pill": "Okay", "practices": "Your practices", "p1": "Morning prep", "p2": "Evening reflection", "theme": "Weekly theme", "all": "See all ›", "themeLbl": "WEEKLY THEME · 3/7", "themeName": "Slowness", "themeQ": "What slowed you down most today, and did you let it?", "write": "Write", "journey": "Journey", "daysLbl": "Days", "months": "Months", "periods": ["Days", "Weeks", "Months", "Years"], "todayHdr": "Today, Sep 24", "ciTitle": "Mood check-in", "ciSub": "11:39 · Okay · Calm", "jTitle": "Evening reflection", "jBody": "Missed the morning bus and for once I did not run. Waited twelve minutes at the stop.", "yHdr": "Yesterday", "month": "September 2026", "plus": ["Blank page", "Mood check-in", "Journal suggestion", "Templates", "Library"], "blank": "BLANK PAGE", "done": "Done", "ph": "Write…", "body": "Rain started on my evening walk. No umbrella, and I did not hurry.", "closed": "Today is closed.", "words": "words", "kindWord": "blank page", "tag": "Today · Calendar · New page", "cta": "Coming soon to the App Store.", "capA": ["Your day,", "on one screen."], "capB": ["Today shows your day", "at a glance."], "capC": ["Every day gets", "a color."], "capD": ["Tap + for", "a new page."], "capE": ["Write what's", "on your mind."], "capF": ["The day closes."], "capG": ["The calendar", "fills in."]},
+ tr:{"days": ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"], "dshort": ["P", "S", "Ç", "P", "C", "C", "P"], "greet": "İyi akşamlar", "echo": "Adım adım da varılır; bugün de bir adımdı.", "pill": "İdare eder", "practices": "Pratiklerin", "p1": "Sabah hazırlığı", "p2": "Akşam refleksiyonu", "theme": "Haftalık tema", "all": "Tümünü gör ›", "themeLbl": "HAFTALIK TEMA · 3/7", "themeName": "Yavaşlık", "themeQ": "Bugün seni en çok ne yavaşlattı, ve buna izin verdin mi?", "write": "Yaz", "journey": "Yolculuk", "daysLbl": "Günler", "months": "Aylar", "periods": ["Günler", "Haftalar", "Aylar", "Yıllar"], "todayHdr": "Bugün, 24 Eyl", "ciTitle": "Mood check-in", "ciSub": "11:39 · İdare · Sakin", "jTitle": "Akşam refleksiyonu", "jBody": "Sabah otobüsü kaçırdım ve ilk kez koşmadım. Durakta on iki dakika bekledim.", "yHdr": "Dün", "month": "Eylül 2026", "plus": ["Boş sayfa", "Mood check-in", "Günlük önerisi", "Şablonlar", "Kütüphane"], "blank": "BOŞ SAYFA", "done": "Bitti", "ph": "Yaz…", "body": "Akşam yürüyüşünde yağmur başladı. Şemsiye yoktu, acele de etmedim.", "closed": "Bugün kapandı.", "words": "kelime", "kindWord": "boş sayfa", "tag": "Bugün · Takvim · Yeni sayfa", "cta": "Yakında App Store’da.", "capA": ["Günün,", "tek ekranda."], "capB": ["Bugün, günü", "bir bakışta gösterir."], "capC": ["Takvimde her gün", "bir renk."], "capD": ["Yeni sayfa için +."], "capE": ["Aklındakini yaz."], "capF": ["Gün kapanır."], "capG": ["Takvim kendini", "doldurur."]}};
+const LANG=new URLSearchParams(location.search).get('lang')==='tr'?'tr':'en';const L=STR[LANG];
+L.summary=L.body.split(' ').length+' '+L.words+' · '+L.kindWord;
+document.documentElement.lang=LANG;
+L.summary=L.body.split(' ').length+' '+L.words+' · '+L.kindWord;
+document.documentElement.lang=LANG;
+
+
+// ONE 2.0 token'ları (gece)
+const T={ground:'#000000',surface:'#141416',raised:'#1E1E21',line:'#26262A',lineStrong:'#66666E',
+  ink:'#F4F4F5',muted:'#A3A3AA',faint:'#85858D',primary:'#E8E8EA',onPrimary:'#111113',
+  brand:'#9AA6FF',brandSoft:'#232B57',onBrandSoft:'#C9CFFF',aksam:'#7D8BE0',success:'#5CC08C'};
+
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const prog=(t,a,d)=>clamp((t-a)/d);
+const eo=p=>1-Math.pow(1-p,3);
+const eio=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+const lerp=(a,b,p)=>a+(b-a)*p;
+function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+function hex(h){return[1,3,5].map(i=>parseInt(h.slice(i,i+2),16))}
+const BAYER=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5].map(v=>(v+.5)/16);
+const bay=(i,j)=>BAYER[(j&3)*4+(i&3)];
+
+function px(X,Y,w,h,col,a=1){if(a<=0)return;l.globalAlpha=a;l.fillStyle=col;l.fillRect(Math.round(X),Math.round(Y),Math.round(w),Math.round(h));l.globalAlpha=1}
+function box(X,Y,w,h,col,a=1){X=Math.round(X);Y=Math.round(Y);px(X+1,Y,w-2,h,col,a);px(X,Y+1,1,h-2,col,a);px(X+w-1,Y+1,1,h-2,col,a)}
+function frame(X,Y,w,h,col,a=1){X=Math.round(X);Y=Math.round(Y);px(X+1,Y,w-2,1,col,a);px(X+1,Y+h-1,w-2,1,col,a);px(X,Y+1,1,h-2,col,a);px(X+w-1,Y+1,1,h-2,col,a)}
+function sprite(rows,X,Y,pal,a=1){rows.forEach((r,j)=>[...r].forEach((ch,i)=>{if(pal[ch])px(X+i,Y+j,1,1,pal[ch],a)}))}
+
+// yazı kuyruğu (yüksek çözünürlükte basılır)
+const txtQ=[];let TF=null;
+function tx(s,X,Y,{size=8,color=T.ink,align='left',weight=400,a=1}={}){
+  if(TF){X=TF.cx+(X-TF.cx)*TF.s+TF.dx;Y=TF.cy+(Y-TF.cy)*TF.s+TF.dy;size*=TF.s}txtQ.push([s,X,Y,size,color,align,weight,a])}
+function flushText(){
+  for(const [s,X,Y,size,color,align,weight,a] of txtQ){if(a<=0)continue;x.globalAlpha=a;
+    x.font=`${weight} ${size*P}px ${FONT}`;x.textAlign=align;x.textBaseline='alphabetic';
+    {x.fillStyle=color;x.fillText(s,X*P,Y*P)}}
+  x.globalAlpha=1;txtQ.length=0;
+}
+const typed=(s,t,a,cps=16)=>s.slice(0,Math.floor(clamp((t-a)*cps,0,s.length)));
+function wrap(s,n){const w=s.split(' '),out=[];let cur='';for(const v of w){if((cur+' '+v).trim().length>n){out.push(cur);cur=v}else cur=(cur+' '+v).trim()}if(cur||!out.length)out.push(cur);return out}
+
+// ——— zaman çizelgesi ———
+const K={A:0,T:2.4,C:8.2,P:13.6,E:15.6,S:21,C2:23.2,EC:25.8,END:29};
+
+function mix(a,b,p){const A=hex(a),B=hex(b);return'#'+A.map((v,i)=>Math.round(lerp(v,B[i],p)).toString(16).padStart(2,'0')).join('')}
+const SKY=[[0,'#070A1E','#141A3A'],[.25,'#2B2F6E','#E9A45A'],[.5,'#4D86D0','#A9CBEE'],[.75,'#3E2C6E','#E0783A'],[1,'#070A1E','#141A3A']];
+function sky(d){let i=0;while(i<SKY.length-2&&d>SKY[i+1][0])i++;const [a,t1,b1]=SKY[i],[b,t2,b2]=SKY[i+1],p=(d-a)/(b-a);return[mix(t1,t2,p),mix(b1,b2,p)]}
+const night=d=>clamp(1-Math.min(Math.abs(d-0)/.2,Math.abs(d-1)/.2));
+
+function scene(t){
+  const d=tod(t),[top,bot]=sky(d);
+  // bantlı gökyüzü (piksel geçiş)
+  const bands=14;for(let i=0;i<bands;i++)px(0,i*16,LW,16,mix(top,bot,i/(bands-1)));
+  // yıldızlar
+  const r=rng(4),n=night(d);for(let i=0;i<40;i++){const sx=r()*LW,sy=r()*150,tw=.5+.5*Math.sin(t*3+i);px(sx,sy,1,1,'#FFFFFF',n*tw)}
+  // güneş ve ay yay üstünde
+  const sa=(d-.2)/.6*Math.PI,sx=lerp(20,160,(d-.2)/.6),sy=190-Math.sin(clamp(sa,0,Math.PI))*150;
+  if(d>.18&&d<.82){px(sx-6,sy-4,12,8,'#FFD479');px(sx-4,sy-6,8,12,'#FFD479');px(sx-5,sy-5,10,10,'#FFE6A6')}
+  const ma=eo(prog(d,.82,.1));if(ma>0){const my=lerp(160,40,ma);sprite(['...####.....','..###.......','.###........','.##.........','###.........','###.........','###.........','###.........','.###......#.','.####....##.','..#########.','....#####...'],138,my,{'#':'#E8ECFF'},ma)}
+  // bulutlar
+  for(let i=0;i<3;i++){const cx=((i*70+t*4*(i+1))%240)-30,cy=40+i*28;const cc=mix('#FFFFFF',top,.35+.5*n);px(cx,cy,24,4,cc,.8);px(cx+5,cy-3,12,3,cc,.8)}
+  // şehir silueti
+  const rr=rng(9);let bx=0;const bc=mix('#141726','#05060C',n);
+  while(bx<LW){const w=10+Math.floor(rr()*16),h=40+Math.floor(rr()*70);px(bx,LH-h-80,w,h+80,bc);
+    for(let wy=LH-h-74;wy<LH-90;wy+=6)for(let wx=bx+2;wx<bx+w-2;wx+=4){const lit=rr()<lerp(.15,.55,n);if(lit)px(wx,wy,2,3,'#F2B84B',lerp(.35,.9,n))}
+    bx+=w+1}
+  px(0,LH-84,LW,84,'#05060A');
+}
+
+
+// akşamdan geceye
+const tod=t=>lerp(.72,.97,eio(prog(t,0,K.S)));
+function background(t){scene(t)}
+
+// ——— telefon ———
+const PH={x:36,y:40,w:108,h:196},SC={x:41,y:49,w:98,h:178};
+function phone(t,alpha=1){
+  box(PH.x-1,PH.y-1,PH.w+2,PH.h+2,'#3A3A40',alpha);box(PH.x,PH.y,PH.w,PH.h,'#1B1B1F',alpha);
+  px(SC.x,SC.y,SC.w,SC.h,T.ground,alpha);px(PH.x+PH.w/2-10,PH.y+3,20,3,'#000',alpha);
+}
+
+// el imleci
+const HAND=['..##......','.#oo#.....','.#oo#.....','.#oo###...','.#oo#oo##.','##oo#oo#o#','#ooooooooo#','#oooooooo#.','.#oooooo#..','..######...'];
+function hand(X,Y,press=0,a=1){sprite(HAND,X,Y+press,{'#':'#15181D','o':'#F4D7C0'},a)}
+function tapRing(X,Y,p){if(p<=0||p>=1)return;const s=Math.round(4+p*10);frame(X-s/2,Y-s/2,s,s,'#FFFFFF',1-p)}
+function handPath(t,keys){
+  if(t<keys[0][0]||t>keys[keys.length-1][0]+.4)return;
+  let i=0;while(i<keys.length-1&&t>keys[i+1][0])i++;
+  const a=keys[i],b=keys[i+1]||a,dur=b===a?1:(a[3]==='drag'?b[0]-a[0]:Math.min(.45,b[0]-a[0]));
+  const p=b===a?1:(a[3]==='drag'?eio(prog(t,a[0],dur)):eio(prog(t,a[0],dur)));
+  const X=lerp(a[1],b[1],p),Y=lerp(a[2],b[2],p);
+  const tapK=keys.find(k=>k[3]===1&&t>=k[0]&&t<k[0]+.5);
+  const press=(tapK&&t-tapK[0]<.15)||a[3]==='drag'?1:0;
+  if(tapK)tapRing(tapK[1],tapK[2],prog(t,tapK[0],.45));
+  hand(X-2,Y-1,press,clamp((t-keys[0][0])/.2)*clamp((keys[keys.length-1][0]+.4-t)/.2));
+}
+
+
+// ——— ekranlar ———
+const DAYS=L.days,TODAY=3; // Pzt 21 … Paz 27, bugün Perşembe 24
+function tick(X,Y,col){[[0,2],[1,3],[2,4],[3,3],[4,2],[5,1],[6,0]].forEach(([dx,dy])=>px(X+dx,Y+dy,1,1,col))}
+function weekStrip(Y,todayDone){
+  const nums=[21,22,23,24,25,26,27],st=['done','done','gap','today','future','future','future'];
+  for(let i=0;i<7;i++){const X=SC.x+4+i*13.1,s=st[i];
+    tx(DAYS[i],X+6,Y,{size:4.2,color:s==='today'?T.ink:T.faint,align:'center'});
+    if(s==='today'){frame(X,Y+2,12,12,T.lineStrong);if(todayDone)tick(X+3,Y+6,T.ink);else tx('24',X+6,Y+10.5,{size:5,align:'center',weight:700})}
+    else if(s==='done')tick(X+3,Y+6,T.ink);
+    else tx(String(nums[i]),X+6,Y+10.5,{size:5,color:T.faint,align:'center'})}
+}
+function tabBar(active){
+  const Y=SC.y+SC.h-15;box(SC.x+5,Y,SC.w-32,12,'#2A2A2E');
+  for(let i=0;i<5;i++){const X=SC.x+10+i*13;if(i===active)box(X-3,Y+2,10,8,T.ground);px(X,Y+4,4,4,i===active?T.ink:T.faint)}
+  box(SC.x+SC.w-24,Y-2,20,15,T.primary);px(SC.x+SC.w-15,Y+2,2,7,T.onPrimary);px(SC.x+SC.w-17,Y+4.5,6,2,T.onPrimary);
+}
+const TAB_X=i=>SC.x+12+i*13,TAB_Y=SC.y+SC.h-9,PLUS=[SC.x+SC.w-14,SC.y+SC.h-9];
+function todayScreen(t,sy,todayDone){
+  l.save();l.beginPath();l.rect(SC.x,SC.y,SC.w,SC.h-18);l.clip();
+  const Y0=SC.y-sy,clipTop=SC.y,clipBot=SC.y+SC.h-18;
+  const n0=txtQ.length;
+  // üst çubuk: seri hapı + profil
+  box(SC.x+4,Y0+5,20,10,T.raised);px(SC.x+7,Y0+7,2,6,'#F08A2E');px(SC.x+8,Y0+6,1,2,'#E9B650');tx('12',SC.x+17,Y0+12.6,{size:5.5,color:T.brand,align:'center',weight:700});
+  box(SC.x+SC.w-14,Y0+5,10,10,T.raised);
+  tx(L.greet,SC.x+5,Y0+29,{size:10,weight:700});
+  weekStrip(Y0+38,todayDone);
+  // check-in kartı
+  box(SC.x+4,Y0+58,SC.w-8,40,T.surface);frame(SC.x+4,Y0+58,SC.w-8,40,T.line);
+  wrap(L.echo,24).forEach((ln,i)=>tx(ln,SC.x+9,Y0+69+i*8,{size:5.5,color:T.muted}));
+  box(SC.x+9,Y0+85,40,9,T.raised);px(SC.x+12,Y0+88,3,3,'#9A9C94');tx(L.pill,SC.x+18,Y0+91.5,{size:4.8});
+  // pratikler
+  tx(L.practices,SC.x+5,Y0+110,{size:6.5,weight:700});
+  [[L.p1,'#F2B84B'],[L.p2,'#7D8BE0']].forEach(([n,cc],i)=>{const X=SC.x+4+i*46;box(X,Y0+115,44,30,T.surface);box(X+4,Y0+119,8,8,cc);
+    wrap(n,11).forEach((ln,k)=>tx(ln,X+4,Y0+134+k*6,{size:4.6}))});
+  // haftalık tema
+  tx(L.theme,SC.x+5,Y0+157,{size:6.5,weight:700});tx(L.all,SC.x+SC.w-5,Y0+157,{size:4.5,color:T.faint,align:'right'});
+  box(SC.x+4,Y0+162,SC.w-8,54,T.brandSoft);
+  tx(L.themeLbl,SC.x+9,Y0+171,{size:4.3,color:T.onBrandSoft});tx(L.themeName,SC.x+9,Y0+182,{size:8,weight:700,color:T.onBrandSoft});
+  wrap(L.themeQ,26).forEach((ln,i)=>tx(ln,SC.x+9,Y0+191+i*7,{size:4.8,color:T.onBrandSoft}));
+  box(SC.x+SC.w-26,Y0+202,18,10,T.primary);tx(L.write,SC.x+SC.w-17,Y0+209,{size:5,color:T.onPrimary,align:'center',weight:700});
+  l.restore();
+  for(let i=txtQ.length-1;i>=n0;i--){const y=txtQ[i][2];if(y<clipTop+5||y>clipBot)txtQ.splice(i,1)}
+  tabBar(0);
+}
+function daysView(){
+  tx(L.todayHdr,SC.x+5,SC.y+44,{size:6,weight:700});
+  box(SC.x+4,SC.y+49,SC.w-8,24,T.surface);box(SC.x+9,SC.y+55,12,12,'#9A9C94');tx(L.ciTitle,SC.x+25,SC.y+60,{size:5,weight:700});tx(L.ciSub,SC.x+25,SC.y+68,{size:4.5,color:T.muted});
+  box(SC.x+4,SC.y+77,SC.w-8,34,T.surface);tx(L.jTitle,SC.x+9,SC.y+86,{size:5,weight:700});
+  wrap(L.jBody,26).slice(0,3).forEach((ln,i)=>tx(ln,SC.x+9,SC.y+95+i*7,{size:4.6,color:T.muted}));
+  tx(L.yHdr,SC.x+5,SC.y+124,{size:6,weight:700});box(SC.x+4,SC.y+129,SC.w-8,20,T.surface);px(SC.x+9,SC.y+135,40,3,T.raised);px(SC.x+9,SC.y+141,60,3,T.raised);
+}
+// Eylül 2026: 1'i Salı
+const R=rng(33),SCORES=['#5B6CCB','#8F99D0','#9A9C94','#E9B650','#F08A2E'];
+const MONTH=Array.from({length:30},(_,i)=>{const d=i+1;if(d===23||d===9||d===16)return null;if(d>24)return undefined;
+  if(d===24)return{c:'#E9B650',w:true,today:true};return{c:SCORES[Math.min(4,Math.floor(R()*5))],w:R()<.45}});
+function monthView(t,fillT){
+  tx(L.month,SC.x+5,SC.y+44,{size:7,weight:700});
+  L.dshort.forEach((d,i)=>tx(d,SC.x+10+i*13,SC.y+55,{size:4.2,color:T.faint,align:'center'}));
+  for(let d=1;d<=30;d++){const k=d+0,col=(k)%7,row=Math.floor(k/7),X=SC.x+4+col*13,Y=SC.y+59+row*15,m=MONTH[d-1];
+    const isToday=d===24;
+    if(m===undefined){tx(String(d),X+6,Y+8,{size:4.3,color:'#4A4A50',align:'center'});continue}
+    box(X,Y,12,13,T.surface);
+    if(isToday){frame(X,Y,12,13,T.lineStrong);const p=eo(prog(t,fillT,.4));if(p>0){const s=Math.round(6*p);box(X+6-s/2,Y+2+3-s/2+1,s,s,m.c);if(p>.9)px(X+10,Y+1,1,2,T.ink)}
+      tx('24',X+6,Y+12.3,{size:3.6,color:T.ink,align:'center',weight:700})}
+    else if(m===null)tx(String(d),X+6,Y+8,{size:4.3,color:T.faint,align:'center'});
+    else{box(X+3,Y+2,6,6,m.c);if(m.w)px(X+10,Y+1,1,2,T.muted);tx(String(d),X+6,Y+12.3,{size:3.6,color:T.faint,align:'center'})}
+  }
+}
+function journeyScreen(t,mode,menuT,selT,fillT){
+  tx(L.journey,SC.x+5,SC.y+22,{size:11,weight:700});
+  const pill=mode==='months'?L.months:L.daysLbl;
+  box(SC.x+SC.w-34,SC.y+12,30,10,T.raised);tx(pill+' ⌄',SC.x+SC.w-19,SC.y+19,{size:5,align:'center'});
+  if(mode==='months')monthView(t,fillT);else daysView();
+  const mOpen=t>=menuT&&t<selT+.25;
+  if(mOpen){box(SC.x+SC.w-44,SC.y+24,40,42,T.raised);frame(SC.x+SC.w-44,SC.y+24,40,42,T.line);
+    L.periods.forEach((p,i)=>{const on=i===2&&t>=selT;if(on)box(SC.x+SC.w-42,SC.y+26+i*10,36,9,T.brandSoft);
+      tx(p,SC.x+SC.w-39,SC.y+32.5+i*10,{size:5,color:on?T.onBrandSoft:T.ink})})}
+  tabBar(3);
+}
+function plusSheet(t,t0){
+  const p=eo(prog(t,t0,.4)),Y=Math.round(lerp(SC.y+SC.h,SC.y+70,p));
+  // altta kalan yazılar: sheet'in altındakiler gizlenir, üsttekiler kararır
+  for(let i=txtQ.length-1;i>=0;i--){if(txtQ[i][2]>Y+2)txtQ.splice(i,1);else txtQ[i][7]*=1-.55*p}
+  px(SC.x,SC.y,SC.w,SC.h,'#000000',.55*p);
+  box(SC.x+2,Y,SC.w-4,SC.y+SC.h-Y+2,T.surface);px(SC.x+SC.w/2-8,Y+4,16,2,T.lineStrong);
+  const cols=['#E8E8EA','#E9B650','#9AA6FF','#7D8BE0','#6FA684'];
+  L.plus.forEach((n,i)=>{const yy=Y+12+i*18;box(SC.x+7,yy,12,12,T.raised);px(SC.x+11,yy+4,4,4,cols[i]);tx(n,SC.x+24,yy+8.5,{size:5.5});
+    if(i<4)px(SC.x+24,yy+15,SC.w-30,1,T.line)});
+}
+const PLUS_ROW0=()=>[SC.x+40,SC.y+70+12+6];
+function editor(t,a0){
+  tx(L.blank,SC.x+5,SC.y+12,{size:4.5,color:T.faint});tx(L.done,SC.x+SC.w-5,SC.y+12,{size:5.5,color:T.brand,align:'right',weight:700});
+  const s=typed(L.body,t,a0,14),lines=wrap(s,22);
+  if(!s)tx(L.ph,SC.x+5,SC.y+30,{size:7,color:T.faint});
+  else lines.forEach((ln,i)=>tx(ln,SC.x+5,SC.y+30+i*10,{size:6.5}));
+  if(Math.floor(t*3)%2===0){const last=lines[lines.length-1]||'';px(SC.x+5+Math.min(86,(s?last.length:0)*3.6),SC.y+24+(lines.length-1)*10,1,8,T.brand)}
+  box(SC.x+5,SC.y+SC.h-20,SC.w-10,12,T.raised);for(let i=0;i<5;i++)px(SC.x+11+i*10,SC.y+SC.h-16,4,4,T.muted);
+  tx(String(s.split(' ').filter(Boolean).length),SC.x+SC.w-11,SC.y+SC.h-11,{size:5.5,color:T.faint,align:'right'});
+}
+function seal(t){
+  const a=eo(prog(t,0,.35)),s=Math.round(lerp(22,26,a)),cx=SC.x+SC.w/2,cy=SC.y+55;
+  box(cx-s/2,cy-s/2,s,s,T.brand,a);
+  if(a>.6)[[-6,0],[-5,1],[-4,2],[-3,3],[-2,2],[-1,1],[0,0],[1,-1],[2,-2],[3,-3],[4,-4],[5,-5]].forEach(([dx,dy])=>px(cx+dx,cy+dy,2,2,'#0F1218'));
+  tx(L.closed,cx,SC.y+90,{size:9,weight:700,align:'center',a});
+  tx(L.summary,cx,SC.y+102,{size:5.5,color:T.muted,align:'center',a:eo(prog(t,.3,.4))});
+  weekStrip(SC.y+120,t>.9);
+}
+
+function caption(t,lines,at,dur){
+  const a=eo(prog(t,at,.3))*(1-eo(prog(t,at+dur-.3,.3)));
+  lines.forEach((ln,i)=>tx(typed(ln,t,at+i*.2,40),LW/2,264+i*14,{size:11,weight:700,align:'center',a,color:T.ink}));
+}
+
+function draw(t){
+  l=base;l.clearRect(0,0,LW,LH);txtQ.length=0;
+  background(t);
+  const inY=Math.round(lerp(LH,0,eo(prog(t,.3,1)))),outP=eio(prog(t,K.EC,.9));
+  const dy=t<K.EC?inY:Math.round(lerp(0,LH,outP));
+  TF={cx:0,cy:0,s:1,dx:0,dy};
+  l.save();l.translate(0,dy);
+  if(t<K.EC+1){
+    phone(t);
+    if(t<K.C){const sy=Math.round(46*eio(prog(t,K.T+2.3,1.2)));todayScreen(t,sy,false)}
+    else if(t<K.E){
+      const months=t>=K.C+2.2;
+      journeyScreen(t,months?'months':'days',K.C+1.4,K.C+2.2,99);
+      if(t>=K.P)plusSheet(t,K.P);
+    }
+    else if(t<K.S)editor(t,K.E+1);
+    else if(t<K.C2)seal(t-K.S);
+    else journeyScreen(t,'months',-1,-1,K.C2+.8);
+  }
+  l.restore();TF=null;
+  // eller
+  hctx.clearRect(0,0,LW,LH);l=hctx;
+  const SX=SC.x,SY=SC.y;
+  handPath(t,[[K.T+1.8,160,260],[K.T+2.3,SX+60,SY+150,'drag'],[K.T+3.5,SX+60,SY+104],[K.T+4.3,165,262]]);
+  handPath(t,[[K.C-1.2,160,262],[K.C-.45,TAB_X(3),TAB_Y,1],[K.C+1.4,SX+SC.w-19,SY+17,1],[K.C+2.2,SX+SC.w-30,SY+47,1],[K.C+2.8,165,262]]);
+  handPath(t,[[K.P-1.1,160,262],[K.P-.45,PLUS[0],PLUS[1],1],[K.E-.45,...PLUS_ROW0(),1],[K.E+.1,165,262]]);
+  handPath(t,[[K.S-1.2,160,262],[K.S-.45,SX+SC.w-10,SY+10,1],[K.S+.1,165,262]]);
+  l=base;
+  caption(t,L.capA,.5,1.8);
+  caption(t,L.capB,K.T+.1,5.6);
+  caption(t,L.capC,K.C+.1,5.2);
+  caption(t,L.capD,K.P+.1,1.9);
+  caption(t,L.capE,K.E+.1,5.2);
+  caption(t,L.capF,K.S+.1,2);
+  caption(t,L.capG,K.C2+.1,2.5);
+  if(t>=K.EC+.4){const a=eo(prog(t,K.EC+.5,.6));
+    box(LW/2-46,62,20,20,T.brand,a);
+    tx('ONE',LW/2+8,82,{size:26,weight:700,align:'center',a});
+    tx('2.0',LW/2+46,68,{size:8,weight:700,color:T.brand,a});
+    tx(L.tag,LW/2,100,{size:8,color:T.muted,align:'center',a:eo(prog(t,K.EC+1,.5))});
+    tx(L.cta,LW/2,272,{size:10,weight:700,align:'center',color:T.ink,a:eo(prog(t,K.EC+1.4,.5))});
+  }
+  x.imageSmoothingEnabled=false;x.drawImage(lo,0,0,W,H);
+  flushText();
+  x.drawImage(hl,0,0,W,H);
+  if(t>K.END-.5){x.fillStyle=`rgba(0,0,0,${eo(prog(t,K.END-.5,.5))})`;x.fillRect(0,0,W,H)}
+}
+
+window.TOTAL=K.END;window.draw=draw;
+window.ready=document.fonts.ready.then(()=>Promise.all(["400 48px 'Pixelify Sans'","700 48px 'Pixelify Sans'"].map(f=>document.fonts.load(f,'AğşıİçöüÇŞÖÜ’·⌄…›'))));
+</script></body></html>
