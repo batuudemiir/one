@@ -109,11 +109,14 @@ RULE_DESC=(
 #   • `NSLocalizedString(..., comment: "Türkçe açıklama")` — comment zaten
 #     çevirmene not, kullanıcıya gitmiyor.
 #   • `//` ile başlayan yorum satırları — bu depoda yorumlar Türkçe.
+#   • `ONELogger.…("…")` — log mesajı, kullanıcıya gitmiyor.
+#   • Tek karakterlik `case "ş":` dalları — arama katlama tablosu gibi
+#     harf eşlemeleri; metin değil, veri.
 RULE_EXCLUDE=(
   ""
   ""
   ""
-  "NSLocalizedString|^[^:]*:[0-9]+: *//|LocalizedString"
+  "NSLocalizedString|^[^:]*:[0-9]+: *//|LocalizedString|ONELogger\\.|^[^:]*:[0-9]+: *case \"[^\" ]{1,2}\"[,:]"
   ""
   ""
   ""
