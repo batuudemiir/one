@@ -10,6 +10,13 @@ const c=document.getElementById('c'),x=c.getContext('2d');
 const lo=document.createElement('canvas');lo.width=LW;lo.height=LH;const base=lo.getContext('2d');let l=base;
 const hl=document.createElement('canvas');hl.width=LW;hl.height=LH;const hctx=hl.getContext('2d');
 const FONT="'Pixelify Sans'";
+// dil: ?lang=tr ya da varsayılan en
+const STR={en:{"forYou": "For you ⌄", "q1": "Rest is part of the work.", "kAff": "AFFIRMATION", "kRef": "REFLECTION", "twice": "You wrote on this twice", "writeAbout": "Write about this", "ctx": "WRITE ON A QUOTE", "done": "Done", "prompt": "What is this telling you today?", "body": "I kept checking my phone. Tonight the book gets one full hour.", "past": "Last time (Sep 12): \"I noticed the noise…\"", "saved": "Your entry is saved.", "journey": "Journey", "today": "TODAY", "card": "QUOTE ENTRY · 21:40", "bodyFirst": "I kept checking my phone.", "tag": "Quotes · Write on a quote", "cta": "Coming soon to the App Store.", "quote": "What you pay attention to grows.", "jq1": "\"What you pay attention", "jq2": "to grows.\"", "words": "words", "kindWord": "quote", "capA": ["A line finds you."], "capB": ["Stop on the one", "that stays."], "capC": ["Write what it", "means to you."], "capD": ["Saved with", "the quote."], "capE": ["Come back to it", "in Journey."]},
+ tr:{"forYou": "Sana özel ⌄", "q1": "Dinlenmek de işin bir parçası.", "kAff": "OLUMLAMA", "kRef": "DÜŞÜNCE", "twice": "Bu söze 2 kez yazdın", "writeAbout": "Bunun hakkında yaz", "ctx": "SÖZE YAZI", "done": "Bitti", "prompt": "Bu söz bugün sana ne söylüyor?", "body": "Telefona bakıp durdum. Bu akşam kitaba tam bir saat ayırıyorum.", "past": "Geçen sefer (12 Eyl): \"Gürültüyü fark ettim…\"", "saved": "Yazın kaydedildi.", "journey": "Yolculuk", "today": "BUGÜN", "card": "SÖZE YAZI · 21:40", "bodyFirst": "Telefona bakıp durdum.", "tag": "Sözler · Söze yazı", "cta": "Yakında App Store’da.", "quote": "Dikkatini verdiğin şey büyür.", "jq1": "\"Dikkatini verdiğin şey", "jq2": "büyür.\"", "words": "kelime", "kindWord": "söze yazı", "capA": ["Bir cümle seni bulur."], "capB": ["Seninle kalan", "cümlede dur."], "capC": ["Senin için ne", "ifade ediyor, yaz."], "capD": ["Sözle birlikte", "kaydedilir."], "capE": ["Yolculuk’ta", "ona dönersin."]}};
+const LANG=new URLSearchParams(location.search).get('lang')==='tr'?'tr':'en';const L=STR[LANG];
+L.summary=L.body.split(' ').length+' '+L.words+' · '+L.kindWord;
+document.documentElement.lang=LANG;
+
 
 // ONE 2.0 token'ları (gece)
 const T={ground:'#000000',surface:'#141416',raised:'#1E1E21',line:'#26262A',lineStrong:'#66666E',
@@ -100,7 +107,7 @@ function handPath(t,keys){
 }
 
 // ——— ekranlar ———
-const QUOTE='What you pay attention to grows.';
+const QUOTE=L.quote;
 function quoteCard(Y0,txt,kind,grad,showCount){
   // tam ekran söz kartı: dither'lı degrade zemin (fotoğraf yeri)
   const X=SC.x+4,w=SC.w-8,Y=Y0,h=SC.h-40;
@@ -113,51 +120,51 @@ function quoteCard(Y0,txt,kind,grad,showCount){
   px(X+8,Y+10,3,3,'#FFFFFF');px(X+9,Y+13,2,2,'#FFFFFF');px(X+14,Y+10,3,3,'#FFFFFF');px(X+15,Y+13,2,2,'#FFFFFF');
   wrap(txt,16).forEach((ln,i)=>tx(ln,X+8,Y+46+i*13,{size:10,weight:700,color:'#FFFFFF'}));
   tx(kind,X+8,Y+h-30,{size:5.5,color:'#E8ECFF'});
-  if(showCount)tx('You wrote on this twice',X+8,Y+h-20,{size:5.5,color:'#C9CFFF'});
+  if(showCount)tx(L.twice,X+8,Y+h-20,{size:5.5,color:'#C9CFFF'});
 }
 function quotesTab(t,off){
   // üst çubuk
-  box(SC.x+4,SC.y+6,40,11,T.raised);tx('For you ⌄',SC.x+8,SC.y+14,{size:6});
+  box(SC.x+4,SC.y+6,40,11,T.raised);tx(L.forYou,SC.x+8,SC.y+14,{size:6});
   [0,1,2].forEach(i=>box(SC.x+SC.w-38+i*12,SC.y+6,10,11,T.raised));
   l.save();l.beginPath();l.rect(SC.x,SC.y+20,SC.w,SC.h-40);l.clip();
-  quoteCard(SC.y+20-off,'Rest is part of the work.','AFFIRMATION',['#3E2C6E','#E0783A'],false);
-  quoteCard(SC.y+20-off+(SC.h-40)+4,QUOTE,'REFLECTION',[T.brandSoft,'#5B6CCB'],true);
+  quoteCard(SC.y+20-off,L.q1,L.kAff,['#3E2C6E','#E0783A'],false);
+  quoteCard(SC.y+20-off+(SC.h-40)+4,QUOTE,L.kRef,[T.brandSoft,'#5B6CCB'],true);
   l.restore();
   // alt eylem çubuğu
   const bY=SC.y+SC.h-18;
   box(SC.x+4,bY,SC.w-8,14,T.raised);
   px(SC.x+11,bY+5,5,5,T.muted);px(SC.x+SC.w-16,bY+5,5,5,T.muted);
-  tx('Write about this',SC.x+SC.w/2,bY+9.5,{size:6,align:'center',weight:700});
+  tx(L.writeAbout,SC.x+SC.w/2,bY+9.5,{size:6,align:'center',weight:700});
 }
 function reflection(t,a0){
-  tx('WRITE ON A QUOTE',SC.x+6,SC.y+12,{size:5,color:T.faint});tx('Done',SC.x+SC.w-6,SC.y+12,{size:6,color:T.brand,align:'right',weight:700});
+  tx(L.ctx,SC.x+6,SC.y+12,{size:5,color:T.faint});tx(L.done,SC.x+SC.w-6,SC.y+12,{size:6,color:T.brand,align:'right',weight:700});
   box(SC.x+4,SC.y+18,SC.w-8,34,T.raised);
   wrap(QUOTE,19).forEach((ln,i)=>tx(ln,SC.x+9,SC.y+30+i*9,{size:7}));
-  tx('REFLECTION',SC.x+9,SC.y+48,{size:4.5,color:T.faint});
-  wrap('What is this telling you today?',19).forEach((ln,i)=>tx(ln,SC.x+6,SC.y+66+i*11,{size:8,weight:700}));
-  const body='I kept checking my phone. Tonight the book gets one full hour.';
+  tx(L.kRef,SC.x+9,SC.y+48,{size:4.5,color:T.faint});
+  wrap(L.prompt,19).forEach((ln,i)=>tx(ln,SC.x+6,SC.y+66+i*11,{size:8,weight:700}));
+  const body=L.body;
   const s=typed(body,t,a0,15),lines=wrap(s,22);
   lines.forEach((ln,i)=>tx(ln,SC.x+6,SC.y+96+i*10,{size:6.5}));
   if(Math.floor(t*3)%2===0){const last=lines[lines.length-1]||'';px(SC.x+6+Math.min(84,last.length*3.6),SC.y+90+(lines.length-1)*10,1,8,T.brand)}
   box(SC.x+6,SC.y+SC.h-34,SC.w-12,12,T.raised);for(let i=0;i<5;i++)px(SC.x+12+i*10,SC.y+SC.h-30,4,4,T.muted);
   tx(String(s.split(' ').filter(Boolean).length),SC.x+SC.w-12,SC.y+SC.h-25,{size:5.5,color:T.faint,align:'right'});
-  tx('Last time (Sep 12): "I noticed the noise…"',SC.x+6,SC.y+SC.h-10,{size:4.5,color:T.faint});
+  tx(L.past,SC.x+6,SC.y+SC.h-10,{size:4.5,color:T.faint});
 }
 function seal(t){
   const a=eo(prog(t,0,.35)),s=Math.round(lerp(22,26,a)),cx=SC.x+SC.w/2,cy=SC.y+60;
   box(cx-s/2,cy-s/2,s,s,T.brand,a);
   if(a>.6)[[-6,0],[-5,1],[-4,2],[-3,3],[-2,2],[-1,1],[0,0],[1,-1],[2,-2],[3,-3],[4,-4],[5,-5]].forEach(([dx,dy])=>px(cx+dx,cy+dy,2,2,'#0F1218'));
-  tx('Your entry is saved.',cx,SC.y+96,{size:8.5,weight:700,align:'center',a});
-  tx('12 words · quote',cx,SC.y+108,{size:5.5,color:T.muted,align:'center',a:eo(prog(t,.3,.4))});
+  tx(L.saved,cx,SC.y+96,{size:8.5,weight:700,align:'center',a});
+  tx(L.summary,cx,SC.y+108,{size:5.5,color:T.muted,align:'center',a:eo(prog(t,.3,.4))});
 }
 function journey(t){
-  tx('Journey',SC.x+6,SC.y+22,{size:12,weight:700});
-  tx('TODAY',SC.x+6,SC.y+36,{size:5,color:T.faint});
+  tx(L.journey,SC.x+6,SC.y+22,{size:12,weight:700});
+  tx(L.today,SC.x+6,SC.y+36,{size:5,color:T.faint});
   const a=eo(prog(t,.2,.5)),dy=(1-a)*10;
   box(SC.x+4,SC.y+42+dy,SC.w-8,60,T.surface,a);frame(SC.x+4,SC.y+42+dy,SC.w-8,60,T.brand,a);
-  tx('QUOTE ENTRY · 21:40',SC.x+10,SC.y+53+dy,{size:4.5,color:T.brand,a});
-  tx('"What you pay attention',SC.x+10,SC.y+65+dy,{size:6,color:T.muted,a});tx('to grows."',SC.x+10,SC.y+74+dy,{size:6,color:T.muted,a});
-  tx('I kept checking my phone.',SC.x+10,SC.y+90+dy,{size:6.5,a});
+  tx(L.card,SC.x+10,SC.y+53+dy,{size:4.5,color:T.brand,a});
+  tx(L.jq1,SC.x+10,SC.y+65+dy,{size:6,color:T.muted,a});tx(L.jq2,SC.x+10,SC.y+74+dy,{size:6,color:T.muted,a});
+  tx(L.bodyFirst,SC.x+10,SC.y+90+dy,{size:6.5,a});
   // eski kartlar
   for(let i=0;i<2;i++){box(SC.x+4,SC.y+110+i*40,SC.w-8,34,T.surface,.9);px(SC.x+10,SC.y+118+i*40,40,3,T.raised);px(SC.x+10,SC.y+126+i*40,60,3,T.raised)}
   // sekme çubuğu: Journey seçili
@@ -197,18 +204,18 @@ function draw(t){
   handPath(t,[[K.S-1.1,160,262],[K.S-.5,SX+SC.w-12,SY+9,1],[K.S+.2,165,262]]);
   l=base;
   // anlatı
-  caption(t,['A line finds you.'],.5,1.9);
-  caption(t,['Stop on the one','that stays.'],K.Q+.1,3.4);
-  caption(t,['Write what it','means to you.'],K.R+.2,5.3);
-  caption(t,['Saved with','the quote.'],K.S+.1,2.1);
-  caption(t,['Come back to it','in Journey.'],K.J+.1,2.3);
+  caption(t,L.capA,.5,1.9);
+  caption(t,L.capB,K.Q+.1,3.4);
+  caption(t,L.capC,K.R+.2,5.3);
+  caption(t,L.capD,K.S+.1,2.1);
+  caption(t,L.capE,K.J+.1,2.3);
   // kapanış
   if(t>=K.E+.4){const a=eo(prog(t,K.E+.5,.6));
     box(LW/2-46,62,20,20,T.brand,a);
     tx('ONE',LW/2+8,82,{size:26,weight:700,align:'center',a});
     tx('2.0',LW/2+46,68,{size:8,weight:700,color:T.brand,a});
-    tx('Quotes · Write on a quote',LW/2,100,{size:8,color:T.muted,align:'center',a:eo(prog(t,K.E+1,.5))});
-    tx('Coming soon to the App Store.',LW/2,272,{size:10,weight:700,align:'center',color:T.ink,a:eo(prog(t,K.E+1.4,.5))});
+    tx(L.tag,LW/2,100,{size:8,color:T.muted,align:'center',a:eo(prog(t,K.E+1,.5))});
+    tx(L.cta,LW/2,272,{size:10,weight:700,align:'center',color:T.ink,a:eo(prog(t,K.E+1.4,.5))});
   }
   x.imageSmoothingEnabled=false;x.drawImage(lo,0,0,W,H);
   flushText();
