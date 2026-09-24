@@ -1,0 +1,5 @@
+id,text,scoreIn,emotionFamilyAny,causeAny,timeOfDay,trend,firstCheckin,weight,premium,active,addedIn,lang
+# PLACEHOLDER CONTENT — koşullar boşsa genel havuz; liste alanları ";" ile ayrılır,,,,,,,,,,,
+e_000101,Zor bir gün olduğunu yazman da bir adım.,1;2,,,,,,1,false,true,2,tr
+e_000102,Uykusuz bir gece her şeyi daha ağır gösterebilir.,1;2;3,,c_uyku,,,,1,false,true,2,tr
+e_000103,Bugünün de yerini aldı.,,,,,,,1,false,true,2,tr

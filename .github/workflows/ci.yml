@@ -1,6 +1,6 @@
 # ONE 2.0 — minimal CI (ADR-001 §11, Faz 1 madde 3)
 #
-# guards: marka sesi, ekran kuralları, font bütünlüğü — hızlı, zorunlu.
+# guards: marka sesi, ekran kuralları, font bütünlüğü, içerik doğrulayıcı — hızlı, zorunlu.
 # test:   oneTests birim testleri simülatörde. Proje en yeni Xcode ile
 #         düzenleniyor; runner'daki Xcode projeyi açamazsa bu iş kırmızı
 #         görünür ama PR'ı bloklamaz (continue-on-error). O durumda yerel
@@ -26,6 +26,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Marka sesi, ekran kuralları, font
         run: tooling/ui_guard.sh
+      - name: İçerik doğrulayıcı (04 › E18; hata = yayın yok)
+        run: |
+          python3 tools/content/build_content.py validate one/ONE2/Content/Bundled
+          python3 -m unittest tools/content/test_build_content.py
 
   test:
     runs-on: macos-latest
