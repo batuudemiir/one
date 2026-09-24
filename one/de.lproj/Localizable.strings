@@ -935,6 +935,28 @@ one day.";
 "one2.quotes.state.empty.body" = "Schau dich in einem anderen Bereich um.";
 "one2.quotes.state.pause.title" = "Das war's fürs Erste";
 "one2.quotes.state.pause.body" = "Schau etwas später wieder vorbei.";
+"one2.entry.kind.quoteReflection" = "Zu einem Spruch";
+"one2.entry.kind.prompt" = "Antwort auf eine Frage";
+"one2.entry.kind.journal" = "Tagebuch";
+"one2.entry.missing" = "Dieser Eintrag wurde nicht gefunden.";
+"one2.reflection.previous" = "Letztes Mal (%@): %@";
+"one2.reflection.done" = "Fertig";
+"one2.reflection.anotherPrompt" = "Andere Frage";
+"one2.reflection.placeholder" = "Schreib…";
+"one2.reflection.saveFailed" = "Speichern fehlgeschlagen. Versuch es noch einmal.";
+"one2.reflection.missing" = "Dieser Spruch ist nicht mehr verfügbar.";
+"one2.seal.dayClosed" = "Heute ist abgeschlossen.";
+"one2.seal.saved" = "Dein Text ist gespeichert.";
+"one2.seal.badge" = "Neues Abzeichen: %@";
+"one2.seal.continue" = "Zum Fortfahren tippen.";
+"one2.week.done" = "Abgeschlossen";
+"one2.week.half" = "Halb";
+"one2.week.open" = "Noch nicht abgeschlossen";
+"one2.week.future" = "Kommender Tag";
+"one2.today.failed" = "Heute konnte nicht geladen werden.";
+"one2.today.writeAgain" = "Noch einmal schreiben";
+"one2.today.written.title" = "Was du heute geschrieben hast";
+"one2.today.written.empty" = "Du hast heute noch nichts geschrieben. Du kannst mit dem Spruch des Tages beginnen.";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "Zitat des Tages";

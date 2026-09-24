@@ -65,7 +65,7 @@ erDiagram
 | title | String? | |
 | body | String? | Markdown |
 | wordCount | Int32 = 0 | Kaydederken hesaplanır |
-| contentRef | String? | `theme:2026-w40:d3`, `guided:gratitude-01` |
+| contentRef | String? | `theme:2026-w40:d3`, `guided:gratitude-01`; söze yazıda söz ID'si (`q_000123`), soru ID'si `answers[0].stepRef`'te |
 | contentSnapshot | String? | Gösterilen sorunun kopyası |
 | isBackfilled | Bool = NO | |
 | searchText | String? | Arama metni: başlık + gövde + snapshot + etiketler, küçük harf + aksansız kopya (04 › E11) |

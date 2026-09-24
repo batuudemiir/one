@@ -936,6 +936,28 @@ one day.";
 "one2.quotes.state.empty.body" = "다른 섹션을 둘러볼 수 있어요.";
 "one2.quotes.state.pause.title" = "지금은 여기까지예요";
 "one2.quotes.state.pause.body" = "조금 뒤에 다시 확인해 보세요.";
+"one2.entry.kind.quoteReflection" = "문장에 대한 글";
+"one2.entry.kind.prompt" = "질문에 대한 답";
+"one2.entry.kind.journal" = "일기";
+"one2.entry.missing" = "이 기록을 찾을 수 없어요.";
+"one2.reflection.previous" = "지난번 (%@): %@";
+"one2.reflection.done" = "완료";
+"one2.reflection.anotherPrompt" = "다른 질문";
+"one2.reflection.placeholder" = "쓰기…";
+"one2.reflection.saveFailed" = "저장하지 못했어요. 다시 시도해 보세요.";
+"one2.reflection.missing" = "이 문장은 더 이상 없어요.";
+"one2.seal.dayClosed" = "오늘이 완료됐어요.";
+"one2.seal.saved" = "글이 저장됐어요.";
+"one2.seal.badge" = "새 배지: %@";
+"one2.seal.continue" = "탭하면 계속돼요.";
+"one2.week.done" = "완료";
+"one2.week.half" = "절반";
+"one2.week.open" = "아직 완료 전";
+"one2.week.future" = "다가올 날";
+"one2.today.failed" = "오늘을 불러오지 못했어요.";
+"one2.today.writeAgain" = "다시 쓰기";
+"one2.today.written.title" = "오늘 쓴 글";
+"one2.today.written.empty" = "오늘은 아직 쓰지 않았어요. 오늘의 문장으로 시작할 수 있어요.";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "오늘의 문장";

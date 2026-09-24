@@ -936,6 +936,28 @@ one day.";
 "one2.quotes.state.empty.body" = "Можно заглянуть в другой раздел.";
 "one2.quotes.state.pause.title" = "Пока это всё";
 "one2.quotes.state.pause.body" = "Загляни чуть позже.";
+"one2.entry.kind.quoteReflection" = "О цитате";
+"one2.entry.kind.prompt" = "Ответ на вопрос";
+"one2.entry.kind.journal" = "Дневник";
+"one2.entry.missing" = "Эта запись не найдена.";
+"one2.reflection.previous" = "В прошлый раз (%@): %@";
+"one2.reflection.done" = "Готово";
+"one2.reflection.anotherPrompt" = "Другой вопрос";
+"one2.reflection.placeholder" = "Пиши…";
+"one2.reflection.saveFailed" = "Не удалось сохранить. Попробуй ещё раз.";
+"one2.reflection.missing" = "Эта цитата больше недоступна.";
+"one2.seal.dayClosed" = "Сегодня завершено.";
+"one2.seal.saved" = "Запись сохранена.";
+"one2.seal.badge" = "Новый значок: %@";
+"one2.seal.continue" = "Нажми, чтобы продолжить.";
+"one2.week.done" = "Завершено";
+"one2.week.half" = "Наполовину";
+"one2.week.open" = "Ещё не завершено";
+"one2.week.future" = "Предстоящий день";
+"one2.today.failed" = "Не удалось загрузить сегодня.";
+"one2.today.writeAgain" = "Написать ещё раз";
+"one2.today.written.title" = "Что ты написал(а) сегодня";
+"one2.today.written.empty" = "Сегодня ты ещё не писал(а). Можно начать с цитаты дня.";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "Цитата дня";

@@ -935,6 +935,28 @@ one day.";
 "one2.quotes.state.empty.body" = "別のセクションを見てみましょう。";
 "one2.quotes.state.pause.title" = "今はここまでです";
 "one2.quotes.state.pause.body" = "少しあとでまた見てください。";
+"one2.entry.kind.quoteReflection" = "ことばについて";
+"one2.entry.kind.prompt" = "質問への答え";
+"one2.entry.kind.journal" = "日記";
+"one2.entry.missing" = "この記録は見つかりません。";
+"one2.reflection.previous" = "前回（%@）：%@";
+"one2.reflection.done" = "完了";
+"one2.reflection.anotherPrompt" = "別の質問";
+"one2.reflection.placeholder" = "書く…";
+"one2.reflection.saveFailed" = "保存できませんでした。もう一度お試しください。";
+"one2.reflection.missing" = "このことばは利用できなくなりました。";
+"one2.seal.dayClosed" = "今日が完了しました。";
+"one2.seal.saved" = "書いた内容を保存しました。";
+"one2.seal.badge" = "新しいバッジ：%@";
+"one2.seal.continue" = "タップして続ける。";
+"one2.week.done" = "完了";
+"one2.week.half" = "半分";
+"one2.week.open" = "まだ完了していません";
+"one2.week.future" = "これからの日";
+"one2.today.failed" = "今日を読み込めませんでした。";
+"one2.today.writeAgain" = "もう一度書く";
+"one2.today.written.title" = "今日書いたこと";
+"one2.today.written.empty" = "今日はまだ書いていません。今日のことばから始められます。";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "今日の言葉";

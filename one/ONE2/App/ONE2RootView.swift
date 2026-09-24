@@ -21,7 +21,7 @@ struct ONE2RootView: View {
             ForEach(ONE2Tab.allCases, id: \.self) { tab in
                 NavigationStack(path: pathBinding(for: tab)) {
                     ONE2TabRoot(tab: tab)
-                        .navigationDestination(for: Route.self) { ONE2RoutePlaceholder(route: $0) }
+                        .navigationDestination(for: Route.self) { ONE2RouteView(route: $0) }
                         .toolbar(.hidden, for: .navigationBar)
                 }
                 .tabItem { Label(tab.title, systemImage: tab.symbol) }
@@ -77,10 +77,10 @@ extension SheetRoute {
 
 private struct ONE2TabRoot: View {
     let tab: ONE2Tab
-    @Environment(Router.self) private var router
 
     var body: some View {
         switch tab {
+        case .today:  TodayScreen()
         case .quotes: QuotesScreen()
         default:      placeholder
         }
@@ -91,9 +91,6 @@ private struct ONE2TabRoot: View {
             V3TopBar(style: .root, title: tab.title)
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
-                    if tab == .today, router.notice == .circleUnavailable {
-                        CircleNoticeCard { router.notice = nil }
-                    }
                     Text(NSLocalizedString("one2.placeholder.body", comment: "ONE 2.0 placeholder"))
                         .bodyMD()
                         .foregroundColor(V3Tokens.mutedText)
@@ -106,6 +103,19 @@ private struct ONE2TabRoot: View {
             }
         }
         .oneScreenGround()
+    }
+}
+
+/// Rota → ekran. Ekranı henüz olmayan rotalar yer tutucuda.
+private struct ONE2RouteView: View {
+    let route: Route
+
+    var body: some View {
+        switch route {
+        case .quoteReflection(let id): QuoteReflectionScreen(quoteID: id)
+        case .entry(let id):           EntryDetailScreen(entryID: id)
+        default:                       ONE2RoutePlaceholder(route: route)
+        }
     }
 }
 
@@ -150,30 +160,6 @@ private struct ONE2SheetPlaceholder: View {
                 .foregroundColor(V3Tokens.mutedText)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-    }
-}
-
-private struct CircleNoticeCard: View {
-    let onDismiss: () -> Void
-
-    var body: some View {
-        HStack(alignment: .top, spacing: V3Tokens.spacingMD) {
-            Text(NSLocalizedString("one2.notice.circleUnavailable", comment: "Old Circle/invite link opened in ONE 2.0"))
-                .bodySM()
-                .foregroundColor(V3Tokens.ink)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .iconSM()
-                    .foregroundColor(V3Tokens.mutedText)
-                    .frame(width: V3Tokens.minTouchTarget, height: V3Tokens.minTouchTarget)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.onePressable)
-            .accessibilityLabel(NSLocalizedString("one2.action.dismiss", comment: "Dismiss notice"))
-        }
-        .padding(V3Tokens.spacingMD)
-        .oneCardBackground()
     }
 }
 

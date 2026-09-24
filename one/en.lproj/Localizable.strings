@@ -1062,6 +1062,28 @@ one day.";
 "one2.quotes.state.empty.body" = "You can look through another section.";
 "one2.quotes.state.pause.title" = "That's all for now";
 "one2.quotes.state.pause.body" = "Check back a little later.";
+"one2.entry.kind.quoteReflection" = "Quote writing";
+"one2.entry.kind.prompt" = "Prompt answer";
+"one2.entry.kind.journal" = "Journal";
+"one2.entry.missing" = "This entry wasn't found.";
+"one2.reflection.previous" = "Last time (%@): %@";
+"one2.reflection.done" = "Done";
+"one2.reflection.anotherPrompt" = "Another prompt";
+"one2.reflection.placeholder" = "Write…";
+"one2.reflection.saveFailed" = "Couldn't save. Try again.";
+"one2.reflection.missing" = "This quote is no longer available.";
+"one2.seal.dayClosed" = "Today is complete.";
+"one2.seal.saved" = "Your writing is saved.";
+"one2.seal.badge" = "New badge: %@";
+"one2.seal.continue" = "Tap to continue.";
+"one2.week.done" = "Complete";
+"one2.week.half" = "Half";
+"one2.week.open" = "Not complete yet";
+"one2.week.future" = "Upcoming day";
+"one2.today.failed" = "Today couldn't load.";
+"one2.today.writeAgain" = "Write again";
+"one2.today.written.title" = "What you wrote today";
+"one2.today.written.empty" = "You haven't written today. You can start with the quote of the day.";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "Today's quote";

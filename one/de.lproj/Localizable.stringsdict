@@ -144,5 +144,21 @@
 			<string>Du hast %lld-mal darüber geschrieben</string>
 		</dict>
 	</dict>
+	<key>one2.words</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld Wort</string>
+			<key>other</key>
+			<string>%lld Wörter</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

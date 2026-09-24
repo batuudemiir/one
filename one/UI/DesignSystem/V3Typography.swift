@@ -161,6 +161,12 @@ enum V3Typography {
         )
     }
 
+    /// Kullanıcının kendi yazısı — design-system `journal` rolü (18/29).
+    /// Sözle aynı serif; gövde metni gibi ölçeklenir.
+    static func journal(_ size: CGFloat = 18) -> Font {
+        quote(size, relativeTo: .body)
+    }
+
     /// Ölçeklenmeyen söz yüzü — **yalnız `ImageRenderer` ile çizilen
     /// paylaşım görselleri** için (`monoFixed` ile aynı gerekçe).
     static func quoteFixed(_ size: CGFloat) -> Font {

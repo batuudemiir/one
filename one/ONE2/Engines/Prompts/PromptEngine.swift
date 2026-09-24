@@ -181,7 +181,7 @@ nonisolated enum PromptSelection {
 protocol PromptEngine: AnyObject {
     func dailyPrompt(for day: DayKey) async -> PromptSuggestion?
     func freePrompt(context: PromptContext) async -> PromptSuggestion?
-    func reflectionPrompt(for quote: QuoteID, compare: Bool) async -> PromptSuggestion?
+    func reflectionPrompt(for quote: QuoteID, compare: Bool, excluding: Set<PromptID>) async -> PromptSuggestion?
     func followUpPrompt(context: PromptContext) async -> PromptSuggestion?
     func ritualPrompts(_ kind: PromptPool, on day: DayKey) async -> [PromptSuggestion]
     func comparisonCandidate(on day: DayKey) async -> ComparisonCandidate?
@@ -220,15 +220,18 @@ final class LivePromptEngine: PromptEngine {
                                     now: clock.now, rng: &rng).map { PromptSuggestion(prompt: $0, source: .free) }
     }
 
-    func reflectionPrompt(for quoteID: QuoteID, compare: Bool = false) async -> PromptSuggestion? {
+    /// - Parameter excluding: bu yazışta zaten gösterilen sorular ("başka
+    ///   soru"); kullanılmış sayılır, havuz biterse en az kullanılan döner.
+    func reflectionPrompt(for quoteID: QuoteID, compare: Bool = false,
+                          excluding: Set<PromptID> = []) async -> PromptSuggestion? {
         guard let quote = content.catalog.quote(quoteID) else { return nil }
         let used = usedReflectionPrompts(quoteID)
         if compare, let last = used.last, let p = content.catalog.prompt(last) {
             return PromptSuggestion(prompt: p, source: .comparison)
         }
-        var rng = seed("reflection", quoteID, String(used.count))
+        var rng = seed("reflection", quoteID, String(used.count), excluding.sorted().joined(separator: ","))
         return PromptSelection.reflection(for: quote, prompts: content.catalog.prompts, context: filled(PromptContext()),
-                                          used: used, rng: &rng)
+                                          used: used + excluding.sorted(), rng: &rng)
             .map { PromptSuggestion(prompt: $0, source: .reflection) }
     }
 

@@ -10,6 +10,15 @@
 import SwiftUI
 import CoreData
 
+/// Bir kaydın zincir sonucu (E8 + E9); kapanış ekranı (Seal) bunu gösterir.
+nonisolated struct WritingOutcome: Hashable, Sendable {
+    let entry: JournalEntry
+    /// Bu kayıt günü yazıyla tamamladı (≥ 20 kelime, gün önceden kapalı değildi).
+    let completedDay: Bool
+    /// Kapanışta duyurulacak yeni rozetler.
+    let badges: [BadgeDefinition]
+}
+
 final class AppEnvironment {
     let clock: AppClock
     let content: ContentRepository
@@ -34,6 +43,8 @@ final class AppEnvironment {
     private let legacyWriteGuard: LegacyWriteGuard?
     /// Arka plandan dönüşte yeni söz oturumu açmak için.
     private var isBackgrounded = false
+    /// Son kaydın sonucu. `journal.create` döndüğünde hazırdır (zincir eşzamanlı).
+    private(set) var lastWriting: WritingOutcome?
 
     init(context: NSManagedObjectContext, clock: AppClock = SystemClock(), guardLegacyWrites: Bool = true,
          content: ContentRepository? = nil, profile: ProfileStore? = nil) {
@@ -71,8 +82,10 @@ final class AppEnvironment {
         }
         // Her kayıttan sonra: E8 yazıyla tamamlama, E9 rozet, widget ve bildirim penceresi.
         journal.didSave = { [day, weak badges, weak self] entry in
-            _ = try? day.recordWriting(entry)
-            _ = try? badges?.evaluateAfterSave()
+            let completed = (try? day.recordWriting(entry)) ?? false
+            let awards = (try? badges?.evaluateAfterSave()) ?? []
+            self?.lastWriting = WritingOutcome(entry: entry, completedDay: completed,
+                                               badges: awards.filter(\.announce).map(\.badge))
             Task { @MainActor in await self?.refreshSurfaces() }
         }
     }

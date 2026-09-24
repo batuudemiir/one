@@ -935,6 +935,28 @@ one day.";
 "one2.quotes.state.empty.body" = "Tu peux parcourir une autre section.";
 "one2.quotes.state.pause.title" = "C'est tout pour l'instant";
 "one2.quotes.state.pause.body" = "Reviens un peu plus tard.";
+"one2.entry.kind.quoteReflection" = "Sur une citation";
+"one2.entry.kind.prompt" = "Réponse à une question";
+"one2.entry.kind.journal" = "Journal";
+"one2.entry.missing" = "Cette entrée est introuvable.";
+"one2.reflection.previous" = "La dernière fois (%@) : %@";
+"one2.reflection.done" = "Terminé";
+"one2.reflection.anotherPrompt" = "Autre question";
+"one2.reflection.placeholder" = "Écris…";
+"one2.reflection.saveFailed" = "Enregistrement impossible. Réessaie.";
+"one2.reflection.missing" = "Cette citation n'est plus disponible.";
+"one2.seal.dayClosed" = "Aujourd'hui est complet.";
+"one2.seal.saved" = "Ton texte est enregistré.";
+"one2.seal.badge" = "Nouveau badge : %@";
+"one2.seal.continue" = "Touche pour continuer.";
+"one2.week.done" = "Terminé";
+"one2.week.half" = "À moitié";
+"one2.week.open" = "Pas encore terminé";
+"one2.week.future" = "Jour à venir";
+"one2.today.failed" = "Impossible de charger aujourd'hui.";
+"one2.today.writeAgain" = "Écrire à nouveau";
+"one2.today.written.title" = "Ce que tu as écrit aujourd'hui";
+"one2.today.written.empty" = "Tu n'as encore rien écrit aujourd'hui. Tu peux commencer par la citation du jour.";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "La citation du jour";

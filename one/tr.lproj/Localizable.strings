@@ -1077,6 +1077,28 @@ bir gün.";
 "one2.quotes.state.empty.body" = "Başka bir bölüme göz atabilirsin.";
 "one2.quotes.state.pause.title" = "Şimdilik bu kadar";
 "one2.quotes.state.pause.body" = "Biraz sonra yeniden bakabilirsin.";
+"one2.entry.kind.quoteReflection" = "Söze yazı";
+"one2.entry.kind.prompt" = "Soruya yazı";
+"one2.entry.kind.journal" = "Günlük";
+"one2.entry.missing" = "Bu yazı bulunamadı.";
+"one2.reflection.previous" = "Geçen sefer (%@): %@";
+"one2.reflection.done" = "Bitti";
+"one2.reflection.anotherPrompt" = "Başka soru";
+"one2.reflection.placeholder" = "Yaz…";
+"one2.reflection.saveFailed" = "Kaydedilemedi. Bir daha dene.";
+"one2.reflection.missing" = "Bu söz artık yok.";
+"one2.seal.dayClosed" = "Bugün kapandı.";
+"one2.seal.saved" = "Yazın kaydedildi.";
+"one2.seal.badge" = "Yeni rozet: %@";
+"one2.seal.continue" = "Devam etmek için dokun.";
+"one2.week.done" = "Tamamlandı";
+"one2.week.half" = "Yarım";
+"one2.week.open" = "Henüz kapanmadı";
+"one2.week.future" = "Gelecek gün";
+"one2.today.failed" = "Bugün yüklenemedi.";
+"one2.today.writeAgain" = "Yeniden yaz";
+"one2.today.written.title" = "Bugün yazdıkların";
+"one2.today.written.empty" = "Bugün henüz yazmadın. Günün sözüyle başlayabilirsin.";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "Günün sözü";

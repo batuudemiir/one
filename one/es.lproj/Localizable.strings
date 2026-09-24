@@ -935,6 +935,28 @@ one day.";
 "one2.quotes.state.empty.body" = "Puedes mirar otra sección.";
 "one2.quotes.state.pause.title" = "Eso es todo por ahora";
 "one2.quotes.state.pause.body" = "Vuelve a mirar un poco más tarde.";
+"one2.entry.kind.quoteReflection" = "Sobre una frase";
+"one2.entry.kind.prompt" = "Respuesta a una pregunta";
+"one2.entry.kind.journal" = "Diario";
+"one2.entry.missing" = "No se encontró esta entrada.";
+"one2.reflection.previous" = "La última vez (%@): %@";
+"one2.reflection.done" = "Listo";
+"one2.reflection.anotherPrompt" = "Otra pregunta";
+"one2.reflection.placeholder" = "Escribe…";
+"one2.reflection.saveFailed" = "No se pudo guardar. Inténtalo de nuevo.";
+"one2.reflection.missing" = "Esta frase ya no está disponible.";
+"one2.seal.dayClosed" = "Hoy está completo.";
+"one2.seal.saved" = "Tu escrito se guardó.";
+"one2.seal.badge" = "Nueva insignia: %@";
+"one2.seal.continue" = "Toca para continuar.";
+"one2.week.done" = "Completado";
+"one2.week.half" = "A medias";
+"one2.week.open" = "Aún sin completar";
+"one2.week.future" = "Día próximo";
+"one2.today.failed" = "No se pudo cargar hoy.";
+"one2.today.writeAgain" = "Escribir de nuevo";
+"one2.today.written.title" = "Lo que escribiste hoy";
+"one2.today.written.empty" = "Hoy aún no escribiste. Puedes empezar con la frase del día.";
 
 /* ONE 2.0 — bildirim planlayıcı (04 › E13) */
 "notif.one2.morning.title" = "La frase del día";
