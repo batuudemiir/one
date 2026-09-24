@@ -144,6 +144,29 @@ enum V3Typography {
         )
     }
 
+    // MARK: - Söz (serif)
+
+    /// ONE 2.0 söz metni — design-system `quote` rolü. Tasarım Literata
+    /// diyor; o yüz bundle'da yok, yerine sistem serifi (New York). Yazıyı
+    /// arayüzden ayıran tek şey bu yüz değişimi. Ekranı dolduran kartta
+    /// durduğu için `display` tavanlarıyla ölçekleniyor.
+    static func quote(
+        _ size: CGFloat,
+        relativeTo style: UIFont.TextStyle = .title2
+    ) -> Font {
+        let system = UIFont.systemFont(ofSize: size, weight: .regular)
+        let base = system.fontDescriptor.withDesign(.serif).map { UIFont(descriptor: $0, size: size) } ?? system
+        return Font(
+            scaledUIFont(base, textStyle: style, maximumPointSize: maxPointSize(for: size))
+        )
+    }
+
+    /// Ölçeklenmeyen söz yüzü — **yalnız `ImageRenderer` ile çizilen
+    /// paylaşım görselleri** için (`monoFixed` ile aynı gerekçe).
+    static func quoteFixed(_ size: CGFloat) -> Font {
+        .system(size: size, weight: .regular, design: .serif)
+    }
+
     // MARK: - Mono (DM Mono substitute)
 
     /// Mono etiketler 10–11pt, uppercase + tracking'li mikro bilgi (sayaç,

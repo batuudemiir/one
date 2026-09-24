@@ -11,7 +11,7 @@ import Foundation
 import Observation
 
 nonisolated enum ONE2Tab: String, CaseIterable, Hashable, Sendable {
-    case today, journey, explore, profile
+    case today, quotes, journey, explore, profile
 }
 
 nonisolated enum Route: Hashable, Sendable {
@@ -19,6 +19,8 @@ nonisolated enum Route: Hashable, Sendable {
     case entry(UUID)
     case theme(String)
     case insights
+    /// Söze yazı (QuoteReflection, UX-6).
+    case quoteReflection(QuoteID)
 }
 
 nonisolated enum SheetRoute: String, Hashable, Identifiable, Sendable {

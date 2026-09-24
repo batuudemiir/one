@@ -128,5 +128,21 @@
 			<string>Ihr habt %d gemeinsame Freunde</string>
 		</dict>
 	</dict>
+	<key>one2.quotes.writtenCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Du hast einmal darüber geschrieben</string>
+			<key>other</key>
+			<string>Du hast %lld-mal darüber geschrieben</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

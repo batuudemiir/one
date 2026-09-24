@@ -46,6 +46,7 @@ extension ONE2Tab {
     var title: String {
         switch self {
         case .today:   return NSLocalizedString("one2.tab.today", comment: "ONE 2.0 tab")
+        case .quotes:  return NSLocalizedString("one2.tab.quotes", comment: "ONE 2.0 tab")
         case .journey: return NSLocalizedString("one2.tab.journey", comment: "ONE 2.0 tab")
         case .explore: return NSLocalizedString("one2.tab.explore", comment: "ONE 2.0 tab")
         case .profile: return NSLocalizedString("one2.tab.profile", comment: "ONE 2.0 tab")
@@ -55,6 +56,7 @@ extension ONE2Tab {
     var symbol: String {
         switch self {
         case .today:   return "sun.max"
+        case .quotes:  return "quote.opening"
         case .journey: return "book.closed"
         case .explore: return "sparkles"
         case .profile: return "person.crop.circle"
@@ -78,6 +80,13 @@ private struct ONE2TabRoot: View {
     @Environment(Router.self) private var router
 
     var body: some View {
+        switch tab {
+        case .quotes: QuotesScreen()
+        default:      placeholder
+        }
+    }
+
+    private var placeholder: some View {
         VStack(spacing: 0) {
             V3TopBar(style: .root, title: tab.title)
             ScrollView(showsIndicators: false) {
@@ -118,6 +127,7 @@ private struct ONE2RoutePlaceholder: View {
         case .newEntry, .entry: return ONE2Tab.today.title
         case .theme:            return ONE2Tab.explore.title
         case .insights:         return ONE2Tab.journey.title
+        case .quoteReflection:  return ONE2Tab.quotes.title
         }
     }
 

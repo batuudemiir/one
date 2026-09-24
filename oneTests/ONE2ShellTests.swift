@@ -45,6 +45,7 @@ struct DeepLinkTests {
         #expect(dest("ones://archive") == .init(tab: .journey))
         #expect(dest("ones://echo") == .init(tab: .journey, path: [.insights]))
         #expect(dest("ones://profile") == .init(tab: .profile))
+        #expect(dest("ones://quotes") == .init(tab: .quotes))
     }
 
     @Test("Çevre ve davet linkleri bilgi notuyla bugüne düşer")

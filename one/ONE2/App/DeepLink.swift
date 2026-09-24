@@ -55,6 +55,8 @@ nonisolated enum DeepLink {
             return Destination(tab: .explore, path: [.theme(id)])
         case "explore":
             return Destination(tab: .explore)
+        case "quotes", "quote":
+            return Destination(tab: .quotes)
         case "profile":
             return Destination(tab: .profile)
         case "paywall":
