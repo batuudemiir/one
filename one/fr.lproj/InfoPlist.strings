@@ -1,0 +1,12 @@
+/* App Store + system display name — fr */
+"CFBundleDisplayName" = "ONE+ Mood Tracker";
+"CFBundleName" = "ONE+ Mood Tracker";
+
+/* Izin uyarilari — Info.plist'teki her NS*UsageDescription burada olmali;
+   eksik olan anahtar sistem uyarisinda gelistirme dilinde (TR) cikiyor. */
+"NSAppleMusicUsageDescription" = "Utilisé pour associer un morceau à ton moment. Fonctionne sans abonnement.";
+"NSCameraUsageDescription" = "Utilisé pour ajouter une photo à ton moment et scanner les QR codes d'invitation.";
+"NSFaceIDUsageDescription" = "Utilisé pour déverrouiller l'app avec Face ID quand le verrouillage est activé.";
+"NSContactsUsageDescription" = "Utilisé pour te permettre de choisir des contacts à inviter sur ONE.";
+"NSPhotoLibraryUsageDescription" = "Utilisé pour ajouter une photo à ton moment et choisir une photo de profil.";
+"NSPhotoLibraryAddUsageDescription" = "Utilisé pour enregistrer ta carte de partage ou l'affiche mensuelle.";

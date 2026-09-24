@@ -1,0 +1,42 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "g_sabah_01",
+      "title": "Güne niyet",
+      "summary": "Güne tek bir niyetle başla.",
+      "durationMinutes": 2,
+      "tags": [
+        "odak",
+        "umut"
+      ],
+      "timeOfDay": "morning",
+      "steps": [
+        {
+          "id": "g_sabah_01_s1",
+          "kind": "scale5",
+          "prompt": "Bu sabah enerjin nasıl?"
+        },
+        {
+          "id": "g_sabah_01_s2",
+          "kind": "focus",
+          "prompt": "Bugünün tek odağı ne olsun?"
+        },
+        {
+          "id": "g_sabah_01_s3",
+          "kind": "todo",
+          "prompt": "Bu odak için üç küçük adım yaz."
+        },
+        {
+          "id": "g_sabah_01_s4",
+          "kind": "text",
+          "prompt": "Gün sonunda kendine ne söylemek istersin?"
+        }
+      ],
+      "premium": true,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

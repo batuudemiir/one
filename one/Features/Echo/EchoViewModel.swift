@@ -11,39 +11,102 @@ class EchoViewModel: ObservableObject {
     @Published var data: EchoData = .empty
     @Published var isLoading = true
     @Published var isSyncLoading = false
+    /// "Bu Ay" toggle — affects moodDistribution and repeatedSongs shown in UI
+    @Published var showThisMonth = false
 
     private let context: NSManagedObjectContext
     private let cloudKit = CloudKitManager.shared
+
+    /// `.momentsDidChangeRemotely` aboneliği — bkz. `refreshAfterRemoteChange()`.
+    ///
+    /// Echo yalnızca `init` içinde bir kez hesaplıyordu; sayfa açıkken başka
+    /// cihazdan inen kayıt, sheet kapanıp yeniden açılana kadar sayılara
+    /// yansımıyordu.
+    private var remoteChangeSubscription: AnyCancellable?
 
     init(context: NSManagedObjectContext) {
         self.context = context
         Task {
             await compute()
         }
+
+        remoteChangeSubscription = NotificationCenter.default
+            .publisher(for: .momentsDidChangeRemotely)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.refreshAfterRemoteChange() }
+            }
     }
 
+    /// Uzaktan inen kayıttan sonra yerel istatistikleri tazeler.
+    ///
+    /// `compute()` çağrılmıyor: o yerel hesabın ardından `fetchCircleSyncMatches`
+    /// ile CloudKit'e gidiyor. Sync bir salvo hâlinde iniyor, yani bildirim
+    /// başına bir çevre sorgusu demek olurdu — `CloudKitManager.isThrottled`
+    /// bu uygulamada gerçek bir durum. Eşleşmeler zaten elde; yeniden kurulan
+    /// `EchoData`'ya olduğu gibi taşınıyor.
+    ///
+    /// `MainActor` üzerinde: `fetchAllSongs()` viewContext okuyor.
+    @MainActor
+    private func refreshAfterRemoteChange() {
+        let songs = fetchAllSongs()
+        data = EchoViewModel.buildEchoData(
+            from: songs,
+            circleSyncMatches: data.circleSyncMatches
+        )
+        // İlk `compute()` bitmeden bildirim indiyse ekran yükleniyor'da
+        // asılı kalmasın — veriyi az önce doldurduk.
+        isLoading = false
+    }
+
+    /// `MainActor` üzerinde: `fetchAllSongs()` ve `buildEchoData()` ikisi de
+    /// viewContext'e bağlı `DailySong` nesnelerine dokunuyor. Eskiden fetch
+    /// izolasyonsuz koşuyor, yalnız `buildEchoData` `MainActor.run` ile
+    /// sarılıyordu — yani okuma zaten ana aktördeydi, *fetch'in kendisi*
+    /// değildi. Hesabın ağırlığı değişmiyor, yalnız kuyruk doğrulanıyor.
+    @MainActor
     func compute() async {
         let songs = fetchAllSongs()
 
         // Yerel veriden temel istatistikleri hesapla
-        let result = await MainActor.run {
-            EchoViewModel.buildEchoData(from: songs, circleSyncMatches: [])
-        }
+        data = EchoViewModel.buildEchoData(from: songs, circleSyncMatches: [])
+        isLoading = false
 
-        await MainActor.run {
-            self.data = result
-            self.isLoading = false
-        }
-
-        // CloudKit'ten çevre eşleşmelerini çek
-        await fetchCircleSyncMatches(songs: songs)
+        // CloudKit'ten çevre eşleşmelerini çek. Alanlar burada, ana aktörde
+        // çıkarılıyor; sınırın ötesine `DailySong` geçmiyor.
+        await fetchCircleSyncMatches(candidates: Self.syncCandidates(from: songs))
     }
 
-    private func fetchCircleSyncMatches(songs: [DailySong]) async {
-        await MainActor.run { self.isSyncLoading = true }
+    /// Eşleştirme için gereken alanları `DailySong`'dan çıkarır.
+    ///
+    /// Filtre eski davranışı koruyor: tarihsiz, şarkısız veya sanatçısız
+    /// satır zaten eşleşemiyordu. Yan etkisi, arkadaş sorgusunun tarih
+    /// aralığının artık yalnız şarkılı günlere göre kurulması — dışarıda
+    /// kalan günlerde eşleşme mümkün olmadığı için sonuç aynı, çekilen
+    /// kayıt daha az.
+    @MainActor
+    private static func syncCandidates(from songs: [DailySong]) -> [CircleSyncCandidate] {
+        songs.compactMap { song in
+            guard let date = song.date,
+                  let name = song.songName,
+                  let artist = song.artistName,
+                  !name.trimmingCharacters(in: .whitespaces).isEmpty
+            else { return nil }
+            return CircleSyncCandidate(
+                date: date,
+                songName: name,
+                artistName: artist,
+                moodColorHex: song.moodColorHex ?? "#888888"
+            )
+        }
+    }
+
+    @MainActor
+    private func fetchCircleSyncMatches(candidates: [CircleSyncCandidate]) async {
+        isSyncLoading = true
 
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            cloudKit.fetchCircleSyncMatches(myEntries: songs) { [weak self] result in
+            cloudKit.fetchCircleSyncMatches(myEntries: candidates) { [weak self] result in
                 guard let self else { continuation.resume(); return }
                 switch result {
                 case .success(let matches):
@@ -56,11 +119,15 @@ class EchoViewModel: ObservableObject {
                             repeatedSongs: self.data.repeatedSongs,
                             silentDays: self.data.silentDays,
                             silentDates: self.data.silentDates,
-                            longestStreak: self.data.longestStreak,
-                            currentStreak: self.data.currentStreak,
                             hourDistribution: self.data.hourDistribution,
                             circleSyncMatches: matches,
-                            last30DaysColors: self.data.last30DaysColors
+                            last30DaysColors: self.data.last30DaysColors,
+                            totalSongs: self.data.totalSongs,
+                            thisMonthSongs: self.data.thisMonthSongs,
+                            mostActiveDayOfWeek: self.data.mostActiveDayOfWeek,
+                            averageSongsPerMonth: self.data.averageSongsPerMonth,
+                            moodDistribution: self.data.moodDistribution,
+                            thisMonthMoodDistribution: self.data.thisMonthMoodDistribution
                         )
                         self.isSyncLoading = false
                         continuation.resume()
@@ -76,8 +143,13 @@ class EchoViewModel: ObservableObject {
         }
     }
 
+    /// viewContext okuyor — çağıranlar ana aktörde olmak zorunda.
+    @MainActor
     private func fetchAllSongs() -> [DailySong] {
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        // Sinirsiz tarama: kayit sayisi buyudukce bellek dogrusal artiyordu.
+        // Batch faulting ile tepe bellek sabit kaliyor.
+        fetchRequest.fetchBatchSize = 100
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
         return (try? context.fetch(fetchRequest)) ?? []
     }
@@ -87,7 +159,7 @@ class EchoViewModel: ObservableObject {
         let calendar = Calendar.current
         let now = Date()
         let monthFmt = DateFormatter()
-        monthFmt.locale = Locale(identifier: "tr_TR")
+        monthFmt.locale = LanguageManager.shared.currentLocale
         monthFmt.dateFormat = "d MMM"
 
         // ── Bu haftanın Pazartesi'si ────────────────────────────
@@ -105,10 +177,9 @@ class EchoViewModel: ObservableObject {
             // Gelecek günler boş
             if start > todayStartOfDay { return nil }
             let end = calendar.date(byAdding: .day, value: 1, to: start)!
-            let match = songs.first { s in
-                guard let d = s.date else { return false }
-                return d >= start && d < end
-            }
+            let match = songs
+                .filter { s in guard let d = s.date else { return false }; return d >= start && d < end }
+                .max(by: { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) })
             if let hex = match?.moodColorHex { return Color(hex: hex) }
             return nil
         }
@@ -169,70 +240,6 @@ class EchoViewModel: ObservableObject {
             }
         }
 
-        // ── Longest streak ──────────────────────────────────────
-        let sortedFilled = filledDates.sorted()
-        var longestDays = 0, currentDays = 0
-        var longestStart = now, longestEnd = now
-        var streakStart = sortedFilled.first ?? now
-
-        for i in 0..<sortedFilled.count {
-            if i == 0 {
-                currentDays = 1
-                streakStart = sortedFilled[0]
-            } else {
-                let diff = calendar.dateComponents([.day], from: sortedFilled[i-1], to: sortedFilled[i]).day ?? 0
-                if diff == 1 {
-                    currentDays += 1
-                } else {
-                    currentDays = 1
-                    streakStart = sortedFilled[i]
-                }
-            }
-            if currentDays > longestDays {
-                longestDays = currentDays
-                longestStart = streakStart
-                longestEnd = sortedFilled[i]
-            }
-        }
-
-        let streakColors = songs
-            .filter { s in
-                guard let d = s.date else { return false }
-                return d >= longestStart && d <= longestEnd
-            }
-            .sorted { ($0.date ?? Date()) < ($1.date ?? Date()) }
-            .compactMap { s -> Color? in
-                guard let hex = s.moodColorHex else { return nil }
-                return Color(hex: hex)
-            }
-
-        let dateFmt = DateFormatter()
-        dateFmt.locale = Locale(identifier: "tr_TR")
-        dateFmt.dateFormat = "d MMM"
-
-        let streak = StreakInfo(
-            days: longestDays,
-            startDate: longestDays > 0 ? dateFmt.string(from: longestStart) : "—",
-            endDate: longestDays > 0 ? dateFmt.string(from: longestEnd) : "—",
-            colors: streakColors
-        )
-
-        // ── Current streak (active streak ending today or yesterday) ──
-        let yesterdayStart = calendar.date(byAdding: .day, value: -1, to: todayStartOfDay) ?? todayStartOfDay
-
-        // Anchor: if user has an entry today, count back from today; otherwise from yesterday.
-        // If neither today nor yesterday has an entry, current streak is 0.
-        var currentStreak = 0
-        if filledDates.contains(todayStartOfDay) || filledDates.contains(yesterdayStart) {
-            let anchor = filledDates.contains(todayStartOfDay) ? todayStartOfDay : yesterdayStart
-            var checkDay = anchor
-            while filledDates.contains(checkDay) {
-                currentStreak += 1
-                guard let prev = calendar.date(byAdding: .day, value: -1, to: checkDay) else { break }
-                checkDay = prev
-            }
-        }
-
         // ── Hour distribution ──────────────────────────────────
         let hourDist = songs.reduce(into: [Int: Int]()) { d, s in
             guard let date = s.createdAt ?? s.date else { return }
@@ -242,16 +249,77 @@ class EchoViewModel: ObservableObject {
 
         // ── Sync count: CloudKit'ten gelir, burada placeholder ──
 
+        // ── Genel istatistikler ─────────────────────────────────
+        let totalSongs = songs.count
+
+        // Bu ay kayıtları
+        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
+        let nextMonthStart = calendar.date(byAdding: .month, value: 1, to: monthStart) ?? now
+        let thisMonthSongs = songs.filter { s in
+            guard let d = s.date else { return false }
+            return d >= monthStart && d < nextMonthStart
+        }.count
+
+        // Haftanın en aktif günü (tüm zamanlar)
+        let dayCounts = songs.reduce(into: [Int: Int]()) { d, s in
+            guard let date = s.date else { return }
+            let weekday = calendar.component(.weekday, from: date) // 1=Sun, 2=Mon…7=Sat
+            d[weekday, default: 0] += 1
+        }
+        let mostActiveWeekday = dayCounts.max(by: { $0.value < $1.value })?.key
+        let df = DateFormatter()
+        df.locale = Locale.current
+        df.dateFormat = "EEEE"
+        let mostActiveDayOfWeek: String? = mostActiveWeekday.flatMap { weekday in
+            // weekday: 1=Sun, 2=Mon, ..., 7=Sat
+            var comps = DateComponents()
+            comps.weekday = weekday
+            return calendar.nextDate(after: Date(), matching: comps, matchingPolicy: .nextTime)
+                .map { df.string(from: $0) }
+        }
+
+        // Aylık ortalama şarkı sayısı
+        let allMonths = Set(songs.compactMap { s -> String? in
+            guard let d = s.date else { return nil }
+            let comps = calendar.dateComponents([.year, .month], from: d)
+            return "\(comps.year ?? 0)-\(comps.month ?? 0)"
+        })
+        let averageSongsPerMonth: Double = allMonths.isEmpty ? 0 :
+            Double(totalSongs) / Double(allMonths.count)
+
+        // Mood dağılımı (tüm zamanlar)
+        let allMoodMap = songs.reduce(into: [String: (count: Int, hex: String)]()) { d, s in
+            guard let mood = s.moodWord, !mood.isEmpty else { return }
+            let hex = s.moodColorHex ?? "#888888"
+            d[mood] = (d[mood].map { ($0.count + 1, $0.hex) } ?? (1, hex))
+        }
+        let moodDistribution = allMoodMap
+            .map { MoodStat(label: $0.key, colorHex: $0.value.hex, count: $0.value.count) }
+            .sorted { $0.count > $1.count }
+
+        // Bu ayki mood dağılımı
+        let thisMonthSongList = songs.filter { s in
+            guard let d = s.date else { return false }
+            return d >= monthStart && d < nextMonthStart
+        }
+        let monthMoodMap = thisMonthSongList.reduce(into: [String: (count: Int, hex: String)]()) { d, s in
+            guard let mood = s.moodWord, !mood.isEmpty else { return }
+            let hex = s.moodColorHex ?? "#888888"
+            d[mood] = (d[mood].map { ($0.count + 1, $0.hex) } ?? (1, hex))
+        }
+        let thisMonthMoodDistribution = monthMoodMap
+            .map { MoodStat(label: $0.key, colorHex: $0.value.hex, count: $0.value.count) }
+            .sorted { $0.count > $1.count }
+
         // ── 30-Day Colors ──────────────────────────────────────
         let thirtyDaysAgo = calendar.date(byAdding: .day, value: -29, to: startOfDay(for: now, calendar: calendar)) ?? now
         let thirtyDayColors: [Color?] = (0..<30).map { offset -> Color? in
             guard let day = calendar.date(byAdding: .day, value: offset, to: thirtyDaysAgo) else { return nil }
             let start = calendar.startOfDay(for: day)
             let end = calendar.date(byAdding: .day, value: 1, to: start)!
-            let match = songs.first { s in
-                guard let d = s.date else { return false }
-                return d >= start && d < end
-            }
+            let match = songs
+                .filter { s in guard let d = s.date else { return false }; return d >= start && d < end }
+                .max(by: { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) })
             if let hex = match?.moodColorHex { return Color(hex: hex) }
             return nil
         }
@@ -262,11 +330,15 @@ class EchoViewModel: ObservableObject {
             repeatedSongs: repeatedSongs,
             silentDays: silentDates.count,
             silentDates: silentDates,
-            longestStreak: streak,
-            currentStreak: currentStreak,
             hourDistribution: hourDist,
             circleSyncMatches: circleSyncMatches,
-            last30DaysColors: thirtyDayColors
+            last30DaysColors: thirtyDayColors,
+            totalSongs: totalSongs,
+            thisMonthSongs: thisMonthSongs,
+            mostActiveDayOfWeek: mostActiveDayOfWeek,
+            averageSongsPerMonth: averageSongsPerMonth,
+            moodDistribution: moodDistribution,
+            thisMonthMoodDistribution: thisMonthMoodDistribution
         )
     }
 

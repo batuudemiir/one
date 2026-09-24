@@ -51,41 +51,93 @@ enum ONEAnimation {
     
     // MARK: - Animation Type Configurations
     
+    // Aşağıdaki altı token da **kritik sönümlü** (damping 1.0).
+    //
+    // Neden hepsi: bunların çağrı yerlerinin hiçbiri jest kaynaklı değil —
+    // ekran geçişi, bölüm açılışı, kademeli liste girişi, `.animation(_:value:)`
+    // ile sürülen bool'lar. Overshoot fiziksel bir borç ödemesidir: parmak
+    // momentum taşıdıysa hedefi aşmak doğru okunur, ama kendiliğinden beliren
+    // bir panelin zıplaması "yay" değil "arıza" gibi görünür. Bounce artık
+    // yalnız `dragSnapBack`/`dragDismiss`'te — orada jest gerçekten hız taşıyor.
+    //
+    // Response'lar da kısaldı: kritik sönümlü bir yay aynı response'ta
+    // alt-sönümlüden geç oturur, eskisiyle aynı bıraksak her şey ağırlaşırdı.
+
+    // MARK: - Easing eğrileri (v3)
+    //
+    // `cubic-bezier(.2,.9,.25,1)` — v3 handoff'unun eğrisi. `V3Tokens`
+    // içinde duruyorlardı; hareketin tek bir yerde yaşaması için buraya
+    // taşındılar.
+    //
+    // Spring'lerle **birlikte** yaşıyorlar, çünkü iki farklı işi var:
+    // eğriler süresi bilinen, kesin başlangıç/bitişi olan geçişler için
+    // (renk dolgusu, çip seçimi, kayıt onayı); spring'ler ise ekran ve
+    // panel hareketi için — orada süre değil, oturma hissi belirleyici.
+    // "Tek eğri" iddiası bu yüzden bırakıldı: doğru değildi ve doğru
+    // olmasını istemek de yanlış olurdu.
+
+    /// Genel v3 geçişi.
+    static let easing      = Animation.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.32)
+    /// Basma anı — en kısa.
+    static let easingPress = Animation.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.12)
+    /// Çip / segment seçimi.
+    static let easingChip  = Animation.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.18)
+    /// Mood rengi dolgusu.
+    static let easingColor = Animation.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.30)
+    /// Kaydedildi ekranına geçiş.
+    static let easingSaved = Animation.timingCurve(0.2, 0.9, 0.25, 1.0, duration: 0.36)
+
+    // MARK: - Spring'ler
+
     /// Micro animation - subtle, quick interactions
-    /// Response: 0.3, Damping: 0.7
-    /// Intended effect: Snappy, responsive feel for immediate feedback
-    /// Use for: Button presses, toggle switches, micro-interactions
-    static let micro = Animation.spring(response: 0.3, dampingFraction: 0.7)
-    
-    /// Card spring - smooth card movements
-    /// Response: 0.45, Damping: 0.8
-    /// Intended effect: Smooth, natural card movement with slight bounce
-    /// Use for: Card animations, list item movements, content reveals
-    static let cardSpring = Animation.spring(response: 0.45, dampingFraction: 0.8)
-    
+    /// Response: 0.22, Damping: 1.0
+    static let micro = Animation.spring(response: 0.22, dampingFraction: 1.0)
+
+    /// Card spring - card movements, screen switches, staggered list entrances
+    /// Response: 0.36, Damping: 1.0
+    static let cardSpring = Animation.spring(response: 0.36, dampingFraction: 1.0)
+
     /// Panel spring - panel and sheet transitions
-    /// Response: 0.5, Damping: 0.85
-    /// Intended effect: Smooth panel slides with controlled momentum
-    /// Use for: Side panels, modal sheets, drawer animations
-    static let panelSpring = Animation.spring(response: 0.5, dampingFraction: 0.85)
-    
+    /// Response: 0.38, Damping: 1.0
+    static let panelSpring = Animation.spring(response: 0.38, dampingFraction: 1.0)
+
     /// Screen transition - full screen changes
-    /// Response: 0.6, Damping: 0.9
-    /// Intended effect: Smooth, weighty screen transitions with minimal bounce
-    /// Use for: Navigation transitions, full screen changes, major view switches
-    static let screenTransition = Animation.spring(response: 0.6, dampingFraction: 0.9)
-    
-    /// Mood transition - mood color changes
-    /// Response: 0.7, Damping: 0.95
-    /// Intended effect: Smooth, emotional color transitions without bounce
-    /// Use for: Mood color changes, gradient transitions, emotional state shifts
-    static let moodTransition = Animation.spring(response: 0.7, dampingFraction: 0.95)
-    
-    /// Tab switch - bottom navigation tab changes
-    /// Response: 0.35, Damping: 0.75
-    /// Intended effect: Snappy but fluid tab indicator movement with light bounce
-    /// Use for: Bottom navigation indicator, tab selection changes
-    static let tabSwitch = Animation.spring(response: 0.35, dampingFraction: 0.75)
+    /// Response: 0.44, Damping: 1.0
+    static let screenTransition = Animation.spring(response: 0.44, dampingFraction: 1.0)
+
+    /// Mood transition - deliberately slow (emotional color shifts)
+    /// Response: 0.55, Damping: 1.0
+    static let moodTransition = Animation.spring(response: 0.55, dampingFraction: 1.0)
+
+    /// Tab switch - a tap, not a flick: snappy but without overshoot
+    /// Response: 0.26, Damping: 1.0
+    static let tabSwitch = Animation.spring(response: 0.26, dampingFraction: 1.0)
+
+    // MARK: - Gesture-Driven Springs
+
+    /// Sürükleme eşiği aşılmadığında elemanın yerine dönüşü.
+    ///
+    /// `interactiveSpring` + `blendDuration`: kullanıcı geri dönen elemanı
+    /// yolda tekrar yakalarsa hareket kesilmeden devralınıyor. Düz `spring`
+    /// bunu yapamıyordu — yeni jest, hızı sıfırdan başlatıp görünür bir
+    /// duraklama üretiyordu.
+    /// Uygulamada bilerek bounce bırakılan **tek** yer burası: jest hızla
+    /// bitti, eleman o hızı taşıyarak yerine dönüyor. Apple'ın çekmece/sheet
+    /// değerleri (damping 0.8, response 0.3).
+    /// Response: 0.32, Damping: 0.80, Blend: 0.15
+    static let dragSnapBack = Animation.interactiveSpring(
+        response: 0.32, dampingFraction: 0.80, blendDuration: 0.15
+    )
+
+    /// Sürükleyerek kapatma onaylandığında elemanın ekran dışına uçuşu.
+    ///
+    /// Kritik sönümlü (0.72 değil 1.0): eleman ekrandan çıkıyor, orada
+    /// salınacak bir yer yok. Sabit süreli `easeOut` yerine spring, çünkü
+    /// kapanış da kesintiye uğratılabilir olmalı.
+    /// Response: 0.34, Damping: 1.0, Blend: 0.1
+    static let dragDismiss = Animation.interactiveSpring(
+        response: 0.34, dampingFraction: 1.0, blendDuration: 0.1
+    )
     
     // MARK: - Stagger Animation
     
@@ -96,7 +148,7 @@ enum ONEAnimation {
     ///   - index: Item index in the list
     ///   - baseDelay: Base delay between items (default: 0.08)
     /// - Returns: Delay in seconds for this item
-    static func staggerDelay(index: Int, baseDelay: Double = 0.08) -> Double {
+    static func staggerDelay(index: Int, baseDelay: Double = 0.07) -> Double {
         return Double(index) * baseDelay
     }
     
@@ -110,18 +162,23 @@ enum ONEAnimation {
     /// Animation for button press
     /// Intended effect: Quick, responsive press with slight bounce
     /// Use for: Button press down animation
-    static let buttonPressAnimation = Animation.spring(response: 0.25, dampingFraction: 0.6)
+    ///
+    /// v3: spring'den tek easing eğrisine geçti. `.onePressable` uygulamada
+    /// 60'tan fazla yerde kullanılıyor; spring kaldığı sürece o butonların
+    /// hepsi v3'ün `cubic-bezier(.2,.9,.25,1)` kuralının dışında kalıyordu —
+    /// yeni v3 bileşenleri (`V3TopBar`, `SubScreenNavBar`) dahil.
+    static let buttonPressAnimation = easingPress
     
     /// Animation for button release
     /// Intended effect: Smooth return to normal state with controlled bounce
     /// Use for: Button release animation
-    static let buttonReleaseAnimation = Animation.spring(response: 0.35, dampingFraction: 0.7)
+    static let buttonReleaseAnimation = easingChip
 }
 
 // MARK: - Animation View Modifiers
 
 extension View {
-    
+
     /// Apply button press animation effect
     /// - Parameter isPressed: Whether button is currently pressed
     func buttonPressEffect(isPressed: Bool) -> some View {
@@ -131,49 +188,88 @@ extension View {
                 value: isPressed
             )
     }
-    
+
     /// Apply a standard page entrance animation (opacity + scale + vertical offset)
-    /// Intended effect: Elements appear to rise gently into place from slightly below
-    /// Use for: Screen entrance animations, appeared-pattern in onAppear
+    /// Reduce Motion: offset/scale atlanır, sadece opacity geçişi yapılır.
     /// - Parameters:
     ///   - isVisible: Whether the element is visible (drive with @State appeared)
     ///   - delay: Delay before this element's entrance (default: 0)
     func pageEntrance(isVisible: Bool, delay: Double = 0) -> some View {
-        self
-            .opacity(isVisible ? 1 : 0)
-            .scaleEffect(isVisible ? 1 : 0.96)
-            .offset(y: isVisible ? 0 : 8)
-            .animation(ONEAnimation.panelSpring.delay(delay), value: isVisible)
+        modifier(PageEntranceModifier(isVisible: isVisible, delay: delay))
     }
-    
+
     /// Apply a staggered list item entrance animation (opacity + vertical offset)
-    /// Intended effect: List items cascade into view sequentially from below
-    /// Use for: Search results, friend lists, archive grids, any enumerated list
+    /// Reduce Motion: offset atlanır, sadece opacity; stagger delay = 0.
     /// - Parameters:
-    ///   - isVisible: Whether the item is visible (drive with @State appeared)
+    ///   - isVisible: Whether the item is visible
     ///   - index: Item index for stagger delay calculation
     ///   - baseDelay: Base delay before first item appears (default: 0)
     func listItemEntrance(isVisible: Bool, index: Int, baseDelay: Double = 0) -> some View {
-        self
+        modifier(ListItemEntranceModifier(isVisible: isVisible, index: index, baseDelay: baseDelay))
+    }
+
+    /// Apply a standard directional slide transition
+    /// Reduce Motion: sadece opacity transition kullanılır.
+    /// - Parameter edge: The edge from which the element enters (default: .bottom)
+    func slideTransition(edge: Edge = .bottom) -> some View {
+        modifier(SlideTransitionModifier(edge: edge))
+    }
+}
+
+// MARK: - Reduce-Motion-Aware Modifier Implementations
+
+private struct PageEntranceModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let isVisible: Bool
+    let delay: Double
+
+    func body(content: Content) -> some View {
+        content
             .opacity(isVisible ? 1 : 0)
-            .offset(y: isVisible ? 0 : 12)
+            .scaleEffect(reduceMotion ? 1 : (isVisible ? 1 : 0.90))
+            .offset(y: reduceMotion ? 0 : (isVisible ? 0 : 20))
             .animation(
-                ONEAnimation.cardSpring.delay(baseDelay + ONEAnimation.staggerDelay(index: index)),
+                reduceMotion
+                    ? .easeOut(duration: ONEAnimation.durationMicro)
+                    : ONEAnimation.panelSpring.delay(delay),
                 value: isVisible
             )
     }
-    
-    /// Apply a standard directional slide transition
-    /// Intended effect: Element slides in from the given edge with opacity fade
-    /// Use for: Sheet presentations, panel reveals, contextual menus
-    /// - Parameter edge: The edge from which the element enters (default: .bottom)
-    func slideTransition(edge: Edge = .bottom) -> some View {
-        self.transition(
-            .asymmetric(
-                insertion: .move(edge: edge).combined(with: .opacity),
-                removal: .opacity
+}
+
+private struct ListItemEntranceModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let isVisible: Bool
+    let index: Int
+    let baseDelay: Double
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(isVisible ? 1 : 0)
+            .scaleEffect(reduceMotion ? 1 : (isVisible ? 1 : 0.92))
+            .offset(y: reduceMotion ? 0 : (isVisible ? 0 : 22))
+            .animation(
+                reduceMotion
+                    ? .easeOut(duration: ONEAnimation.durationMicro)
+                    : ONEAnimation.cardSpring.delay(baseDelay + ONEAnimation.staggerDelay(index: index)),
+                value: isVisible
             )
-        )
+    }
+}
+
+private struct SlideTransitionModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let edge: Edge
+
+    func body(content: Content) -> some View {
+        if reduceMotion {
+            content.transition(.opacity)
+        } else {
+            // Girdiği yoldan çıkar. Kenardan girip yerinde solmak, elemanın
+            // nereye gittiğine dair mekânsal ipucunu siliyordu — bir sonraki
+            // açılışta nereden geleceği de tahmin edilemez oluyor.
+            content.transition(.move(edge: edge).combined(with: .opacity))
+        }
     }
 }
 
@@ -182,15 +278,18 @@ extension View {
 struct BreathingAnimation: ViewModifier {
     let delay: Double
     @State private var isAnimating = false
-    
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func body(content: Content) -> some View {
         content
-            .scaleEffect(isAnimating ? 1.05 : 1.0)
+            .scaleEffect((!reduceMotion && isAnimating) ? 1.05 : 1.0)
             .opacity(isAnimating ? 0.6 : 0.3)
             .animation(
-                Animation.easeInOut(duration: ONEAnimation.durationBreathe)
-                    .repeatForever(autoreverses: true)
-                    .delay(delay),
+                reduceMotion
+                    ? .easeOut(duration: ONEAnimation.durationMicro)
+                    : Animation.easeInOut(duration: ONEAnimation.durationBreathe)
+                        .repeatForever(autoreverses: true)
+                        .delay(delay),
                 value: isAnimating
             )
             .onAppear {

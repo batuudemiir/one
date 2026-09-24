@@ -23,20 +23,20 @@ struct OneMascotView: View {
     var message: String? = nil
     
     var body: some View {
-        VStack(spacing: ONETokens.spacingMD) {
+        VStack(spacing: V3Tokens.spacingMD) {
             Image(pose.rawValue)
                 .resizable()
                 .scaledToFit()
                 .frame(width: size, height: size)
                 // Wabi-sabi hissiyatı için hafif bir gölge ve yumuşaklık
-                .shadow(color: ONETokens.oneInk.opacity(0.05), radius: 10, x: 0, y: 5)
+                .shadow(color: V3Tokens.ink.opacity(0.05), radius: 10, x: 0, y: 5)
             
             if let message = message {
                 Text(message)
                     .displaySM()
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, ONETokens.spacingXL)
+                    .padding(.horizontal, V3Tokens.spacingXL)
             }
         }
         .animation(.easeInOut(duration: 0.8), value: pose) // Pozlar arası geçişler şık olsun
@@ -45,7 +45,7 @@ struct OneMascotView: View {
 
 #Preview {
     ZStack {
-        ONETokens.oneCream.ignoresSafeArea()
+        V3Tokens.paper.ignoresSafeArea()
         OneMascotView(pose: .hi, size: 150, message: "Merhaba! Ben One.\nSana eşlik etmek için buradayım.")
     }
 }

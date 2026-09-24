@@ -1,0 +1,12 @@
+/* MoodWidget kendi kataloğunu taşır: uzantı ayrı bir bundle, uygulamanın
+   one/*.lproj dosyalarını göremiyor. Widget sistem dilini izler — uygulama
+   içi dil seçimi (LanguageManager) uzantı sürecine geçmez. */
+
+"widget.pickSong" = "오늘의 노래 고르기";
+"widget.prompt" = "오늘 어떤가요?";
+"widget.promptSub" = "색을 하나 고르세요.";
+"widget.promptSubCircle" = "색을 고르면 서클이 봅니다.";
+"widget.shared" = "공유함";
+"widget.waiting" = "기다리는 중";
+"widget.yesterday" = "어제";
+"widget.you" = "나";

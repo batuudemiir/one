@@ -1,0 +1,919 @@
+/* Share */
+"applock.a11y.locked" = "ONE이 잠겨 있습니다";
+"applock.unlock" = "잠금 해제";
+"applock.unlockWith" = "%@(으)로 열기";
+"archive.a11y.cellCount" = "%1$d, %2$d개의 순간";
+"archive.a11y.cellEmpty" = "%d, 비어 있음";
+"archive.a11y.cellMany" = "%1$d, %2$d개의 순간: %3$@";
+"archive.a11y.cellOne" = "%1$d, %2$@";
+"archive.a11y.meta" = "%1$d일, %2$d개의 순간";
+"archive.a11y.metaTop" = ", 반복되는 %@";
+"archive.addMoment" = "순간 추가";
+"archive.seg.month" = "월";
+"archive.seg.year" = "연";
+"avatar.a11y.band" = "색 띠";
+"avatar.a11y.markInk" = "잉크 마크";
+"avatar.a11y.markKor" = "불씨 마크";
+"avatar.a11y.markKorInvert" = "반전 불씨 마크";
+"avatar.a11y.markPaper" = "종이 마크";
+"avatar.a11y.mosaic" = "모자이크 아바타";
+"avatar.a11y.photo" = "사진 아바타";
+"camera.back" = "후면 카메라";
+"camera.flashOff" = "플래시 꺼짐";
+"camera.flashOn" = "플래시 켜짐";
+"camera.front" = "전면 카메라";
+"camera.grantInSettings" = "설정에서 허용할 수 있습니다.";
+"camera.gridOff" = "격자 꺼짐";
+"camera.gridOn" = "격자 켜짐";
+"circle.addShort" = "+ 추가";
+"circle.blockConfirmTitle" = "이 사용자를 차단할까요?";
+"circle.cta.accept" = "수락";
+"circle.cta.add" = "서클에 추가";
+"circle.cta.decline" = "거절";
+"circle.feed.earlier" = "이전";
+"circle.feed.thisWeek" = "이번 주";
+"circle.feed.today" = "오늘";
+"circle.musicSharing" = "음악 공유";
+"circle.mutualCount" = "• 함께 아는 %d명";
+"circle.toast.blocked" = "차단했습니다";
+"circle.toast.declined" = "거절했습니다";
+"circle.toast.nowInCircle" = "이제 서클에 있습니다";
+"circle.toast.requestCancelled" = "요청을 취소했습니다";
+"circle.toast.requestSent" = "요청을 보냈습니다";
+"circle.toast.unblocked" = "차단을 해제했습니다";
+"circle.viewProfile" = "프로필 보기";
+"common.back" = "← 뒤로";
+"common.cancel" = "취소";
+"common.friend" = "친구";
+"common.music" = "음악";
+"common.openSettings" = "설정 열기";
+"common.retry" = "다시 시도";
+"echo.factualLine" = "%1$d개의 순간 · %2$@ 반복";
+"echo.noMomentsThisMonth" = "이번 달에는 아직 순간이 없습니다.";
+"echo.playCount" = "%d번";
+"echo.section.last30" = "최근 30일";
+"echo.section.moodMap" = "무드 지도";
+"echo.section.numbers" = "숫자";
+"echo.section.repeats" = "이달의 반복";
+"echo.section.summary" = "숫자";
+"echo.section.topTracks" = "반복된 곡";
+"echo.stat.mostActiveDay" = "분주한 날";
+"echo.stat.resonance" = "공명";
+"echo.stat.silentDays" = "조용한 날";
+"echo.stat.thisMonth" = "이번 달";
+"echo.stat.totalMoments" = "전체 순간";
+"echo.watchStory" = "이달의 스토리 보기";
+"entry.a11y.backToColor" = "색 선택으로 돌아가기";
+"entry.a11y.chip" = "%1$@. %2$@. 바꾸려면 누르세요.";
+"entry.a11y.continueWith" = "계속, %@ 선택됨";
+"entry.a11y.date" = "날짜: %@";
+"entry.a11y.noteCount" = "%1$d자, 최대 %2$d";
+"entry.a11y.noteField" = "메모, 선택 사항, 최대 %d자";
+"entry.a11y.pickHint" = "오늘의 색으로 고르기";
+"entry.a11y.save" = "순간 저장";
+"entry.a11y.todayColor" = "오늘의 색: %@";
+"entry.chip.circle" = "서클";
+"entry.chip.photo" = "사진";
+"entry.chip.private" = "나만";
+"entry.chip.song" = "노래";
+"entry.cta.continue" = "계속";
+"entry.cta.pickColor" = "색 고르기";
+"entry.note.placeholder" = "두 줄이면 충분합니다. 비워둬도 됩니다.";
+"entry.note.title" = "무슨 일이 있었나요?";
+"entry.photo.add" = "사진 추가";
+"entry.photo.camera" = "카메라";
+"entry.photo.cameraSub" = "지금 한 장 찍기";
+"entry.photo.change" = "사진 바꾸기";
+"entry.photo.gallery" = "갤러리";
+"entry.photo.gallerySub" = "이미 있는 사진 고르기";
+"entry.prompt.today" = "오늘 어떤가요?";
+"entry.save" = "저장";
+"entry.scope.circleSub" = "친구들이 오늘의 색을 봅니다.";
+"entry.scope.circleTitle" = "서클과 공유";
+"entry.scope.privateSub" = "아무도 보지 않습니다. 당신 것입니다.";
+"entry.scope.privateTitle" = "내 보관함에만 두기";
+"entry.state.empty" = "비어 있음";
+"entry.state.onlyYou" = "나만 볼 수 있음";
+"entry.state.selected" = "선택됨";
+"entry.state.shared" = "친구와 공유 중";
+"entry.title.another" = "한 순간\n더?";
+"entry.title.today" = "오늘\n어떤가요?";
+"export.failed" = "보관함을 내보내지 못했습니다.";
+"friendProfile.recurringColor" = "반복되는 색";
+"greeting.day" = "좋은 하루";
+"greeting.evening" = "좋은 저녁";
+"greeting.morning" = "좋은 아침";
+"greeting.night" = "좋은 밤";
+"invite.messageBody" = "ONE에서 하루의 색을 남기고 있습니다. 내 코드: %1$@\n\n%2$@";
+"nav.a11y.showTodayMoments" = "오늘의 순간 보기";
+"notif.aFriend" = "친구";
+"notif.circle.leftColor" = "오늘의 색을 남겼습니다.";
+"notif.circle.leftColors" = "오늘의 색을 남겼습니다.";
+"notif.daily.beforeClose" = "하루가 끝나기 전에 색을 남길 수 있습니다.";
+"notif.daily.colorless" = "오늘은 색 없이 기록됩니다.";
+"notif.daily.empty" = "오늘은 보관함에 비어 있습니다.";
+"notif.daily.emptyStanding" = "오늘은 아직 비어 있습니다.";
+"notif.daily.noColorYet" = "오늘의 색은 아직 없습니다.";
+"notif.daily.stillEmpty" = "오늘은 여전히 비어 있습니다.";
+"notif.daily.stillNotPicked" = "오늘의 색은 아직 고르지 않았습니다.";
+"notif.daily.yesterday" = "어제는 %@. 오늘은 아직입니다.";
+"notif.day.evening" = "%@ 저녁";
+"notif.day.morning" = "%@ 아침";
+"notif.day.night" = "하루가 저물고 있습니다";
+"notif.day.noon" = "%@ 낮";
+"notif.fallback.body" = "보관함에 새 기록이 있습니다.";
+"notif.friendAccepted.body" = "이제 당신의 서클에 있습니다.";
+"notif.friendRequest.body" = "서클에 추가하고 싶어 합니다.";
+"notif.friendShared.noMood" = "오늘의 노래를 남겼습니다.";
+"notif.friendShared.withMood" = "%@. 노래를 남겼습니다.";
+"notif.monthly.closed.body" = "30일이 한 장에.";
+"notif.monthly.closed.title" = "%@이 끝났습니다";
+"notif.monthly.generic.body" = "%@이 준비됐습니다.";
+"notif.monthly.generic.title" = "월간 초상";
+"notif.monthly.ready" = "이번 달의 초상이 준비됐습니다.";
+"notif.people.andOthers" = "%1$@ 외 %2$d명";
+"notif.push.friendAccepted" = "요청이 수락되었습니다.";
+"notif.push.friendRequest" = "새 서클 요청이 있습니다.";
+"notif.push.friendShared" = "서클의 누군가가 오늘의 색을 남겼습니다.";
+"notif.push.reaction" = "당신의 기록에 반응이 있습니다.";
+"notif.reaction.plain" = "당신의 기록에 반응했습니다.";
+"notif.reaction.withEmoji" = "당신의 기록에 %@를 남겼습니다.";
+"notif.resonance.body" = "오늘 당신과 같은 %@.";
+"notif.resonance.bodyNoMood" = "오늘 당신과 같은 색조입니다.";
+"notif.someone" = "누군가";
+"notif.someoneInCircle" = "서클의 누군가";
+"notif.weekly.dominant.body" = "%@.";
+"notif.weekly.dominant.title" = "이번 주의 주된 색조";
+"notif.weekly.palette.body" = "7일이 한 장에.";
+"notif.weekly.palette.title" = "이번 주의 팔레트";
+"notif.weekly.sunday.body" = "한 주가 끝났습니다.";
+"notif.weekly.sunday.title" = "일요일의 되돌아보기";
+"notif.weekly.thisWeek.body" = "7일의 초상이 준비됐습니다.";
+"notif.weekly.thisWeek.title" = "이번 주";
+"notif.yourFriend" = "친구";
+"onboarding.v3.auth.lead" = "iCloud에 저장됩니다. 비밀번호 없음.";
+"onboarding.v3.auth.title" = "Apple로\n로그인하세요.";
+"onboarding.v3.circle.lead" = "나중에 초대해도 됩니다.";
+"onboarding.v3.circle.title" = "서클에\n누구를 넣을까요?";
+"onboarding.v3.cta.finish" = "마치기";
+"onboarding.v3.cta.next" = "계속";
+"onboarding.v3.cta.start" = "시작";
+"onboarding.v3.done.lead" = "첫 순간은 당신의 것입니다.";
+"onboarding.v3.done.title" = "준비 완료.";
+"onboarding.v3.intent.curious" = "그냥 궁금해서";
+"onboarding.v3.intent.lead" = "한 문장이면 충분합니다. 나중에 바꿔도 됩니다.";
+"onboarding.v3.intent.music" = "노래와 이어보려고";
+"onboarding.v3.intent.self" = "나를 알기 위해";
+"onboarding.v3.intent.title" = "왜 오셨나요?";
+"onboarding.v3.intent.track" = "감정을 기록하려고";
+"onboarding.v3.mood.lead" = "색을 하나 고르세요. 그거면 됩니다.";
+"onboarding.v3.mood.title" = "오늘\n어떤가요?";
+"onboarding.v3.notif.lead" = "원하는 시간에, 하루 한 번.";
+"onboarding.v3.notif.title" = "작은\n알림 하나?";
+"onboarding.v3.ready" = "준비 완료";
+"onboarding.v3.reward.lead" = "순간마다 색이 하나씩 더해집니다.";
+"onboarding.v3.reward.title" = "첫 칸이\n생겼습니다.";
+"onboarding.v3.song.lead" = "나중에 더해도 됩니다.";
+"onboarding.v3.song.title" = "노래도\n더할까요?";
+"onboarding.v3.step.auth" = "로그인";
+"onboarding.v3.step.circle" = "서클";
+"onboarding.v3.step.intent" = "의도";
+"onboarding.v3.step.mood" = "첫 색";
+"onboarding.v3.step.notif" = "알림";
+"onboarding.v3.step.reward" = "첫 칸";
+"onboarding.v3.step.song" = "노래";
+"profile.a11y.distributionChart" = "색 분포 그래프";
+"profile.a11y.distributionRow" = "%1$@, %2$d개의 순간, %3$d 퍼센트";
+"profile.a11y.distributionValue" = "%1$@ %2$d 퍼센트";
+"profile.a11y.monthlySummary" = "월간 요약, %1$@, 이달의 색 %2$@. 에코 열기.";
+"profile.a11y.signOut" = "로그아웃";
+"profile.distribution.selected" = "%1$@ · %2$d개의 순간";
+"profile.intentFor" = "%@ 위해";
+"profile.music.searchOnly" = "검색만";
+"profile.photo.pick" = "사진 고르기";
+"profile.stat.colorsUsed" = "사용한 색";
+"profile.stat.moments" = "순간";
+"profile.stat.mostFrequent" = "가장 잦은";
+"profile.theme.dark" = "어둡게";
+"profile.theme.light" = "밝게";
+"publicProfile.a11y.pinnedSong" = "고정한 노래: %1$@, %2$@";
+"publicProfile.loadFailed" = "프로필을 불러오지 못했습니다.";
+"reaction.a11y.kind" = "%@ 반응";
+"reaction.a11y.sendReply" = "답장 보내기";
+"reminder.state.off" = "꺼짐 · 알림 없음";
+"reminder.state.on" = "켜짐 · 매일 %@";
+"reminder.tone.quiet" = "조용히";
+"reminder.tone.recall" = "어제와 함께";
+"reminder.tone.short" = "짧게";
+"saved.manyMoments" = "%1$@에 %2$d개의 순간. 칸이 색으로 나뉘었습니다.";
+"saved.oneMoment" = "오늘의 칸이 보관함에 채워졌습니다.";
+"saved.scope.circle" = "서클의 친구들이 볼 수 있습니다.";
+"saved.scope.private" = "당신의 보관함에만.";
+"settings.exportArchive" = "보관함 내보내기";
+"settings.exportArchive.note" = "모든 기록을 한 파일에.";
+"share.other" = "기타";
+"share.photoLoadFailed" = "사진을 불러오지 못했습니다";
+
+/* Default values */
+"signin.button.accessibility" = "Apple로 로그인";
+"signin.subtitle" = "계속하려면 Apple 계정으로 로그인하세요.";
+"signin.title" = "환영합니다.";
+"song.searchPlaceholder" = "노래, 아티스트";
+"story.bg.color" = "색";
+"story.bg.paper" = "종이";
+"story.bg.photo" = "사진";
+"story.content.note" = "메모";
+"story.content.song" = "노래";
+"story.row.background" = "배경";
+"story.row.content" = "내용";
+"story.row.ratio" = "비율";
+"story.toast.renderFailed" = "카드를 만들지 못했습니다";
+"story.toast.saved" = "사진에 저장했습니다";
+"today.entryNotFound" = "오늘의 기록을 찾지 못했습니다.";
+"today.liveActivityOff" = "Dynamic Island이 꺼져 있습니다";
+"today.shareFailed" = "서클 공유에 실패했습니다. 연결을 확인하세요.";
+
+/* Error messages */
+"render_failed" = "카드를 만들 수 없습니다. 다시 시도해주세요.";
+"image_too_large" = "이미지가 너무 큽니다. 더 작은 사진을 사용해주세요.";
+"invalid_format" = "잘못된 형식";
+"export_failed" = "내보내기 실패";
+"instagram_not_installed" = "Instagram이 설치되지 않았습니다. Instagram을 설치해주세요.";
+"save_failed" = "사진을 저장하지 못했습니다";
+"permission_denied" = "사진 라이브러리 접근이 필요합니다. 설정에서 허용해주세요.";
+
+/* Recovery suggestions */
+"check_song_data" = "노래 정보를 확인하세요";
+"try_again" = "다시 시도해주세요";
+"reduce_image_size" = "사진 크기를 줄이세요";
+"check_format" = "형식 호환성을 확인하세요";
+"check_storage" = "저장 공간을 확인하세요";
+
+/* Success messages */
+
+/* ── 오늘 ── */
+
+/* ── 확인 ── */
+
+/* ── 서클 ── */
+"circle.removeFriend" = "친구에서 삭제할까요?";
+"circle.addFriend" = "친구 추가";
+
+/* ── 발견 ── */
+
+/* ── 프로필 / 설정 ── */
+"profile.language" = "언어";
+
+/* ── 온보딩 ── */
+
+/* ── 스플래시 ── */
+
+/* ── 일반 ── */
+"general.save" = "저장";
+"general.cancel" = "취소";
+"general.back" = "뒤로";
+"general.close" = "닫기";
+"general.more" = "더 보기";
+"general.loading" = "로딩 중...";
+"general.error" = "오류가 발생했습니다";
+"general.retry" = "다시 시도";
+
+/* ── 알림 ── */
+"notification.acceptFriend" = "수락";
+"notification.declineFriend" = "거절";
+"notification.openEcho" = "요약 보기";
+
+/* ── 접근성 ── */
+"accessibility.today.photoViewer" = "오늘의 사진";
+"accessibility.circle.setupCircle" = "서클 만들기";
+
+/* Discover redesign */
+
+/* ── ECHO ── */
+"circle.you" = "나";
+"circle.pendingRequests" = "%d 수신 요청";
+"circle.notSharedYet" = "오늘 아직 공유하지 않음";
+"circle.blockUser" = "사용자 차단";
+"circle.removeAction" = "제거";
+"circle.blockAction" = "차단";
+"circle.unblockAction" = "차단 해제";
+"circle.iCloudRequired" = "iCloud 접근 필요";
+"circle.iCloudMessage" = "서클 기능을 사용하려면\niCloud 계정으로 로그인해야 합니다.";
+"circle.tryAgain" = "다시 시도";
+"circle.goToSettings" = "설정으로 이동";
+"addFriend.requestSent" = "요청을 보냈습니다.";
+"addFriend.frameQR" = "QR 코드를 프레임 안에 넣기";
+"addFriend.cameraRequired" = "카메라 접근 필요";
+"addFriend.ok" = "확인";
+"profile.deleteAccountTitle" = "계정 삭제";
+"profile.deleteAccountMsg" = "모든 곡 기록, 프로필 및 서클 데이터가 영구적으로 삭제됩니다.";
+"profile.deleteAccount" = "계정 삭제";
+"profile.name" = "이름";
+"profile.username" = "사용자 이름";
+"profile.color" = "색상";
+"profile.editProfile" = "프로필 편집";
+"profile.createProfile" = "프로필 만들기";
+"profile.namePlaceholder" = "이름";
+"contacts.smsNotAvailable" = "이 기기에서는 SMS 전송을 사용할 수 없습니다.";
+"contacts.smsSendHint" = "초대 링크가 SMS로 전송됩니다";
+"archive.photoLoadFailed" = "사진을 불러올 수 없습니다";
+"archive.openSong" = "곡 열기";
+
+/* --- ONBOARDING EXTRA --- */
+
+/* --- FRIEND REQUESTS --- */
+"friendRequests.title" = "알림";
+"friendRequests.friendAccepted" = "친구가 되었습니다.";
+"friendRequests.requestWithdrawn" = "요청을 철회했습니다";
+"friendRequests.unknown" = "알 수 없음";
+
+/* --- ARCHIVE EXTRA --- */
+"archive.selectedAt" = "%@에 선택됨";
+
+/* --- GENERAL EXTRA --- */
+"general.share" = "공유";
+
+/* --- CIRCLE SHARE TOGGLE --- */
+
+/* --- GENERAL OK --- */
+"general.ok" = "OK";
+"general.ok" = "확인";
+
+/* --- ONBOARDING FEATURES --- */
+
+/* --- TODAY EXTRA (to be filled per lang) --- */
+"today.timeSelected" = "%@에";
+
+"circle.removeConfirmMessage" = "%@을(를) 서클에서 제거하시겠습니까?";
+"circle.blockConfirmMessage" = "%@을(를) 차단하시겠습니까? 이 작업은 취소할 수 없습니다.";
+"circle.todayFeeling" = "오늘의\n톤.";
+"circle.note" = "노트";
+"circle.waitingPick" = "아직 고르지 않았습니다.";
+"circle.willAppear" = "노래를 선택하면 표시됩니다";
+"circle.updating" = "업데이트 중…";
+"circle.notSelectedYet" = "오늘 아직\n선택하지 않았어요.";
+"contacts.navTitle" = "연락처에서 초대";
+"contacts.alertSmsCantSend" = "SMS를 보낼 수 없습니다";
+"contacts.inviteCodeText" = "초대 코드: %@";
+"contacts.contactsRequired" = "연락처 접근 권한이 필요합니다";
+"contacts.contactsPermissionHint" = "설정 → 개인 정보 보호 → 연락처에서 권한을 허용할 수 있습니다.";
+"contacts.openSettings" = "설정 열기";
+"contacts.contactsLoading" = "연락처 불러오는 중…";
+"contacts.inviteButton" = "초대하기";
+"contacts.searchPlaceholder" = "연락처 검색";
+"contacts.noContacts" = "연락처 없음";
+"contacts.noResults" = "연락처를 찾을 수 없음";
+"contacts.noName" = "이름 없음";
+"search.appleMusicPermission" = "Apple Music 권한이 필요합니다. 설정에서 허용해 주세요.";
+/* --- INVITE SHARE --- */
+"invite.sendInvite" = "초대 보내기";
+"invite.formatPicker" = "형식";
+"invite.story" = "스토리 (9:16)";
+"invite.post" = "게시물 / X (16:9)";
+"invite.preparing" = "초대 카드 준비 중...";
+"invite.generateFailed" = "초대 카드를 만들 수 없음";
+"invite.shareText" = "ONE에서 내 서클에 참여해요. 느끼고, 발견하고, 공유해요.\n%@";
+
+/* --- SHARE SHEET --- */
+"share.preparing" = "스토리 준비 중...";
+"share.otherApps" = "다른 앱";
+"share.cardSaved" = "카드 저장됨";
+"share.saveCard" = "카드 저장";
+"share.saveCardHint" = "스토리 카드를 갤러리에 추가";
+"share.photoSaved" = "사진 저장됨";
+"share.savePhoto" = "사진 저장";
+"share.savePhotoHint" = "원본 사진을 갤러리에 추가";
+
+/* --- DISCOVER EXTRA --- */
+
+/* --- MONTHLY POSTER --- */
+
+/* --- MOOD LABELS --- */
+
+/* --- MOOD MEANINGS (v2.5) --- */
+
+/* --- FEELING LABELS --- */
+
+/* --- TODAY EMPTY VIEW --- */
+
+/* --- SCREEN TITLES (top bar) --- */
+"screen.echo.title" = "에코";
+"screen.echoes.title" = "오늘의 에코";
+"screen.share.title" = "공유";
+"screen.story.title" = "스토리 카드";
+"screen.camera.title" = "카메라";
+"screen.entry.title" = "순간";
+"screen.archive.title" = "아카이브";
+"screen.circle.title" = "서클";
+"screen.profile.title" = "프로필";
+"topbar.settings" = "설정";
+"topbar.monthlyEcho" = "월간 요약";
+
+/* --- NAVIGATION TABS --- */
+"nav.archive" = "아카이브";
+"nav.entry" = "순간";
+"nav.circle" = "서클";
+"nav.profile" = "프로필";
+"nav.tabAccessibility" = "%@ 탭";
+
+/* --- DISCOVER CTA LABELS --- */
+
+/* --- ACTIVITY RECOMMENDATION SECTIONS --- */
+
+/* --- ACTIVITY TEMPLATES --- */
+
+
+
+
+
+
+
+
+
+
+
+/* --- ACTIVITY REASONS --- */
+
+/* --- ACTIVITY VENUE HINTS --- */
+
+/* --- SHARE CARD BRANDING --- */
+"share.brandWatermark" = "ONE · Mood Tracker";
+"share.brandWatermarkUpper" = "ONE · MOOD TRACKER";
+
+/* --- DISCOVER LISTEN LABELS --- */
+
+/* --- GENERAL TOAST TITLES --- */
+"general.success" = "성공";
+"general.info" = "정보";
+"general.warning" = "경고";
+
+/* --- CAMERA MISSING KEYS --- */
+
+/* --- CIRCLE / SHARE MISSING --- */
+"share.cardFailed" = "공유 카드를 만들 수 없습니다";
+
+/* --- TODAY MISSING KEYS --- */
+
+/* --- DISCOVER STATUS MISSING --- */
+
+/* --- CALENDAR DAY ABBREVIATIONS --- */
+
+/* --- GENRE FALLBACK --- */
+"genre.music" = "음악";
+"notification.appUpdate.title" = "새 버전 출시";
+"notification.appUpdate.body" = "ONE %@ 출시.";
+
+/* Badges */
+
+
+/* Auto-added missing keys — English fallback */
+"addFriend.usernamePlaceholder" = "username";
+"archive.defaultFeeling" = "Calm";
+"archive.defaultMood" = "Neutral";
+"archive.unknown" = "Unknown";
+"archive.unknownArtist" = "Unknown Artist";
+"archive.unknownSong" = "Unknown Song";
+"cloudkit.connectionError" = "Could not connect to iCloud. Check your internet connection and try again.";
+"cloudkit.throttleWait" = "Server busy. Retrying in %d min %02d sec.";
+"echo.empty.body" = "Once you log a day, your week, rhythm, and color palette show up here.";
+"echo.empty.cta" = "Log today";
+"echo.empty.title" = "Echo is quiet for now.";
+"firstEntryInvite.body" = "Let one of your people drop their color tonight too. Seeing what you both feel hits different.";
+"firstEntryInvite.eyebrow" = "FIRST STEP DONE";
+"firstEntryInvite.invite" = "Invite someone close";
+"firstEntryInvite.skip" = "Not now";
+"firstEntryInvite.title" = "ONE feels better with someone close.";
+"friendRequests.accept" = "Kabul Et";
+"friendRequests.decline" = "Decline";
+"friendRequests.markAllRead" = "Tümünü Okundu İşaretle";
+"friendRequests.noNotifications" = "No activity yet";
+"friendRequests.noNotificationsHint" = "Friend acceptances, shares, and\nreactions will appear here.";
+"friendRequests.pending" = "Bekliyor";
+"friendRequests.sentYouRequest" = "%@ sana arkadaşlık isteği gönderdi";
+"friendRequests.withdraw" = "Geri Çek";
+"monthly.storySubtitle" = "You got lost in thoughts mostly at %@.";
+"monthly.storyTitle" = "The Month of %@ Music";
+"myFriends.title" = "My Friends";
+"notification.openCircle" = "Open Circle";
+"profile.changePhoto" = "Change photo";
+"profile.recentWeek.subtitle" = "Your color map";
+"profile.recentWeek.title" = "PAST 7 DAYS";
+"profile.recentWeek.todayShort" = "Today";
+"profile.usernameAvailable" = "Available ✓";
+"profile.usernameCheckFailed" = "Couldn't check availability";
+"profile.usernameTaken" = "This username is taken";
+"share.xTemplate" = "오늘은 %@.\n\n#OneApp";
+"today.moodSaved.a11y" = "Bugünün mood'u kaydedildi";
+"whatsNew.circleFirst.body" = "앱을 열면 친구들의\n오늘 색이 먼저 보입니다.";
+"whatsNew.circleFirst.title" = "서클이 먼저 열립니다";
+"whatsNew.cta.done" = "시작";
+"whatsNew.cta.next" = "다음";
+"whatsNew.mosaic.body" = "달이 하나의 흐름으로, 색마다.\n작년 오늘의 감정도 보입니다.";
+"whatsNew.mosaic.title" = "보관함 모자이크";
+"whatsNew.savedMoment.body" = "색을 남기면 화면이\n물결로 답합니다.";
+"whatsNew.savedMoment.title" = "새로운 저장의 순간";
+"whatsNew.twoSteps.body" = "색 고르고, 노래 고르고, 두면 끝.\n사진과 메모는 선택입니다.";
+"whatsNew.twoSteps.title" = "두 단계로 끝";
+
+/* Circle — arkadaşı olmayan kullanıcı için değer önizlemesi */
+"circle.empty.previewTitle" = "친구가 5명 있었다면 오늘은 이렇게 보였을 거예요.";
+"circle.empty.previewSubtitle" = "색은 친구들의 것. 당신은 그저 바라보면 돼요.";
+"circle.empty.invite" = "친구 초대하기";
+"circle.empty.startAlone" = "일단 혼자 시작하기";
+
+"circle.empty.closing" = "오늘의 색을 남기면 친구들도 너를 보게 돼.";
+
+
+
+"profile.stat.entries" = "기록";
+"profile.row.musicSource" = "음악 소스";
+
+
+"comeback.headline" = "%d일 동안 없었네.
+놓친 건 없어.";
+
+
+
+"onboarding.entry.brandTitle" = "one song.
+one colour.
+one day.";
+
+"year.poster" = "poster";
+
+"notif.title" = "알림";
+"notif.markAllRead" = "mark all read";
+"notif.today" = "today";
+"notif.thisWeek" = "this week";
+"notif.earlier" = "earlier";
+"notif.promise" = "ONE reminds you at most once a day. No like or comment notifications.";
+"notif.emptyTitle" = "No notifications yet.";
+"notif.unread" = "unread";
+"notif.now" = "now";
+
+"settings.privacy" = "privacy";
+"settings.privacyAccount" = "privacy & account";
+
+"music.intro" = "Which service should we use to search and play?";
+"music.connected" = "connected";
+"music.notConnected" = "not connected";
+"music.searchOnly" = "search only";
+"music.searchOnlySub" = "no account, no playback";
+"privacy.whoCanSee" = "who can see";
+"privacy.todayColour" = "today's colour";
+"privacy.todaySong" = "today's song";
+"privacy.archive" = "my archive";
+"privacy.notes" = "my notes";
+"privacy.friends" = "friends";
+"privacy.onlyMe" = "only me";
+"privacy.neverShared" = "Archive and notes can never be shared — there isn't even a setting.";
+"privacy.discoverability" = "discoverability";
+"privacy.byUsername" = "find me by username";
+"privacy.byUsernameSub" = "people who know your exact handle can add you";
+
+"friends.addAction" = "＋ add";
+"friends.segAll" = "all · %d";
+"friends.segRequests" = "requests · %d";
+"friends.quickAdd" = "quick add";
+"friends.shareLink" = "share link";
+"friends.showCode" = "show code";
+"friends.scanCode" = "scan code";
+"friends.circleCount" = "your circle · %d";
+"friends.searchPlaceholder" = "search friends";
+"friends.emptyList" = "No one yet — invite your first friend.";
+"friends.noMatch" = "No matching friends.";
+"friends.footer" = "friends only see each other's today. the past stays with each person.";
+"friends.addedYou" = "added you";
+"friends.sentByYou" = "sent by you";
+"friends.waiting" = "waiting";
+"friends.accept" = "accept";
+"friends.ignore" = "ignore";
+"friends.noIncoming" = "No pending requests.";
+"friends.noOutgoing" = "No sent requests.";
+
+"addFriend.screenTitle" = "친구 추가";
+"addFriend.exactHint" = "type the exact username. ONE never suggests strangers.";
+"addFriend.notFound" = "Not found. Check the spelling.";
+"addFriend.addAction" = "add";
+"addFriend.codeHint" = "show or scan your code. your link is only for people who know you.";
+"addFriend.copyCode" = "copy code";
+"addFriend.codeCopied" = "copied ✓";
+"addFriend.scanWithCamera" = "scan with camera";
+
+"friendProfile.theirRhythm" = "their rhythm";
+"friendProfile.commonSongs" = "shared songs";
+"friendProfile.today" = "today";
+"friendProfile.peakHour" = "peak hour";
+"friendProfile.mutualCount" = "%d mutual friends";
+"friendProfile.remove" = "remove friend";
+
+"poster.title" = "%@ poster";
+"poster.format" = "format";
+"poster.show" = "show";
+"poster.fmtStory" = "story 9:16";
+"poster.fmtSquare" = "square 1:1";
+"poster.fmtWallpaper" = "wallpaper";
+"poster.songs" = "songs";
+"poster.colourGrid" = "colour grid";
+"poster.notes" = "notes";
+"poster.days" = "days";
+"poster.colours" = "colours";
+"poster.mostly" = "반복: %@";
+"poster.mostPlayed" = "반복된 곡: %@";
+"poster.notesHint" = "notes included";
+"poster.saveImage" = "save to photos";
+
+
+
+
+
+/* Hızlı ekle — prototip parity */
+"addFriend.mutualCount" = "%d명 공통";
+"addFriend.sent" = "보냄";
+"addFriend.inviteMessage" = "ONE에서 기분과 음악을 공유해요. 함께해요.";
+"addFriend.tileShareLink" = "링크\n공유";
+"addFriend.tileShowCode" = "코드\n보기";
+"addFriend.tileScan" = "코드\n스캔";
+"addFriend.contactsOnOne" = "연락처 중 ONE 사용자";
+"addFriend.contactsOnlyHint" = "전화에 저장된 사람만. ONE은 낯선 사람을 추천하지 않아요.";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "응답";
+"reaction.replyPlaceholder" = "한 줄 (%@ 만 봅니다)";
+"reaction.sent" = "보냄";
+"reaction.ephemeralNote" = "하루가 끝나면 사라져요 · %@만 봅니다";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "오늘의 반향";
+"echoes.reactors" = "응답한 사람";
+"echoes.threadWith" = "%@와";
+"echoes.replyPlaceholder" = "답장";
+"echoes.ephemeralNote" = "응답은 보관되지 않습니다 — 그 순간에만 남습니다";
+"echoes.empty" = "아직 반향이 없습니다. 하루가 지나며 나타날 수 있습니다.";
+"echoes.someone" = "누군가";
+
+// MARK: - SubCircle
+
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.peopleCount" = "%d명";
+"circle.momentCount" = "%d개";
+"circle.youCard" = "나";
+"circle.youNotShared" = "오늘 공유하지 않음";
+"circle.notSharedToday" = "오늘 공유하지 않음";
+"circle.scopeShared" = "공유됨";
+"circle.scopePrivate" = "나만";
+"circle.v3EmptyTitle" = "아직 아무도 없어요.";
+"circle.v3EmptyBody" = "누군가를 추가하고 서로의 색을 보세요.";
+"circle.scanQR" = "QR 코드 스캔";
+"circle.resonance" = "공명";
+"circle.sameColorLabel" = "같은 색인 사람";
+"circle.distributionLabel" = "서클의 색 분포";
+"circle.yourColorToday" = "오늘 당신의 색";
+"circle.noColorToday" = "오늘 색이 없어요";
+"circle.noColorTodayBody" = "순간을 기록하면 공명이 보여요.";
+"circle.sameColorCount" = "오늘 당신과 같은 색인 사람 %d명";
+"circle.requests" = "친구 요청";
+"circle.notifications" = "알림";
+
+/* v3 mood adlari - uygulamanin semantik yuku, koda gomulu olamaz */
+"mood.v3.atesli.label" = "열정적";
+"mood.v3.coskulu.label" = "유쾌함";
+"mood.v3.gergin.label" = "긴장";
+"mood.v3.mutlu.label" = "행복";
+"mood.v3.enerjik.label" = "활기참";
+"mood.v3.odakli.label" = "집중";
+"mood.v3.huzurlu.label" = "평온";
+"mood.v3.huzunlu.label" = "아련함";
+"mood.v3.yorgun.label" = "피곤";
+
+/* v3 mood anlamları — VoiceOver değeri ve alt başlık. */
+"mood.v3.atesli.meaning" = "속이 타오른다";
+"mood.v3.coskulu.meaning" = "넘쳐흐른다";
+"mood.v3.gergin.meaning" = "압박에 눌린다";
+"mood.v3.mutlu.meaning" = "안에서 빛난다";
+"mood.v3.enerjik.meaning" = "생생하고 빠르다";
+"mood.v3.odakli.meaning" = "차분하고 단단하다";
+"mood.v3.huzurlu.meaning" = "다 괜찮다";
+"mood.v3.huzunlu.meaning" = "속이 조인다";
+"mood.v3.yorgun.meaning" = "지쳐서 텅 비었다";
+
+/* Merakli hatirlatma tonu - tam cumle, kelime birlestirme yok */
+"reminder.curious.yesterday.atesli" = "어제는 열정적이었어요.";
+"reminder.curious.yesterday.coskulu" = "어제는 유쾌했어요.";
+"reminder.curious.yesterday.gergin" = "어제는 긴장했어요.";
+"reminder.curious.yesterday.mutlu" = "어제는 행복했어요.";
+"reminder.curious.yesterday.enerjik" = "어제는 활기찼어요.";
+"reminder.curious.yesterday.odakli" = "어제는 집중했어요.";
+"reminder.curious.yesterday.huzurlu" = "어제는 평온했어요.";
+"reminder.curious.yesterday.huzunlu" = "어제는 아련했어요.";
+"reminder.curious.yesterday.yorgun" = "어제는 피곤했어요.";
+
+/* Legacy 12-mood (ONEMood) - arsiv/echo okuma yollari kullaniyor */
+"archive.previousMonth" = "이전 달";
+"archive.nextMonth" = "다음 달";
+
+/* ── v3 ekranlarından kataloğa taşınan metinler ──────────────────────
+   Bu 69 anahtar koda gömülü Türkçe olarak duruyordu: katalog tamdı
+   ama bu ekranlar ona hiç bakmıyordu, dolayısıyla Almanca bir
+   kullanıcı Profil sekmesinde Türkçe görüyordu.
+   TR ve EN gerçek; diğer diller çeviri gelene kadar TR'ye düşüyor. */
+"applock.noPasscode" = "Cihazında parola veya biyometri tanımlı değil.";
+"archive.addMomentToDay" = "Bu güne an ekle";
+"archive.addNow" = "Şimdi ekle";
+"archive.dayEmpty.today" = "첫 순간을 남겨보세요.";
+"archive.dayEmpty.past" = "그날은 비어 있어요.";
+"archive.momentCount.one" = "1개";
+"archive.dayCount" = "%lld gün";
+"archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
+"archive.empty.title" = "Arşiv boş.";
+"archive.mostFrequent" = "%@ 반복";
+"archive.todayWaiting" = "오늘은 아카이브에 비어 있습니다.";
+"block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
+"camera.noAccess" = "Kamera erişimi yok";
+"camera.useThisMoment" = "Bu anı kullan";
+"circle.shareFailed" = "Çevre paylaşımı başarısız — internet bağlantını kontrol et.";
+"echo.monthColour" = "%@ · AYIN RENGİ";
+"echo.monthStory" = "%@ · AY HİKAYESİ";
+"echo.noRepeatSong" = "Aynı şarkı iki kez geçmedi.";
+"echo.posterFailed" = "Poster yüklenemedi";
+"entry.changeColour" = "Rengi değiştir";
+"entry.pickColour" = "Bir renk seç. Yeter.";
+"entry.removePhoto" = "Fotoğrafı kaldır";
+"entry.scopeSubtitle" = "Her an için ayrı seçebilirsin.";
+"entry.scopeTitle" = "Bu an kimde kalsın?";
+"general.a11y.toggle" = "Aç/kapat";
+"general.change" = "Değiştir";
+"general.now" = "şimdi";
+"general.openSettings" = "Ayarları aç";
+"invite.validSevenDays" = "7 GÜN GEÇERLİ";
+"invite.addMeOnONE" = "Beni ONE'da ekle";
+"liveActivity.enableHint" = "Mood'unu Dynamic Island'da görmek için Ayarlar > ONE > Canlı Etkinlikler'i etkinleştir.";
+"moment.a11y.openPhoto" = "Fotoğrafı aç";
+"moment.a11y.hasPhoto" = "사진 있음";
+"moment.a11y.note" = "메모: %@";
+"moment.a11y.song" = "노래: %@";
+"moment.a11y.privateScope" = "보관함에만 있고 서클에는 안 보여요";
+"moment.archiveTag" = "· ARŞİV";
+"offline.banner" = "BAĞLANTI YOK · ANLARIN CİHAZINDA BEKLİYOR";
+"privacy.hiddenField" = "%@ bu kişinin gizlilik tercihi nedeniyle görüntülenemiyor";
+"profile.colourBreakdown" = "Renk dağılımı";
+"profile.monthColour" = "%@ · ayın rengi";
+"profile.monthCounts" = "%1$d gün · %2$d an";
+"profile.monthlySummary" = "AYLIK ÖZET";
+"profile.photoVisibility" = "Fotoğrafın çevrendeki arkadaşlara görünür.";
+"profile.pickAvatar" = "Avatar seç";
+"profile.pinned" = "sabitlenmiş";
+"profile.pinnedSong" = "SABİTLENMİŞ ŞARKI";
+"profile.sevenSteps" = "7 adım";
+"profile.signInOptional" = "Giriş yapmasan da ONE tam çalışır.";
+"profile.signOut" = "ÇIKIŞ";
+"profile.signedInWithApple" = "Apple ile giriş yapıldı";
+"profile.syncPitch" = "Arşivini cihazlar\narasında taşı.";
+"profile.versionLine" = "Sürüm %1$@ · %2$d an";
+"publicProfile.inYourCircle" = "Çevrende";
+"publicProfile.mutualFriends" = "%d ortak arkadaşınız var";
+"publicProfile.unavailable" = "Bu profil görüntülenemiyor.";
+"reminder.daily" = "Günlük hatırlatma";
+"reminder.days" = "GÜNLER";
+"reminder.lockPreview" = "KİLİT EKRANI ÖNİZLEMESİ";
+"reminder.subtitle" = "Seçtiğin saatte tek hatırlatma.";
+"reminder.title" = "Hatırlatma";
+"reminder.tone" = "문구";
+"report.notice" = "Bildirimler 24 saat içinde değerlendirilir. Yinelenen şikâyetler içeriği otomatik gizleyebilir.";
+"saved.backToDay" = "Güne dön";
+"saved.goToArchive" = "Arşive git";
+"settings.appearance" = "Görünüm";
+"share.createStoryCard" = "Story kart oluştur";
+"share.noNote" = "Not bırakmadın.";
+"share.noSong" = "Şarkı eklemedin.";
+"share.orSave" = "Paylaş ya da kaydet.";
+"song.pick" = "Şarkı seç";
+"song.preparingSuggestions" = "추천을 준비하고 있습니다.";
+"splash.tagline" = "DUYGU VE ŞARKI GÜNLÜĞÜ";
+"today.howDidItFeel" = "Bugün nasıl hissettirdi?";
+
+/* ── Kodda kullanılıyordu ama katalogda yoktu ────────────────────────
+   Bu anahtarlar `NSLocalizedString` ile çağrılıyor ama hiçbir dilde
+   tanımlı değildi; iOS bu durumda anahtarın kendisini döndürür,
+   yani kullanıcı ekranda "general.copy" yazısını görüyordu. */
+"accessibility.today.closeViewer" = "Fotoğraf görüntüleyiciyi kapat";
+"accessibility.today.photoViewerHint" = "Yakınlaştırmak için çift dokun, kapatmak için aşağı kaydır";
+"accessibility.unread" = "Okunmadı";
+"general.copied" = "Kopyalandı";
+"general.copy" = "Kopyala";
+"invite.shareSubtitle" = "Davet kodun veya link ile seni ekleyebilirler";
+"profile.usernameCurrent" = "Bu zaten senin kullanıcı adın";
+"profile.usernameInvalidFormat" = "Yalnızca harf, rakam ve alt çizgi kullan";
+"profile.usernameTooShort" = "En az 3 karakter olmalı";
+
+
+/* Rapor sheet'i — v3 kabuk geçişi */
+"report.title" = "신고";
+"report.reason" = "사유";
+"report.noteOptional" = "메모 — 선택";
+"report.notePlaceholder" = "자세한 내용 추가";
+"report.submit" = "신고 보내기";
+"report.submitted" = "보냄";
+"report.target.comment" = "댓글 신고";
+"report.target.user" = "%@ 신고";
+"report.target.userFallback" = "이 사용자";
+"report.target.share" = "게시물 신고";
+"report.context.comment" = "댓글";
+"report.context.user" = "사용자";
+"report.context.share" = "게시물";
+
+"circle.resonanceTitle" = "공명";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "설정";
+"settings.group.circle" = "서클";
+"settings.group.about" = "정보";
+"settings.group.developer" = "개발자";
+"settings.reminder" = "알림";
+"settings.musicSource" = "음악 소스";
+"settings.myFriends" = "내 친구";
+"settings.deleteAccount" = "계정 삭제";
+"settings.watchOnboarding" = "온보딩 보기";
+"settings.sampleCircleData" = "샘플 데이터";
+"settings.sampleCircleDataNote" = "서클 탭을 샘플 친구로 채웁니다.";
+"settings.appLock" = "앱 잠금";
+"settings.appLockGeneric" = "기기 암호";
+
+"hub.momentCount" = "오늘 %d개의 순간";
+
+"hub.addMoment" = "순간 추가";
+"hub.songLine" = "노래: %@";
+
+"songPicker.noSuggestions" = "추천을 찾을 수 없습니다.";
+
+/* AppError — hata mesajları ve başlıkları.
+   Türkçe değerlerle dokuz katalogda birden açıldı: davranış bugünküyle
+   aynı, ama artık çevrilebilir. Çeviri geldikçe bu blok doldurulur. */
+"error.networkUnavailable.message" = "İnternet bağlantısı yok. Lütfen bağlantını kontrol et.";
+"error.networkTimeout.message" = "İstek zaman aşımına uğradı. Tekrar dene.";
+"error.networkUnknown.message" = "Bağlantı hatası oluştu. Lütfen tekrar dene.";
+"error.cloudKitNotAvailable.message" = "iCloud kullanılamıyor. Ayarlar'dan iCloud'u kontrol et.";
+"error.cloudKitNotAuthenticated.message" = "iCloud hesabına giriş yapmamışsın.";
+"error.cloudKitRecordNotFound.message" = "Kayıt bulunamadı.";
+"error.cloudKitSchemaError.message" = "Sunucu yapılandırma hatası. Lütfen daha sonra tekrar dene.";
+"error.cloudKitServerConflict.message" = "Sunucu çakışması oluştu. Veriler senkronize ediliyor.";
+"error.cloudKitQuotaExceeded.message" = "iCloud depolama alanın dolu.";
+"error.cloudKitUnknown.message" = "iCloud hatası oluştu. Lütfen tekrar dene.";
+"error.persistenceSaveFailed.message" = "Kayıt sırasında bir hata oluştu.";
+"error.persistenceFetchFailed.message" = "Veriler yüklenirken bir hata oluştu.";
+"error.persistenceDeleteFailed.message" = "Silme işlemi başarısız oldu.";
+"error.persistenceMigrationFailed.message" = "Veri tabanı güncellemesi başarısız oldu.";
+"error.authAppleMusicDenied.message" = "Apple Music izni gerekli. Ayarlar > Gizlilik'ten izin ver.";
+"error.authAppleMusicRestricted.message" = "Apple Music bu cihazda kısıtlanmış.";
+"error.authSpotifyFailed.message" = "Spotify bağlantısı başarısız oldu.";
+"error.authSpotifyTokenExpired.message" = "Spotify oturumun sona erdi. Tekrar bağlan.";
+"error.authSpotifyNotConnected.message" = "Spotify hesabı bağlı değil.";
+"error.musicSearchFailed.message" = "Arama sırasında bir hata oluştu.";
+"error.musicNoResults.message" = "Sonuç bulunamadı.";
+"error.musicPlaybackFailed.message" = "Şarkı çalınamadı.";
+"error.musicServiceUnavailable.message" = "Müzik servisi kullanılamıyor.";
+"error.cameraDenied.message" = "Kamera izni gerekli. Ayarlar'dan izin ver.";
+"error.cameraUnavailable.message" = "Kamera kullanılamıyor.";
+"error.photoSaveFailed.message" = "Fotoğraf kaydedilemedi.";
+"error.circleUserNotFound.message" = "Kullanıcı bulunamadı. Kodu kontrol et.";
+"error.circleAlreadyFriend.message" = "Bu kullanıcı zaten çevrende.";
+"error.circleSelfAdd.message" = "Kendi kendini ekleyemezsin.";
+"error.circleInviteCodeInvalid.message" = "Geçersiz davet kodu.";
+"error.circleFriendRequestFailed.message" = "Arkadaşlık isteği gönderilemedi.";
+"error.title.network" = "Bağlantı Hatası";
+"error.title.cloudKit" = "iCloud Hatası";
+"error.title.persistence" = "Kayıt Hatası";
+"error.title.auth" = "Yetkilendirme";
+"error.title.music" = "Müzik Hatası";
+"error.title.camera" = "Kamera Hatası";
+"error.title.circle" = "Çevre Hatası";
+"error.title.unknown" = "Hata";
+
+/* ONE 2.0 — kabuk (ADR-001 Faz 1 madde 8) */
+"one2.tab.today" = "오늘";
+"one2.tab.journey" = "여정";
+"one2.tab.explore" = "둘러보기";
+"one2.tab.profile" = "프로필";
+"one2.sheet.checkIn" = "기분";
+"one2.sheet.paywall" = "ONE+";
+"one2.placeholder.body" = "이 섹션은 준비 중입니다.";
+"one2.notice.circleUnavailable" = "이 버전에는 서클이 없습니다.";
+"one2.action.dismiss" = "닫기";
+"one2.debug.useV3" = "v3로 전환";
+"one2.debug.restart" = "앱을 다시 시작하면 적용됩니다.";
+
+/* ONE 2.0 — bildirim planlayıcı (04 › E13) */
+"notif.one2.morning.title" = "오늘의 문장";
+"notif.one2.morning.fallback.1" = "짧은 쉼으로 하루를 시작해 보세요.";
+"notif.one2.morning.fallback.2" = "오늘의 의도를 하나 골라 보세요.";
+"notif.one2.morning.fallback.3" = "아침의 첫 줄을 써 볼 수 있어요.";
+"notif.one2.evening.title" = "하루를 마무리할 시간이에요.";
+"notif.one2.evening.body" = "몇 줄로 오늘을 남겨 둘 수 있어요.";
+"notif.one2.weeklyTheme.title" = "이번 주 주제: %@";
+"notif.one2.streak.title" = "오늘도 연속 기록을 이어 갈 수 있어요";
+"notif.one2.streak.body" = "%d일째 함께하고 있어요. 짧은 기록이면 충분해요.";
+"notif.one2.comparison.title" = "이 질문에 전에 답한 적이 있어요";
+"notif.one2.resurface.title" = "이 문장에 대해 전에 쓴 적이 있어요";

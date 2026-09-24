@@ -5,6 +5,7 @@
 
 import SwiftUI
 import MusicKit
+import CloudKit
 
 // MARK: - Full Screen Photo Viewer
 
@@ -12,32 +13,71 @@ struct FullScreenPhotoView: View {
     let url: URL
     @Binding var isPresented: Bool
 
+    /// DayPreviewCard'daki thumb ile morph için ortak namespace.
+    @Environment(\.archivePhotoNamespace) private var envPhotoNS
+    @Namespace private var localPhotoNS
+    private var photoNS: Namespace.ID { envPhotoNS ?? localPhotoNS }
+
     // Zoom state
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
 
-    // Swipe-to-dismiss state
-    @State private var dismissOffset: CGFloat = 0
-    @State private var backgroundOpacity: Double = 1.0
+    // Sürükleyerek kapatma.
+    //
+    // `@GestureState` değil `@State`: `@GestureState` parmak kalkınca değerini
+    // *anında* sıfırlıyor. Eşiği aşmayan bir sürüklemede fotoğraf yerine
+    // yaylanarak değil, tek karede zıplayarak dönüyordu — jestle animasyon
+    // arasındaki dikişin en görünür hali. `@State` ile dönüş
+    // `dragSnapBack`'e devredilebiliyor ve yoldayken tekrar yakalanabiliyor.
+    @State private var dragY: CGFloat = 0
+    @State private var appeared = false
 
     private let minScale: CGFloat = 1.0
     private let maxScale: CGFloat = 5.0
     private let dismissThreshold: CGFloat = 120
 
-    var body: some View {
-        ZStack(alignment: .topTrailing) {
-            Color.black.opacity(backgroundOpacity).ignoresSafeArea()
+    /// Yukarı çekişte `dragY` artık negatif olabiliyor (rubberband). Her iki
+    /// hesap da `max(0, ·)` ile taban alıyor: aksi halde yukarı direnç,
+    /// perdeyi 1.0'ın üstüne iterek "kararma" gibi ters bir sinyal veriyordu.
+    private var backgroundOpacity: Double {
+        Double(max(0.15, 1.0 - max(0, dragY) / 320))
+    }
 
-            AsyncImage(url: url) { phase in
+    private var chromeOpacity: Double {
+        let fade = 1.0 - min(1.0, max(0, dragY) / 80)
+        return appeared ? fade : 0
+    }
+
+    private var isZoomed: Bool { scale > 1.01 }
+
+    private func dismiss() {
+        ONEHaptics.moodSelected()
+        withAnimation(ONEAnimation.screenTransition) {
+            isPresented = false
+        }
+        // `dragY` artık `@State`; kapanışta elle sıfırlanmazsa görüntüleyici
+        // bir sonraki açılışta kaydırılmış halde beliriyor.
+        dragY = 0
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(backgroundOpacity)
+                .ignoresSafeArea()
+                .onTapGesture { if !isZoomed { dismiss() } }
+
+            CachedAsyncImagePhase(url: url) { phase in
                 switch phase {
                 case .success(let img):
                     img
                         .resizable()
                         .scaledToFit()
+                        .drawingGroup()
+                        .matchedGeometryEffect(id: "archivePhoto", in: photoNS, isSource: true)
                         .scaleEffect(scale)
-                        .offset(x: offset.width, y: offset.height + dismissOffset)
+                        .offset(x: offset.width, y: offset.height + dragY)
                         .gesture(
                             SimultaneousGesture(
                                 MagnificationGesture()
@@ -48,7 +88,7 @@ struct FullScreenPhotoView: View {
                                     .onEnded { _ in
                                         lastScale = scale
                                         if scale < minScale {
-                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                                            withAnimation(ONEAnimation.dragSnapBack) {
                                                 scale = minScale
                                                 offset = .zero
                                             }
@@ -56,52 +96,59 @@ struct FullScreenPhotoView: View {
                                             lastOffset = .zero
                                         }
                                     },
-                                DragGesture()
+                                DragGesture(minimumDistance: 5)
                                     .onChanged { val in
                                         if scale > 1.01 {
-                                            // Zoom'dayken pan
                                             offset = CGSize(
                                                 width:  lastOffset.width  + val.translation.width,
                                                 height: lastOffset.height + val.translation.height
                                             )
-                                        } else {
-                                            // Normal — aşağı sürükleme dismiss
-                                            let dy = val.translation.height
-                                            if dy > 0 {
-                                                dismissOffset = dy
-                                                backgroundOpacity = Double(max(0.3, 1.0 - dy / 300))
+                                            // Kapatma sürüklemesi başladıktan *sonra*
+                                            // aynı jest içinde yakınlaştırılırsa, bu dal
+                                            // devralıyor ve `dragY` asla sıfırlanmıyordu:
+                                            // fotoğraf kalıcı olarak kaymış kalıyordu.
+                                            if dragY != 0 {
+                                                withAnimation(ONEAnimation.dragSnapBack) { dragY = 0 }
                                             }
+                                            return
                                         }
+                                        let dy = val.translation.height
+                                        // Aşağı: 1:1 takip. Yukarı: `if dy > 0`'ın
+                                        // sert duvarı yerine ilerledikçe artan direnç —
+                                        // "hâlâ canlı, ama bu yönde gidecek yer yok".
+                                        dragY = dy > 0
+                                            ? dy
+                                            : dy.rubberbanded(over: UIScreen.main.bounds.height)
                                     }
                                     .onEnded { val in
                                         if scale > 1.01 {
                                             lastOffset = offset
+                                            return
+                                        }
+                                        // Karar bırakma noktasına değil jestin
+                                        // *gittiği* yere veriliyor. Tek başına
+                                        // `translation > 120` kısa ama sert bir
+                                        // fiskeyi yutuyordu: parmak hızla iniyor,
+                                        // 80pt'de kalkıyor, fotoğraf hiçbir şey
+                                        // olmamış gibi geri dönüyordu.
+                                        let dy = val.translation.height
+                                        let projected = val.predictedEndTranslation.height
+                                        if dy > dismissThreshold || projected > 260 {
+                                            dismiss()
                                         } else {
-                                            if val.translation.height > dismissThreshold {
-                                                // Dismiss
-                                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                                withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
-                                                    dismissOffset = 800
-                                                    backgroundOpacity = 0
-                                                }
-                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                                    var t = Transaction()
-                                                    t.disablesAnimations = true
-                                                    withTransaction(t) { isPresented = false }
-                                                }
-                                            } else {
-                                                // Geri snap
-                                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                                    dismissOffset = 0
-                                                    backgroundOpacity = 1.0
-                                                }
+                                            // interactiveSpring + blendDuration:
+                                            // geri dönerken tekrar yakalanırsa
+                                            // hareket kesilmeden devralınıyor.
+                                            withAnimation(ONEAnimation.dragSnapBack) {
+                                                dragY = 0
                                             }
                                         }
                                     }
                             )
                         )
                         .onTapGesture(count: 2) {
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                            ONEHaptics.nudge()
+                            withAnimation(ONEAnimation.screenTransition) {
                                 if scale > 1.01 {
                                     scale = minScale; lastScale = minScale
                                     offset = .zero; lastOffset = .zero
@@ -112,47 +159,79 @@ struct FullScreenPhotoView: View {
                         }
 
                 case .failure:
-                    VStack(spacing: 12) {
+                    VStack(spacing: V3Tokens.spacingMD) {
                         Image(systemName: "photo")
                             .font(.system(size: 40))
                             .foregroundColor(.white.opacity(0.4))
-                        Text("Fotoğraf yüklenemedi")
+                        Text(NSLocalizedString("archive.photoLoadFailed", comment: ""))
                             .monoBase()
                             .foregroundColor(.white.opacity(0.4))
                     }
 
                 default:
-                    ProgressView()
-                        .tint(.white)
+                    V3Loading(.media)
                 }
             }
-            .ignoresSafeArea()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            // Kapat butonu — sağ üst, fotoğrafla birlikte kayar
-            Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                isPresented = false
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 40, height: 40)
-                    .background(.ultraThinMaterial, in: Circle())
+            .padding(.vertical, V3Tokens.spacingMD)
+        }
+        .overlay(alignment: .top) {
+            HStack {
+                Spacer()
+                Button(action: dismiss) {
+                    Image(systemName: "xmark")
+                        .iconMD(weight: .semibold)
+                        .foregroundColor(.white)
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .glassFill(opaque: Color(red: 0.047, green: 0.047, blue: 0.063))
+                                .environment(\.colorScheme, .dark)
+                        )
+                        .overlay(
+                            Circle().stroke(Color.white.opacity(0.18), lineWidth: 1)
+                        )
+                        // Görünen daire 36pt kalıyor; dokunma hedefi HIG'in
+                        // 44pt asgarisine genişliyor. Fotoğraf görüntüleyicide
+                        // düğme tek çıkış yolu — 36pt'de ıskalanıyordu.
+                        .frame(width: V3Tokens.minTouchTarget,
+                               height: V3Tokens.minTouchTarget)
+                        .contentShape(Circle())
+                }
             }
-            .padding(.top, 56)
-            .padding(.trailing, 20)
-            .offset(y: dismissOffset)
+            .padding(.horizontal, V3Tokens.spacingLG)
+            .padding(.top, V3Tokens.spacingSM)
+            .opacity(chromeOpacity)
+        }
+        .overlay(alignment: .bottom) {
+            Image(systemName: "chevron.compact.down")
+                .font(.system(size: 34, weight: .light))
+                .foregroundColor(.white.opacity(isZoomed ? 0 : 0.32))
+                .padding(.bottom, V3Tokens.spacingSM)
+                .opacity(chromeOpacity)
+                .accessibilityHidden(true)
         }
         .statusBarHidden(true)
+        .task {
+            withAnimation(.easeOut(duration: 0.25)) { appeared = true }
+        }
     }
 }
 
 // MARK: - Day Preview Card (Wabi-Sabi Minimal)
 struct DayPreviewCard: View {
     let entry: DailyEntry
+    var onPhotoTap: ((URL) -> Void)? = nil
+
     @State private var showShareSheet = false
-    @State private var showFullPhoto  = false
+    @ObservedObject private var cloudKit = CloudKitManager.shared
+
+    /// Fotoğrafın FullScreenPhotoView'e morph'u için ortak namespace.
+    @Environment(\.archivePhotoNamespace) private var envPhotoNS
+    @Namespace private var localPhotoNS
+    private var photoNS: Namespace.ID { envPhotoNS ?? localPhotoNS }
+    /// FullScreenPhotoView açıksa thumb'ı gizle (fantom önlemek için).
+    @StateObject private var globalUI = GlobalUIState.shared
+    private var isViewerActive: Bool { globalUI.archivePhotoURL == entry.photoURL }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -166,16 +245,16 @@ struct DayPreviewCard: View {
                 Spacer()
                 Text(dayText)
                     .monoMicro(tracking: 0.8)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
+            .padding(.horizontal, V3Tokens.spacingXL)
+            .padding(.top, V3Tokens.spacingXL)
 
             // ── Fotoğraf veya Mood Pattern (Sabit Boyut) ──────────
             ZStack {
                 if let url = entry.photoURL {
                     // Fotoğraf varsa - sabit boyutta, fill mode
-                    AsyncImage(url: url) { phase in
+                    CachedAsyncImagePhase(url: url) { phase in
                         switch phase {
                         case .success(let img):
                             img
@@ -184,18 +263,20 @@ struct DayPreviewCard: View {
                                 .frame(width: 300, height: 200)
                                 .clipped()
                         default:
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(ONETokens.oneCreamMid)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
+                                .fill(V3Tokens.surface)
                                 .frame(width: 300, height: 200)
                         }
                     }
+                    .id(url)
+                    .matchedGeometryEffect(id: "archivePhoto", in: photoNS, isSource: !isViewerActive)
+                    .opacity(isViewerActive ? 0 : 1)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        showFullPhoto = true
-                    }
-                    .fullScreenCover(isPresented: $showFullPhoto) {
-                        FullScreenPhotoView(url: url, isPresented: $showFullPhoto)
+                        ONEHaptics.moodSelected()
+                        withAnimation(ONEAnimation.screenTransition) {
+                            onPhotoTap?(url)
+                        }
                     }
                 } else {
                     // Fotoğraf yoksa mood pattern
@@ -203,42 +284,35 @@ struct DayPreviewCard: View {
                         .frame(width: 300, height: 200)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard))
             .frame(width: 300, height: 200)
             .frame(maxWidth: .infinity)
-            .padding(.top, 16)
+            .padding(.top, V3Tokens.spacingLG)
 
             // ── Şarkı Bilgileri (Temiz & Minimal) ──────────
             VStack(alignment: .leading, spacing: 6) {
                 Text(entry.songName)
                     .displayXS()
-                    .foregroundColor(ONETokens.oneInk)
+                    .foregroundColor(V3Tokens.ink)
                     .tracking(-0.3)
                     .lineLimit(2)
                 
                 Text(entry.artistName)
                     .monoBase(tracking: 0.3)
-                    .foregroundColor(ONETokens.oneAsh)
+                    .foregroundColor(V3Tokens.mutedText)
                     .lineLimit(1)
 
-                HStack(spacing: 8) {
-                    HStack(spacing: 4) {
+                HStack(spacing: V3Tokens.spacingSM) {
+                    HStack(spacing: V3Tokens.spacingXS) {
                         Circle()
                             .fill(Color(hex: entry.moodColorHex))
                             .frame(width: 7, height: 7)
-                        Text(entry.moodLabel.uppercased())
+                        Text(entry.normalizedMoodLabel.uppercased())
                             .monoMicro(tracking: 0.8)
-                            .foregroundColor(ONETokens.oneCharcoal)
+                            .foregroundColor(V3Tokens.mutedText)
+                            .lineLimit(1)
                     }
 
-                    if !entry.feelingLabel.isEmpty {
-                        Text("·")
-                            .monoMicro(tracking: 0.6)
-                            .foregroundColor(ONETokens.oneStone)
-                        Text(entry.feelingLabel.uppercased())
-                            .monoMicro(tracking: 0.8)
-                            .foregroundColor(ONETokens.oneAsh)
-                    }
                 }
                 .padding(.top, 2)
                 
@@ -246,66 +320,67 @@ struct DayPreviewCard: View {
                 if let note = entry.note, !note.isEmpty {
                     Text(note)
                         .bodySM()
-                        .foregroundColor(ONETokens.oneCharcoal.opacity(0.85))
+                        .foregroundColor(V3Tokens.mutedText.opacity(0.85))
                         .lineLimit(3)
-                        .padding(.top, 8)
-                        .padding(.horizontal, 12)
+                        .padding(.top, V3Tokens.spacingSM)
+                        .padding(.horizontal, V3Tokens.spacingMD)
                         .padding(.vertical, 10)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(
-                            RoundedRectangle(cornerRadius: 10)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusInner)
                                 .fill(Color(hex: entry.moodColorHex).opacity(0.08))
                         )
                 }
             }
             .frame(minHeight: 90)
-            .padding(.horizontal, 20)
+            .padding(.horizontal, V3Tokens.spacingXL)
             .padding(.top, 18)
 
             // ── Alt: Saat + Paylaşım (Daha Belirgin) ──────────────────────
             Divider()
-                .background(ONETokens.oneCreamMid)
-                .padding(.horizontal, 20)
+                .background(V3Tokens.surface)
+                .padding(.horizontal, V3Tokens.spacingXL)
                 .padding(.top, 14)
 
-            HStack(spacing: 8) {
+            HStack(spacing: V3Tokens.spacingSM) {
                 // Sol: Saat ve Aç butonu
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("\(entry.time)'te seçildi")
+                    Text(String(format: NSLocalizedString("archive.selectedAt", comment: ""), entry.time))
                         .monoLabel(tracking: 0.5)
-                        .foregroundColor(ONETokens.oneAsh)
+                        .foregroundColor(V3Tokens.mutedText)
                     
                     Button(action: openSong) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: V3Tokens.spacingXS) {
                             Image(systemName: "play.circle.fill")
-                                .font(.system(size: 10))
-                            Text("Şarkıyı Aç")
+                                .iconXS()
+                            Text(NSLocalizedString("archive.openSong", comment: ""))
                                 .monoLabel(tracking: 0.4)
                         }
-                        .foregroundColor(ONETokens.oneCharcoal)
+                        .foregroundColor(V3Tokens.mutedText)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(
                             Capsule()
-                                .fill(ONETokens.oneCreamMid)
+                                .fill(V3Tokens.surface)
                         )
                     }
+                    .buttonStyle(.onePressable)
                 }
                 
                 Spacer()
 
                 // Sağ: Paylaşım butonu
                 Button(action: {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    ONEHaptics.moodSelected()
                     showShareSheet = true
                 }) {
                     HStack(spacing: 6) {
                         Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 12, weight: .semibold))
-                        Text("Paylaş")
+                            .iconSM(weight: .semibold)
+                        Text(NSLocalizedString("general.share", comment: ""))
                             .monoBase(tracking: 0.6)
                     }
-                    .foregroundColor(ONETokens.oneCream)
+                    .foregroundColor(ONEBrand.bone)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 10)
                     .background(
@@ -323,13 +398,17 @@ struct DayPreviewCard: View {
                             .shadow(color: Color(hex: entry.moodColorHex).opacity(0.3), radius: 8, x: 0, y: 4)
                     )
                 }
+                .buttonStyle(.onePressable)
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, V3Tokens.spacingXL)
             .padding(.vertical, 14)
+
+            // Efemer karşılıklar yalnız bugüne ait; arşivde (geçmiş) yok.
+            // Prototip: geçmiş herkesin kendinde kalır.
         }
         .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(ONETokens.onePaper)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel)
+                .fill(V3Tokens.surface)
                 .shadow(color: Color.black.opacity(0.14), radius: 30, x: 0, y: 14)
         )
         .frame(width: UIScreen.main.bounds.width * 0.88)
@@ -341,39 +420,40 @@ struct DayPreviewCard: View {
 
     private var dayText: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "tr_TR")
+        f.locale = LanguageManager.shared.currentLocale
         f.dateFormat = "d MMMM yyyy"
         return f.string(from: entry.date)
     }
 
     private func openSong() {
+        if let url = entry.spotifyURL, UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url)
+            return
+        }
+
         let rawQuery = "\(entry.songName) \(entry.artistName)"
         let query = rawQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        
-        if entry.platform.lowercased().contains("spotify") {
-            if SpotifyManager.shared.isAuthenticated {
-                SpotifyManager.shared.search(query: rawQuery) { result in
-                    DispatchQueue.main.async {
-                        switch result {
-                        case .success(let tracks):
-                            if let firstTrack = tracks.first {
-                                if let customUrl = URL(string: "spotify:track:\(firstTrack.id):play"), UIApplication.shared.canOpenURL(customUrl) {
-                                    UIApplication.shared.open(customUrl)
-                                } else if let trackUrl = URL(string: "https://open.spotify.com/track/\(firstTrack.id)?go=1") {
-                                    UIApplication.shared.open(trackUrl)
-                                } else {
-                                    fallbackSpotifySearch(query: query)
-                                }
+
+        if SpotifyManager.shared.isAuthenticated {
+            SpotifyManager.shared.search(query: rawQuery) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let tracks):
+                        if let firstTrack = tracks.first {
+                            if let customUrl = URL(string: "spotify:track:\(firstTrack.id):play"), UIApplication.shared.canOpenURL(customUrl) {
+                                UIApplication.shared.open(customUrl)
+                            } else if let trackUrl = URL(string: "https://open.spotify.com/track/\(firstTrack.id)?go=1") {
+                                UIApplication.shared.open(trackUrl)
                             } else {
                                 fallbackSpotifySearch(query: query)
                             }
-                        case .failure(_):
+                        } else {
                             fallbackSpotifySearch(query: query)
                         }
+                    case .failure(_):
+                        fallbackSpotifySearch(query: query)
                     }
                 }
-            } else {
-                fallbackSpotifySearch(query: query)
             }
         } else {
             Task {
@@ -481,26 +561,26 @@ struct DayShareCard: View {
                         .frame(width: 40, height: 1.5)
 
                     Text(entry.songName)
-                        .font(.system(size: 15, weight: .semibold))
+                        .bodyMDSemibold()
                         .foregroundColor(.white)
                         .lineLimit(2)
 
                     Text(entry.artistName)
-                        .font(ONETypography.monoSM)
+                        .monoSM(tracking: 0)
                         .foregroundColor(.white.opacity(0.85))
 
                     Spacer().frame(height: 5)
 
                     Text(dayText)
-                        .font(ONETypography.monoMicro)
+                        .monoMicro(tracking: 0)
                         .foregroundColor(.white.opacity(0.6))
 
-                    Text("ONE · Daily Mood")
-                        .font(ONETypography.monoMicro)
+                    Text(NSLocalizedString("share.brandWatermark", comment: ""))
+                        .monoMicro(tracking: 0)
                         .foregroundColor(.white.opacity(0.3))
                         .padding(.top, 1)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, V3Tokens.spacingXL)
                 .padding(.bottom, 80)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -520,57 +600,57 @@ struct DayShareCard: View {
                 }
             }
             .frame(width: 155, height: 275) // strictly 9:16 aspect ratio roughly
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: V3Tokens.radiusCard))
             .shadow(color: Color.black.opacity(0.4), radius: 15, x: 0, y: 10)
-            .padding(.leading, 40)
+            .padding(.leading, V3Tokens.spacingXL4)
             
             Spacer()
             
             // Right: Info Display
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: V3Tokens.spacingSM) {
                 Spacer()
                 
                 Rectangle()
                     .fill(Color(hex: entry.moodColorHex))
                     .frame(width: 50, height: 2)
-                    .padding(.bottom, 4)
+                    .padding(.bottom, V3Tokens.spacingXS)
 
                 Text(entry.songName)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(V3Typography.sans(24, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(entry.artistName)
-                    .font(ONETypography.bodyMD)
+                    .font(V3Typography.sans(15, relativeTo: .callout))
                     .foregroundColor(.white.opacity(0.9))
                 
                 Spacer()
 
                 HStack {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
                         Text(dayText.uppercased())
-                            .font(ONETypography.monoLabel)
+                            .monoLabel()
                             .tracking(1.0)
                             .foregroundColor(.white.opacity(0.8))
 
-                        Text("ONE · DAILY MOOD")
-                            .font(ONETypography.monoMicro)
+                        Text(NSLocalizedString("share.brandWatermarkUpper", comment: ""))
+                            .monoMicro()
                             .tracking(1.5)
                             .foregroundColor(.white.opacity(0.6))
                     }
                 }
-                .padding(.bottom, 32)
+                .padding(.bottom, V3Tokens.spacingXL3)
             }
-            .padding(.trailing, 40)
-            .padding(.vertical, 32)
+            .padding(.trailing, V3Tokens.spacingXL4)
+            .padding(.vertical, V3Tokens.spacingXL3)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
     private var dayText: String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "tr_TR")
+        f.locale = LanguageManager.shared.currentLocale
         f.dateFormat = "d MMMM yyyy"
         return f.string(from: entry.date)
     }
@@ -586,9 +666,9 @@ struct MoodPatternBackground: View {
             // Base gradient
             LinearGradient(
                 stops: [
-                    .init(color: Color(hex: moodColorHex).opacity(0.95), location: 0.0),
-                    .init(color: Color(hex: moodColorHex).opacity(0.75), location: 0.5),
-                    .init(color: Color(hex: moodColorHex).opacity(0.85), location: 1.0)
+                    .init(color: (V3Mood.closest(toHex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.18), location: 0.0),
+                    .init(color: (V3Mood.closest(toHex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.08), location: 0.55),
+                    .init(color: .clear, location: 1.0)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -660,14 +740,14 @@ struct MoodPatternPreview: View {
             // Base gradient
             LinearGradient(
                 stops: [
-                    .init(color: Color(hex: moodColorHex).opacity(0.9), location: 0.0),
-                    .init(color: Color(hex: moodColorHex).opacity(0.7), location: 0.5),
-                    .init(color: Color(hex: moodColorHex).opacity(0.8), location: 1.0)
+                    .init(color: (V3Mood.closest(toHex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.18), location: 0.0),
+                    .init(color: (V3Mood.closest(toHex: moodColorHex)?.pastelColor ?? Color(hex: moodColorHex)).opacity(0.08), location: 0.55),
+                    .init(color: .clear, location: 1.0)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-            
+
             // Organic shapes
             GeometryReader { geometry in
                 ZStack {

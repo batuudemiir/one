@@ -1,0 +1,78 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "schemaVersion": "1.0",
+  "contentVersion": 1,
+  "generatedAt": "2026-09-23T00:00:00Z",
+  "files": [
+    {
+      "path": "catalogs/badges.tr.json",
+      "sha256": "847e4a0993473c13691364c86c65b540b002d24d2e8ddc24de7a78b1ce1e5c75",
+      "bytes": 5808
+    },
+    {
+      "path": "catalogs/causes.tr.json",
+      "sha256": "cbb1ebef2425a332e45f941960f5727b14b67f95063eba1d816b867cafd74f23",
+      "bytes": 3624
+    },
+    {
+      "path": "catalogs/emotions.tr.json",
+      "sha256": "616cce2f5aafda57812beb5db7255f7c6840e0fb1eef7b60af14a8dfe50128fc",
+      "bytes": 7253
+    },
+    {
+      "path": "catalogs/paths.tr.json",
+      "sha256": "ee85c440fab97edfb065af108a81bab9cc713cb2a2516c62bce3d56c796b8da3",
+      "bytes": 1821
+    },
+    {
+      "path": "echoes.tr.json",
+      "sha256": "7b58d775182c28ff756e04590f6cba6a158018b219d72b465775063a56bb57dc",
+      "bytes": 11935
+    },
+    {
+      "path": "guided/g_bosalt_01.tr.json",
+      "sha256": "d67d1d985049c3cce6ad683378c083059c437e28b01cc06a4e0d7434d130d01c",
+      "bytes": 1221
+    },
+    {
+      "path": "guided/g_minnet_01.tr.json",
+      "sha256": "99801f056bff39846a35708fdb98972e76e5c33debf9216dbe8ffcb113b256c4",
+      "bytes": 1011
+    },
+    {
+      "path": "guided/g_sabah_01.tr.json",
+      "sha256": "4b03103735b46b80c911f9b266bc64fb835319c66bed51a49b7cf7c4a0136ccf",
+      "bytes": 1034
+    },
+    {
+      "path": "prompts.tr.json",
+      "sha256": "f34cb7294d123edf5a9ab16e7ebffbe8640bfcbd4a0c1393b352f20f7ffb1e7f",
+      "bytes": 15530
+    },
+    {
+      "path": "quotes.tr.json",
+      "sha256": "cbc8a980cc0346829cc4573eb4eb599e1b8129192310cf04c340946930f3d897",
+      "bytes": 25464
+    },
+    {
+      "path": "themes/2026-w39.tr.json",
+      "sha256": "08eecdb5fcc1ace9977babf2d8a3916676038517b3229e0e71982d99fb68923b",
+      "bytes": 1157
+    },
+    {
+      "path": "themes/2026-w40.tr.json",
+      "sha256": "dbcce990831856954117a5b783bad5ac8e6123b8d4290e4189fc8a1dfb42b27a",
+      "bytes": 1161
+    },
+    {
+      "path": "themes/2026-w41.tr.json",
+      "sha256": "d0feeef54788f5a32e7d72d8b51897ee04fc4cbc27b796644180ca904d23d65e",
+      "bytes": 1201
+    },
+    {
+      "path": "themes/evergreen.tr.json",
+      "sha256": "24d0de63c347e8e68cd6ab144f0a3462c822a720472173c51bac24719d743b66",
+      "bytes": 19641
+    }
+  ]
+}

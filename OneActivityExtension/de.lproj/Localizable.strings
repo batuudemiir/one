@@ -1,0 +1,5 @@
+/* Live Activity kendi kataloğunu taşır (ayrı bundle). Sistem dilini izler. */
+
+"activity.friendShared" = "%@ hat geteilt";
+"activity.saved" = "gespeichert";
+"activity.savedToday" = "heute gespeichert";

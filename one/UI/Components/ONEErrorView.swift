@@ -18,32 +18,33 @@ struct ONEErrorView: View {
     var size: CGFloat = 140
 
     var body: some View {
-        VStack(spacing: ONETokens.spacingXL) {
+        VStack(spacing: V3Tokens.spacingXL) {
             OneMascotView(pose: .error, size: size, message: message)
 
             if let onRetry {
                 Button(action: onRetry) {
-                    Text("Tekrar dene")
+                    Text(NSLocalizedString("general.retry", comment: ""))
                         .monoBase(tracking: 1.0)
-                        .foregroundColor(ONETokens.oneInk)
-                        .padding(.horizontal, ONETokens.spacingXL)
+                        .foregroundColor(V3Tokens.ink)
+                        .padding(.horizontal, V3Tokens.spacingXL)
                         .padding(.vertical, 10)
                         .overlay(
-                            RoundedRectangle(cornerRadius: ONETokens.radiusCard)
-                                .stroke(ONETokens.oneInk.opacity(0.3), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
+                                .stroke(V3Tokens.ink.opacity(0.3), lineWidth: 1)
                         )
                 }
+                .contentShape(Rectangle())
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, ONETokens.spacingXL)
+        .padding(.horizontal, V3Tokens.spacingXL)
     }
 }
 
 #Preview {
     ZStack {
-        ONETokens.oneCream.ignoresSafeArea()
-        VStack(spacing: 40) {
+        V3Tokens.paper.ignoresSafeArea()
+        VStack(spacing: V3Tokens.spacingXL4) {
             ONEErrorView(message: "Bir şeyler ters gitti.")
             ONEErrorView(message: "Bağlantı kurulamadı.", onRetry: {})
         }

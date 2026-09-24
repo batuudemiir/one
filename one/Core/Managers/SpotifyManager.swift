@@ -15,8 +15,8 @@ class SpotifyManager: NSObject, ObservableObject {
     static let shared = SpotifyManager()
     
     @Published var isAuthenticated = false
-    @Published var accessToken: String?
-    
+    private(set) var accessToken: String?
+
     private let clientID: String = {
         guard let id = Bundle.main.object(forInfoDictionaryKey: "SpotifyClientID") as? String,
               !id.isEmpty else {
@@ -28,15 +28,18 @@ class SpotifyManager: NSObject, ObservableObject {
     private let redirectURI = "ones://spotify-callback"
     
     private var tokenExpirationDate: Date?
+    private var refreshToken: String?
     private var authSession: ASWebAuthenticationSession?
-    
+    private let refreshGate = RefreshGate()
+
     // PKCE parameters
     private var codeVerifier: String?
     private var codeChallenge: String?
-    
+
     private override init() {
         super.init()
         loadTokenFromKeychain()
+        loadRefreshTokenFromKeychain()
     }
     
     // MARK: - Authentication
@@ -58,7 +61,7 @@ class SpotifyManager: NSObject, ObservableObject {
             return
         }
         
-        let scope = "user-read-private user-read-email user-read-currently-playing user-read-playback-state"
+        let scope = "user-read-private user-read-email user-read-currently-playing user-read-playback-state playlist-modify-private"
         let authURLString = "https://accounts.spotify.com/authorize?" +
             "client_id=\(clientID)" +
             "&response_type=code" +
@@ -173,17 +176,24 @@ class SpotifyManager: NSObject, ObservableObject {
                     self.isAuthenticated = true
                     self.tokenExpirationDate = Date().addingTimeInterval(TimeInterval(tokenResponse.expiresIn))
                     self.saveTokenToKeychain(tokenResponse.accessToken)
+
+                    // Refresh token'ı kaydet (ilk auth'ta gelir, sonraki refresh'lerde gelmeyebilir)
+                    if let rt = tokenResponse.refreshToken {
+                        self.refreshToken = rt
+                        self.saveRefreshTokenToKeychain(rt)
+                    }
+
                     ONELogger.success("Successfully authenticated with Spotify", category: .spotify)
-                    
+
                     // Notify observers about authentication change
                     NotificationCenter.default.post(name: NSNotification.Name("SpotifyAuthenticationChanged"), object: nil)
                 }
             } catch {
-                ONELogger.error("Token exchange error: \(error)", category: .spotify)
-                if let data = try? await URLSession.shared.data(for: request).0,
-                   let errorString = String(data: data, encoding: .utf8) {
-                    ONELogger.error("Error response: \(errorString)", category: .spotify)
-                }
+                ONELogger.error("Token exchange decode failed", category: .spotify)
+                CrashReporter.shared.capture(error: error, context: ["operation": "spotifyTokenExchange"])
+#if DEBUG
+                ONELogger.error("Token exchange error detail: \(error)", category: .spotify)
+#endif
             }
         }
     }
@@ -192,12 +202,9 @@ class SpotifyManager: NSObject, ObservableObject {
         self.accessToken = nil
         self.isAuthenticated = false
         self.tokenExpirationDate = nil
+        self.refreshToken = nil
         deleteTokenFromKeychain()
-        
-        // Clear recommendation cache when logging out
-        let cache = RecommendationCache()
-        cache.clearCache()
-        ONELogger.success("Cleared recommendation cache on logout", category: .spotify)
+        deleteRefreshTokenFromKeychain()
         
         // Notify observers about authentication change
         NotificationCenter.default.post(name: NSNotification.Name("SpotifyAuthenticationChanged"), object: nil)
@@ -246,9 +253,94 @@ class SpotifyManager: NSObject, ObservableObject {
             .replacingOccurrences(of: "=", with: "")
     }
     
+    // MARK: - Token Refresh
+
+    /// Token süresinin dolup dolmadığını kontrol eder (5 dakika marj ile)
+    var isTokenExpired: Bool {
+        guard let expiration = tokenExpirationDate else { return true }
+        return Date() >= expiration.addingTimeInterval(-300) // 5 dakika erken expire say
+    }
+
+    /// Geçerli bir token sağlar — süresi dolmuşsa refresh eder
+    @discardableResult
+    private func ensureValidToken() async throws -> String {
+        if let token = accessToken, !isTokenExpired {
+            return token
+        }
+
+        // Refresh token ile yenile
+        guard let rt = refreshToken else {
+            // Refresh token yok — keychain'deki eski access token'ı da temizle
+            await MainActor.run { self.logout() }
+            throw NSError(domain: "SpotifyManager", code: 401,
+                          userInfo: [NSLocalizedDescriptionKey: "Oturum süresi doldu. Lütfen tekrar giriş yapın."])
+        }
+
+        // Eşzamanlı refresh isteklerini actor ile serialize et
+        guard await refreshGate.begin() else {
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            if let token = accessToken, !isTokenExpired {
+                return token
+            }
+            throw NSError(domain: "SpotifyManager", code: 401,
+                          userInfo: [NSLocalizedDescriptionKey: "Token yenileme başarısız"])
+        }
+        defer { Task { await self.refreshGate.end() } }
+
+        let tokenURL = "https://accounts.spotify.com/api/token"
+        guard let url = URL(string: tokenURL) else {
+            throw NSError(domain: "SpotifyManager", code: 400, userInfo: [NSLocalizedDescriptionKey: "Geçersiz URL"])
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+
+        let bodyParams = [
+            "grant_type": "refresh_token",
+            "refresh_token": rt,
+            "client_id": clientID
+        ]
+        let bodyString = bodyParams.map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")" }.joined(separator: "&")
+        request.httpBody = bodyString.data(using: .utf8)
+
+        ONELogger.debug("Refreshing Spotify token...", category: .spotify)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            ONELogger.error("Token refresh failed with status \(httpResponse.statusCode)", category: .spotify)
+            // Refresh token geçersizse oturumu kapat
+            if httpResponse.statusCode == 400 || httpResponse.statusCode == 401 {
+                await MainActor.run { self.logout() }
+            }
+            throw NSError(domain: "SpotifyManager", code: httpResponse.statusCode,
+                          userInfo: [NSLocalizedDescriptionKey: "Token yenileme başarısız"])
+        }
+
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let tokenResponse = try decoder.decode(SpotifyTokenResponse.self, from: data)
+
+        await MainActor.run {
+            self.accessToken = tokenResponse.accessToken
+            self.isAuthenticated = true
+            self.tokenExpirationDate = Date().addingTimeInterval(TimeInterval(tokenResponse.expiresIn))
+            self.saveTokenToKeychain(tokenResponse.accessToken)
+
+            if let newRT = tokenResponse.refreshToken {
+                self.refreshToken = newRT
+                self.saveRefreshTokenToKeychain(newRT)
+            }
+        }
+
+        ONELogger.success("Spotify token refreshed successfully", category: .spotify)
+        return tokenResponse.accessToken
+    }
+
     // MARK: - Search
     func search(query: String, completion: @escaping (Result<[SpotifyTrack], Error>) -> Void) {
-        guard let token = accessToken, isAuthenticated else {
+        guard isAuthenticated else {
             completion(.failure(NSError(domain: "SpotifyManager", code: 401, userInfo: [NSLocalizedDescriptionKey: "Spotify'a giriş yapılmadı"])))
             return
         }
@@ -260,20 +352,22 @@ class SpotifyManager: NSObject, ObservableObject {
         
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let urlString = "https://api.spotify.com/v1/search?q=\(encodedQuery)&type=track&limit=15"
-        
+
         guard let url = URL(string: urlString) else {
             completion(.failure(NSError(domain: "SpotifyManager", code: 400, userInfo: [NSLocalizedDescriptionKey: "Geçersiz URL"])))
             return
         }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
+
         Task {
             do {
+                let token = try await ensureValidToken()
+
+                var request = URLRequest(url: url)
+                request.httpMethod = "GET"
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
                 let (data, _) = try await URLSession.shared.data(for: request)
-                
+
                 let decoder = JSONDecoder()
                 let searchResponse = try decoder.decode(SpotifySearchResponse.self, from: data)
                 completion(.success(searchResponse.tracks.items))
@@ -288,7 +382,7 @@ class SpotifyManager: NSObject, ObservableObject {
     /// Spotify'da şu an çalan şarkıyı çeker.
     /// Spotify bağlı değilse veya hiçbir şey çalmıyorsa nil döner.
     func getNowPlaying(completion: @escaping (SpotifyNowPlayingTrack?) -> Void) {
-        guard let token = accessToken, isAuthenticated else {
+        guard isAuthenticated else {
             completion(nil)
             return
         }
@@ -298,12 +392,14 @@ class SpotifyManager: NSObject, ObservableObject {
             return
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-
         Task {
             do {
+                let token = try await ensureValidToken()
+
+                var request = URLRequest(url: url)
+                request.httpMethod = "GET"
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
                 let (data, response) = try await URLSession.shared.data(for: request)
 
                 // 204 No Content — hiçbir şey çalmıyor
@@ -341,6 +437,8 @@ class SpotifyManager: NSObject, ObservableObject {
     }
 
     // MARK: - Keychain
+    private static let keychainService = "com.batu.ones.spotify"
+
     private func saveTokenToKeychain(_ token: String) {
         guard let data = token.data(using: .utf8) else {
             ONELogger.error("Failed to encode token for Keychain storage", category: .spotify)
@@ -348,36 +446,80 @@ class SpotifyManager: NSObject, ObservableObject {
         }
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.keychainService,
             kSecAttrAccount as String: "spotify_access_token",
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
             kSecAttrSynchronizable as String: false,
             kSecValueData as String: data
         ]
-
         SecItemDelete(query as CFDictionary)
         SecItemAdd(query as CFDictionary, nil)
     }
-    
+
     private func loadTokenFromKeychain() {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.keychainService,
             kSecAttrAccount as String: "spotify_access_token",
+            kSecAttrSynchronizable as String: false,
             kSecReturnData as String: true
         ]
-        
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        
         if status == errSecSuccess, let data = result as? Data, let token = String(data: data, encoding: .utf8) {
             self.accessToken = token
-            self.isAuthenticated = true
+            // isAuthenticated sadece token süresi geçerliyse true — L-2 fix
+            if let expiry = tokenExpirationDate, Date() < expiry.addingTimeInterval(-300) {
+                self.isAuthenticated = true
+            }
         }
     }
-    
+
     private func deleteTokenFromKeychain() {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.keychainService,
             kSecAttrAccount as String: "spotify_access_token"
+        ]
+        SecItemDelete(query as CFDictionary)
+    }
+
+    // MARK: - Refresh Token Keychain
+
+    private func saveRefreshTokenToKeychain(_ token: String) {
+        guard let data = token.data(using: .utf8) else { return }
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.keychainService,
+            kSecAttrAccount as String: "spotify_refresh_token",
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+            kSecAttrSynchronizable as String: false,
+            kSecValueData as String: data
+        ]
+        SecItemDelete(query as CFDictionary)
+        SecItemAdd(query as CFDictionary, nil)
+    }
+
+    private func loadRefreshTokenFromKeychain() {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.keychainService,
+            kSecAttrAccount as String: "spotify_refresh_token",
+            kSecAttrSynchronizable as String: false,
+            kSecReturnData as String: true
+        ]
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status == errSecSuccess, let data = result as? Data, let token = String(data: data, encoding: .utf8) {
+            self.refreshToken = token
+        }
+    }
+
+    private func deleteRefreshTokenFromKeychain() {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.keychainService,
+            kSecAttrAccount as String: "spotify_refresh_token"
         ]
         SecItemDelete(query as CFDictionary)
     }
@@ -398,6 +540,21 @@ extension SpotifyManager: ASWebAuthenticationPresentationContextProviding {
         
         ONELogger.warning("Using fallback presentation anchor", category: .spotify)
         return ASPresentationAnchor()
+    }
+
+}
+
+// MARK: - Spotify Errors
+
+enum SpotifyError: LocalizedError {
+    case noToken
+    case invalidResponse
+
+    var errorDescription: String? {
+        switch self {
+        case .noToken: return "No Spotify access token"
+        case .invalidResponse: return "Invalid Spotify API response"
+        }
     }
 }
 
@@ -480,4 +637,16 @@ struct SpotifyNowPlayingTrack: Equatable {
     let albumName: String
     let artworkURL: URL?
     let spotifyURL: URL?
+}
+
+// MARK: - Refresh Gate
+
+private actor RefreshGate {
+    private var refreshing = false
+    func begin() -> Bool {
+        guard !refreshing else { return false }
+        refreshing = true
+        return true
+    }
+    func end() { refreshing = false }
 }

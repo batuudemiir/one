@@ -33,10 +33,10 @@ enum ToastType {
     
     var color: Color {
         switch self {
-        case .error:   return ONETokens.oneRed
-        case .success: return ONETokens.oneGreen
-        case .info:    return ONETokens.oneBlue
-        case .warning: return ONETokens.moodOrange
+        case .error:   return ONEBrand.kor
+        case .success: return V3Tokens.success
+        case .info:    return V3Tokens.info
+        case .warning: return V3Tokens.warning
         }
     }
 }
@@ -98,7 +98,7 @@ class ErrorHandler: ObservableObject {
     func showSuccess(_ message: String) {
         let toast = ToastItem(
             type: .success,
-            title: "Başarılı",
+            title: NSLocalizedString("general.success", comment: ""),
             message: message,
             isRetryable: false
         )
@@ -109,7 +109,7 @@ class ErrorHandler: ObservableObject {
     func showInfo(_ message: String) {
         let toast = ToastItem(
             type: .info,
-            title: "Bilgi",
+            title: NSLocalizedString("general.info", comment: ""),
             message: message,
             isRetryable: false
         )
@@ -120,7 +120,7 @@ class ErrorHandler: ObservableObject {
     func showWarning(_ message: String) {
         let toast = ToastItem(
             type: .warning,
-            title: "Uyarı",
+            title: NSLocalizedString("general.warning", comment: ""),
             message: message,
             isRetryable: false
         )

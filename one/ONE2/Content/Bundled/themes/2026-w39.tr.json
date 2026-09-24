@@ -1,0 +1,49 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "t_2026w39",
+      "week": "2026-W39",
+      "title": "Yavaşlamak",
+      "summary": "Bu hafta acele etmeden bakıyoruz.",
+      "tags": [
+        "yavaslik",
+        "dinlenme"
+      ],
+      "days": [
+        {
+          "day": 1,
+          "prompt": "Bugün neye acele ettin?"
+        },
+        {
+          "day": 2,
+          "prompt": "Yavaşladığında ilk neyi fark ediyorsun?"
+        },
+        {
+          "day": 3,
+          "prompt": "Günün hangi anında nefes aldın?"
+        },
+        {
+          "day": 4,
+          "prompt": "Seni hızlandıran şey ne?"
+        },
+        {
+          "day": 5,
+          "prompt": "Beklemek sana ne hissettiriyor?"
+        },
+        {
+          "day": 6,
+          "prompt": "Bugün bir şeyi yarım bıraktın mı, nasıldı?"
+        },
+        {
+          "day": 7,
+          "prompt": "Haftayı yavaş bir cümleyle kapat."
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

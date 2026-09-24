@@ -1,0 +1,39 @@
+<svg width="1290" height="2796" viewBox="0 0 1290 2796" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1290" y2="2796" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6F3EE"/>
+      <stop offset="1" stop-color="#EFE9E1"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="172" y1="760" x2="1118" y2="2360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4F0FF"/>
+      <stop offset="1" stop-color="#FFF2E7"/>
+    </linearGradient>
+    <clipPath id="screenClip">
+      <rect x="182" y="806" width="926" height="1468" rx="54"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1290" height="2796" fill="url(#bg)"/>
+  <circle cx="1046" cy="438" r="112" fill="#CFC2F8" fill-opacity="0.34"/>
+
+  <text x="112" y="172" fill="#7B756C" font-size="28" font-weight="700" letter-spacing="6" font-family="Arial, Helvetica, sans-serif">ONE / ARCHIVE</text>
+  <text x="112" y="316" fill="#171717" font-size="92" font-weight="800" font-family="Arial, Helvetica, sans-serif">Gecmisine</text>
+  <text x="112" y="412" fill="#171717" font-size="92" font-weight="800" font-family="Arial, Helvetica, sans-serif">donup bak</text>
+  <text x="112" y="500" fill="#66615A" font-size="38" font-weight="500" font-family="Arial, Helvetica, sans-serif">Takvimler, tekrar eden secimler ve renkler; gunlerini sadece listelemez, ritmini gosterir.</text>
+
+  <rect x="112" y="580" width="262" height="64" rx="32" fill="#EEE6DD"/>
+  <circle cx="154" cy="612" r="10" fill="#A589E6"/>
+  <text x="182" y="621" fill="#5E5952" font-size="28" font-weight="700" letter-spacing="3" font-family="Arial, Helvetica, sans-serif">ZAMAN IZI</text>
+
+  <rect x="172" y="754" width="946" height="1520" rx="58" fill="url(#panel)"/>
+  <rect x="182" y="806" width="926" height="1468" rx="54" fill="#FBFAF7"/>
+
+  <g clip-path="url(#screenClip)">
+    <rect x="182" y="806" width="926" height="1468" fill="#FBFAF7"/>
+    <rect x="218" y="842" width="854" height="1240" rx="42" fill="#FFFFFF" stroke="#DDD6CC" stroke-width="4" stroke-dasharray="16 16"/>
+    <text x="330" y="1450" fill="#989188" font-size="42" font-weight="700" font-family="Arial, Helvetica, sans-serif">Archive ekranini buraya yerlestir</text>
+  </g>
+
+  <rect x="112" y="2506" width="598" height="96" rx="32" fill="#F1ECE5"/>
+  <text x="152" y="2566" fill="#171717" font-size="42" font-weight="700" font-family="Arial, Helvetica, sans-serif">Her secim zamanla bir desen olusturur.</text>
+</svg>

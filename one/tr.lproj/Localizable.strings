@@ -1,15 +1,239 @@
 /* Share button */
-"share_to_instagram" = "Paylaş";
-"save_to_library" = "Kaydet";
-"generating" = "Hazırlanıyor...";
+"applock.a11y.locked" = "ONE kilitli";
+"applock.unlock" = "Kilidi aç";
+"applock.unlockWith" = "%@ ile aç";
+"archive.a11y.cellCount" = "%1$d, %2$d an";
+"archive.a11y.cellEmpty" = "%d, boş";
+"archive.a11y.cellMany" = "%1$d, %2$d an: %3$@";
+"archive.a11y.cellOne" = "%1$d, %2$@";
+"archive.a11y.meta" = "%1$d gün, %2$d an";
+"archive.a11y.metaTop" = ", sık geçen %@";
+"archive.addMoment" = "An ekle";
+"archive.seg.month" = "Ay";
+"archive.seg.year" = "Yıl";
+"avatar.a11y.band" = "Renk bandı";
+"avatar.a11y.markInk" = "Mürekkep işaret";
+"avatar.a11y.markKor" = "Kor işaret";
+"avatar.a11y.markKorInvert" = "Ters kor işaret";
+"avatar.a11y.markPaper" = "Kağıt işaret";
+"avatar.a11y.mosaic" = "Mozaik avatar";
+"avatar.a11y.photo" = "Fotoğraf avatar";
+"camera.back" = "ARKA KAMERA";
+"camera.flashOff" = "Flaş kapalı";
+"camera.flashOn" = "Flaş açık";
+"camera.front" = "ÖN KAMERA";
+"camera.grantInSettings" = "Ayarlardan izin verebilirsin.";
+"camera.gridOff" = "Izgara kapalı";
+"camera.gridOn" = "Izgara açık";
+"circle.addShort" = "+ Ekle";
+"circle.blockConfirmTitle" = "Bu kullanıcıyı engelle?";
+"circle.cta.accept" = "Kabul et";
+"circle.cta.add" = "Çevrene ekle";
+"circle.cta.decline" = "Reddet";
+"circle.feed.earlier" = "Daha Önce";
+"circle.feed.thisWeek" = "Bu Hafta";
+"circle.feed.today" = "Bugün";
+"circle.musicSharing" = "Müzik Paylaşımı";
+"circle.mutualCount" = "• %d ortak";
+"circle.toast.blocked" = "Engellendi";
+"circle.toast.declined" = "Reddedildi";
+"circle.toast.nowInCircle" = "Artık çevrende";
+"circle.toast.requestCancelled" = "İstek iptal edildi";
+"circle.toast.requestSent" = "İstek gönderildi";
+"circle.toast.unblocked" = "Engel kaldırıldı";
+"circle.viewProfile" = "Profili gör";
+"common.back" = "← Geri";
+"common.cancel" = "Vazgeç";
+"common.friend" = "Arkadaş";
+"common.music" = "Müzik";
+"common.openSettings" = "Ayarları aç";
+"common.retry" = "Tekrar dene";
+"echo.factualLine" = "%1$d an · sık geçen %2$@";
+"echo.noMomentsThisMonth" = "Bu ay henüz an bırakmadın.";
+"echo.playCount" = "%d kez";
+"echo.section.last30" = "Son 30 gün";
+"echo.section.moodMap" = "MOOD HARİTASI";
+"echo.section.numbers" = "SAYISAL";
+"echo.section.repeats" = "Bu ayın tekrarları";
+"echo.section.summary" = "Sayılar";
+"echo.section.topTracks" = "TEKRAR EDENLER";
+"echo.stat.mostActiveDay" = "Yoğun gün";
+"echo.stat.resonance" = "Rezonans";
+"echo.stat.silentDays" = "Sessiz gün";
+"echo.stat.thisMonth" = "Bu ay";
+"echo.stat.totalMoments" = "Toplam an";
+"echo.watchStory" = "Ay hikayesini izle";
+"entry.a11y.backToColor" = "Renk seçim ekranına dön";
+"entry.a11y.chip" = "%1$@. %2$@. Değiştirmek için dokun.";
+"entry.a11y.continueWith" = "Devam, %@ seçildi";
+"entry.a11y.date" = "Tarih: %@";
+"entry.a11y.noteCount" = "%1$d karakter, en fazla %2$d";
+"entry.a11y.noteField" = "Not, isteğe bağlı, en fazla %d karakter";
+"entry.a11y.pickHint" = "Bugünün rengi olarak seç";
+"entry.a11y.save" = "Anı kaydet";
+"entry.a11y.todayColor" = "Bugünün rengi: %@";
+"entry.chip.circle" = "Çevre";
+"entry.chip.photo" = "Foto";
+"entry.chip.private" = "Sadece sen";
+"entry.chip.song" = "Şarkı";
+"entry.cta.continue" = "Devam";
+"entry.cta.pickColor" = "Bir renk seç";
+"entry.note.placeholder" = "İki satır yeter. İstersen boş bırak.";
+"entry.note.title" = "Ne oldu?";
+"entry.photo.add" = "Fotoğraf ekle";
+"entry.photo.camera" = "Kamera";
+"entry.photo.cameraSub" = "Şimdi bir kare çek";
+"entry.photo.change" = "Fotoğrafı değiştir";
+"entry.photo.gallery" = "Galeri";
+"entry.photo.gallerySub" = "Var olan bir kareyi seç";
+"entry.prompt.today" = "Bugün nasılsın?";
+"entry.save" = "Kaydet";
+"entry.scope.circleSub" = "Arkadaşların bugünün rengini görür.";
+"entry.scope.circleTitle" = "Çevremle paylaş";
+"entry.scope.privateSub" = "Kimse görmez, sadece senin.";
+"entry.scope.privateTitle" = "Arşivimde kalsın";
+"entry.state.empty" = "boş";
+"entry.state.onlyYou" = "yalnızca sende";
+"entry.state.selected" = "seçili";
+"entry.state.shared" = "arkadaşlarınla paylaşılıyor";
+"entry.title.another" = "Bir an\ndaha?";
+"entry.title.today" = "Bugün\nnasılsın?";
+"export.failed" = "Arşiv dışa aktarılamadı.";
+"friendProfile.recurringColor" = "tekrar eden renk";
+"greeting.day" = "İyi günler";
+"greeting.evening" = "İyi akşamlar";
+"greeting.morning" = "Günaydın";
+"greeting.night" = "İyi geceler";
+"invite.messageBody" = "ONE'da günün rengini bırakıyorum. Kodum: %1$@\n\n%2$@";
+"nav.a11y.showTodayMoments" = "Bugünkü anları göster";
+"notif.aFriend" = "Bir arkadaşın";
+"notif.circle.leftColor" = "Bugünkü rengini bıraktı.";
+"notif.circle.leftColors" = "Bugünkü renklerini bıraktı.";
+"notif.daily.beforeClose" = "Gün kapanmadan bir renk bırakabilirsin.";
+"notif.daily.colorless" = "Bugün renksiz kaydedilecek.";
+"notif.daily.empty" = "Bugün arşivde boş.";
+"notif.daily.emptyStanding" = "Bugün arşivde boş duruyor.";
+"notif.daily.noColorYet" = "Bugünün rengi henüz yok.";
+"notif.daily.stillEmpty" = "Bugün arşivde hâlâ boş.";
+"notif.daily.stillNotPicked" = "Bugünün rengi hâlâ seçilmedi.";
+"notif.daily.yesterday" = "Dün %@. Bugün henüz yok.";
+"notif.day.evening" = "%@ akşamı";
+"notif.day.morning" = "%@ sabahı";
+"notif.day.night" = "Gün bitiyor";
+"notif.day.noon" = "%@, öğle";
+"notif.fallback.body" = "Arşivinde yeni bir kayıt var.";
+"notif.friendAccepted.body" = "Artık çevrende.";
+"notif.friendRequest.body" = "Çevresine eklemek istiyor.";
+"notif.friendShared.noMood" = "Bugüne bir şarkı bıraktı.";
+"notif.friendShared.withMood" = "%@. Bir şarkı bıraktı.";
+"notif.monthly.closed.body" = "30 gün, tek karede.";
+"notif.monthly.closed.title" = "%@ kapandı";
+"notif.monthly.generic.body" = "%@ hazır.";
+"notif.monthly.generic.title" = "Aylık portre";
+"notif.monthly.ready" = "Ayın portresi hazır.";
+"notif.people.andOthers" = "%1$@ ve %2$d kişi";
+"notif.push.friendAccepted" = "İsteğin kabul edildi.";
+"notif.push.friendRequest" = "Yeni bir çevre isteği.";
+"notif.push.friendShared" = "Çevrenden biri bugünkü rengini bıraktı.";
+"notif.push.reaction" = "Paylaşımına bir tepki bırakıldı.";
+"notif.reaction.plain" = "Paylaşımına tepki bıraktı.";
+"notif.reaction.withEmoji" = "Paylaşımına %@ bıraktı.";
+"notif.resonance.body" = "Bugün senin gibi %@.";
+"notif.resonance.bodyNoMood" = "Bugün seninle aynı tonda.";
+"notif.someone" = "Biri";
+"notif.someoneInCircle" = "Çevrenden biri";
+"notif.weekly.dominant.body" = "%@.";
+"notif.weekly.dominant.title" = "Bu haftanın baskın tonu";
+"notif.weekly.palette.body" = "7 gün, tek karede.";
+"notif.weekly.palette.title" = "Haftanın paleti";
+"notif.weekly.sunday.body" = "Hafta kapandı.";
+"notif.weekly.sunday.title" = "Pazar yansıması";
+"notif.weekly.thisWeek.body" = "7 günün portresi hazır.";
+"notif.weekly.thisWeek.title" = "Bu hafta";
+"notif.yourFriend" = "Arkadaşın";
+"onboarding.v3.auth.lead" = "iCloud'da saklanır. Şifre yok.";
+"onboarding.v3.auth.title" = "Apple ile\ngiriş yap.";
+"onboarding.v3.circle.lead" = "Sonra da davet edebilirsin.";
+"onboarding.v3.circle.title" = "Çevrene\nkim girsin?";
+"onboarding.v3.cta.finish" = "Bitir";
+"onboarding.v3.cta.next" = "Devam";
+"onboarding.v3.cta.start" = "Başla";
+"onboarding.v3.done.lead" = "İlk an senin.";
+"onboarding.v3.done.title" = "Hazırsın.";
+"onboarding.v3.intent.curious" = "Sadece merak ettim";
+"onboarding.v3.intent.lead" = "Bir cümle yeter. Sonra değişebilir.";
+"onboarding.v3.intent.music" = "Şarkılarla eşleştirmek";
+"onboarding.v3.intent.self" = "Kendimi tanımak";
+"onboarding.v3.intent.title" = "Neden buradasın?";
+"onboarding.v3.intent.track" = "Duygularımı takip etmek";
+"onboarding.v3.mood.lead" = "Bir renk seç. Yeter.";
+"onboarding.v3.mood.title" = "Bugün\nnasılsın?";
+"onboarding.v3.notif.lead" = "İstediğin saatte, bir kez.";
+"onboarding.v3.notif.title" = "Küçük bir\nhatırlatma?";
+"onboarding.v3.ready" = "Hazırsın";
+"onboarding.v3.reward.lead" = "Her an bir renk daha ekler.";
+"onboarding.v3.reward.title" = "İlk karen\nhazır.";
+"onboarding.v3.song.lead" = "Sonra da ekleyebilirsin.";
+"onboarding.v3.song.title" = "Bir şarkı\nekle mi?";
+"onboarding.v3.step.auth" = "Giriş";
+"onboarding.v3.step.circle" = "Çevre";
+"onboarding.v3.step.intent" = "Niyet";
+"onboarding.v3.step.mood" = "İlk renk";
+"onboarding.v3.step.notif" = "Hatırlatma";
+"onboarding.v3.step.reward" = "İlk kare";
+"onboarding.v3.step.song" = "Şarkı";
+"profile.a11y.distributionChart" = "Renk dağılımı grafiği";
+"profile.a11y.distributionRow" = "%1$@, %2$d an, yüzde %3$d";
+"profile.a11y.distributionValue" = "%1$@ yüzde %2$d";
+"profile.a11y.monthlySummary" = "Aylık özet, %1$@, ayın rengi %2$@. Yankı'yı aç.";
+"profile.a11y.signOut" = "Çıkış yap";
+"profile.distribution.selected" = "%1$@ · %2$d AN";
+"profile.intentFor" = "%@ İÇİN";
+"profile.music.searchOnly" = "Yalnızca arama";
+"profile.photo.pick" = "Fotoğraf seç";
+"profile.stat.colorsUsed" = "KULLANILAN RENK";
+"profile.stat.moments" = "AN";
+"profile.stat.mostFrequent" = "EN SIK";
+"profile.theme.dark" = "Koyu";
+"profile.theme.light" = "Açık";
+"publicProfile.a11y.pinnedSong" = "Sabitlenmiş şarkı: %1$@, %2$@";
+"publicProfile.loadFailed" = "Profil yüklenemedi.";
+"reaction.a11y.kind" = "%@ tepkisi";
+"reaction.a11y.sendReply" = "Yanıtı gönder";
+"reminder.state.off" = "Kapalı · bildirim gelmez";
+"reminder.state.on" = "Açık · her gün %@";
+"reminder.tone.quiet" = "Sessiz";
+"reminder.tone.recall" = "Dün bağlamlı";
+"reminder.tone.short" = "Kısa";
+"saved.manyMoments" = "%1$@ için %2$d an var. Kare renklere bölündü.";
+"saved.oneMoment" = "Arşivde bugünün karesi doldu.";
+"saved.scope.circle" = "Çevrendeki arkadaşlar görebilir.";
+"saved.scope.private" = "Yalnızca senin arşivinde.";
+"settings.exportArchive" = "Arşivi dışa aktar";
+"settings.exportArchive.note" = "Tüm kayıtların, tek dosyada.";
+"share.other" = "Diğer";
+"share.photoLoadFailed" = "Fotoğraf yüklenemedi";
 
 /* Default values */
-"untitled_song" = "Untitled";
-"unknown_artist" = "Unknown Artist";
+"signin.button.accessibility" = "Apple ile giriş yap";
+"signin.subtitle" = "Devam etmek için Apple hesabınla giriş yap.";
+"signin.title" = "Hoş geldin.";
+"song.searchPlaceholder" = "Şarkı, sanatçı";
+"story.bg.color" = "Renk";
+"story.bg.paper" = "Kağıt";
+"story.bg.photo" = "Fotoğraf";
+"story.content.note" = "Not";
+"story.content.song" = "Şarkı";
+"story.row.background" = "ZEMİN";
+"story.row.content" = "İÇERİK";
+"story.row.ratio" = "ORAN";
+"story.toast.renderFailed" = "Kart oluşturulamadı";
+"story.toast.saved" = "Fotoğraflara kaydedildi";
+"today.entryNotFound" = "Bugünkü kaydın bulunamadı.";
+"today.liveActivityOff" = "Dynamic Island kapalı";
+"today.shareFailed" = "Çevre paylaşımı başarısız. İnternet bağlantını kontrol et.";
 
 /* Error messages */
-"missing_data_coverImage" = "Kapak görseli eksik";
-"missing_data_songName" = "Şarkı adı eksik";
 "render_failed" = "Kart oluşturulamadı. Lütfen tekrar deneyin.";
 "image_too_large" = "Görsel boyutu çok büyük. Lütfen daha küçük bir fotoğraf kullanın.";
 "invalid_format" = "Geçersiz format";
@@ -24,8 +248,813 @@
 "reduce_image_size" = "Fotoğraf boyutunu küçültün";
 "check_format" = "Format uyumluluğunu kontrol edin";
 "check_storage" = "Depolama alanını kontrol edin";
-"install_instagram" = "Instagram uygulamasını yükleyin";
 
 /* Success messages */
-"card_generated" = "Kart hazır!";
-"saved_to_library" = "Fotoğraflara kaydedildi";
+
+/* ── BUGÜN ── */
+
+/* ── ONAY ── */
+
+/* ── ÇEVRE ── */
+"circle.removeFriend" = "arkadaşlıktan çıkarılsın mı?";
+"circle.addFriend" = "Arkadaş ekle";
+
+/* ── KEŞFİF ── */
+
+/* ── PROFİL / AYARLAR ── */
+"profile.language" = "Dil";
+
+/* ── ONBOARDING ── */
+
+/* Welcome */
+
+/* Promise */
+
+/* Tutorial */
+
+/* Magic moment — mood pick & reveal */
+
+/* Music */
+
+/* Soft notification ask */
+
+/* ── SPLASH ── */
+
+/* ── GENEL ── */
+"general.save" = "Kaydet";
+"general.cancel" = "İptal";
+"general.back" = "Geri";
+"general.close" = "Kapat";
+"general.more" = "Daha fazla";
+"general.loading" = "Yükleniyor...";
+"general.error" = "Bir hata oluştu";
+"general.retry" = "Tekrar Dene";
+
+/* ── BİLDİRİMLER ── */
+"notification.acceptFriend" = "Kabul Et";
+"notification.declineFriend" = "Reddet";
+"notification.openEcho" = "Özeti Gör";
+"notification.openCircle" = "Çevreyi Aç";
+
+/* ── ERİŞİLEBİLİRLİK ── */
+"accessibility.today.photoViewer" = "Bugünün fotoğrafı";
+"accessibility.circle.setupCircle" = "Çevreni kur";
+
+/* ── ERİŞİLEBİLİRLİK — Faz 2 ── */
+/* CircleView */
+
+/* ProfileView */
+
+/* TodayEmptyView */
+"today.moodSaved.a11y" = "Bugünün mood'u kaydedildi";
+
+/* CameraView */
+
+/* DiscoverView & MoodEventsSheet */
+
+/* AddFriendView */
+
+/* TodayCompletedView */
+
+
+/* Discover redesign */
+
+/* ── YANKÜ ── */
+
+/* ── ÇEVRE (genişletilmiş) ── */
+"circle.you" = "SEN";
+"circle.pendingRequests" = "%d gelen istek";
+"circle.notSharedYet" = "Bugün henüz paylaşmadı";
+"circle.blockUser" = "Kullanıcıyı Engelle";
+"circle.removeAction" = "Çıkar";
+"circle.blockAction" = "Engelle";
+"circle.unblockAction" = "Engeli kaldır";
+"circle.iCloudRequired" = "iCloud erişimi gerekli";
+"circle.iCloudMessage" = "Çevre özelliği için iCloud\nhesabınızla giriş yapmalısınız.";
+"circle.tryAgain" = "Tekrar Dene";
+"circle.goToSettings" = "Ayarlar'a Git";
+
+/* ── ARKADAŞ DAVET ── */
+"addFriend.requestSent" = "İstek gönderildi.";
+"addFriend.frameQR" = "QR kodu çerçeve içine al";
+"addFriend.cameraRequired" = "Kamera erişimi gerekli";
+"addFriend.ok" = "Tamam";
+"addFriend.usernamePlaceholder" = "kullaniciadı";
+"friendRequests.decline" = "Reddet";
+
+/* ── PROFİL (genişletilmiş) ── */
+"profile.usernameAvailable" = "Kullanılabilir ✓";
+"profile.usernameTaken" = "Bu kullanıcı adı alınmış";
+"profile.usernameCheckFailed" = "Kontrol edilemedi";
+"profile.deleteAccountTitle" = "Hesabı Sil";
+"profile.deleteAccountMsg" = "Tüm şarkı kayıtların, profil ve çevre verilerin kalıcı olarak silinecek. Bu işlem geri alınamaz.";
+"profile.deleteAccount" = "Hesabı Sil";
+"profile.name" = "İSİM";
+"profile.username" = "KULLANICI ADI";
+"profile.color" = "RENK";
+"profile.editProfile" = "Profili Düzenle";
+"profile.createProfile" = "Profil Oluştur";
+"profile.namePlaceholder" = "Adın";
+
+/* ── KEŞFEDİN (genişletilmiş) ── */
+
+/* ── BAŞLANGIÇ (genişletilmiş) ── */
+
+/* ── REHBER ── */
+"contacts.smsNotAvailable" = "Bu cihazda SMS gönderme özelliği kullanılamıyor.";
+"contacts.smsSendHint" = "SMS ile davet linki gönderilir";
+
+/* ── ARŞİV ── */
+"archive.photoLoadFailed" = "Fotoğraf yüklenemedi";
+"archive.openSong" = "Şarkıyı Aç";
+
+/* --- ONBOARDING EXTRA --- */
+
+/* --- FRIEND REQUESTS --- */
+"friendRequests.title" = "Bildirimler";
+"friendRequests.friendAccepted" = "Arkadaşlık kabul edildi.";
+"friendRequests.requestWithdrawn" = "İstek geri çekildi";
+"friendRequests.unknown" = "Bilinmeyen";
+"friendRequests.noNotifications" = "Henüz etkinlik yok";
+"friendRequests.noNotificationsHint" = "Arkadaşlık kabulleri, paylaşımlar ve\nreaksiyonlar burada görünür.";
+"friendRequests.markAllRead" = "Tümünü Okundu İşaretle";
+"friendRequests.accept" = "Kabul Et";
+"friendRequests.withdraw" = "Geri Çek";
+"friendRequests.pending" = "Bekliyor";
+"friendRequests.sentYouRequest" = "%@ sana arkadaşlık isteği gönderdi";
+
+/* --- ARCHIVE EXTRA --- */
+"archive.selectedAt" = "%@'te seçildi";
+
+/* --- GENERAL EXTRA --- */
+"general.share" = "Paylaş";
+
+/* --- CIRCLE SHARE TOGGLE --- */
+
+/* --- GENERAL OK --- */
+"general.ok" = "OK";
+"general.ok" = "Tamam";
+
+/* --- ONBOARDING FEATURES --- */
+
+/* --- TODAY EXTRA --- */
+"today.timeSelected" = "%@'te";
+
+/* --- MOOD EVENTS SHEET --- */
+
+/* --- CAMERA / PHOTO --- */
+
+/* --- DISCOVER EXTRA --- */
+
+/* --- CIRCLE FRIEND DETAIL --- */
+"circle.removeConfirmMessage" = "%@ adlı kişiyi çevrenden çıkarmak istiyor musun?";
+"circle.blockConfirmMessage" = "%@ adlı kullanıcıyı engellemek istediğine emin misin? Bu işlemi geri alamazsın.";
+"circle.todayFeeling" = "Bugünün\ntonu.";
+"circle.note" = "NOT";
+"circle.waitingPick" = "Bugün henüz seçmedi.";
+"circle.willAppear" = "Şarkı seçtiğinde burada görünecek";
+"circle.updating" = "Güncelleniyor…";
+"circle.notSelectedYet" = "Bugün henüz\nseçmedi.";
+
+/* --- CONTACTS --- */
+"contacts.navTitle" = "Rehberden Davet Et";
+"contacts.alertSmsCantSend" = "SMS Gönderilemiyor";
+"contacts.inviteCodeText" = "Davet kodu: %@";
+"contacts.contactsRequired" = "Rehber Erişimi Gerekli";
+"contacts.contactsPermissionHint" = "Ayarlar → Gizlilik → Kişiler\nbölümünden izin verebilirsin.";
+"contacts.openSettings" = "Ayarlar'ı Aç";
+"contacts.contactsLoading" = "Rehber yükleniyor…";
+"contacts.inviteButton" = "Davet Et";
+"contacts.searchPlaceholder" = "Kişi ara";
+"contacts.noContacts" = "Rehberinde kişi yok";
+"contacts.noResults" = "Kişi bulunamadı";
+"contacts.noName" = "İsimsiz";
+
+/* --- SHARE --- */
+
+/* --- MONTHLY SUMMARY --- */
+
+/* --- DISCOVER EXTRA --- */
+
+/* --- SEARCH SCREEN --- */
+"search.appleMusicPermission" = "Apple Music izni gerekli. Lütfen Ayarlar'dan izin verin.";
+
+/* --- CONFIRM SCREEN --- */
+
+/* --- DONE SCREEN --- */
+
+/* --- COLOR PICKER --- */
+/* --- INVITE SHARE --- */
+"invite.sendInvite" = "Davet Gönder";
+"invite.formatPicker" = "Format";
+"invite.story" = "Hikaye (9:16)";
+"invite.post" = "Gönderi / X (16:9)";
+"invite.preparing" = "Davet kartı hazırlanıyor...";
+"invite.generateFailed" = "Davet kartı oluşturulamadı";
+"invite.shareText" = "ONE'da çevreme katıl. Hisset, keşfet, paylaş.\n%@";
+
+/* --- COLOR PICKER --- */
+
+/* --- SHARE SHEET --- */
+"share.preparing" = "Story hazırlanıyor...";
+"share.otherApps" = "Diğer Uygulamalar";
+"share.cardSaved" = "Kart kaydedildi";
+"share.saveCard" = "Kartı Kaydet";
+"share.saveCardHint" = "Story kartını galeriye ekle";
+"share.photoSaved" = "Fotoğraf kaydedildi";
+"share.savePhoto" = "Fotoğrafı Kaydet";
+"share.savePhotoHint" = "Orijinal fotoğrafı galeriye ekle";
+
+/* --- DISCOVER EXTRA --- */
+
+/* --- MONTHLY POSTER --- */
+
+/* --- MOOD LABELS --- */
+
+/* --- MOOD MEANINGS (v2.5) --- */
+
+/* --- FEELING LABELS --- */
+
+/* --- TODAY EMPTY VIEW --- */
+
+/* --- CIRCLE / ADD FRIEND --- */
+
+/* --- SHARE ERRORS --- */
+"share.cardFailed" = "Paylaşım kartı oluşturulamadı";
+
+/* --- DISCOVER PRICING --- */
+
+/* --- TODAY PLAYING --- */
+
+/* --- TODAY GREETINGS --- */
+
+/* --- TODAY PHOTO --- */
+
+/* --- CAMERA --- */
+
+/* --- ARCHIVE FALLBACKS --- */
+"archive.unknownSong" = "Bilinmeyen Şarkı";
+"archive.unknownArtist" = "Bilinmeyen Sanatçı";
+"archive.unknown" = "Bilinmeyen";
+"archive.defaultMood" = "Nötr";
+"archive.defaultFeeling" = "Dingin";
+
+/* --- DISCOVER STATUS --- */
+
+/* --- CALENDAR DAY ABBREVIATIONS --- */
+
+/* --- GENRE FALLBACK --- */
+"genre.music" = "Müzik";
+
+/* --- SCREEN TITLES (top bar) --- */
+"screen.echo.title" = "Yankı";
+"screen.echoes.title" = "Bugüne gelenler";
+"screen.share.title" = "Paylaş";
+"screen.story.title" = "Story kart";
+"screen.camera.title" = "Kamera";
+"screen.entry.title" = "An";
+"screen.archive.title" = "Arşiv";
+"screen.circle.title" = "Çevre";
+"screen.profile.title" = "Profil";
+"topbar.settings" = "Ayarlar";
+"topbar.monthlyEcho" = "Aylık özet";
+
+/* --- NAVIGATION TABS --- */
+"nav.archive" = "arşiv";
+"nav.entry" = "an";
+"nav.circle" = "çevre";
+"nav.profile" = "profil";
+"nav.tabAccessibility" = "%@ sekmesi";
+
+/* --- DISCOVER CTA LABELS --- */
+
+/* --- ACTIVITY RECOMMENDATION SECTIONS --- */
+
+/* --- ACTIVITY TEMPLATES --- */
+
+
+
+
+
+
+
+
+
+
+
+/* --- ACTIVITY REASONS --- */
+
+/* --- SHARE CARD BRANDING --- */
+"share.brandWatermark" = "ONE · Mood Tracker";
+"share.brandWatermarkUpper" = "ONE · MOOD TRACKER";
+
+/* --- DISCOVER LISTEN LABELS --- */
+
+/* --- GENERAL TOAST TITLES --- */
+"general.success" = "Başarılı";
+"general.info" = "Bilgi";
+"general.warning" = "Uyarı";
+
+/* --- ACTIVITY VENUE HINTS --- */
+
+"cloudkit.connectionError" = "iCloud'a bağlanılamadı. İnternet bağlantını kontrol et ve tekrar dene.";
+"cloudkit.throttleWait" = "Sunucu meşgul. %d dk %02d sn sonra otomatik bağlanılacak.";
+
+
+/* --- ONE+ PREMIUM --- */
+
+/* Premium Status Card */
+
+/* Apple Music Playlist — A4 */
+
+/* Monthly Summary — B3 */
+
+/* Premium Status — D4 */
+
+/* Premium Special Feel — E3, E7 */
+
+/* Month-End Summary Notification */
+
+/* Badges */
+
+/* Yearly Summary */
+"whatsNew.circleFirst.body" = "Uygulamayı açtığında önce arkadaşlarının\nbugünkü rengini görüyorsun.";
+"whatsNew.circleFirst.title" = "Çevre artık açılışta";
+"whatsNew.cta.done" = "Başla";
+"whatsNew.cta.next" = "İlerle";
+"whatsNew.mosaic.body" = "Aylar tek akışta, renk renk.\nGeçen yıl bugün ne hissettiğini de görüyorsun.";
+"whatsNew.mosaic.title" = "Arşiv mozaiği";
+"whatsNew.savedMoment.body" = "Rengini bıraktığında ekran\nbir dalgayla karşılık veriyor.";
+"whatsNew.savedMoment.title" = "Yeni kayıt anı";
+"whatsNew.twoSteps.body" = "Renk seç, şarkı seç, bırak.\nFotoğraf ve not artık isteğe bağlı.";
+"whatsNew.twoSteps.title" = "İki adımda bitiyor";
+"notification.appUpdate.title" = "Yeni sürüm mevcut";
+"notification.appUpdate.body" = "ONE %@ yayında.";
+
+/* First entry — Çevre davet kancası (A4) */
+"firstEntryInvite.eyebrow" = "İLK ADIMI ATTIN";
+"firstEntryInvite.title" = "ONE çevrenle daha güzel.";
+"firstEntryInvite.body" = "Akşam bir yakının da bugünün rengini bıraksın. Birlikte ne hissettiğinizi görmek farklı bir his.";
+"firstEntryInvite.invite" = "1 yakınımı davet et";
+"firstEntryInvite.skip" = "Şimdi değil";
+
+/* A5 — Empty state next-action prompts */
+"echo.empty.title" = "Yankı henüz sessiz.";
+"echo.empty.body" = "Bir kayıt yaptığında haftan, ritmin ve renk paletin burada belirir.";
+"echo.empty.cta" = "Bugünü kaydet";
+
+/* B1 — Streak / freeze (soft streak) */
+
+/* B5 — Widget kurulum nudge */
+
+/* C1 — Discovery Mood DNA */
+
+/* D2 — Loss aversion loyalty card */
+
+/* Profile footer */
+
+/* Profile invite code chip */
+
+/* Add Friend redesign — iki niyet mimarisi */
+
+/* Profile redesign — BeReal-style hero */
+
+/* Profile settings sheet */
+
+/* Profile redesign — share button + recent mood strip */
+"profile.recentWeek.title" = "SON 7 GÜN";
+"profile.recentWeek.subtitle" = "Renklerinin haritası";
+"profile.recentWeek.todayShort" = "Bugün";
+
+/* Profile friends list */
+"profile.changePhoto" = "Foto değiştir";
+
+/* My Friends list (profile sekmesi) */
+"myFriends.title" = "Arkadaşlarım";
+
+/* Time-based Badges */
+
+/* Viral Sharing */
+"share.xTemplate" = "Bugün %@.\n\n#OneApp";
+
+/* Storytelling */
+"monthly.storyTitle" = "%@ Müziklerin Ayı";
+"monthly.storySubtitle" = "En çok %@'da düşüncelere daldın.";
+
+/* Resonance (v2.6) */
+
+/* P1.1 — Onboarding music optional */
+
+/* P1.6 — Onboarding streak freeze hint */
+
+/* Accessibility — DayCell */
+
+/* Accessibility — WaveStrip */
+
+/* Accessibility — MoodBarStrip (Req 13) */
+
+/* Circle — arkadaşı olmayan kullanıcı için değer önizlemesi */
+"circle.empty.previewTitle" = "5 arkadaşın olsa bugün bunları görürdün.";
+"circle.empty.previewSubtitle" = "Renkler onların. Sen sadece bakarsın.";
+"circle.empty.invite" = "Arkadaş davet et";
+"circle.empty.startAlone" = "Şimdilik tek başıma başla";
+
+"circle.empty.closing" = "Bugünkü rengini bıraktığında arkadaşların da seni görecek.";
+
+
+
+"profile.stat.entries" = "kayıt";
+"profile.row.musicSource" = "müzik kaynağı";
+
+
+"comeback.headline" = "%d gündür yoktun.
+bir şey kaçırmadın.";
+
+
+
+"onboarding.entry.brandTitle" = "bir şarkı.
+bir renk.
+bir gün.";
+
+"year.poster" = "poster";
+
+"notif.title" = "Bildirimler";
+"notif.markAllRead" = "okundu say";
+"notif.today" = "bugün";
+"notif.thisWeek" = "bu hafta";
+"notif.earlier" = "daha önce";
+"notif.promise" = "ONE günde en fazla bir kez hatırlatır. Beğeni ya da yorum bildirimi yok.";
+"notif.emptyTitle" = "Henüz bildirim yok.";
+"notif.unread" = "okunmadı";
+"notif.now" = "şimdi";
+
+"settings.privacy" = "gizlilik";
+"settings.privacyAccount" = "gizlilik & hesap";
+
+"music.intro" = "Şarkı ararken ve çalarken hangi servisi kullanalım?";
+"music.connected" = "bağlı";
+"music.notConnected" = "bağlı değil";
+"music.searchOnly" = "yalnızca arama";
+"music.searchOnlySub" = "hiçbir hesap bağlama, çalma yok";
+"privacy.whoCanSee" = "kim görebilir";
+"privacy.todayColour" = "bugünkü rengim";
+"privacy.todaySong" = "bugünkü şarkım";
+"privacy.archive" = "arşivim";
+"privacy.notes" = "notlarım";
+"privacy.friends" = "arkadaşlar";
+"privacy.onlyMe" = "yalnızca ben";
+"privacy.neverShared" = "Arşiv ve notlar hiçbir zaman paylaşılamaz — ayarı bile yok.";
+"privacy.discoverability" = "bulunabilirlik";
+"privacy.byUsername" = "kullanıcı adımla bulunayım";
+"privacy.byUsernameSub" = "tam adı bilenler seni ekleyebilir";
+
+"friends.addAction" = "＋ ekle";
+"friends.segAll" = "hepsi · %d";
+"friends.segRequests" = "istekler · %d";
+"friends.quickAdd" = "hızlı ekle";
+"friends.shareLink" = "bağlantı paylaş";
+"friends.showCode" = "kodunu göster";
+"friends.scanCode" = "kod okut";
+"friends.circleCount" = "çevren · %d";
+"friends.searchPlaceholder" = "arkadaş ara";
+"friends.emptyList" = "Henüz kimse yok — ilk arkadaşını davet et.";
+"friends.noMatch" = "Eşleşen arkadaş yok.";
+"friends.footer" = "arkadaşlar birbirinin sadece bugününü görür. geçmiş herkesin kendinde kalır.";
+"friends.addedYou" = "seni ekledi";
+"friends.sentByYou" = "gönderdiklerin";
+"friends.waiting" = "bekliyor";
+"friends.accept" = "kabul";
+"friends.ignore" = "yoksay";
+"friends.noIncoming" = "Bekleyen istek yok.";
+"friends.noOutgoing" = "Gönderilmiş istek yok.";
+
+"addFriend.screenTitle" = "Arkadaş ekle";
+"addFriend.exactHint" = "tam kullanıcı adını yaz. ONE'da rastgele insan önerilmez.";
+"addFriend.notFound" = "Bulunamadı. Yazımı kontrol et.";
+"addFriend.addAction" = "ekle";
+"addFriend.codeHint" = "kodunu göster ya da okut. bağlantın seni tanıyanlara özel.";
+"addFriend.copyCode" = "kodu kopyala";
+"addFriend.codeCopied" = "kopyalandı ✓";
+"addFriend.scanWithCamera" = "kamerayla okut";
+
+"friendProfile.theirRhythm" = "ritmi";
+"friendProfile.commonSongs" = "ortak şarkılar";
+"friendProfile.today" = "bugün";
+"friendProfile.peakHour" = "yoğun saat";
+"friendProfile.mutualCount" = "%d ortak arkadaş";
+"friendProfile.remove" = "arkadaşlıktan çıkar";
+
+"poster.title" = "%@ posteri";
+"poster.format" = "biçim";
+"poster.show" = "göster";
+"poster.fmtStory" = "story 9:16";
+"poster.fmtSquare" = "kare 1:1";
+"poster.fmtWallpaper" = "duvar kağıdı";
+"poster.songs" = "şarkılar";
+"poster.colourGrid" = "renk ızgarası";
+"poster.notes" = "notlar";
+"poster.days" = "gün";
+"poster.colours" = "renk";
+"poster.mostly" = "sık geçen: %@";
+"poster.mostPlayed" = "tekrar eden: %@";
+"poster.notesHint" = "notlar eklendi";
+"poster.saveImage" = "görsele kaydet";
+
+
+
+
+
+/* Hızlı ekle — prototip parity */
+"addFriend.mutualCount" = "%d ortak";
+"addFriend.sent" = "gönderildi";
+"addFriend.inviteMessage" = "ONE'da mood ve müzik paylaşıyorum. Seni de bekliyorum.";
+"addFriend.tileShareLink" = "bağlantı\npaylaş";
+"addFriend.tileShowCode" = "kodunu\ngöster";
+"addFriend.tileScan" = "kod\nokut";
+"addFriend.contactsOnOne" = "rehberinde ONE'da olanlar";
+"addFriend.contactsOnlyHint" = "yalnızca telefonunda kayıtlı olanlar. ONE tanımadığın kimseyi önermez.";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "karşılık ver";
+"reaction.replyPlaceholder" = "tek satır (yalnızca %@ görür)";
+"reaction.sent" = "gönderildi";
+"reaction.ephemeralNote" = "bu karşılık gün bitince kaybolur · yalnız %@ görür";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "BUGÜNE GELENLER";
+"echoes.reactors" = "KARŞILIK VERENLER";
+"echoes.threadWith" = "%@ ile";
+"echoes.replyPlaceholder" = "yanıt";
+"echoes.ephemeralNote" = "Gelen karşılıklar arşivlenmez — anlık kalır";
+"echoes.empty" = "Henüz karşılık yok. Gün ilerledikçe belirebilir.";
+"echoes.someone" = "Biri";
+
+// MARK: - Alt-çevre (SubCircle)
+
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.peopleCount" = "%d kişi";
+"circle.momentCount" = "%d an";
+"circle.youCard" = "Sen";
+"circle.youNotShared" = "Bugün paylaşmadın";
+"circle.notSharedToday" = "Bugün paylaşmadı";
+"circle.scopeShared" = "paylaşıldı";
+"circle.scopePrivate" = "yalnız sen";
+"circle.v3EmptyTitle" = "Henüz kimse yok.";
+"circle.v3EmptyBody" = "Birini ekle, günlerinizin rengini karşılıklı görün.";
+"circle.scanQR" = "QR kod tara";
+"circle.resonance" = "Uyum";
+"circle.sameColorLabel" = "Aynı renkte olanlar";
+"circle.distributionLabel" = "Çevrendeki dağılım";
+"circle.yourColorToday" = "Bugün senin rengin";
+"circle.noColorToday" = "Bugün renk yok";
+"circle.noColorTodayBody" = "Bir an kaydet, uyum burada belirsin.";
+"circle.sameColorCount" = "%d kişi bugün seninle aynı renkte";
+"circle.requests" = "Arkadaş istekleri";
+"circle.notifications" = "Bildirimler";
+
+/* v3 mood adlari - uygulamanin semantik yuku, koda gomulu olamaz */
+"mood.v3.atesli.label" = "Ateşli";
+"mood.v3.coskulu.label" = "Coşkulu";
+"mood.v3.gergin.label" = "Gergin";
+"mood.v3.mutlu.label" = "Mutlu";
+"mood.v3.enerjik.label" = "Enerjik";
+"mood.v3.odakli.label" = "Odaklı";
+"mood.v3.huzurlu.label" = "Huzurlu";
+"mood.v3.huzunlu.label" = "Hüzünlü";
+"mood.v3.yorgun.label" = "Yorgun";
+
+/* v3 mood anlamları — VoiceOver değeri ve alt başlık.
+   Eskiden `bridgedMood.meaning` üzerinden legacy 12-mood tablosundan
+   okunuyordu; köprü kayıplı olduğu için ekran okuyucu yanlış anlamı
+   söylüyordu (ör. "odaklı" → "dengede, sabit" derin'in anlamıydı). */
+"mood.v3.atesli.meaning" = "içim yanıyor";
+"mood.v3.coskulu.meaning" = "taşıp duruyorum";
+"mood.v3.gergin.meaning" = "altında eziliyorum";
+"mood.v3.mutlu.meaning" = "içimden parlıyor";
+"mood.v3.enerjik.meaning" = "diri ve hızlıyım";
+"mood.v3.odakli.meaning" = "dengede, sabit";
+"mood.v3.huzurlu.meaning" = "her şey yolunda";
+"mood.v3.huzunlu.meaning" = "içim sıkışmış";
+"mood.v3.yorgun.meaning" = "bitkin, tükenmişim";
+
+/* Merakli hatirlatma tonu - tam cumle, kelime birlestirme yok */
+"reminder.curious.yesterday.atesli" = "Dün ateşliydin.";
+"reminder.curious.yesterday.coskulu" = "Dün coşkuluydun.";
+"reminder.curious.yesterday.gergin" = "Dün gergindin.";
+"reminder.curious.yesterday.mutlu" = "Dün mutluydun.";
+"reminder.curious.yesterday.enerjik" = "Dün enerjiktin.";
+"reminder.curious.yesterday.odakli" = "Dün odaklıydın.";
+"reminder.curious.yesterday.huzurlu" = "Dün huzurluydun.";
+"reminder.curious.yesterday.huzunlu" = "Dün hüzünlüydün.";
+"reminder.curious.yesterday.yorgun" = "Dün yorgundun.";
+
+/* Legacy 12-mood (ONEMood) - arsiv/echo okuma yollari kullaniyor */
+"archive.previousMonth" = "Önceki ay";
+"archive.nextMonth" = "Sonraki ay";
+
+/* ── v3 ekranlarından kataloğa taşınan metinler ──────────────────────
+   Bu 69 anahtar koda gömülü Türkçe olarak duruyordu: katalog tamdı
+   ama bu ekranlar ona hiç bakmıyordu, dolayısıyla Almanca bir
+   kullanıcı Profil sekmesinde Türkçe görüyordu.
+   TR ve EN gerçek; diğer diller çeviri gelene kadar TR'ye düşüyor. */
+"applock.noPasscode" = "Cihazında parola veya biyometri tanımlı değil.";
+"archive.addMomentToDay" = "Bu güne an ekle";
+"archive.addNow" = "Şimdi ekle";
+"archive.dayEmpty.today" = "İlk anını bırak.";
+"archive.dayEmpty.past" = "O gün boş.";
+"archive.momentCount.one" = "1 an";
+"archive.dayCount" = "%lld gün";
+"archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
+"archive.empty.title" = "Arşiv boş.";
+"archive.mostFrequent" = "sık geçen %@";
+"archive.todayWaiting" = "Bugün arşivde boş.";
+"block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
+"camera.noAccess" = "Kamera erişimi yok";
+"camera.useThisMoment" = "Bu anı kullan";
+"circle.shareFailed" = "Çevre paylaşımı başarısız — internet bağlantını kontrol et.";
+"echo.monthColour" = "%@ · AYIN RENGİ";
+"echo.monthStory" = "%@ · AY HİKAYESİ";
+"echo.noRepeatSong" = "Aynı şarkı iki kez geçmedi.";
+"echo.posterFailed" = "Poster yüklenemedi";
+"entry.changeColour" = "Rengi değiştir";
+"entry.pickColour" = "Bir renk seç. Yeter.";
+"entry.removePhoto" = "Fotoğrafı kaldır";
+"entry.scopeSubtitle" = "Her an için ayrı seçebilirsin.";
+"entry.scopeTitle" = "Bu an kimde kalsın?";
+"general.a11y.toggle" = "Aç/kapat";
+"general.change" = "Değiştir";
+"general.now" = "şimdi";
+"general.openSettings" = "Ayarları aç";
+"invite.validSevenDays" = "7 GÜN GEÇERLİ";
+"invite.addMeOnONE" = "Beni ONE'da ekle";
+"liveActivity.enableHint" = "Mood'unu Dynamic Island'da görmek için Ayarlar > ONE > Canlı Etkinlikler'i etkinleştir.";
+"moment.a11y.openPhoto" = "Fotoğrafı aç";
+"moment.a11y.hasPhoto" = "Fotoğraflı";
+"moment.a11y.note" = "Not: %@";
+"moment.a11y.song" = "Şarkı: %@";
+"moment.a11y.privateScope" = "Arşivde, çevrede görünmüyor";
+"moment.archiveTag" = "· ARŞİV";
+"offline.banner" = "BAĞLANTI YOK · ANLARIN CİHAZINDA BEKLİYOR";
+"privacy.hiddenField" = "%@ bu kişinin gizlilik tercihi nedeniyle görüntülenemiyor";
+"profile.colourBreakdown" = "Renk dağılımı";
+"profile.monthColour" = "%@ · ayın rengi";
+"profile.monthCounts" = "%1$d gün · %2$d an";
+"profile.monthlySummary" = "AYLIK ÖZET";
+"profile.photoVisibility" = "Fotoğrafın çevrendeki arkadaşlara görünür.";
+"profile.pickAvatar" = "Avatar seç";
+"profile.pinned" = "sabitlenmiş";
+"profile.pinnedSong" = "SABİTLENMİŞ ŞARKI";
+"profile.sevenSteps" = "7 adım";
+"profile.signInOptional" = "Giriş yapmasan da ONE tam çalışır.";
+"profile.signOut" = "ÇIKIŞ";
+"profile.signedInWithApple" = "Apple ile giriş yapıldı";
+"profile.syncPitch" = "Arşivini cihazlar\narasında taşı.";
+"profile.versionLine" = "Sürüm %1$@ · %2$d an";
+"publicProfile.inYourCircle" = "Çevrende";
+"publicProfile.mutualFriends" = "%d ortak arkadaşınız var";
+"publicProfile.unavailable" = "Bu profil görüntülenemiyor.";
+"reminder.daily" = "Günlük hatırlatma";
+"reminder.days" = "GÜNLER";
+"reminder.lockPreview" = "KİLİT EKRANI ÖNİZLEMESİ";
+"reminder.subtitle" = "Seçtiğin saatte tek hatırlatma.";
+"reminder.title" = "Hatırlatma";
+"reminder.tone" = "NE DESİN";
+"report.notice" = "Bildirimler 24 saat içinde değerlendirilir. Yinelenen şikâyetler içeriği otomatik gizleyebilir.";
+"saved.backToDay" = "Güne dön";
+"saved.goToArchive" = "Arşive git";
+"settings.appearance" = "Görünüm";
+"share.createStoryCard" = "Story kart oluştur";
+"share.noNote" = "Not bırakmadın.";
+"share.noSong" = "Şarkı eklemedin.";
+"share.orSave" = "Paylaş ya da kaydet.";
+"song.pick" = "Şarkı seç";
+"song.preparingSuggestions" = "Öneriler hazırlanıyor.";
+"splash.tagline" = "DUYGU VE ŞARKI GÜNLÜĞÜ";
+"today.howDidItFeel" = "Bugün nasıl hissettirdi?";
+
+/* ── Kodda kullanılıyordu ama katalogda yoktu ────────────────────────
+   Bu anahtarlar `NSLocalizedString` ile çağrılıyor ama hiçbir dilde
+   tanımlı değildi; iOS bu durumda anahtarın kendisini döndürür,
+   yani kullanıcı ekranda "general.copy" yazısını görüyordu. */
+"accessibility.today.closeViewer" = "Fotoğraf görüntüleyiciyi kapat";
+"accessibility.today.photoViewerHint" = "Yakınlaştırmak için çift dokun, kapatmak için aşağı kaydır";
+"accessibility.unread" = "Okunmadı";
+"general.copied" = "Kopyalandı";
+"general.copy" = "Kopyala";
+"invite.shareSubtitle" = "Davet kodun veya link ile seni ekleyebilirler";
+"profile.usernameCurrent" = "Bu zaten senin kullanıcı adın";
+"profile.usernameInvalidFormat" = "Yalnızca harf, rakam ve alt çizgi kullan";
+"profile.usernameTooShort" = "En az 3 karakter olmalı";
+
+
+/* Rapor sheet'i — v3 kabuk geçişi */
+"report.title" = "Rapor et";
+"report.reason" = "SEBEP";
+"report.noteOptional" = "NOT — İSTEĞE BAĞLI";
+"report.notePlaceholder" = "Daha fazla detay ekle";
+"report.submit" = "Raporu gönder";
+"report.submitted" = "Gönderildi";
+"report.target.comment" = "Yorumu rapor et";
+"report.target.user" = "%@ kullanıcısını rapor et";
+"report.target.userFallback" = "Bu kullanıcıyı";
+"report.target.share" = "Paylaşımı rapor et";
+"report.context.comment" = "YORUM";
+"report.context.user" = "KULLANICI";
+"report.context.share" = "PAYLAŞIM";
+
+"circle.resonanceTitle" = "Uyum";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "AYARLAR";
+"settings.group.circle" = "ÇEVRE";
+"settings.group.about" = "HAKKINDA";
+"settings.group.developer" = "GELİŞTİRİCİ";
+"settings.reminder" = "Hatırlatma";
+"settings.musicSource" = "Müzik kaynağı";
+"settings.myFriends" = "Arkadaşlarım";
+"settings.deleteAccount" = "Hesabı sil";
+"settings.watchOnboarding" = "Onboarding'i izle";
+"settings.sampleCircleData" = "Örnek çevre verisi";
+"settings.sampleCircleDataNote" = "Çevre sekmesini örnek arkadaşlarla doldurur.";
+"settings.appLock" = "Uygulama kilidi";
+"settings.appLockGeneric" = "Cihaz parolası";
+
+"hub.momentCount" = "Bugün %d an var";
+
+"hub.addMoment" = "Yeni an ekle";
+"hub.songLine" = "Şarkı: %@";
+
+"songPicker.noSuggestions" = "Öneri bulunamadı.";
+
+/* AppError — hata mesajları ve başlıkları.
+   Türkçe değerlerle dokuz katalogda birden açıldı: davranış bugünküyle
+   aynı, ama artık çevrilebilir. Çeviri geldikçe bu blok doldurulur. */
+"error.networkUnavailable.message" = "İnternet bağlantısı yok. Lütfen bağlantını kontrol et.";
+"error.networkTimeout.message" = "İstek zaman aşımına uğradı. Tekrar dene.";
+"error.networkUnknown.message" = "Bağlantı hatası oluştu. Lütfen tekrar dene.";
+"error.cloudKitNotAvailable.message" = "iCloud kullanılamıyor. Ayarlar'dan iCloud'u kontrol et.";
+"error.cloudKitNotAuthenticated.message" = "iCloud hesabına giriş yapmamışsın.";
+"error.cloudKitRecordNotFound.message" = "Kayıt bulunamadı.";
+"error.cloudKitSchemaError.message" = "Sunucu yapılandırma hatası. Lütfen daha sonra tekrar dene.";
+"error.cloudKitServerConflict.message" = "Sunucu çakışması oluştu. Veriler senkronize ediliyor.";
+"error.cloudKitQuotaExceeded.message" = "iCloud depolama alanın dolu.";
+"error.cloudKitUnknown.message" = "iCloud hatası oluştu. Lütfen tekrar dene.";
+"error.persistenceSaveFailed.message" = "Kayıt sırasında bir hata oluştu.";
+"error.persistenceFetchFailed.message" = "Veriler yüklenirken bir hata oluştu.";
+"error.persistenceDeleteFailed.message" = "Silme işlemi başarısız oldu.";
+"error.persistenceMigrationFailed.message" = "Veri tabanı güncellemesi başarısız oldu.";
+"error.authAppleMusicDenied.message" = "Apple Music izni gerekli. Ayarlar > Gizlilik'ten izin ver.";
+"error.authAppleMusicRestricted.message" = "Apple Music bu cihazda kısıtlanmış.";
+"error.authSpotifyFailed.message" = "Spotify bağlantısı başarısız oldu.";
+"error.authSpotifyTokenExpired.message" = "Spotify oturumun sona erdi. Tekrar bağlan.";
+"error.authSpotifyNotConnected.message" = "Spotify hesabı bağlı değil.";
+"error.musicSearchFailed.message" = "Arama sırasında bir hata oluştu.";
+"error.musicNoResults.message" = "Sonuç bulunamadı.";
+"error.musicPlaybackFailed.message" = "Şarkı çalınamadı.";
+"error.musicServiceUnavailable.message" = "Müzik servisi kullanılamıyor.";
+"error.cameraDenied.message" = "Kamera izni gerekli. Ayarlar'dan izin ver.";
+"error.cameraUnavailable.message" = "Kamera kullanılamıyor.";
+"error.photoSaveFailed.message" = "Fotoğraf kaydedilemedi.";
+"error.circleUserNotFound.message" = "Kullanıcı bulunamadı. Kodu kontrol et.";
+"error.circleAlreadyFriend.message" = "Bu kullanıcı zaten çevrende.";
+"error.circleSelfAdd.message" = "Kendi kendini ekleyemezsin.";
+"error.circleInviteCodeInvalid.message" = "Geçersiz davet kodu.";
+"error.circleFriendRequestFailed.message" = "Arkadaşlık isteği gönderilemedi.";
+"error.title.network" = "Bağlantı Hatası";
+"error.title.cloudKit" = "iCloud Hatası";
+"error.title.persistence" = "Kayıt Hatası";
+"error.title.auth" = "Yetkilendirme";
+"error.title.music" = "Müzik Hatası";
+"error.title.camera" = "Kamera Hatası";
+"error.title.circle" = "Çevre Hatası";
+"error.title.unknown" = "Hata";
+
+/* ONE 2.0 — kabuk (ADR-001 Faz 1 madde 8) */
+"one2.tab.today" = "Bugün";
+"one2.tab.journey" = "Yolculuk";
+"one2.tab.explore" = "Keşfet";
+"one2.tab.profile" = "Profil";
+"one2.sheet.checkIn" = "Ruh hali";
+"one2.sheet.paywall" = "ONE+";
+"one2.placeholder.body" = "Bu bölüm hazırlanıyor.";
+"one2.notice.circleUnavailable" = "Çevre bu sürümde yok.";
+"one2.action.dismiss" = "Kapat";
+"one2.debug.useV3" = "Eski arayüze dön";
+"one2.debug.restart" = "Uygulamayı yeniden başlatınca geçerli olur.";
+
+/* ONE 2.0 — bildirim planlayıcı (04 › E13) */
+"notif.one2.morning.title" = "Günün sözü";
+"notif.one2.morning.fallback.1" = "Güne kısa bir durakla başla.";
+"notif.one2.morning.fallback.2" = "Bugün için tek bir niyet seç.";
+"notif.one2.morning.fallback.3" = "Sabahın ilk satırını yazabilirsin.";
+"notif.one2.evening.title" = "Günü kapatma vakti.";
+"notif.one2.evening.body" = "Bugünü birkaç satırla bırakabilirsin.";
+"notif.one2.weeklyTheme.title" = "Bu haftanın teması: %@";
+"notif.one2.streak.title" = "Serin bugün de sürebilir";
+"notif.one2.streak.body" = "%d gündür buradasın. Kısa bir kayıt yeter.";
+"notif.one2.comparison.title" = "Bu soruya daha önce cevap vermiştin";
+"notif.one2.resurface.title" = "Bu söze daha önce yazmıştın";

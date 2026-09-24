@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONE — Renk Seçici</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,300;0,9..144,400;1,9..144,200;1,9..144,300&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+body {
+  background: #080808;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 48px 24px 80px;
+  gap: 40px;
+  font-family: 'Geist Mono', monospace;
+}
+
+/* grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px;
+}
+
+.page-header {
+  text-align: center;
+}
+
+.page-title {
+  font-family: 'Fraunces', serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: #1e1e1e;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/* ── PHONE ── */
+.phone {
+  width: 310px;
+  height: 672px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.phone-shell {
+  position: absolute;
+  inset: 0;
+  border-radius: 50px;
+  background: #0f0f0f;
+  box-shadow:
+    inset 0 0 0 1px #1e1e1e,
+    0 0 0 1px #151515,
+    0 56px 112px rgba(0,0,0,0.95),
+    0 12px 32px rgba(0,0,0,0.7);
+}
+
+.phone-screen {
+  position: absolute;
+  inset: 10px;
+  border-radius: 42px;
+  overflow: hidden;
+  background: #F7F6F3;
+}
+
+.notch {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100px; height: 28px;
+  background: #0f0f0f;
+  border-radius: 0 0 18px 18px;
+  z-index: 100;
+}
+
+.status {
+  position: absolute;
+  top: 10px; left: 22px; right: 22px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 99;
+  font-size: 10px;
+  color: #BFBDB5;
+  letter-spacing: 0.03em;
+}
+
+/* ── SCREENS ── */
+.screen {
+  position: absolute;
+  inset: 0;
+  border-radius: 42px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1),
+              transform 0.45s cubic-bezier(0.16,1,0.3,1);
+  transform: translateY(14px);
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+
+/* ── TINT ── */
+.tint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 42px;
+  opacity: 0;
+  transition: opacity 1.4s cubic-bezier(0.16,1,0.3,1),
+              background 1.4s cubic-bezier(0.16,1,0.3,1);
+}
+.tint.on { opacity: 1; }
+
+/* ════════════════════════
+   SCREEN A — SEARCH
+════════════════════════ */
+#s-search {
+  background: #F7F6F3;
+}
+
+.search-inner {
+  position: absolute;
+  inset: 0;
+  padding: 54px 26px 72px;
+  display: flex;
+  flex-direction: column;
+}
+
+.s-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #C8C6BE;
+  margin-top: 14px;
+}
+
+.s-question {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  font-weight: 200;
+  font-style: italic;
+  color: #111;
+  line-height: 1.18;
+  margin-top: 14px;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'opsz' 72;
+}
+
+.s-field {
+  margin-top: 26px;
+  position: relative;
+}
+
+.s-input {
+  width: 100%;
+  background: #EEECEA;
+  border-radius: 13px;
+  padding: 13px 16px 13px 42px;
+  font-size: 13px;
+  font-family: 'Geist Mono', monospace;
+  color: #222;
+  border: 1.5px solid transparent;
+  outline: none;
+  transition: background 0.2s, border-color 0.2s;
+  letter-spacing: 0.01em;
+}
+.s-input::placeholder { color: #C8C6BE; }
+.s-input:focus { background: #fff; border-color: #DDD9D3; }
+
+.s-ico {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  width: 14px; height: 14px;
+  pointer-events: none;
+}
+.s-ico::before {
+  content: '';
+  position: absolute;
+  width: 10px; height: 10px;
+  border: 1.5px solid #C8C6BE;
+  border-radius: 50%;
+}
+.s-ico::after {
+  content: '';
+  position: absolute;
+  width: 4px; height: 1.5px;
+  background: #C8C6BE;
+  bottom: 0; right: 0;
+  transform: rotate(45deg);
+  transform-origin: right center;
+}
+
+.s-results {
+  margin-top: 8px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.s-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid #EEECEA;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  border-radius: 8px;
+}
+.s-item:hover { opacity: 0.6; }
+
+.s-cover {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.s-info { flex: 1; min-width: 0; }
+
+.s-name {
+  font-size: 13px;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.s-artist {
+  font-size: 10.5px;
+  color: #C8C6BE;
+  margin-top: 2px;
+}
+
+.s-tag {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: #EEECEA;
+  color: #AAA;
+  flex-shrink: 0;
+}
+
+/* ════════════════════════
+   SCREEN B — CONFIRM
+════════════════════════ */
+#s-confirm {
+  background: #F7F6F3;
+}
+
+.confirm-inner {
+  position: absolute;
+  inset: 0;
+  padding: 54px 26px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.c-back {
+  align-self: flex-start;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #C8C6BE;
+  cursor: pointer;
+  margin-top: 10px;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+.c-back:hover { color: #888; }
+
+/* cover + rings */
+.c-cover-zone {
+  margin-top: 28px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  height: 160px;
+}
+
+.c-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  transition: border-color 0.8s;
+  animation: ringFloat 3.2s ease-in-out infinite;
+}
+.c-ring-1 { inset: -14px; animation-delay: 0s; }
+.c-ring-2 { inset: -26px; animation-delay: 0.7s; }
+.c-ring-3 { inset: -38px; animation-delay: 1.4s; }
+
+@keyframes ringFloat {
+  0%,100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 0.15; transform: scale(1.02); }
+}
+
+.c-cover {
+  width: 140px; height: 140px;
+  border-radius: 22px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 50px;
+  position: relative; z-index: 2;
+  transition: box-shadow 1s cubic-bezier(0.16,1,0.3,1),
+              background 1s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* song meta */
+.c-meta {
+  margin-top: 22px;
+  text-align: center;
+}
+
+.c-song {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: #111;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  font-variation-settings: 'opsz' 48;
+}
+
+.c-artist {
+  font-size: 11px;
+  color: #C8C6BE;
+  letter-spacing: 0.07em;
+  margin-top: 5px;
+}
+
+/* ─── COLOR PICKER ─── */
+.c-picker-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #C8C6BE;
+  margin-top: 24px;
+  margin-bottom: 14px;
+  align-self: flex-start;
+}
+
+.c-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.c-color-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  border: none;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.c-color-btn:hover { transform: scale(1.08); }
+.c-color-btn:active { transform: scale(0.96); }
+
+.c-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  transition: border-color 0.25s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s;
+  position: relative;
+}
+
+.c-circle::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(0.85);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.c-color-btn.selected .c-circle {
+  border-color: #111;
+  transform: scale(1.12);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.c-color-btn.selected .c-circle::after { opacity: 0; }
+
+.c-word {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #BFBDB5;
+  transition: color 0.25s;
+  text-align: center;
+}
+
+.c-color-btn.selected .c-word { color: #333; }
+
+/* CTA */
+.c-cta {
+  margin-top: auto;
+  padding-top: 20px;
+  width: 100%;
+}
+
+.c-btn {
+  width: 100%;
+  background: #111;
+  color: #F7F6F3;
+  border: none;
+  border-radius: 16px;
+  padding: 16px;
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 300;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  transition: background 0.5s, transform 0.15s, opacity 0.3s;
+  opacity: 0.35;
+}
+
+.c-btn.ready { opacity: 1; }
+.c-btn:active { transform: scale(0.98); }
+
+.c-skip {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #C8C6BE;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+.c-skip:hover { color: #888; }
+
+/* ════════════════════════
+   SCREEN C — DONE
+════════════════════════ */
+#s-done {
+  background: #F7F6F3;
+}
+
+.done-inner {
+  position: absolute;
+  inset: 0;
+  padding: 54px 26px 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.done-check {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  animation: checkIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes checkIn {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.done-check-svg {
+  width: 22px; height: 22px;
+  stroke: #F7F6F3;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.done-checkmark {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: drawCheck 0.4s 0.3s ease forwards;
+}
+
+@keyframes drawCheck {
+  to { stroke-dashoffset: 0; }
+}
+
+.done-title {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 300;
+  font-style: italic;
+  color: #111;
+  text-align: center;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'opsz' 48;
+  margin-bottom: 8px;
+}
+
+.done-sub {
+  font-size: 10.5px;
+  color: #C8C6BE;
+  letter-spacing: 0.1em;
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+/* today's color dot preview */
+.done-dot-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.done-dot {
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
+  transition: background 0.6s, box-shadow 0.6s;
+}
+
+.done-dot-label {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #C8C6BE;
+}
+
+.done-dot-word {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 300;
+  font-style: italic;
+  color: #111;
+  font-variation-settings: 'opsz' 24;
+  margin-top: 4px;
+}
+
+/* ── bottom nav (shared) ── */
+.nav {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 68px;
+  z-index: 50;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 8px 14px;
+}
+.nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #F7F6F3 55%, transparent);
+  border-radius: 0 0 42px 42px;
+}
+
+.nav-btn {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; padding: 8px 14px;
+  background: none; border: none;
+}
+
+.nav-pip {
+  width: 4px; height: 4px;
+  border-radius: 2px;
+  background: #DDD;
+  transition: width 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.3s;
+}
+.nav-pip.on { width: 18px; background: #111; }
+
+.nav-lbl {
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #CCC;
+  transition: color 0.3s;
+}
+.nav-lbl.on { color: #111; }
+
+/* ── SIDE INFO ── */
+.side {
+  max-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 32px;
+}
+
+.side-card {
+  opacity: 0;
+  transform: translateX(12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.side-card.in { opacity: 1; transform: translateX(0); }
+
+.side-card-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+.side-card-body {
+  font-family: 'Fraunces', serif;
+  font-size: 13px;
+  font-weight: 300;
+  font-style: italic;
+  color: #3a3a3a;
+  line-height: 1.65;
+  font-variation-settings: 'opsz' 24;
+}
+
+.side-card-body b {
+  color: #777;
+  font-style: normal;
+}
+
+/* ── SCENE ── */
+.scene {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.tab {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #2a2a2a;
+  padding: 8px 14px;
+  border-radius: 100px;
+  border: 1px solid #1a1a1a;
+  cursor: pointer;
+  background: transparent;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+.tab.on { border-color: #3a3a3a; color: #bbb; background: #111; }
+
+/* archive mini preview */
+.arch-mini {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-top: 12px;
+}
+.arch-sq {
+  aspect-ratio: 1;
+  border-radius: 5px;
+  transition: background 0.6s;
+}
+.arch-sq.empty {
+  background: transparent;
+  border: 1px dashed #2a2a2a;
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-title">ONE · Renk Seçici · v3</div>
+</div>
+
+<div class="scene">
+
+  <!-- ── PHONE ── -->
+  <div class="phone">
+    <div class="phone-shell">
+      <div class="phone-screen">
+        <div class="tint" id="tint"></div>
+        <div class="notch"></div>
+        <div class="status">
+          <span id="clk">09:41</span>
+          <span>●●●</span>
+        </div>
+
+        <!-- SCREEN: SEARCH -->
+        <div class="screen active" id="s-search">
+          <div class="search-inner">
+            <div class="s-eyebrow">22 Şubat, Pazar</div>
+            <div class="s-question">Bugün nasıl<br>bir şarkı?</div>
+            <div class="s-field">
+              <div class="s-ico"></div>
+              <input class="s-input" id="sinput" placeholder="şarkı veya sanatçı..." oninput="filterSongs(this.value)">
+            </div>
+            <div class="s-results" id="sresults"></div>
+          </div>
+          <div class="nav">
+            <button class="nav-btn"><div class="nav-pip"></div><div class="nav-lbl">arşiv</div></button>
+            <button class="nav-btn"><div class="nav-pip on"></div><div class="nav-lbl on">bugün</div></button>
+            <button class="nav-btn"><div class="nav-pip"></div><div class="nav-lbl">çevre</div></button>
+            <button class="nav-btn"><div class="nav-pip"></div><div class="nav-lbl">yankı</div></button>
+          </div>
+        </div>
+
+        <!-- SCREEN: CONFIRM -->
+        <div class="screen" id="s-confirm">
+          <div class="confirm-inner">
+            <div class="c-back" onclick="showScreen('s-search')">← geri</div>
+
+            <div class="c-cover-zone">
+              <div class="c-ring c-ring-1" id="ring1"></div>
+              <div class="c-ring c-ring-2" id="ring2"></div>
+              <div class="c-ring c-ring-3" id="ring3"></div>
+              <div class="c-cover" id="ccover">🎵</div>
+            </div>
+
+            <div class="c-meta">
+              <div class="c-song" id="csong">—</div>
+              <div class="c-artist" id="cartist">—</div>
+            </div>
+
+            <!-- COLOR PICKER -->
+            <div class="c-picker-label">Şu an nasıl hissediyorsun?</div>
+            <div class="c-picker" id="cpicker"></div>
+
+            <div class="c-cta">
+              <button class="c-btn" id="cbtn" onclick="confirmSong()" disabled>Bugünün şarkısı bu</button>
+              <div class="c-skip" onclick="showScreen('s-search')">değiştir</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCREEN: DONE -->
+        <div class="screen" id="s-done">
+          <div class="done-inner">
+            <div class="done-check" id="dcheck">
+              <svg class="done-check-svg" viewBox="0 0 24 24">
+                <polyline class="done-checkmark" points="5,13 10,18 19,8"/>
+              </svg>
+            </div>
+            <div class="done-title" id="done-title">Kaydedildi.</div>
+            <div class="done-sub" id="done-sub">—</div>
+            <div class="done-dot-preview">
+              <div class="done-dot" id="done-dot"></div>
+              <div class="done-dot-label">bugünün rengi</div>
+              <div class="done-dot-word" id="done-word">—</div>
+            </div>
+          </div>
+          <div class="nav">
+            <button class="nav-btn" onclick="showScreen('s-archive-preview')"><div class="nav-pip"></div><div class="nav-lbl">arşiv</div></button>
+            <button class="nav-btn"><div class="nav-pip on"></div><div class="nav-lbl on">bugün</div></button>
+            <button class="nav-btn"><div class="nav-pip"></div><div class="nav-lbl">çevre</div></button>
+            <button class="nav-btn"><div class="nav-pip"></div><div class="nav-lbl">yankı</div></button>
+          </div>
+        </div>
+
+        <!-- SCREEN: ARCHIVE PREVIEW -->
+        <div class="screen" id="s-archive-preview">
+          <div class="search-inner">
+            <div class="s-eyebrow">Arşiv · Şubat</div>
+            <div class="s-question" style="font-size:22px;">Her gün<br>bir renk.</div>
+            <div class="arch-mini" id="arch-mini"></div>
+            <div style="margin-top:18px;font-size:11px;color:#C8C6BE;letter-spacing:0.04em;line-height:1.7;font-family:'Fraunces',serif;font-style:italic;font-weight:300;">
+              Boş günler kınanmıyor.<br>Sadece orada duruyor.
+            </div>
+          </div>
+          <div class="nav">
+            <button class="nav-btn"><div class="nav-pip on"></div><div class="nav-lbl on">arşiv</div></button>
+            <button class="nav-btn" onclick="showScreen('s-search')"><div class="nav-pip"></div><div class="nav-lbl">bugün</div></button>
+            <button class="nav-btn"><div class="nav-pip"></div><div class="nav-lbl">çevre</div></button>
+            <button class="nav-btn"><div class="nav-pip"></div><div class="nav-lbl">yankı</div></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SIDE ── -->
+  <div class="side" id="side">
+
+    <div class="side-card" id="sc1">
+      <div class="side-card-label">Neden renk?</div>
+      <div class="side-card-body">
+        Hissi kelimeyle tanımlamak <b>zor.</b><br><br>
+        Renk sezgisel — düşünmeden seçiyorsun. Bu da bir veri.
+      </div>
+    </div>
+
+    <div class="side-card" id="sc2">
+      <div class="side-card-label">Arşivde ne oluyor?</div>
+      <div class="side-card-body">
+        Şarkı kapağının rengi değil, <b>senin seçtiğin renk</b> o güne işleniyor.<br><br>
+        Mozaik sana ait.
+      </div>
+    </div>
+
+    <div class="side-card" id="sc3">
+      <div class="side-card-label">Wabi-Sabi</div>
+      <div class="side-card-body">
+        Seçim yapmazsan o gün <b>boş kalıyor.</b><br><br>
+        Silinmiyor. Kınanmıyor. Sadece sessizce duruyor.
+      </div>
+    </div>
+
+    <div class="side-card" id="sc4">
+      <div class="side-card-label">Yankılananlar</div>
+      <div class="side-card-body">
+        Hangi rengi kaç kez seçtiğin zamanla bir <b>örüntü</b> oluşturuyor.<br><br>
+        Kasım hep koyu muydu?
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab on" id="tab-search"  onclick="showScreen('s-search'); setTab(this)">01 · Bugün</button>
+  <button class="tab"    id="tab-confirm" onclick="previewConfirm();        setTab(this)">02 · Onayla + Renk</button>
+  <button class="tab"    id="tab-done"    onclick="previewDone();           setTab(this)">03 · Kaydedildi</button>
+  <button class="tab"    id="tab-arch"    onclick="showScreen('s-archive-preview'); setTab(this)">04 · Arşiv</button>
+</div>
+
+<script>
+// ── DATA ──
+const SONGS = [
+  { name:"Last Last",         artist:"Burna Boy",         genre:"Afrobeats",  emoji:"🌍", grad:["#FF8C42","#E8501A"], shadow:"rgba(255,140,66,0.45)" },
+  { name:"Ye",                artist:"Burna Boy",         genre:"Afrobeats",  emoji:"🔥", grad:["#FF6B35","#CC3300"], shadow:"rgba(255,107,53,0.45)" },
+  { name:"Strobe",            artist:"deadmau5",          genre:"Electronic", emoji:"🌐", grad:["#5B8DEF","#2244CC"], shadow:"rgba(91,141,239,0.45)" },
+  { name:"Midnight City",     artist:"M83",               genre:"Synth-pop",  emoji:"🌆", grad:["#9B7FD4","#5533AA"], shadow:"rgba(155,127,212,0.45)" },
+  { name:"Redbone",           artist:"Childish Gambino",  genre:"Soul",       emoji:"🎷", grad:["#1DB954","#0A7A30"], shadow:"rgba(29,185,84,0.45)"  },
+  { name:"Blinding Lights",   artist:"The Weeknd",        genre:"Synth-pop",  emoji:"💡", grad:["#E8334A","#AA1020"], shadow:"rgba(232,51,74,0.45)"  },
+  { name:"HUMBLE.",           artist:"Kendrick Lamar",    genre:"Hip-Hop",    emoji:"👑", grad:["#F5C842","#CC8800"], shadow:"rgba(245,200,66,0.45)" },
+  { name:"Teardrop",          artist:"Massive Attack",    genre:"Trip-Hop",   emoji:"💧", grad:["#607D8B","#334455"], shadow:"rgba(96,125,139,0.45)" },
+];
+
+// ── MOOD COLORS ──
+const MOODS = [
+  { color:"#E84040", word:"Ateşli",   dark: true  },
+  { color:"#FF8C42", word:"Enerjik",  dark: true  },
+  { color:"#F5C842", word:"Işıklı",   dark: true  },
+  { color:"#4CAF82", word:"Sakin",    dark: true  },
+  { color:"#5B8DEF", word:"Derin",    dark: true  },
+  { color:"#9B7FD4", word:"Gizemli",  dark: true  },
+  { color:"#2C2C2C", word:"Boş",      dark: true  },
+  { color:"#E8E6E0", word:"Temiz",    dark: false },
+];
+
+const ARCH_COLORS = [
+  "#E84040","#5B8DEF","#4CAF82","#E84040","#F5C842","#9B7FD4",null,
+  "#FF8C42","#607D8B","#2C2C2C",null,"#5B8DEF","#4CAF82","#FF8C42",
+  "#9B7FD4",null,"#E84040","#FF8C42","#F5C842","#5B8DEF","TODAY",
+];
+
+let selectedSong = null;
+let selectedMood = null;
+let currentScreen = 's-search';
+
+// ── INIT ──
+function init() {
+  renderSongs(SONGS);
+  renderMoodPicker();
+  renderArchMini();
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  setTimeout(() => {
+    document.querySelectorAll('.side-card').forEach((el,i) =>
+      setTimeout(() => el.classList.add('in'), i * 100)
+    );
+  }, 300);
+}
+
+function updateClock() {
+  const n = new Date();
+  document.getElementById('clk').textContent =
+    String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+}
+
+// ── SCREENS ──
+function showScreen(id) {
+  const prev = document.getElementById(currentScreen);
+  if (prev) { prev.classList.remove('active'); }
+  currentScreen = id;
+  const next = document.getElementById(id);
+  if (next) {
+    setTimeout(() => next.classList.add('active'), 20);
+  }
+
+  // Animate bars if pattern
+  if (id === 's-pattern') {
+    setTimeout(() => {
+      document.querySelectorAll('.pattern-bar-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    }, 300);
+  }
+}
+
+function setTab(el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ── SONGS ──
+function renderSongs(list) {
+  document.getElementById('sresults').innerHTML = list.slice(0,5).map((s,i) => `
+    <div class="s-item" onclick="pickSong(${SONGS.indexOf(s)})">
+      <div class="s-cover" style="background:linear-gradient(135deg,${s.grad[0]}99,${s.grad[1]}55);">${s.emoji}</div>
+      <div class="s-info">
+        <div class="s-name">${s.name}</div>
+        <div class="s-artist">${s.artist}</div>
+      </div>
+      <div class="s-tag">${s.genre}</div>
+    </div>
+  `).join('');
+}
+
+function filterSongs(v) {
+  if (!v) { renderSongs(SONGS); return; }
+  const f = SONGS.filter(s =>
+    s.name.toLowerCase().includes(v.toLowerCase()) ||
+    s.artist.toLowerCase().includes(v.toLowerCase())
+  );
+  renderSongs(f.length ? f : SONGS);
+}
+
+function pickSong(idx) {
+  selectedSong = SONGS[idx];
+  selectedMood = null;
+
+  // update confirm
+  const s = selectedSong;
+  document.getElementById('ccover').textContent = s.emoji;
+  document.getElementById('ccover').style.background = `linear-gradient(135deg,${s.grad[0]},${s.grad[1]})`;
+  document.getElementById('ccover').style.boxShadow = `0 18px 44px ${s.shadow}`;
+  document.getElementById('csong').textContent = s.name;
+  document.getElementById('cartist').textContent = s.artist + ' · ' + s.genre;
+
+  // ring color
+  ['ring1','ring2','ring3'].forEach(id => {
+    document.getElementById(id).style.borderColor = s.grad[0] + '30';
+  });
+
+  // tint
+  const tint = document.getElementById('tint');
+  tint.style.background = `radial-gradient(ellipse at 50% 25%, ${s.grad[0]}1A 0%, transparent 65%)`;
+  tint.classList.add('on');
+
+  // reset mood
+  document.querySelectorAll('.c-color-btn').forEach(b => b.classList.remove('selected'));
+  const btn = document.getElementById('cbtn');
+  btn.disabled = true;
+  btn.classList.remove('ready');
+
+  showScreen('s-confirm');
+}
+
+// ── MOOD PICKER ──
+function renderMoodPicker() {
+  document.getElementById('cpicker').innerHTML = MOODS.map((m, i) => `
+    <button class="c-color-btn" id="mood-${i}" onclick="pickMood(${i})">
+      <div class="c-circle" style="background:${m.color};"></div>
+      <div class="c-word">${m.word}</div>
+    </button>
+  `).join('');
+}
+
+function pickMood(idx) {
+  selectedMood = MOODS[idx];
+
+  // visual
+  document.querySelectorAll('.c-color-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('mood-' + idx).classList.add('selected');
+
+  // update tint with mood color
+  const tint = document.getElementById('tint');
+  tint.style.background = `radial-gradient(ellipse at 50% 80%, ${selectedMood.color}18 0%, transparent 60%)`;
+
+  // enable button
+  const btn = document.getElementById('cbtn');
+  btn.disabled = false;
+  btn.classList.add('ready');
+  btn.style.background = selectedMood.color;
+  btn.style.color = selectedMood.dark ? '#F7F6F3' : '#111';
+}
+
+function confirmSong() {
+  if (!selectedSong || !selectedMood) return;
+
+  // populate done screen
+  document.getElementById('done-title').textContent = 'Kaydedildi.';
+  document.getElementById('done-sub').textContent = selectedSong.name + ' · ' + selectedMood.word;
+  document.getElementById('done-dot').style.background = selectedMood.color;
+  document.getElementById('done-dot').style.boxShadow = `0 8px 24px ${selectedMood.color}55`;
+  document.getElementById('done-word').textContent = selectedMood.word;
+
+  // update arch TODAY slot
+  renderArchMini(selectedMood.color);
+
+  showScreen('s-done');
+}
+
+// ── ARCHIVE MINI ──
+function renderArchMini(todayColor) {
+  document.getElementById('arch-mini').innerHTML = ARCH_COLORS.map(c => {
+    if (!c) return `<div class="arch-sq empty"></div>`;
+    if (c === 'TODAY') {
+      const bg = todayColor || '#EEECEA';
+      return `<div class="arch-sq" style="background:${bg};box-shadow:0 0 0 2px #111;"></div>`;
+    }
+    return `<div class="arch-sq" style="background:${c};"></div>`;
+  }).join('');
+}
+
+// ── PREVIEW HELPERS ──
+function previewConfirm() {
+  if (!selectedSong) pickSong(0);
+  else showScreen('s-confirm');
+  setTab(document.getElementById('tab-confirm'));
+}
+
+function previewDone() {
+  if (!selectedSong) {
+    selectedSong = SONGS[0];
+    selectedMood = MOODS[4]; // Derin
+  }
+  if (!selectedMood) selectedMood = MOODS[4];
+  document.getElementById('done-title').textContent = 'Kaydedildi.';
+  document.getElementById('done-sub').textContent = selectedSong.name + ' · ' + selectedMood.word;
+  document.getElementById('done-dot').style.background = selectedMood.color;
+  document.getElementById('done-dot').style.boxShadow = `0 8px 24px ${selectedMood.color}55`;
+  document.getElementById('done-word').textContent = selectedMood.word;
+  renderArchMini(selectedMood.color);
+  showScreen('s-done');
+  setTab(document.getElementById('tab-done'));
+}
+
+init();
+</script>
+</body>
+</html>

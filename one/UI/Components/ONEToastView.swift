@@ -24,83 +24,108 @@ struct ONEToastOverlay: View {
                             removal: .move(edge: .top).combined(with: .opacity)
                         )
                     )
-                    .padding(.top, 8)
+                    .padding(.top, V3Tokens.spacingSM)
             }
             Spacer()
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: handler.currentToast?.id)
+        .animation(ONEAnimation.panelSpring, value: handler.currentToast?.id)
         .allowsHitTesting(handler.currentToast != nil)
     }
 }
 
-// MARK: - Toast Kartı
+// MARK: - Toast Kartı (v3 spec)
+// Üstte 18pt radius ink kart, kor nokta + mesaj + Kapat. `toastin` 0.28s
+// giriş animasyonu — overlay wrapper zaten spring transition uyguluyor.
 struct ONEToastView: View {
     let toast: ToastItem
     @ObservedObject private var handler = ErrorHandler.shared
-    
+
+    /// Yukarı kaydırarak kapatmanın canlı takibi.
+    @State private var dragY: CGFloat = 0
+
+    /// Kart yukarı çıktıkça soluyor: parmak henüz kalkmadan "bu hareket
+    /// kapatıyor" bilgisini veriyor — sonucu haber veren ara kareler.
+    private var dragOpacity: Double {
+        1.0 - min(0.55, Double(max(0, -dragY)) / 90)
+    }
+
     var body: some View {
-        HStack(spacing: 12) {
-            // İkon
-            Image(systemName: toast.type.icon)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(toast.type.color)
-            
-            // Mesaj
-            VStack(alignment: .leading, spacing: 2) {
-                Text(toast.title)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(ONETokens.oneInk)
-                
-                Text(toast.message)
-                    .font(.system(size: 11))
-                    .foregroundColor(ONETokens.oneAsh)
-                    .lineLimit(2)
-            }
-            
+        HStack(spacing: V3Tokens.spacingMD) {
+            // v3: kor nokta (7pt) — tek vurgu.
+            Circle()
+                .fill(ONEBrand.kor)
+                .frame(width: 7, height: 7)
+
+            // Mesaj — tek satır (spec sadece message; title yoksa message'a düş).
+            Text(toast.title.isEmpty ? toast.message : toast.title)
+                .bodySMMedium()
+                .foregroundColor(ONEBrand.bone)
+                .lineLimit(2)
+
             Spacer(minLength: 4)
-            
-            // Retry veya Dismiss
+
             if toast.isRetryable {
                 Button(action: { handler.retry() }) {
-                    Text("Tekrar Dene")
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                        .tracking(0.5)
-                        .foregroundColor(ONETokens.oneCream)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule().fill(toast.type.color)
-                        )
+                    Text(NSLocalizedString("general.retry", comment: ""))
+                        .monoSM(weight: .semibold)
+                        .tracking(1.2)
+                        .foregroundColor(ONEBrand.ink)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(V3Tokens.surface))
                 }
+                .buttonStyle(.onePressable)
+                .accessibilityLabel(NSLocalizedString("general.retry", comment: ""))
             } else {
                 Button(action: { handler.dismiss() }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(ONETokens.oneStone)
-                        .frame(width: 24, height: 24)
-                        .background(Circle().fill(ONETokens.oneSilver))
+                        .iconXS(weight: .semibold)
+                        .foregroundColor(ONEBrand.bone.opacity(0.6))
+                        .frame(width: 32, height: 32)
                 }
+                .contentShape(Rectangle())
+                .accessibilityLabel(NSLocalizedString("general.close", comment: ""))
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .padding(.horizontal, V3Tokens.spacingLG)
+        .padding(.vertical, V3Tokens.spacingMD)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(toast.type.color.opacity(0.2), lineWidth: 1)
-                )
-                .shadow(color: Color.black.opacity(0.08), radius: 16, x: 0, y: 6)
+            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
+                .fill(ONEBrand.ink)
         )
-        .padding(.horizontal, 16)
+        .elevation(.toastPop)
+        .padding(.horizontal, V3Tokens.spacingLG)
+        .offset(y: dragY)
+        .opacity(dragOpacity)
+        // Kaydırarak kapatma.
+        //
+        // Önceden yalnız `.onEnded` vardı: parmak boyunca kart hiç
+        // kıpırdamıyor, sonra ya birden kayboluyor ya hiçbir şey olmuyordu.
+        // Jest sırasında geri bildirim olmayınca hareketin işe yarayıp
+        // yaramadığı ancak bittikten sonra öğreniliyor.
         .gesture(
             DragGesture(minimumDistance: 10)
+                .onChanged { value in
+                    let dy = value.translation.height
+                    // Yukarı 1:1, aşağı artan direnç — kartın gideceği
+                    // bir aşağısı yok.
+                    dragY = dy < 0
+                        ? dy
+                        : dy.rubberbanded(over: 120)
+                }
                 .onEnded { value in
-                    if value.translation.height < -20 {
+                    let dy = value.translation.height
+                    let projected = value.predictedEndTranslation.height
+                    if dy < -36 || projected < -110 {
                         handler.dismiss()
+                    } else {
+                        withAnimation(ONEAnimation.dragSnapBack) {
+                            dragY = 0
+                        }
                     }
                 }
         )
+        // Yeni toast eski toast'ın kalıntı ofsetiyle belirmesin.
+        .onChange(of: toast.id) { _, _ in dragY = 0 }
     }
 }

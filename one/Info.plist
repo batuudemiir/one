@@ -22,25 +22,40 @@
 		<string>spotify</string>
 		<string>instagram</string>
 		<string>instagram-stories</string>
+		<string>tiktok</string>
+		<string>snssdk1180</string>
+		<string>snssdk1233</string>
 	</array>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>Günlük müziğini kaydetmek için Apple Music&apos;e erişim gereklidir.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Günlük anlarını fotoğraflamak ve QR kod taramak için kamera erişimi gereklidir.</string>
 	<key>LSBundleContainsCoreMLmlmodelc</key>
 	<false/>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Günlük müziğini kaydetmek için Apple Music'e erişim gereklidir.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Günlük anlarını fotoğraflamak ve QR kod taramak için kamera erişimi gereklidir.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Arkadaşlarını ONE'a davet etmek için rehberine erişim gereklidir.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Uygulama kilidi açıkken anlarını yalnızca sen açabilesin diye Face ID kullanılır.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Ruh hali kartını ve paylaşım görsellerini fotoğraf kütüphanene kaydetmek için erişim gereklidir.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Günlük kartını ve anılarını fotoğraf kütüphanenden seçmek için erişim gereklidir.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>SpotifyClientID</key>
+	<string>$(SPOTIFY_CLIENT_ID)</string>
+	<key>TicketmasterAPIKey</key>
+	<string>$(TICKETMASTER_API_KEY)</string>
 	<key>UIAppFonts</key>
 	<array>
+		<string>Archivo_ExtraBold_Expanded.ttf</string>
+		<string>CaveatBrush-Regular.ttf</string>
 		<string>DMSans_24pt-Regular.ttf</string>
 		<string>DMSans_24pt-Medium.ttf</string>
 		<string>DMSans_24pt-SemiBold.ttf</string>
 		<string>DMSans-Bold.ttf</string>
 		<string>DMSans_18pt-LightItalic.ttf</string>
 	</array>
-	<key>SpotifyClientID</key>
-	<string>f2afa405bc0e44bf8ed6c171adc0fa79</string>
-	<key>TicketmasterAPIKey</key>
-	<string>$(TICKETMASTER_API_KEY)</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

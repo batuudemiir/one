@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONE — App Store Widget Screenshots</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #000;
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  .screenshots-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 60px 40px;
+    align-items: center;
+  }
+
+  /* === iPhone Frame === */
+  .iphone-frame {
+    width: 393px;
+    height: 852px;
+    background: #1C1C1E;
+    border-radius: 55px;
+    border: 4px solid #3A3A3C;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+  }
+
+  .iphone-frame .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 126px; height: 34px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    z-index: 10;
+  }
+
+  .iphone-frame .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 28px 0;
+    font-size: 14px;
+    font-weight: 600;
+    position: relative;
+    z-index: 5;
+  }
+
+  .iphone-frame .screen {
+    padding: 8px 16px 40px;
+    height: calc(100% - 50px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* === Widget Styles === */
+  .widget {
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Small Widget — Mood Gradient */
+  .widget-small {
+    width: 170px;
+    height: 170px;
+    background: linear-gradient(135deg, #8B6FA8 0%, #8B6FA8cc 55%, #8B6FA888 100%);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .widget-small .streak-pill {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 100px;
+    padding: 3px 6px;
+    font-size: 8px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: auto;
+  }
+
+  .widget-small .song-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+
+  .widget-small .artist-name {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    margin-top: 1px;
+  }
+
+  .widget-small .mood-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .widget-small .mood-tag .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+  }
+
+  .widget-small .mood-tag span {
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.6);
+  }
+
+  /* Medium Widget — Mood Panel + Friends */
+  .widget-medium {
+    width: 364px;
+    height: 170px;
+    background: #F8F7F4;
+    border-radius: 20px;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .widget-medium .mood-panel {
+    width: 96px;
+    background: #8B6FA8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 12px;
+    margin: 8px 0 8px 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .widget-medium .mood-panel::after {
+    content: '';
+    position: absolute;
+    top: -10px; right: -10px;
+    width: 60px; height: 60px;
+    background: radial-gradient(circle, rgba(255,255,255,0.12), transparent);
+    border-radius: 50%;
+  }
+
+  .widget-medium .mood-panel .note-icon {
+    font-size: 22px;
+    color: #fff;
+  }
+
+  .widget-medium .mood-panel .mood-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: rgba(255,255,255,0.75);
+  }
+
+  .widget-medium .info-panel {
+    flex: 1;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .widget-medium .info-panel .song-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1C1C1E;
+    line-height: 1.2;
+  }
+
+  .widget-medium .info-panel .artist-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: #8E8E93;
+    margin-top: 1px;
+  }
+
+  .widget-medium .info-panel .spacer { flex: 1; }
+
+  .widget-medium .friends-orbit {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .mood-bubble {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .mood-bubble.self { width: 22px; height: 22px; background: #5B8DEF; }
+  .mood-bubble.friend-1 { background: #8B6FA8; }
+  .mood-bubble.friend-2 { background: #E07A5F; }
+  .mood-bubble.ghost { background: rgba(91,141,239,0.12); color: rgba(91,141,239,0.4); border: 1px solid rgba(91,141,239,0.2); }
+
+  .streak-pill-dark {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(224,122,95,0.1);
+    border-radius: 100px;
+    padding: 3px 6px;
+    font-size: 8px;
+    font-weight: 700;
+    color: #E07A5F;
+    margin-left: auto;
+  }
+
+  /* Large Widget — Full Layout */
+  .widget-large {
+    width: 364px;
+    height: 382px;
+    background: #F8F7F4;
+    border-radius: 20px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .widget-large .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .widget-large .header .title {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+    color: #5B8DEF;
+  }
+
+  .widget-large .header .count {
+    font-size: 9px;
+    font-weight: 500;
+    color: #AEAEB2;
+    margin-left: 6px;
+  }
+
+  .widget-large .divider {
+    height: 0.5px;
+    background: rgba(28,28,30,0.06);
+    margin: 6px 0;
+  }
+
+  .widget-large .self-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+  }
+
+  .widget-large .self-row .mood-bubble-lg {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #8B6FA8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .widget-large .self-row .info .name-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .widget-large .self-row .info .name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1C1C1E;
+  }
+
+  .widget-large .self-row .info .mood-badge {
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    color: #8B6FA8;
+    background: rgba(139,111,168,0.1);
+    border-radius: 100px;
+    padding: 2px 5px;
+  }
+
+  .widget-large .self-row .info .song {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(28,28,30,0.7);
+    margin-top: 1px;
+  }
+
+  .widget-large .self-row .info .artist {
+    font-size: 9px;
+    font-weight: 500;
+    color: #AEAEB2;
+  }
+
+  .widget-large .friend-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+  }
+
+  .widget-large .friend-row .mood-bubble-md {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .widget-large .friend-row .info .name-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .widget-large .friend-row .info .name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #1C1C1E;
+  }
+
+  .widget-large .friend-row .info .mood-badge {
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    border-radius: 100px;
+    padding: 2px 4px;
+  }
+
+  .widget-large .friend-row .info .song {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(28,28,30,0.7);
+    margin-top: 1px;
+  }
+
+  .widget-large .friend-row .info .artist {
+    font-size: 8px;
+    font-weight: 500;
+    color: #AEAEB2;
+  }
+
+  .widget-large .friend-row .accent-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .widget-large .indented-divider {
+    height: 0.5px;
+    background: rgba(28,28,30,0.04);
+    margin: 2px 0 2px 42px;
+  }
+
+  .widget-large .waiting-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-top: 5px;
+  }
+
+  .widget-large .waiting-row .label {
+    font-size: 8px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    color: #AEAEB2;
+  }
+
+  .widget-large .waiting-row .ghost-bubble {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7px;
+    font-weight: 600;
+  }
+
+  /* === Screenshot Layout === */
+  .screenshot {
+    position: relative;
+  }
+
+  .screenshot .caption {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap;
+  }
+
+  /* Home Screen Grid */
+  .home-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 8px 0;
+  }
+
+  .home-grid .app-icon {
+    width: 60px; height: 60px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+
+  /* Page Layout — 6.7" screenshots */
+  .screenshot-page {
+    width: 1290px;
+    height: 2796px;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .screenshot-page .bg-gradient {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 30%, rgba(91,141,239,0.15), transparent 60%),
+                radial-gradient(ellipse at 30% 70%, rgba(139,111,168,0.1), transparent 50%);
+  }
+
+  .screenshot-page .headline {
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #fff;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    margin-bottom: 8px;
+  }
+
+  .screenshot-page .subheadline {
+    font-size: 28px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    margin-bottom: 60px;
+  }
+
+  .screenshot-page .device-cluster {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+  }
+
+  .screenshot-page .device-cluster .iphone-frame {
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
+
+  /* Single device showcase */
+  .screenshot-page.single-device {
+    justify-content: flex-start;
+    padding-top: 160px;
+  }
+
+  .screenshot-page.single-device .device-wrapper {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Print-friendly */
+  @media print {
+    .screenshot-page { page-break-after: always; }
+  }
+
+  /* Navigation hint */
+  .nav-hint {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    z-index: 100;
+  }
+</style>
+</head>
+<body>
+
+<div class="nav-hint">⌘+P ile PDF olarak kaydet → App Store Connect'e yükle</div>
+
+<!-- ============================================ -->
+<!-- SCREENSHOT 1: Hero — Widget Gallery          -->
+<!-- ============================================ -->
+<div class="screenshot-page">
+  <div class="bg-gradient"></div>
+  <div class="headline">Günününü müzikle<br>anlat</div>
+  <div class="subheadline">Widget'ında ruh halin, şarkın ve arkadaşların</div>
+  <div class="device-cluster">
+    <!-- Small Widget -->
+    <div class="iphone-frame">
+      <div class="notch"></div>
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●● 🔋</span>
+      </div>
+      <div class="screen">
+        <div class="home-grid">
+          <div class="app-icon" style="background:#FF6B6B;">📸</div>
+          <div class="app-icon" style="background:#4ECDC4;">🎵</div>
+          <div class="app-icon" style="background:#FFE66D;">☀️</div>
+          <div class="app-icon" style="background:#95E1D3;">💬</div>
+        </div>
+        <div style="display:flex; gap:12px;">
+          <div class="widget widget-small">
+            <div class="streak-pill">🔥 5</div>
+            <div class="song-name">Sycamore</div>
+            <div class="artist-name">The National</div>
+            <div class="mood-tag"><div class="dot"></div><span>NOSTALJİK</span></div>
+          </div>
+          <div class="widget widget-small" style="background:#F8F7F4;">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:6px;">
+              <div style="width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(91,141,239,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(91,141,239,0.5);">🎵</div>
+              <div style="font-size:10px;font-weight:600;color:rgba(28,28,30,0.5);">Bugün şarkını seç</div>
+              <div style="font-size:8px;font-weight:500;color:#AEAEB2;">Ruh halini yansıt</div>
+            </div>
+          </div>
+        </div>
+        <div class="home-grid">
+          <div class="app-icon" style="background:#A8E6CF;">🗺</div>
+          <div class="app-icon" style="background:#DDA0DD;">⏰</div>
+          <div class="app-icon" style="background:#87CEEB;">📧</div>
+          <div class="app-icon" style="background:#F0E68C;">⚙️</div>
+        </div>
+        <div class="home-grid">
+          <div class="app-icon" style="background:#FFB347;">🧮</div>
+          <div class="app-icon" style="background:#77DD77;">📘</div>
+          <div class="app-icon" style="background:#CB99C9;">🎮</div>
+          <div class="app-icon" style="background:#89CFF0;">📁</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medium Widget -->
+    <div class="iphone-frame">
+      <div class="notch"></div>
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●● 🔋</span>
+      </div>
+      <div class="screen">
+        <div class="home-grid">
+          <div class="app-icon" style="background:#FF6B6B;">📸</div>
+          <div class="app-icon" style="background:#4ECDC4;">🎵</div>
+          <div class="app-icon" style="background:#FFE66D;">☀️</div>
+          <div class="app-icon" style="background:#95E1D3;">💬</div>
+        </div>
+        <div class="widget widget-medium">
+          <div class="mood-panel">
+            <div class="note-icon">🎵</div>
+            <div class="mood-label">NOSTALJİK</div>
+          </div>
+          <div class="info-panel">
+            <div class="song-name">Sycamore</div>
+            <div class="artist-name">The National</div>
+            <div class="spacer"></div>
+            <div class="friends-orbit">
+              <div class="mood-bubble self">S</div>
+              <div class="mood-bubble friend-1">E</div>
+              <div class="mood-bubble friend-2">C</div>
+              <div class="mood-bubble ghost">D</div>
+              <div style="flex:1"></div>
+              <div class="streak-pill-dark">🔥 5</div>
+            </div>
+          </div>
+        </div>
+        <div class="home-grid">
+          <div class="app-icon" style="background:#A8E6CF;">🗺</div>
+          <div class="app-icon" style="background:#DDA0DD;">⏰</div>
+          <div class="app-icon" style="background:#87CEEB;">📧</div>
+          <div class="app-icon" style="background:#F0E68C;">⚙️</div>
+        </div>
+        <div class="home-grid">
+          <div class="app-icon" style="background:#FFB347;">🧮</div>
+          <div class="app-icon" style="background:#77DD77;">📘</div>
+          <div class="app-icon" style="background:#CB99C9;">🎮</div>
+          <div class="app-icon" style="background:#89CFF0;">📁</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Large Widget -->
+    <div class="iphone-frame">
+      <div class="notch"></div>
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●● 🔋</span>
+      </div>
+      <div class="screen">
+        <div class="home-grid">
+          <div class="app-icon" style="background:#FF6B6B;">📸</div>
+          <div class="app-icon" style="background:#4ECDC4;">🎵</div>
+          <div class="app-icon" style="background:#FFE66D;">☀️</div>
+          <div class="app-icon" style="background:#95E1D3;">💬</div>
+        </div>
+        <div class="widget widget-large">
+          <div class="header">
+            <span class="title">ONE</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="streak-pill-dark">🔥 5 gün</div>
+              <span class="count">2/3</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="self-row">
+            <div class="mood-bubble-lg">S</div>
+            <div class="info">
+              <div class="name-row">
+                <span class="name">Sen</span>
+                <span class="mood-badge">NOSTALJİK</span>
+              </div>
+              <div class="song">Sycamore</div>
+              <div class="artist">The National</div>
+            </div>
+          </div>
+          <div class="indented-divider"></div>
+          <div class="friend-row">
+            <div class="mood-bubble-md" style="background:#8B6FA8;">E</div>
+            <div class="info">
+              <div class="name-row">
+                <span class="name">Elif</span>
+                <span class="mood-badge" style="color:#8B6FA8;background:rgba(139,111,168,0.1);">NOSTALJİK</span>
+              </div>
+              <div class="song">Sycamore</div>
+              <div class="artist">The National</div>
+            </div>
+            <div class="accent-dot" style="background:rgba(139,111,168,0.25);"></div>
+          </div>
+          <div class="indented-divider"></div>
+          <div class="friend-row">
+            <div class="mood-bubble-md" style="background:#E07A5F;">C</div>
+            <div class="info">
+              <div class="name-row">
+                <span class="name">Can</span>
+                <span class="mood-badge" style="color:#E07A5F;background:rgba(224,122,95,0.1);">ENERJİK</span>
+              </div>
+              <div class="song">Redbone</div>
+              <div class="artist">Childish Gambino</div>
+            </div>
+            <div class="accent-dot" style="background:rgba(224,122,95,0.25);"></div>
+          </div>
+          <div class="indented-divider" style="margin-top:3px;"></div>
+          <div class="waiting-row">
+            <span class="label">bekleniyor</span>
+            <div class="ghost-bubble" style="background:rgba(91,141,239,0.12);color:rgba(91,141,239,0.4);border:1px solid rgba(91,141,239,0.15);">D</div>
+          </div>
+        </div>
+        <div class="home-grid">
+          <div class="app-icon" style="background:#A8E6CF;">🗺</div>
+          <div class="app-icon" style="background:#DDA0DD;">⏰</div>
+          <div class="app-icon" style="background:#87CEEB;">📧</div>
+          <div class="app-icon" style="background:#F0E68C;">⚙️</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCREENSHOT 2: Lock Screen Widgets            -->
+<!-- ============================================ -->
+<div class="screenshot-page single-device">
+  <div class="bg-gradient" style="background:radial-gradient(ellipse at 50% 40%, rgba(139,111,168,0.2), transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(91,141,239,0.1), transparent 50%);"></div>
+  <div class="headline">Kilit ekranında<br>mood rengin</div>
+  <div class="subheadline">Anında gör, anında hisset</div>
+  <div class="device-wrapper">
+    <div class="iphone-frame" style="background:linear-gradient(180deg, #2C2C2E 0%, #1C1C1E 100%);">
+      <div class="notch"></div>
+      <div class="status-bar" style="color:#fff;">
+        <span>9:41</span>
+        <span>●●● 🔋</span>
+      </div>
+      <div style="padding:20px 24px;display:flex;flex-direction:column;gap:20px;">
+        <!-- Date -->
+        <div style="text-align:center;">
+          <div style="font-size:16px;font-weight:500;color:rgba(255,255,255,0.5);">Çarşamba, 30 Nisan</div>
+          <div style="font-size:64px;font-weight:700;color:#fff;letter-spacing:-2px;line-height:1;">9:41</div>
+        </div>
+
+        <!-- Lock Screen Widgets -->
+        <div style="display:flex;justify-content:center;gap:60px;padding:0 20px;">
+          <!-- Circular -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <div style="width:54px;height:54px;border-radius:50%;background:rgba(139,111,168,0.15);border:2.5px solid #8B6FA8;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:16px;font-weight:700;color:#8B6FA8;">🎵</span>
+            </div>
+            <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.4);">ONE</span>
+          </div>
+          <!-- Rectangular -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <div style="width:180px;height:54px;border-radius:14px;background:rgba(255,255,255,0.08);padding:6px 10px;display:flex;flex-direction:column;justify-content:center;">
+              <div style="display:flex;align-items:center;gap:4px;">
+                <div style="width:6px;height:6px;border-radius:50%;background:#8B6FA8;"></div>
+                <span style="font-size:10px;font-weight:600;color:#8B6FA8;">Nostaljik</span>
+              </div>
+              <span style="font-size:12px;font-weight:500;color:#fff;">Sycamore</span>
+              <span style="font-size:9px;color:rgba(255,255,255,0.5);">The National</span>
+            </div>
+            <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.4);">ONE</span>
+          </div>
+        </div>
+
+        <!-- Notification style preview -->
+        <div style="margin-top:40px;background:rgba(255,255,255,0.06);border-radius:16px;padding:14px 16px;display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#5B8DEF,#8B6FA8);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🎵</div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#fff;">ONE</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);">Bugün 2 arkadaşın müzik paylaştı 👀</div>
+          </div>
+          <div style="margin-left:auto;font-size:10px;color:rgba(255,255,255,0.3);">2dk</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCREENSHOT 3: Friends Feature                -->
+<!-- ============================================ -->
+<div class="screenshot-page single-device">
+  <div class="bg-gradient" style="background:radial-gradient(ellipse at 50% 30%, rgba(224,122,95,0.15), transparent 55%), radial-gradient(ellipse at 20% 80%, rgba(91,141,239,0.1), transparent 50%);"></div>
+  <div class="headline">Arkadaşlarının<br>mood'unu keşfet</div>
+  <div class="subheadline">Her gün yeni bir şarkı, yeni bir renk</div>
+  <div class="device-wrapper">
+    <div class="iphone-frame">
+      <div class="notch"></div>
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●● 🔋</span>
+      </div>
+      <div class="screen" style="gap:8px;">
+        <div class="home-grid">
+          <div class="app-icon" style="background:#FF6B6B;">📸</div>
+          <div class="app-icon" style="background:#4ECDC4;">🎵</div>
+          <div class="app-icon" style="background:#FFE66D;">☀️</div>
+          <div class="app-icon" style="background:#95E1D3;">💬</div>
+        </div>
+
+        <!-- Large widget with multiple friends -->
+        <div class="widget widget-large" style="flex:1;">
+          <div class="header">
+            <span class="title">ONE</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="streak-pill-dark">🔥 12 gün</div>
+              <span class="count">5/7</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+
+          <!-- Self -->
+          <div class="self-row">
+            <div class="mood-bubble-lg" style="background:#5B8DEF;">S</div>
+            <div class="info">
+              <div class="name-row">
+                <span class="name">Sen</span>
+                <span class="mood-badge" style="color:#5B8DEF;background:rgba(91,141,239,0.1);">HUZURLU</span>
+              </div>
+              <div class="song">Peaceful Place</div>
+              <div class="artist">Ambient Sounds</div>
+            </div>
+          </div>
+          <div class="indented-divider"></div>
+
+          <!-- Friend 1 -->
+          <div class="friend-row">
+            <div class="mood-bubble-md" style="background:#8B6FA8;">E</div>
+            <div class="info">
+              <div class="name-row">
+                <span class="name">Elif</span>
+                <span class="mood-badge" style="color:#8B6FA8;background:rgba(139,111,168,0.1);">NOSTALJİK</span>
+              </div>
+              <div class="song">Sycamore</div>
+              <div class="artist">The National</div>
+            </div>
+            <div class="accent-dot" style="background:rgba(139,111,168,0.25);"></div>
+          </div>
+          <div class="indented-divider"></div>
+
+          <!-- Friend 2 -->
+          <div class="friend-row">
+            <div class="mood-bubble-md" style="background:#E07A5F;">C</div>
+            <div class="info">
+              <div class="name-row">
+                <span class="name">Can</span>
+                <span class="mood-badge" style="color:#E07A5F;background:rgba(224,122,95,0.1);">ENERJİK</span>
+              </div>
+              <div class="song">Redbone</div>
+              <div class="artist">Childish Gambino</div>
+            </div>
+            <div class="accent-dot" style="background:rgba(224,122,95,0.25);"></div>
+          </div>
+          <div class="indented-divider"></div>
+
+          <!-- Friend 3 -->
+          <div class="friend-row">
+            <div class="mood-bubble-md" style="background:#5B8DEF;">A</div>
+            <div class="info">
+              <div class="name-row">
+                <span class="name">Ayşe</span>
+                <span class="mood-badge" style="color:#5B8DEF;background:rgba(91,141,239,0.1);">HUZURLU</span>
+              </div>
+              <div class="song">Clair de Lune</div>
+              <div class="artist">Debussy</div>
+            </div>
+            <div class="accent-dot" style="background:rgba(91,141,239,0.25);"></div>
+          </div>
+          <div class="indented-divider"></div>
+
+          <!-- Friend 4 -->
+          <div class="friend-row">
+            <div class="mood-bubble-md" style="background:#6BCB77;">M</div>
+            <div class="info">
+              <div class="name-row">
+                <span class="name">Mert</span>
+                <span class="mood-badge" style="color:#6BCB77;background:rgba(107,203,119,0.1);">MUTLU</span>
+              </div>
+              <div class="song">Good as Hell</div>
+              <div class="artist">Lizzo</div>
+            </div>
+            <div class="accent-dot" style="background:rgba(107,203,119,0.25);"></div>
+          </div>
+          <div class="indented-divider" style="margin-top:3px;"></div>
+
+          <!-- Waiting -->
+          <div class="waiting-row">
+            <span class="label">bekleniyor</span>
+            <div class="ghost-bubble" style="background:rgba(91,141,239,0.12);color:rgba(91,141,239,0.4);border:1px solid rgba(91,141,239,0.15);">D</div>
+            <div class="ghost-bubble" style="background:rgba(139,111,168,0.12);color:rgba(139,111,168,0.4);border:1px solid rgba(139,111,168,0.15);">K</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

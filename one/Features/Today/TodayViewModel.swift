@@ -8,45 +8,195 @@ import Combine
 import CoreData
 import MusicKit
 import CloudKit
+import ActivityKit
 
 // MARK: - TodayViewModel
 @MainActor
 class TodayViewModel: ObservableObject {
-    @Published var todayEntry: DailyEntry? = nil
+    @Published var todayEntries: [DailyEntry] = []
     @Published var searchResults: [SongResult] = []
     @Published var recentArtists: [String] = []
+    @Published var recommendedSongs: [SongResult] = []
     @Published var isSearching: Bool = false
     @Published var searchError: String? = nil
+    @Published var showLiveActivityAlert: Bool = false
+    @Published var circleShareFailed: Bool = false
+    @Published var lastYearEntry: DailyEntry? = nil
+    /// C3 — "1 hafta önce bugün" mini Echo (D14+ daha anlamlı, ama her zaman göster).
+    @Published var lastWeekEntry: DailyEntry? = nil
+    @Published var showLastWeekReflection: Bool = false
+    private var hasShownLastWeekReflectionThisSession: Bool = false
+    /// A4 — Çevre davet kancası: yalnızca ilk kayıttan sonra bir kez tetiklenir.
+    @Published var showFirstEntryInvite: Bool = false
+    /// B1 — Şu an kullanıcının taze bir freeze hakkı var mı?
+    /// This week's logged entries for WeeklyProgressDots.
+    @Published var thisWeekEntries: [(date: Date, moodColorHex: String)] = []
+    /// Total entry count ever (for milestone insights).
+    @Published var totalEntryCount: Int = 0
+    /// Days since last entry before today (nil = no prior entry).
+    @Published var daysSinceLastEntry: Int? = nil
+    /// Yesterday's mood, if logged.
+    @Published var yesterdayMood: (label: String, color: Color)? = nil
 
-    private let context: NSManagedObjectContext
+    /// Last recorded mood surfaced instantly from UserDefaults so the first
+    /// frame can echo it while the real CoreData fetch settles. `nil` on a
+    /// fresh install — fall back to the normal empty state.
+    let cachedEchoMood: (hex: String, label: String)?
+
+    /// Flips true after the initial CoreData fetch of today's entries
+    /// finishes. Views cross-fade the echo overlay off when this trips.
+    @Published private(set) var hasHydratedTodayEntry: Bool = false
+
+    let context: NSManagedObjectContext
     private var searchTask: Task<Void, Never>? = nil
+    private var syncTask: Task<Void, Never>? = nil
+    /// `.momentsDidChangeRemotely` aboneliği — bkz. `refreshAfterRemoteChange()`.
+    private var remoteChangeSubscription: AnyCancellable?
+
+    // MARK: - Echo mood cache (fastest possible first frame)
+    private static let echoMoodHexKey   = "todayEchoMoodHex"
+    private static let echoMoodLabelKey = "todayEchoMoodLabel"
+
+    static func readCachedEchoMood() -> (hex: String, label: String)? {
+        let d = UserDefaults.standard
+        guard let hex = d.string(forKey: echoMoodHexKey),
+              let label = d.string(forKey: echoMoodLabelKey) else { return nil }
+        return (hex, label)
+    }
+
+    static func writeCachedEchoMood(hex: String, label: String) {
+        let d = UserDefaults.standard
+        d.set(hex,   forKey: echoMoodHexKey)
+        d.set(label, forKey: echoMoodLabelKey)
+    }
+
+    /// Önbelleği boşaltır — bugüne ait hiç an kalmadığında.
+    ///
+    /// Karşılığı yoktu: yalnız *yazan* bir önbellek, kullanıcı günün tek
+    /// anını sildiğinde eski mood'u tutmaya devam ediyordu.
+    static func clearCachedEchoMood() {
+        let d = UserDefaults.standard
+        d.removeObject(forKey: echoMoodHexKey)
+        d.removeObject(forKey: echoMoodLabelKey)
+    }
+
+
+    /// Primary (last) entry for today — used by existing views
+    var todayEntry: DailyEntry? { todayEntries.last }
 
     var todayState: TodayState {
-        todayEntry == nil ? .empty : .completed
+        todayEntries.isEmpty ? .empty : .completed
     }
+
+    /// Whether the user can add a new entry right now (only if no entry today)
+    var canAddNewEntry: Bool { todayEntries.isEmpty }
+
+    /// Number of entries today
+    var todayEntryCount: Int { todayEntries.count }
 
     init(context: NSManagedObjectContext) {
         self.context = context
-        loadTodayEntry()
+        // Read the cached mood synchronously — this is the ONLY thing that
+        // must happen before first frame so the echo overlay can render.
+        self.cachedEchoMood = Self.readCachedEchoMood()
+
+        // Initial CoreData fetch deferred one runloop tick. The view renders
+        // the echo overlay for that tick, then cross-fades to real state.
+        // Follow-up refreshes (post-save) stay synchronous — we already own
+        // the write timing there.
+        //
+        // Two-phase publish (fetch, then hydration flag one tick later) is
+        // deliberate: the ritual `.onChange(of: vm.todayEntry)` needs a
+        // render pass where `hasHydratedTodayEntry == false` so it can
+        // ignore the initial nil → cached-entry transition. Collapsing both
+        // writes into one tick would trigger SaveRitualMoment on cold launch.
+        Task { @MainActor in
+            self.loadTodayEntry()
+            // Preserve the "one runloop tick later" guarantee that the
+            // two-phase publish depends on, without mixing GCD and the
+            // Swift concurrency domain. `Task.yield()` suspends and
+            // resumes on the next MainActor turn.
+            await Task.yield()
+            self.hasHydratedTodayEntry = true
+        }
         loadRecentArtists()
+        loadLastYearEntry()
+        loadLastWeekEntry()
+        loadThisWeekEntries()
+        loadTotalEntryCount()
+        loadYesterdayMood()
+        loadRecommendedSongs()
+
+        remoteChangeSubscription = NotificationCenter.default
+            .publisher(for: .momentsDidChangeRemotely)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.refreshAfterRemoteChange() }
+            }
     }
 
-    // MARK: - Load today's entry from CoreData
-    private func loadTodayEntry() {
+    /// Başka bir cihazdan inen kayıttan sonra CoreData türevi state'i tazeler.
+    ///
+    /// `reloadAfterV3Save()` kullanılmıyor: o AppReviewManager'ı tetikliyor
+    /// ve puan istemi kullanıcının *kendi* kaydına ait bir ödül — uzaktan
+    /// inen bir satır onu hak etmiyor.
+    ///
+    /// `loadLastWeekEntry()` de bilerek dışarıda: `showLastWeekReflection`'ı
+    /// kaldırıyor, yani arka planda inen sync kullanıcının ortasında bir
+    /// yansıma kartı açardı. O açılış ritüeli, sync tepkisi değil.
+    private func refreshAfterRemoteChange() {
+        // CloudKit'e geri yazmadan tazele. `syncLocalEntryToCloudKitIfNeeded`
+        // `entryIndex > 0` olan anlarda upsert guard'ını atlayıp koşulsuz
+        // YENİ kayıt açıyor; indirmeye cevaben çağırmak her bildirimde bir
+        // kopya üretir ve kopya kendi remote-change'ini doğurur.
+        loadTodayEntry(syncingToCloudKit: false)
+        loadThisWeekEntries()
+        loadTotalEntryCount()
+        loadYesterdayMood()
+        loadLastYearEntry()
+    }
+
+    /// v3 kayıt sonrası ViewModel'in `todayEntries`/`thisWeekEntries`
+    /// state'ini yeniden yükler. Sonraki view render'ında Kaydedildi ekranı ve
+    /// son 7 gün şeridi doğru veriyle boyanır.
+    func reloadAfterV3Save() {
+        loadTodayEntry()
+        loadThisWeekEntries()
+        loadTotalEntryCount()
+        loadYesterdayMood()
+
+        // Rozet ve App Store puan istemi.
+        //
+        // Bunlar silinen legacy `saveEntry`'nin içindeydi ve v3 çok-an yolu
+        // onu yalnızca şarkı seçildiğinde çağırıyordu. Yani şarkısız kaydeden
+        // kullanıcı — v3'ün varsayılan akışı — hiç rozet kazanmıyor, puan
+        // istemi de hiç görmüyordu. Tek yazma yoluna inince buraya taşındı.
+        AppReviewManager.shared.evaluateAfterSave(
+            totalEntryCount: totalEntryCount,
+            uniqueDayCount: uniqueEntryDayCount()
+        )
+    }
+
+    // MARK: - Load today's entries from CoreData
+    private func loadTodayEntry(syncingToCloudKit: Bool = true) {
         let today = Calendar.current.startOfDay(for: Date())
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "date == %@", today as NSDate)
-        fetchRequest.fetchLimit = 1
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: true)]
 
         do {
-            if let item = try context.fetch(fetchRequest).first {
-                todayEntry = dailyEntryFrom(item)
-                syncLocalEntryToCloudKitIfNeeded(item: item)
+            let items = try context.fetch(fetchRequest)
+            todayEntries = items.map { dailyEntryFrom($0) }
+
+            // Sync the latest entry to CloudKit if needed
+            if syncingToCloudKit, let lastItem = items.last {
+                syncLocalEntryToCloudKitIfNeeded(item: lastItem)
             }
         } catch {
             ONELogger.debug("TodayViewModel: fetch error \(error)", category: .general)
         }
     }
+
 
     // MARK: - Load recent artists from archive
     func loadRecentArtists() {
@@ -69,6 +219,94 @@ class TodayViewModel: ObservableObject {
         } catch {}
     }
 
+    // MARK: - Load recommended songs (MusicKit charts, daily cached)
+
+    private static let recSongsCacheKey     = "recommendedSongsCache_v2"
+    private static let recSongsCacheDateKey = "recommendedSongsCacheDate_v2"
+    @Published var isLoadingRecommendations = false
+
+    func loadRecommendedSongs() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        // Return today's cached picks if they exist.
+        if let cachedDate = UserDefaults.standard.object(forKey: Self.recSongsCacheDateKey) as? Date,
+           calendar.isDate(cachedDate, inSameDayAs: today),
+           let data = UserDefaults.standard.data(forKey: Self.recSongsCacheKey),
+           let cached = try? JSONDecoder().decode([SongResult].self, from: data),
+           !cached.isEmpty {
+            recommendedSongs = cached
+            return
+        }
+
+        // Stale cache — clear immediately so UI shows loading state.
+        recommendedSongs = []
+        isLoadingRecommendations = true
+
+        // Already-logged song keys — exclude from recommendations.
+        // Yalnız iki metin kolonu okunuyor; tabloyu NSManagedObject olarak
+        // materialize etmeye gerek yok (bkz. `fetchFilledDates`).
+        let allReq = NSFetchRequest<NSDictionary>(entityName: "DailySong")
+        allReq.resultType = .dictionaryResultType
+        allReq.propertiesToFetch = ["songName", "artistName"]
+        allReq.returnsDistinctResults = true
+        let loggedKeys = Set(((try? context.fetch(allReq)) ?? []).compactMap { row -> String? in
+            guard let t = row["songName"] as? String, let a = row["artistName"] as? String else { return nil }
+            return "\(t)|\(a)"
+        })
+
+        // Daily seed: same day → same 16 songs; next day → different 16.
+        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: Date()) ?? 1
+        let year      = calendar.component(.year, from: Date())
+        let dailySeed = UInt64(year) &* 366 &+ UInt64(dayOfYear)
+
+        Task {
+            defer { isLoadingRecommendations = false }
+            guard MusicAuthorization.currentStatus == .authorized else { return }
+            do {
+                var chartRequest = MusicCatalogChartsRequest(genre: nil, types: [MusicKit.Song.self])
+                chartRequest.limit = 40
+                let response = try await chartRequest.response()
+                let chartItems = response.songCharts.first?.items.map { $0 } ?? []
+
+                // Shuffle with daily seed so each day presents a different 16-song window.
+                let shuffled = chartItems.deterministicShuffled(seed: dailySeed)
+
+                var songs: [SongResult] = []
+                for s in shuffled {
+                    let key = "\(s.title)|\(s.artistName)"
+                    guard !loggedKeys.contains(key) else { continue }
+                    songs.append(SongResult(
+                        id: UUID(),
+                        name: s.title,
+                        artist: s.artistName,
+                        genre: s.genreNames.first ?? NSLocalizedString("common.music", comment: ""),
+                        coverURL: s.artwork?.url(width: 200, height: 200),
+                        spotifyURL: nil,
+                        artworkURLString: s.artwork?.url(width: 600, height: 600)?.absoluteString,
+                        previewURL: s.previewAssets?.first?.url
+                    ))
+                    if songs.count == 16 { break }
+                }
+                guard !songs.isEmpty else { return }
+                recommendedSongs = songs
+                if let data = try? JSONEncoder().encode(songs) {
+                    UserDefaults.standard.set(data, forKey: Self.recSongsCacheKey)
+                    UserDefaults.standard.set(today, forKey: Self.recSongsCacheDateKey)
+                }
+            } catch {
+                ONELogger.error("Recommended songs fetch failed", error: error, category: .general)
+            }
+        }
+    }
+
+    /// Clears the daily cache and re-fetches. Kullanıcı "Yenile" butonuna basınca çağrılır.
+    func refreshRecommendedSongs() {
+        UserDefaults.standard.removeObject(forKey: Self.recSongsCacheKey)
+        UserDefaults.standard.removeObject(forKey: Self.recSongsCacheDateKey)
+        loadRecommendedSongs()
+    }
+
     // MARK: - Search via MusicKit
     func search(_ query: String) {
         // Önceki aramayı iptal et
@@ -83,6 +321,7 @@ class TodayViewModel: ObservableObject {
 
         isSearching = true
         searchError = nil
+        AppAnalytics.shared.track(.songSearched(query: query, source: "apple"))
 
         searchTask = Task {
             // Debounce: kullanıcı yazmayı bırakana kadar bekle
@@ -95,7 +334,7 @@ class TodayViewModel: ObservableObject {
                 // İzin iste
                 let status = await MusicAuthorization.request()
                 guard status == .authorized else {
-                    searchError = "Apple Music izni gerekli. Lütfen Ayarlar > Gizlilik'ten izin verin."
+                    searchError = NSLocalizedString("search.appleMusicPermission", comment: "")
                     isSearching = false
                     return
                 }
@@ -115,10 +354,11 @@ class TodayViewModel: ObservableObject {
                         id: UUID(),
                         name: s.title,
                         artist: s.artistName,
-                        genre: s.genreNames.first ?? "Müzik",
+                        genre: s.genreNames.first ?? NSLocalizedString("genre.music", comment: ""),
                         coverURL: s.artwork?.url(width: 200, height: 200),
                         spotifyURL: nil,
-                        artworkURLString: s.artwork?.url(width: 600, height: 600)?.absoluteString
+                        artworkURLString: s.artwork?.url(width: 600, height: 600)?.absoluteString,
+                        previewURL: s.previewAssets?.first?.url
                     )
                 }
                 searchError = nil
@@ -134,94 +374,58 @@ class TodayViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Save entry
-    func saveEntry(
-        song: SongResult,
-        mood: MoodOption,
-        feeling: FeelingType,
-        photo: UIImage?,
-        note: String = "",
-        sharePhoto: Bool
-    ) {
-        let today = Calendar.current.startOfDay(for: Date())
-        let now = Date() // Gerçek timestamp
-
-        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "date == %@", today as NSDate)
-
-        let item: DailySong
-        if let existing = try? context.fetch(fetchRequest).first {
-            item = existing
-            // Güncelleme zamanını kaydet
-            item.createdAt = now
-        } else {
-            item = DailySong(context: context)
-            item.date = today
-            item.createdAt = now
-            item.id = UUID()
-        }
-
-        item.songName    = song.name
-        item.artistName  = song.artist
-        item.genre       = song.genre
-        item.emoji       = "🎵"
-        item.artworkURL  = song.artworkURLString
-        item.moodWord    = mood.label
-        item.moodColorHex = mood.color.toHex()
-        item.moodLabel   = mood.label
-        item.feeling     = feeling.rawValue
-        item.feelingLabel = FeelingOption.all.first { $0.type == feeling }?.label ?? feeling.rawValue
-        item.platform    = "Apple Music"
-        item.dailyNote   = note.isEmpty ? nil : note
-
-        // Photo
-        if let photo {
-            item.photoData = photo.jpegData(compressionQuality: 0.75)
-        }
-        item.shareWithCircle = sharePhoto && photo != nil
-        item.isSharedWithCircle = sharePhoto && photo != nil
-
-        try? context.save()
-        
-        let photoData = (sharePhoto && photo != nil) ? photo?.jpegData(compressionQuality: 0.75) : nil
-        let streak = computeCurrentStreak(includingToday: true)
-        CloudKitManager.shared.shareDailySong(
-            songName: song.name,
-            artistName: song.artist,
-            genre: song.genre,
-            emoji: "🎵",
-            albumArtURL: song.artworkURLString,
-            moodWord: mood.label,
-            moodColor: mood.color.toHex(),
-            moodTheme: "",
-            dailyNote: note,
-            platform: "Apple Music",
-            date: today,
-            photoData: photoData,
-            feeling: feeling.rawValue,
-            feelingLabel: FeelingOption.all.first { $0.type == feeling }?.label ?? feeling.rawValue,
-            weatherIcon: item.weatherIcon ?? "☀️",
-            weatherDesc: item.weatherDesc ?? "",
-            currentStreak: streak
-        ) { result in
-            switch result {
-            case .success(let record):
-                ONELogger.debug("Successfully shared daily song to CloudKit: \(record.recordID)", category: .general)
-            case .failure(let error):
-                ONELogger.debug("Failed to share daily song to CloudKit: \(error)", category: .general)
-            }
-        }
-        
-        NotificationCenter.default.post(name: .init("todaySongSaved"), object: nil)
-        // Bugün seçim yapıldı — hatırlatıcıyı iptal et
-        NotificationManager.shared.cancelTodayReminderIfNeeded()
+    // MARK: - Pas günü (#10)
+    func markTodayAsPassed() {
+        PersistenceController.shared.savePassedDay(date: Date(), context: context)
+        AppAnalytics.shared.track(.passButtonTapped)
         loadTodayEntry()
     }
 
-    // MARK: - Clear today (değiştir)
+    // MARK: - Attach photo / note after saving
+    /// Kaydedilmiş bugünkü entry'ye sonradan fotoğraf ve/veya not ekler.
+    ///
+    /// `saveEntry` de bir upsert ama onu tekrar çağırmak `createdAt`'i sıfırlar ve
+    /// analytics / CloudKit / Live Activity yan etkilerini yeniden
+    /// tetikler. Bu metod bilerek dar: sadece iki alanı yazar.
+    /// `TodayCompletedView`'daki yıkıcı "Değiştir" (`clearToday`) ile karıştırılmamalı.
+    func attachPhotoAndNote(photo: UIImage? = nil, note: String? = nil) {
+        guard photo != nil || note != nil else { return }
+
+        let today = Calendar.current.startOfDay(for: Date())
+        let request: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        request.predicate = NSPredicate(format: "date == %@", today as NSDate)
+        request.fetchLimit = 1
+
+        guard let item = (try? context.fetch(request))?.first else {
+            ONELogger.error("attachPhotoAndNote: bugüne ait entry bulunamadı", category: .general)
+            ErrorHandler.shared.handle(AppError.unknown(message: NSLocalizedString("today.entryNotFound", comment: "")))
+            return
+        }
+
+        if let photo {
+            item.photoData = ONEPhotoEncoder.encode(photo)
+        }
+        if let note {
+            let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+            item.dailyNote = trimmed.isEmpty ? nil : trimmed
+        }
+
+        do {
+            try context.save()
+            loadTodayEntry()
+            // Not ve fotoğraf widget'ta görünüyor — türetilmiş yüzeyler
+            // diskteki yeni duruma göre yeniden yazılmalı.
+            MomentWriter.refreshTodaySurfaces(context: context)
+        } catch {
+            ONELogger.error("attachPhotoAndNote kaydedilemedi: \(error.localizedDescription)", category: .general)
+            ErrorHandler.shared.handle(error, context: "attachPhotoAndNote")
+        }
+    }
+
+    // MARK: - Clear today (tüm entry'leri sil)
     func clearToday() {
         let today = Calendar.current.startOfDay(for: Date())
-        
+
         // CloudKit'ten sil
         CloudKitManager.shared.deleteUserDailyShare(for: today) { result in
             switch result {
@@ -231,57 +435,223 @@ class TodayViewModel: ObservableObject {
                 ONELogger.error("CloudKit silme hatası: \(error.localizedDescription)", category: .general)
             }
         }
-        
+
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "date == %@", today as NSDate)
 
         if let items = try? context.fetch(fetchRequest) {
             items.forEach { context.delete($0) }
-            try? context.save()
+            do {
+                try context.save()
+                // Bugün boşaldı — widget ve Echo önbelleği de boşalmalı.
+                // Bu çağrı olmadan widget silinen mood'u gece yarısına kadar
+                // göstermeye devam ediyordu.
+                MomentWriter.refreshTodaySurfaces(context: context)
+            } catch {
+                ErrorHandler.shared.handle(error, context: "clearToday")
+            }
         }
-        todayEntry = nil
+        todayEntries = []
         searchResults = []
         searchError = nil
+        circleShareFailed = false
     }
 
-    // MARK: - Streak Calculation
-    /// Counts consecutive days ending at today (inclusive). Returns 1 on first save.
-    private func computeCurrentStreak(includingToday: Bool = true) -> Int {
+    /// Clear a specific entry by ID (v3 çoklu an)
+    func clearEntry(id: UUID) {
         let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
-        guard let songs = try? context.fetch(fetchRequest) else { return 1 }
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+
+        if let item = try? context.fetch(fetchRequest).first {
+            context.delete(item)
+            do {
+                try context.save()
+                // Günün son anı silindiyse widget temizlenir, değilse bir
+                // önceki ana düşer. `refreshTodaySurfaces` diski okuduğu için
+                // hangisi olduğunu burada bilmek gerekmiyor.
+                MomentWriter.refreshTodaySurfaces(context: context)
+            } catch {
+                ErrorHandler.shared.handle(error, context: "clearEntry")
+            }
+        }
+        loadTodayEntry()
+    }
+
+    // MARK: - Milestone & Memory
+
+    // MARK: - A4 — First-entry Circle invite hook
+
+    /// Onboarding kendi davet adımını gösterdiğinde bu anahtarı `saveEntry`'den
+    /// ÖNCE yazıyor — yoksa `total == 1` koşulu sağlanıp davet sheet'i ana
+    /// ekranda ikinci kez açılır. O yüzden `internal`.
+    static let firstEntryInviteHookKey = "firstEntryInviteHookConsumed"
+
+    /// İlk kayıt sonrası Çevre davet kancasını tetikler. Yalnızca toplam
+    /// entry sayısı 1 ise VE daha önce gösterilmediyse açılır. Mevcut
+    /// kullanıcılarda (zaten birden fazla entry'si olanlar) sessiz kalır.
+    private func evaluateFirstEntryInviteHook() {
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: Self.firstEntryInviteHookKey) else { return }
+
+        let countRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        let total = (try? context.count(for: countRequest)) ?? 0
+        guard total == 1 else {
+            // Mevcut kullanıcı — sessiz tüket, bir daha kontrol etme.
+            defaults.set(true, forKey: Self.firstEntryInviteHookKey)
+            return
+        }
+
+        defaults.set(true, forKey: Self.firstEntryInviteHookKey)
+        // Save ritual + milestone animasyonlarının bitmesini beklet.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { [weak self] in
+            guard let self else { return }
+            self.showFirstEntryInvite = true
+            AppAnalytics.shared.track(.firstEntryInviteHookShown)
+        }
+    }
+
+    func dismissFirstEntryInvite(action: String) {
+        showFirstEntryInvite = false
+        AppAnalytics.shared.track(.firstEntryInviteHookAction(action: action))
+    }
+
+    func loadLastYearEntry() {
+        let calendar = Calendar.current
+        guard let oneYearAgo = calendar.date(byAdding: .year, value: -1, to: Date()) else { return }
+        let targetDate = calendar.startOfDay(for: oneYearAgo)
+
+        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "date == %@", targetDate as NSDate)
+        fetchRequest.fetchLimit = 1
+
+        if let item = try? context.fetch(fetchRequest).first {
+            lastYearEntry = dailyEntryFrom(item)
+        }
+    }
+
+    /// C3 — "1 hafta önce bugün" entry'sini yükler (varsa).
+    func loadLastWeekEntry() {
+        let calendar = Calendar.current
+        guard let oneWeekAgo = calendar.date(byAdding: .day, value: -7, to: Date()) else { return }
+        let targetDate = calendar.startOfDay(for: oneWeekAgo)
+
+        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "date == %@", targetDate as NSDate)
+        fetchRequest.fetchLimit = 1
+
+        if let item = try? context.fetch(fetchRequest).first {
+            lastWeekEntry = dailyEntryFrom(item)
+            if !hasShownLastWeekReflectionThisSession {
+                showLastWeekReflection = true
+                hasShownLastWeekReflectionThisSession = true
+            }
+        }
+    }
+
+    func dismissLastWeekReflection() {
+        showLastWeekReflection = false
+    }
+
+    /// Kayıt bulunan günlerin kümesi.
+    ///
+    /// Gün kümesi yalnızca **tarihlere** bakıyor, ama eskiden iki ayrı
+    /// yerde predicate'siz `DailySong.fetchRequest()` ile tablonun tamamı
+    /// `NSManagedObject` olarak materialize ediliyordu. `loadTodayEntry()`
+    /// on ayrı yerden çağrılıyor (açılış, kayıt, silme, güncelleme…) ve her
+    /// çağrıda bu tarama koşuyordu — bir yıllık kullanımda yüzlerce satır.
+    ///
+    /// Dictionary fetch yalnız `date` kolonunu okuyor: nesne kurulumu yok.
+    /// `returnsDistinctResults` da v3'ün gün içi çoklu girişlerini tek
+    /// satıra indiriyor, çünkü küme zaten gün bazlı.
+    private func fetchFilledDates() -> Set<Date> {
+        let request = NSFetchRequest<NSDictionary>(entityName: "DailySong")
+        request.resultType = .dictionaryResultType
+        request.propertiesToFetch = ["date"]
+        request.returnsDistinctResults = true
 
         let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-
-        let filledDates = Set(songs.compactMap { s -> Date? in
-            guard let d = s.date else { return nil }
+        let rows = (try? context.fetch(request)) ?? []
+        return Set(rows.compactMap { row -> Date? in
+            guard let d = row["date"] as? Date else { return nil }
             return calendar.startOfDay(for: d)
         })
+    }
 
-        // If saving today, today counts even though it may not be in DB yet
-        var streak = includingToday ? 1 : 0
-        var checkDay = calendar.date(byAdding: .day, value: -1, to: today) ?? today
-        while filledDates.contains(checkDay) {
-            streak += 1
-            guard let prev = calendar.date(byAdding: .day, value: -1, to: checkDay) else { break }
-            checkDay = prev
+
+    private func loadThisWeekEntries() {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        guard let weekStart = cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) else { return }
+        let weekEnd = cal.date(byAdding: .day, value: 7, to: weekStart) ?? today
+
+        let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        req.predicate = NSPredicate(format: "date >= %@ AND date < %@", weekStart as NSDate, weekEnd as NSDate)
+        req.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]
+
+        let songs = (try? context.fetch(req)) ?? []
+        thisWeekEntries = songs.compactMap { s in
+            guard let d = s.date, let hex = s.moodColorHex else { return nil }
+            return (date: cal.startOfDay(for: d), moodColorHex: hex)
         }
-        return streak
+    }
+
+    private func loadTotalEntryCount() {
+        let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        totalEntryCount = (try? context.count(for: req)) ?? 0
+    }
+
+    /// Kaç farklı takvim gününde giriş yapıldığını döndürür.
+    /// `fetchFilledDates()` ile aynı işi yapıyordu — tek kaynağa bağlandı.
+    private func uniqueEntryDayCount() -> Int {
+        fetchFilledDates().count
+    }
+
+    private func loadYesterdayMood() {
+        let cal = Calendar.current
+        guard let yesterday = cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: Date())) else { return }
+        let req: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        req.predicate = NSPredicate(format: "date == %@", yesterday as NSDate)
+        req.fetchLimit = 1
+        if let song = try? context.fetch(req).first, let hex = song.moodColorHex, let label = song.moodLabel ?? song.moodWord {
+            yesterdayMood = (label: label, color: Color(hex: hex))
+        } else {
+            yesterdayMood = nil
+        }
+
+        // Compute days since last entry (before today)
+        let allReq: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        allReq.predicate = NSPredicate(format: "date < %@", cal.startOfDay(for: Date()) as NSDate)
+        allReq.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+        allReq.fetchLimit = 1
+        if let last = try? context.fetch(allReq).first, let lastDate = last.date {
+            let diff = cal.dateComponents([.day], from: cal.startOfDay(for: lastDate), to: cal.startOfDay(for: Date())).day
+            daysSinceLastEntry = diff
+        } else {
+            daysSinceLastEntry = nil
+        }
     }
 
     // MARK: - Helpers
+
+    // Photo URL cache — avoids writing a new temp file on every loadTodayEntry() call.
+    private var photoURLCache: [NSManagedObjectID: URL] = [:]
+
     private func dailyEntryFrom(_ item: DailySong) -> DailyEntry {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         let timeStr = item.createdAt.map { formatter.string(from: $0) } ?? "--:--"
 
         var photoURL: URL? = nil
-        if let data = item.photoData {
-            let url = FileManager.default.temporaryDirectory
-                .appendingPathComponent("\(item.id?.uuidString ?? UUID().uuidString).jpg")
-            try? data.write(to: url)
-            photoURL = url
+        if item.photoData != nil {
+            if let cached = photoURLCache[item.objectID], FileManager.default.fileExists(atPath: cached.path) {
+                photoURL = cached
+            } else if let data = item.photoData {
+                let url = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("\(item.id?.uuidString ?? UUID().uuidString).jpg")
+                try? data.write(to: url)
+                photoURL = url
+                photoURLCache[item.objectID] = url
+            }
         }
 
         return DailyEntry(
@@ -302,54 +672,87 @@ class TodayViewModel: ObservableObject {
             weatherDesc: item.weatherDesc ?? "",
             spotifyURL: nil,
             platform: "Spotify",
-            note: item.dailyNote
+            note: item.dailyNote,
+            passed: item.passed
         )
     }
-    
+
     // MARK: - Auto-Sync
     private func syncLocalEntryToCloudKitIfNeeded(item: DailySong) {
         let today = Calendar.current.startOfDay(for: Date())
-        
+
         // Sadece bugünün kaydıysa ve daha önceden eklendiyse senkronize etmeyi deneriz.
         guard let itemDate = item.date, Calendar.current.isDate(itemDate, inSameDayAs: today) else { return }
-        
-        CloudKitManager.shared.fetchUserDailyShare(for: today) { result in
-            DispatchQueue.main.async {
+
+        // Çevreyle paylaşılmamışsa CloudKit'e senkronize etme
+        guard item.shareWithCircle else { return }
+
+        // CloudKit throttled veya kullanıcı yüklenemedi — sync'i atla
+        guard !CloudKitManager.shared.isThrottled, !CloudKitManager.shared.userLoadFailed else {
+            ONELogger.warning("Senkronizasyon atlandı — CloudKit throttled veya kullanıcı yüklenmedi", category: .general)
+            return
+        }
+
+        // v3: entryIndex > 0 ise (aynı güne ikinci+ an) her seferinde
+        // YENİ CloudKit kaydı ekle — upsert guard'ını atla. entryIndex == 0
+        // olan ilk an için upsert (idempotent tekrar yükleme).
+        let itemEntryIndex = Int(item.entryIndex)
+        // `[weak self]` + `guard let self` kalktı: gövde `self`'e hiç
+        // dokunmuyor. Eskiden `self.computeCurrentStreak(...)` çağırıyordu;
+        // seri motoru sökülünce o satır gitti, yakalama kaldı.
+        //
+        // Kaldırmak davranışı değiştirmiyor — iki çağrı yolu da zaten
+        // korumalı: `entryIndex > 0` dalı bu metodun içinden senkron
+        // çağrılıyor, diğeri `self?.syncTask` üzerinden geçiyor (self nil ise
+        // `Task` hiç kurulmuyor).
+        let doSync: () -> Void = {
+            let photoData = item.shareWithCircle ? item.photoData : nil
+            CloudKitManager.shared.shareDailySong(
+                songName: item.songName ?? "",
+                artistName: item.artistName ?? "",
+                genre: item.genre,
+                emoji: item.emoji ?? "🎵",
+                albumArtURL: item.artworkURL,
+                moodWord: item.moodWord ?? item.moodLabel ?? "",
+                moodColor: item.moodColorHex ?? "#5B8DEF",
+                moodTheme: "",
+                dailyNote: item.dailyNote,
+                platform: item.platform ?? "Apple Music",
+                date: today,
+                photoData: photoData,
+                feeling: item.feeling,
+                feelingLabel: item.feelingLabel,
+                weatherIcon: item.weatherIcon,
+                weatherDesc: item.weatherDesc,
+                // Seri motoru kalktı. Alan CloudKit şemasında duruyor
+                // (mevcut kayıtlar bozulmasın), ama artık hesaplanmıyor.
+                currentStreak: 0,
+                entryIndex: itemEntryIndex
+            ) { res in
+                switch res {
+                case .success(let record):
+                    ONELogger.success("CloudKit sync ok (entryIndex=\(itemEntryIndex)): \(record.recordID)", category: .general)
+                case .failure(let error):
+                    ONELogger.error("CloudKit sync hata: \(error.localizedDescription)", category: .general)
+                }
+            }
+        }
+
+        if itemEntryIndex > 0 {
+            doSync()
+            return
+        }
+
+        CloudKitManager.shared.fetchUserDailyShare(for: today) { [weak self] result in
+            self?.syncTask?.cancel()
+            self?.syncTask = Task { @MainActor in
                 switch result {
-                case .success(_):
-                    // Zaten CloudKit'te var
+                case .success:
+                    // Zaten CloudKit'te var — entryIndex==0 için upsert; sync gerekmez.
                     break
-                case .failure(_):
-                    // CloudKit'te yok ama lokalde var. Hemen yükleyelim.
-                    ONELogger.debug("Senkronizasyon: Lokal şarkı bulundu ama CloudKit'te yok. Yükleniyor...", category: .general)
-                    let photoData = item.shareWithCircle ? item.photoData : nil
-                    let syncStreak = self.computeCurrentStreak(includingToday: true)
-                    CloudKitManager.shared.shareDailySong(
-                        songName: item.songName ?? "",
-                        artistName: item.artistName ?? "",
-                        genre: item.genre,
-                        emoji: item.emoji ?? "🎵",
-                        albumArtURL: item.artworkURL,
-                        moodWord: item.moodWord ?? item.moodLabel ?? "",
-                        moodColor: item.moodColorHex ?? "#5B8DEF",
-                        moodTheme: "",
-                        dailyNote: item.dailyNote,
-                        platform: item.platform ?? "Apple Music",
-                        date: today,
-                        photoData: photoData,
-                        feeling: item.feeling,
-                        feelingLabel: item.feelingLabel,
-                        weatherIcon: item.weatherIcon,
-                        weatherDesc: item.weatherDesc,
-                        currentStreak: syncStreak
-                    ) { res in
-                        switch res {
-                        case .success(let record):
-                            ONELogger.success("Başarıyla CloudKit'e senkronize edildi: \(record.recordID)", category: .general)
-                        case .failure(let error):
-                            ONELogger.error("CloudKit senkronizasyon hatası: \(error.localizedDescription)", category: .general)
-                        }
-                    }
+                case .failure:
+                    ONELogger.debug("Senkronizasyon: Lokal an bulundu ama CloudKit'te yok. Yükleniyor...", category: .general)
+                    doSync()
                 }
             }
         }

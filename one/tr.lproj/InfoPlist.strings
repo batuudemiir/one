@@ -1,0 +1,12 @@
+/* App Store + system display name — tr */
+"CFBundleDisplayName" = "ONE+ Mood Tracker";
+"CFBundleName" = "ONE+ Mood Tracker";
+
+/* Izin uyarilari — Info.plist'teki her NS*UsageDescription burada olmali;
+   eksik olan anahtar sistem uyarisinda gelistirme dilinde (TR) cikiyor. */
+"NSAppleMusicUsageDescription" = "Hissine bir şarkı eşlemek için Apple Music'e erişim gerekli. Aboneliğin olmasa bile çalışır.";
+"NSCameraUsageDescription" = "Anına fotoğraf eklemek ve davet QR'ı taramak için kamera erişimi gerekli.";
+"NSFaceIDUsageDescription" = "Uygulama kilidi açıkken anlarını yalnızca sen açabilesin diye Face ID kullanılır.";
+"NSContactsUsageDescription" = "Yakınlarını ONE'a davet etmek için rehberinden seçim yapabilmen gerekli.";
+"NSPhotoLibraryUsageDescription" = "Anına fotoğraf eklemek ve profil fotoğrafı seçmek için galeri erişimi gerekli.";
+"NSPhotoLibraryAddUsageDescription" = "Paylaşım kartını ve aylık posteri galerine kaydetmek için izin gerekli.";

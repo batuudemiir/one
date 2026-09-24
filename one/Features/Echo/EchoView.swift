@@ -13,452 +13,266 @@ struct EchoView: View {
     @StateObject private var vm: EchoViewModel
     @State private var appeared = false
     private let context: NSManagedObjectContext
+    var onDismiss: (() -> Void)? = nil
 
-
-    init(context: NSManagedObjectContext) {
+    init(context: NSManagedObjectContext, onDismiss: (() -> Void)? = nil) {
         self.context = context
+        self.onDismiss = onDismiss
         _vm = StateObject(wrappedValue: EchoViewModel(context: context))
     }
 
+    @State private var showPoster = false
+    @State private var showStory = false
+    @State private var posterLoadTimedOut = false
+    /// Structured handle for the 10s poster-load watchdog.
+    /// Ensures the sleeping Task is cancelled on view disappear,
+    /// on successful poster load, and before a new timeout is spawned
+    /// (retry path would otherwise stack concurrent watchdogs).
+    @State private var timeoutTask: Task<Void, Never>? = nil
+    @StateObject private var posterVM = MonthlySummaryViewModel(
+        context: PersistenceController.shared.container.viewContext,
+        year: Calendar.current.component(.year, from: Date()),
+        month: Calendar.current.component(.month, from: Date())
+    )
+
     var body: some View {
-        ZStack {
-            ONETokens.oneCream.ignoresSafeArea()
+        ZStack(alignment: .topLeading) {
+            V3Tokens.paper.ignoresSafeArea()
 
             if vm.isLoading {
                 loadingView
+            } else if vm.data.totalSongs == 0 {
+                // A5 — Echo'da hiç data yok: zenginleştirme yerine ilk adımı öner
+                echoEmptyState
             } else {
+                // v3 spec: cover · mood map · en çok dinlenenler · sayısal · poster.
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        header
-                            .padding(.top, 56)
-                            .padding(.horizontal, 24)
+                    VStack(spacing: V3Tokens.spacingXL) {
+                        EchoCoverSection(
+                            data: vm.data,
+                            monthName: currentMonthName,
+                            onStory: { showStory = true }
+                        )
 
-                        // ── Bölümler — sosyal proof önce ──
-                        sectionCard { weekSection }
-                        if vm.data.syncCount > 0 {
-                            sectionCard { syncSection }
+                        EchoMoodMapSection(data: vm.data)
+
+                        EchoTopTracksSection(data: vm.data)
+
+                        EchoStatsBreakdownSection(
+                            data: vm.data,
+                            isSyncLoading: vm.isSyncLoading
+                        )
+
+                        // Poster girişi — ayın renk mozaiği.
+                        Button {
+                            ONEHaptics.feelingSelected()
+                            showPoster = true
+                        } label: {
+                            HStack {
+                                Text(NSLocalizedString("year.poster", comment: ""))
+                                    .bodyMDSemibold()
+                                    .foregroundColor(V3Tokens.paper)
+                                Spacer()
+                                Image(systemName: "arrow.up.right")
+                                    .iconSM(weight: .semibold)
+                                    .foregroundColor(V3Tokens.paper)
+                            }
+                            .padding(.horizontal, V3Tokens.spacingXL)
+                            .padding(.vertical, 18)
+                            .background(RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous).fill(V3Tokens.ink))
                         }
-                        sectionCard { repeatedSongsSection }
-                        sectionCard { hourSection }
-                        sectionCard { streakSection }
+                        .buttonStyle(.onePressable)
+                        .padding(.horizontal, V3Tokens.spacingXL)
 
-                        Spacer().frame(height: 100)
+                        Color.clear.frame(height: 100)
                     }
+                    .padding(.top, V3Tokens.spacingXL2)
                 }
             }
+
+            // Ay hikayesi ve poster sunumları eskiden `EmptyView()` üzerine
+            // bağlıydı. SwiftUI `EmptyView`'ı hiyerarşiden tamamen eliyor —
+            // modifier hiç kurulmuyor, `showStory`/`showPoster` true olsa da
+            // hiçbir şey açılmıyordu. Taşıyıcı gerçek bir view olmalı.
+            Color.clear
+                .frame(width: 0, height: 0)
+                .allowsHitTesting(false)
+                // Ay hikayesi — 4 sayfa horizontal pager.
+                .fullScreenCover(isPresented: $showStory) {
+                    EchoMonthStoryView(
+                        data: vm.data,
+                        monthName: currentMonthName,
+                        onClose: { showStory = false }
+                    )
+                }
+                // Prototip 15 — aylık poster.
+                .fullScreenCover(isPresented: $showPoster, onDismiss: {
+                    posterLoadTimedOut = false
+                }) {
+                    if let data = posterVM.summaryData {
+                        MonthPosterView(data: data, onBack: { showPoster = false })
+                    } else if posterLoadTimedOut {
+                        // 10sn içinde veri gelmediyse spinner'da takılmasın —
+                        // net bir hata + geri dön akışı ver.
+                        VStack(spacing: 14) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.system(size: 28, weight: .light))
+                                .foregroundColor(V3Tokens.mutedText)
+                            Text(NSLocalizedString("echo.posterFailed", comment: ""))
+                                .bodyLG()
+                                .foregroundColor(V3Tokens.ink)
+                            Button {
+                                posterLoadTimedOut = false
+                                posterVM.load()
+                                startPosterLoadTimeout()
+                            } label: {
+                                Text(NSLocalizedString("common.retry", comment: ""))
+                                    .monoSM(tracking: 0.8)
+                                    .foregroundColor(ONEBrand.bone)
+                                    .padding(.horizontal, V3Tokens.spacingXL)
+                                    .padding(.vertical, V3Tokens.spacingMD)
+                                    .background(Capsule().fill(V3Tokens.ink))
+                            }
+                            .buttonStyle(.onePressable)
+                            Button("Kapat") { showPoster = false }
+                                .buttonStyle(.onePressable)
+                                .foregroundColor(V3Tokens.mutedText)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(V3Tokens.paper.ignoresSafeArea())
+                        // (v3: eski oneCream → bone)
+                    } else {
+                        ProgressView().task {
+                            posterVM.load()
+                            startPosterLoadTimeout()
+                        }
+                    }
+                }
+
         }
-        .navigationBarHidden(true)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            // Yankı bir katman: Profil'den modal olarak açılıyor. Kapatma
+            // dairesel `xmark`, uygulamanın geri kalanıyla aynı. Eskiden üç
+            // ayrı dil vardı — çağrı yerinde sistem toolbar'ının "Kapat"
+            // metni, burada yüzen bir kapsül düğme ("Profile dön"), ve o
+            // kapsülü aşmak için 90pt'lik elle yazılmış bir üst pay.
+            if let onDismiss {
+                V3TopBar(
+                    leading: .close(onDismiss),
+                    // `nav.echo` küçük harf ("yankı") — alt gezinme dili.
+                    // 17pt sans başlık yuvasında küçük harf stil değil hata
+                    // gibi okunuyordu; `screen.echo.title` cümle düzeninde.
+                    title: NSLocalizedString("screen.echo.title", comment: ""),
+                    context: currentMonthName.uppercased(),
+                    progress: 1
+                )
+            }
+        }
         .onAppear {
             withAnimation(.easeOut(duration: ONEAnimation.durationLong).delay(0.15)) { appeared = true }
+        }
+        .onDisappear {
+            // View kaybolurken uçuşta bir watchdog varsa iptal et; aksi
+            // halde arka planda uyuyup 10sn sonra yok olmuş view'a yazar.
+            timeoutTask?.cancel()
+            timeoutTask = nil
+        }
+        .onChange(of: posterVM.summaryData == nil) { _, isNil in
+            // Data geldiyse timeout artık gereksiz — iptal et.
+            if !isNil {
+                timeoutTask?.cancel()
+                timeoutTask = nil
+            }
+        }
+    }
+
+    // MARK: — Empty state (A5)
+    /// Echo'da hiç entry yok — kullanıcıya ilk somut next-action'ı öner.
+    private var echoEmptyState: some View {
+        VStack(spacing: 18) {
+            Spacer()
+            ZStack {
+                Circle()
+                    .stroke(V3Tokens.hairline, lineWidth: 1.2)
+                    .frame(width: 78, height: 78)
+                Image(systemName: "waveform.path.ecg")
+                    .font(.system(size: 28, weight: .light))
+                    .foregroundColor(V3Tokens.mutedText)
+            }
+
+            VStack(spacing: V3Tokens.spacingSM) {
+                Text(NSLocalizedString("echo.empty.title", comment: ""))
+                    .displayMD()
+                    .foregroundColor(V3Tokens.ink)
+                    .multilineTextAlignment(.center)
+                Text(NSLocalizedString("echo.empty.body", comment: ""))
+                    .bodySM()
+                    .foregroundColor(V3Tokens.mutedText)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+                    .padding(.horizontal, V3Tokens.spacingXL3)
+            }
+
+            Button {
+                if let onDismiss {
+                    onDismiss()
+                }
+                NotificationCenter.default.post(name: .init("switchToTodayTab"), object: nil)
+            } label: {
+                Text(NSLocalizedString("echo.empty.cta", comment: ""))
+                    .monoSM(tracking: 0.8)
+                    .foregroundColor(ONEBrand.bone)
+                    .padding(.horizontal, V3Tokens.spacingXL)
+                    .padding(.vertical, 13)
+                    .background(Capsule().fill(V3Tokens.ink))
+            }
+            .buttonStyle(.onePressable)
+            .padding(.top, 6)
+
+            Spacer()
+            Spacer().frame(height: 100)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, V3Tokens.channel)
+    }
+
+    private var currentMonthName: String {
+        let f = DateFormatter()
+        f.locale = LanguageManager.shared.currentLocale
+        f.setLocalizedDateFormatFromTemplate("MMMM")
+        return f.string(from: Date())
+    }
+
+    /// 10sn içinde posterVM.summaryData dolmazsa error fallback tetiklenir.
+    /// Handle saklanır ki `onDisappear`, başarılı load, ve tekrar-dene
+    /// yolu eski watchdog'u iptal edip yenisini kurabilsin.
+    private func startPosterLoadTimeout() {
+        timeoutTask?.cancel()
+        timeoutTask = Task {
+            try? await Task.sleep(nanoseconds: 10_000_000_000)
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                if showPoster && posterVM.summaryData == nil {
+                    posterLoadTimedOut = true
+                }
+            }
         }
     }
 
     // MARK: — Loading
     private var loadingView: some View {
-        VStack(spacing: 12) {
-            ProgressView()
-                .scaleEffect(1.1)
-                .tint(ONETokens.oneAsh)
-            Text("Yankı hazırlanıyor…")
-                .font(ONETypography.bodyXS)
-                .italic()
-                .foregroundColor(ONETokens.oneAsh)
-        }
-    }
-
-    // MARK: — Kart sarmalayıcı
-    private func sectionCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            content()
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white.opacity(0.72))
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(ONETokens.oneSilver, lineWidth: 1)
-        )
-        .padding(.horizontal, 16)
-        .padding(.top, 12)
-    }
-
-    // MARK: — Header
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Yankı")
-                .displayLG()
-                .foregroundColor(ONETokens.oneInk)
-
-            Text("Mood geçmişin, alışkanlıkların ve çevrenle kesişen anların burada.")
-                .bodySM()
-                .foregroundColor(ONETokens.oneAsh)
-        }
-        .padding(.bottom, 4)
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 8)
-        .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.0), value: appeared)
-    }
-
-    // MARK: — Hafta Bölümü
-    private var weekSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            label("Bu hafta")
-
-            // 7 renk kutusu
-            HStack(spacing: 5) {
-                ForEach(Array(vm.data.weekColors.enumerated()), id: \.offset) { idx, color in
-                    VStack(spacing: 4) {
-                        if let color {
-                            RoundedRectangle(cornerRadius: 7)
-                                .fill(color)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 48)
-                                .opacity(appeared ? 1 : 0)
-                                .scaleEffect(y: appeared ? 1 : 0.2, anchor: .bottom)
-                                .animation(
-                                    ONEAnimation.cardSpring
-                                    .delay(Double(idx) * 0.05 + 0.1),
-                                    value: appeared
-                                )
-                        } else {
-                            RoundedRectangle(cornerRadius: 7)
-                                .stroke(
-                                    ONETokens.oneCreamMid,
-                                    style: StrokeStyle(lineWidth: 1, dash: [3, 4])
-                                )
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 48)
-                                .opacity(0.5)
-                        }
-                        // gün etiketi: Pt Sa Ça Pe Cu Ct Pz
-                        Text(weekDayLabel(idx))
-                            .monoLabel()
-                            .foregroundColor(ONETokens.oneMist)
-                    }
-                }
-            }
-
-            // Baskın his
-            if let feeling = vm.data.dominantFeeling {
-                HStack(spacing: 8) {
-                    FeelingIconView(type: feeling)
-                        .frame(width: 26, height: 20)
-                        .opacity(0.55)
-                    Text("Bu hafta en çok bu his ağır bastı.")
-                        .bodyXS()
-                        .foregroundColor(ONETokens.oneAsh)
-                }
-                .padding(.top, 2)
-                .opacity(appeared ? 1 : 0)
-                .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.5), value: appeared)
+            ForEach(0..<4, id: \.self) { _ in
+                RoundedRectangle(cornerRadius: V3Tokens.radiusCard)
+                    .fill(V3Tokens.hairline)
+                    .frame(height: 88)
+                    .padding(.horizontal, V3Tokens.spacingLG)
+                    .padding(.vertical, V3Tokens.spacingSM)
+                    .shimmeringCircle()
             }
         }
-    }
-
-    // Pazar = 0 başlıyorsa üste düşer diye idx = Mon-first
-    private func weekDayLabel(_ idx: Int) -> String {
-        ["Pt","Sa","Ça","Pe","Cu","Ct","Pz"][idx % 7]
-    }
-
-    // MARK: — Tekrar Eden Şarkılar
-    private var repeatedSongsSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            label("Tekrar eden şarkılar")
-
-            if vm.data.repeatedSongs.isEmpty {
-                emptyNote("Bu hafta hiç tekrar eden şarkı yok.")
-            } else {
-                VStack(spacing: 0) {
-                    ForEach(Array(vm.data.repeatedSongs.enumerated()), id: \.element.id) { idx, song in
-                        songRow(song, idx: idx)
-                        if idx < vm.data.repeatedSongs.count - 1 {
-                            Divider()
-                                .background(ONETokens.oneCream)
-                                .padding(.vertical, 2)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private func songRow(_ song: RepeatedSong, idx: Int) -> some View {
-        HStack(spacing: 12) {
-            // Renk şeridi
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Color(hex: song.moodColorHex).opacity(0.85))
-                .frame(width: 3, height: 40)
-
-            // İsim + Sanatçı
-            VStack(alignment: .leading, spacing: 3) {
-                Text(song.songName)
-                    .bodyMD()
-                    .fontWeight(.medium)
-                    .foregroundColor(ONETokens.oneInk)
-                    .lineLimit(1)
-                Text(song.artistName)
-                    .monoSM()
-                    .foregroundColor(ONETokens.oneAsh)
-                    .lineLimit(1)
-            }
-
-            Spacer()
-
-            // Sayaç + tarihler
-            VStack(alignment: .trailing, spacing: 3) {
-                Text("\(song.count)×")
-                    .font(ONETypography.displaySM)
-                    .foregroundColor(ONETokens.oneInk)
-                Text(song.dates.prefix(3).joined(separator: " · "))
-                    .monoBase()
-                    .foregroundColor(ONETokens.oneCharcoal)
-                    .multilineTextAlignment(.trailing)
-            }
-        }
-        .padding(.vertical, 10)
-        .opacity(appeared ? 1 : 0)
-        .offset(x: appeared ? 0 : 14)
-        .animation(
-            ONEAnimation.panelSpring
-            .delay(Double(idx) * 0.08 + 0.15),
-            value: appeared
-        )
-    }
-
-    // MARK: — Saat Dağılımı
-    private var hourSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            label("Ne zaman seçiyorsun?")
-
-            HStack(alignment: .center, spacing: 24) {
-                HourRingView(distribution: vm.data.hourDistribution)
-                    .frame(width: 112, height: 112)
-                    .opacity(appeared ? 1 : 0)
-                    .scaleEffect(appeared ? 1 : 0.85)
-                    .animation(ONEAnimation.cardSpring.delay(0.2), value: appeared)
-
-                VStack(alignment: .leading, spacing: 10) {
-                    timeRow(icon: "sunrise.fill",  label: "Sabah", hours: [6,7,8,9,10],   color: ONETokens.moodYellow)
-                    timeRow(icon: "sun.max.fill",   label: "Öğlen", hours: [11,12,13,14], color: ONETokens.moodOrange)
-                    timeRow(icon: "moon.fill",      label: "Akşam", hours: [18,19,20,21], color: ONETokens.oneBlue)
-                    timeRow(icon: "moon.stars.fill", label: "Gece", hours: [22,23,0,1,2], color: ONETokens.moodPurple)
-                }
-                .opacity(appeared ? 1 : 0)
-                .animation(.easeOut(duration: ONEAnimation.durationMedium).delay(0.35), value: appeared)
-            }
-        }
-    }
-
-    private func timeRow(icon: String, label: String, hours: [Int], color: Color) -> some View {
-        let count = hours.reduce(0) { $0 + (vm.data.hourDistribution[$1] ?? 0) }
-        return HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 11))
-                .foregroundColor(color)
-                .frame(width: 16)
-            Text(label)
-                .monoSM()
-                .foregroundColor(ONETokens.oneAsh)
-                .frame(width: 40, alignment: .leading)
-            Text("\(count) seçim")
-                .font(ONETypography.bodyXS)
-                .foregroundColor(ONETokens.oneInk)
-        }
-    }
-
-    // MARK: — En Uzun Seri
-    private var streakSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            label("En uzun seri")
-
-            if vm.data.longestStreak.days == 0 {
-                emptyNote("Henüz bir seri oluşmadı.")
-            } else {
-                VStack(alignment: .leading, spacing: 10) {
-                    // Büyük sayı
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("\(vm.data.longestStreak.days)")
-                            .font(.system(size: 52, weight: .semibold))
-                            .foregroundColor(ONETokens.oneInk)
-                            .tracking(-1.5)
-                        Text("gün")
-                            .displayXS()
-                            .foregroundColor(ONETokens.oneAsh)
-                    }
-                    .opacity(appeared ? 1 : 0)
-                    .offset(y: appeared ? 0 : 10)
-                    .animation(ONEAnimation.cardSpring.delay(0.2), value: appeared)
-
-                    // Tarih aralığı
-                    Text("\(vm.data.longestStreak.startDate)  →  \(vm.data.longestStreak.endDate)")
-                        .monoSM()
-                        .foregroundColor(ONETokens.oneCharcoal)
-
-                    // Renk şeridi
-                    if !vm.data.longestStreak.colors.isEmpty {
-                        HStack(spacing: 3) {
-                            ForEach(Array(vm.data.longestStreak.colors.enumerated()), id: \.offset) { _, color in
-                                RoundedRectangle(cornerRadius: 3)
-                                    .fill(color)
-                                    .frame(height: 10)
-                                    .frame(maxWidth: .infinity)
-                            }
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: 5))
-                        .opacity(appeared ? 1 : 0)
-                        .animation(.easeOut(duration: ONEAnimation.durationLong).delay(0.4), value: appeared)
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: — Çevre Eşleşmesi
-    private var syncSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // Başlık + loading
-            HStack {
-                label("Çevre ile")
-                Spacer()
-                if vm.isSyncLoading {
-                    ProgressView()
-                        .scaleEffect(0.7)
-                }
-            }
-
-            // Özet sayı
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(vm.data.syncCount)")
-                    .font(.system(size: 40, weight: .semibold))
-                    .foregroundColor(ONETokens.oneInk)
-                Text(vm.data.syncCount == 1 ? "kez çevrenle aynı şarkıda buluştun." : "kez çevrenle aynı şarkıda buluştun.")
-                    .bodyMD()
-                    .foregroundColor(ONETokens.oneAsh)
-            }
-
-            // Eşleşme listesi
-            if !vm.data.circleSyncMatches.isEmpty {
-                VStack(spacing: 8) {
-                    ForEach(vm.data.circleSyncMatches.prefix(5)) { match in
-                        HStack(spacing: 12) {
-                            // Mood rengi dot
-                            Circle()
-                                .fill(Color(hex: match.moodColorHex))
-                                .frame(width: 10, height: 10)
-
-                            // Şarkı + sanatçı
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(match.songName)
-                                    .bodyMD()
-                                    .foregroundColor(ONETokens.oneInk)
-                                    .lineLimit(1)
-                                Text(match.artistName)
-                                    .monoSM(tracking: 0)
-                                    .foregroundColor(ONETokens.oneAsh)
-                            }
-
-                            Spacer()
-
-                            // Arkadaş + tarih
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text(match.friendDisplayName)
-                                    .monoSM(tracking: 0.4)
-                                    .foregroundColor(ONETokens.oneInk)
-                                Text(match.dateLabel)
-                                    .monoSM(tracking: 0)
-                                    .foregroundColor(ONETokens.oneMist)
-                            }
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(ONETokens.oneSilver)
-                        )
-                    }
-
-                    // 5'ten fazlası varsa "ve X daha"
-                    if vm.data.circleSyncMatches.count > 5 {
-                        Text("ve \(vm.data.circleSyncMatches.count - 5) eşleşme daha")
-                            .monoSM(tracking: 0.5)
-                            .foregroundColor(ONETokens.oneMist)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.top, 2)
-                    }
-                }
-            } else if !vm.isSyncLoading {
-                // Boş durum
-                Text("Henüz çevrenizden kimseyle aynı şarkıyı seçmediniz.")
-                    .monoSM(tracking: 0.3)
-                    .foregroundColor(ONETokens.oneMist)
-                    .padding(.top, 2)
-            }
-        }
-    }
-
-
-    // MARK: — Yardımcılar
-    private func label(_ text: String) -> some View {
-        Text(text.uppercased())
-            .monoSM(tracking: 1.8)
-            .foregroundColor(ONETokens.oneMist)
-    }
-
-    private func emptyNote(_ text: String) -> some View {
-        Text(text)
-            .bodySM()
-            .foregroundColor(ONETokens.oneAsh)
-    }
-}
-
-// MARK: — HourRingView
-private struct HourRingView: View {
-    let distribution: [Int: Int]
-
-    var body: some View {
-        Canvas { ctx, size in
-            let cx       = Double(size.width)  / 2.0
-            let cy       = Double(size.height) / 2.0
-            let minSide  = min(Double(size.width), Double(size.height))
-            let radius   = minSide / 2.0 - 6.0
-            let maxCount = Double(max(1, distribution.values.max() ?? 1))
-
-            for hour in 0..<24 {
-                let count   = Double(distribution[hour] ?? 0)
-                let angle   = (Double(hour) / 24.0) * 2.0 * Double.pi - Double.pi / 2.0
-                let barLen  = (count / maxCount) * 16.0 + (count > 0 ? 4.0 : 0.0)
-                let r1      = radius - 2.0
-                let r2      = radius + barLen
-                let ix      = cx + r1 * Foundation.cos(angle)
-                let iy      = cy + r1 * Foundation.sin(angle)
-                let ox      = cx + r2 * Foundation.cos(angle)
-                let oy      = cy + r2 * Foundation.sin(angle)
-
-                var path = Path()
-                path.move(to:    CGPoint(x: ix, y: iy))
-                path.addLine(to: CGPoint(x: ox, y: oy))
-
-                let alpha: Double = count > 0 ? 0.80 : 0.10
-                let isNight       = hour < 6 || hour >= 22
-                let clr: Color    = isNight
-                    ? ONETokens.moodPurple.opacity(alpha)
-                    : ONETokens.moodYellow.opacity(alpha)
-                ctx.stroke(path, with: .color(clr), lineWidth: 2.8)
-            }
-
-            // İç halka
-            let rInner = radius - 2.0
-            let ringRect = CGRect(
-                x: cx - rInner, y: cy - rInner,
-                width: rInner * 2.0, height: rInner * 2.0
-            )
-            ctx.stroke(
-                Path(ellipseIn: ringRect),
-                with: .color(ONETokens.oneSilver),
-                lineWidth: 1.0
-            )
-        }
+        .padding(.top, 80)
+        .frame(maxWidth: .infinity)
     }
 }
 

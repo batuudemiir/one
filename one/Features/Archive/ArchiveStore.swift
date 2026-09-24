@@ -10,53 +10,148 @@ import Combine
 class ArchiveStore: ObservableObject {
     @Published var currentMonth: MonthSummary
     @Published var yearData: [MonthSummary]
-    
+    @Published var isLoading: Bool = false
+    /// Prototipteki "bugün · geçen yıl" içgörüsü. Geçen yıl aynı günde kayıt
+    /// yoksa nil — kart o zaman hiç çizilmez, uydurma metin gösterilmez.
+    @Published var lastYearToday: DailyEntry?
+
     private let context: NSManagedObjectContext
-    
+
+    /// `.momentsDidChangeRemotely` aboneliği.
+    ///
+    /// Arşiv yalnızca `.task` / `todaySongSaved` ile fetch ediyordu; başka
+    /// cihazdan inen kayıt, kullanıcı sekmeden çıkıp dönene kadar takvimde
+    /// görünmüyordu.
+    private var remoteChangeSubscription: AnyCancellable?
+
     init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
         self.context = context
-        
-        // Başlangıç değerleri
         self.currentMonth = MonthSummary(year: 2025, month: 2, entries: [:], totalDays: 28)
         self.yearData = []
-        
-        // Veriyi yükle
-        loadData()
+
+        remoteChangeSubscription = NotificationCenter.default
+            .publisher(for: .momentsDidChangeRemotely)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                Task { @MainActor in await self.reloadAfterRemoteChange() }
+            }
     }
-    
+
+    /// CloudKit'ten inen değişikliği ekrana yansıtır.
+    ///
+    /// `loadDataAsync()` çağrılmıyor: o her zaman *bu* aya/yıla dönüyor.
+    /// Kullanıcı geçmiş bir ayı gezerken arka planda sync inerse onu
+    /// takvimden dışarı fırlatmak yerine görüntülenen dönem korunuyor.
+    ///
+    /// Kritik olan `yearData`'nın hangi yıla ait olduğu: `V3ArchiveView`
+    /// görüntülenen yılı kendi `@State year`'ında tutuyor (satır 21) ve
+    /// store'dan senkronlanmıyor — veriyi `months.first(where: { $0.year ==
+    /// year })` ile arıyor. `yearData` başka bir yıla dönerse view eski yılı
+    /// çizmeye devam eder ve her hücre nil'e düşer: takvim sessizce boşalır.
+    ///
+    /// `isLoading` kıpırdatılmıyor, ama iskeleti tutan bu değil —
+    /// `ArchiveView:54` onu `yearData.isEmpty` ile de koşullamış, yani ilk
+    /// yüklemeden sonra zaten görünmüyor. Dokunmamak yine de doğru: bu bir
+    /// arka plan tazelemesi, yükleme durumu değil.
+    @MainActor
+    private func reloadAfterRemoteChange() async {
+        // İlk yükleme henüz olmadıysa geç: `currentMonth` hâlâ init'teki
+        // yer tutucu (2025/02) ve onu tazelemek yanlış dönemi doldurur.
+        // `ArchiveView.task` zaten `yearData.isEmpty` iken fetch ediyor.
+        guard !yearData.isEmpty else { return }
+
+        let year = currentMonth.year
+        let month = currentMonth.month
+        let now = Date()
+        let bg = PersistenceController.shared.container.newBackgroundContext()
+        let (newMonth, newYear, lastYear) = await bg.perform {
+            (self.loadMonth(year: year, month: month, context: bg),
+             (1...12).map { self.loadMonth(year: year, month: $0, context: bg) },
+             self.loadLastYearToday(now: now, context: bg))
+        }
+
+        currentMonth = newMonth
+        yearData = newYear
+        lastYearToday = lastYear
+    }
+
     func loadData() {
+        Task { await loadDataAsync() }
+    }
+
+    func loadDataAsync() async {
+        await MainActor.run { isLoading = true }
+
         let calendar = Calendar.current
         let now = Date()
         let currentYear = calendar.component(.year, from: now)
         let currentMonthNum = calendar.component(.month, from: now)
-        
-        // Mevcut ayı yükle
-        currentMonth = loadMonth(year: currentYear, month: currentMonthNum)
-        
-        // Tüm yılı yükle (12 ay)
-        yearData = (1...12).map { month in
-            loadMonth(year: currentYear, month: month)
+
+        let bg = PersistenceController.shared.container.newBackgroundContext()
+        let (newCurrentMonth, newYearData, lastYear) = await bg.perform {
+            let month = self.loadMonth(year: currentYear, month: currentMonthNum, context: bg)
+            let year  = (1...12).map { self.loadMonth(year: currentYear, month: $0, context: bg) }
+            return (month, year, self.loadLastYearToday(now: now, context: bg))
+        }
+
+        await MainActor.run {
+            self.currentMonth = newCurrentMonth
+            self.yearData = newYearData
+            self.lastYearToday = lastYear
+            self.isLoading = false
         }
     }
-    
+
+    /// Bir yıl önce bugüne ait kayıt. Tek günlük dar sorgu — arşivin geri
+    /// kalanı zaten yüklenirken aynı arka plan bağlamında koşar.
+    private func loadLastYearToday(now: Date, context ctx: NSManagedObjectContext) -> DailyEntry? {
+        let calendar = Calendar.current
+        guard let lastYear = calendar.date(byAdding: .year, value: -1, to: now) else { return nil }
+        let start = calendar.startOfDay(for: lastYear)
+        guard let end = calendar.date(byAdding: .day, value: 1, to: start) else { return nil }
+
+        let request: NSFetchRequest<DailySong> = DailySong.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "date >= %@ AND date < %@", start as NSDate, end as NSDate
+        )
+        request.fetchLimit = 1
+
+        guard let item = try? ctx.fetch(request).first else { return nil }
+        return createEntry(from: item, using: calendar)
+    }
+
     /// Yıl görünümünden seçilen aya geçiş için: o aya ait veriyi yükler.
     func loadSpecificMonth(month: Int) {
-        let calendar = Calendar.current
-        let year = calendar.component(.year, from: Date())
-        currentMonth = loadMonth(year: year, month: month)
+        Task { await loadSpecificMonthAsync(month: month) }
+    }
+
+    @MainActor
+    private func loadSpecificMonthAsync(month: Int) async {
+        let year = Calendar.current.component(.year, from: Date())
+        let bg = PersistenceController.shared.container.newBackgroundContext()
+        let result = await bg.perform { self.loadMonth(year: year, month: month, context: bg) }
+        currentMonth = result
     }
 
     /// ← → navigasyon: offset = -1 (önceki ay), +1 (sonraki ay)
     func navigateMonth(by offset: Int) {
+        Task { await navigateMonthAsync(by: offset) }
+    }
+
+    @MainActor
+    private func navigateMonthAsync(by offset: Int) async {
         let calendar = Calendar.current
         guard let first = calendar.date(from: DateComponents(year: currentMonth.year, month: currentMonth.month, day: 1)),
               let target = calendar.date(byAdding: .month, value: offset, to: first) else { return }
         let y = calendar.component(.year,  from: target)
         let m = calendar.component(.month, from: target)
-        currentMonth = loadMonth(year: y, month: m)
-        // yearData'yı doğru yıl için güncelle
+        let bg = PersistenceController.shared.container.newBackgroundContext()
+        let newMonth = await bg.perform { self.loadMonth(year: y, month: m, context: bg) }
+        currentMonth = newMonth
         if y != yearData.first?.year {
-            yearData = (1...12).map { loadMonth(year: y, month: $0) }
+            let newYear = await bg.perform { (1...12).map { self.loadMonth(year: y, month: $0, context: bg) } }
+            yearData = newYear
         }
     }
 
@@ -67,56 +162,66 @@ class ArchiveStore: ObservableObject {
                  currentMonth.month == cal.component(.month, from: now))
     }
     
+    /// Returns the primary (last) entry for a given date
     func entry(for date: Date) -> DailyEntry? {
         let startOfDay = Calendar.current.startOfDay(for: date)
-        // Search currentMonth first, then fallback to any month in yearData
-        if let entry = currentMonth.entries[startOfDay] { return entry }
+        if let entry = currentMonth.entries[startOfDay]?.last { return entry }
         for month in yearData {
-            if let entry = month.entries[startOfDay] { return entry }
+            if let entry = month.entries[startOfDay]?.last { return entry }
         }
         return nil
     }
+
+    /// Returns all entries for a given date (v3 çoklu an)
+    func allEntries(for date: Date) -> [DailyEntry] {
+        let startOfDay = Calendar.current.startOfDay(for: date)
+        if let entries = currentMonth.entries[startOfDay], !entries.isEmpty { return entries }
+        for month in yearData {
+            if let entries = month.entries[startOfDay], !entries.isEmpty { return entries }
+        }
+        return []
+    }
     
-    private func loadMonth(year: Int, month: Int) -> MonthSummary {
+    private func loadMonth(year: Int, month: Int, context ctx: NSManagedObjectContext) -> MonthSummary {
         let calendar = Calendar.current
-        
-        // Ayın gün sayısını hesapla
+
         guard let firstDay = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
               let range = calendar.range(of: .day, in: .month, for: firstDay) else {
-            // Tarih hesaplama hatası - varsayılan 30 gün kullan
             ONELogger.warning("Tarih hesaplama hatası: year=\(year), month=\(month)", category: .persistence)
             return MonthSummary(year: year, month: month, entries: [:], totalDays: 30)
         }
-        
+
         let totalDays = range.count
-        
-        // CoreData'dan entry'leri çek
-        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
-        
-        // Sonraki ayın ilk gününü güvenli şekilde hesapla
+
         guard let nextMonthFirstDay = calendar.date(byAdding: .month, value: 1, to: firstDay) else {
             ONELogger.warning("Sonraki ay hesaplama hatası", category: .persistence)
             return MonthSummary(year: year, month: month, entries: [:], totalDays: totalDays)
         }
-        
+
+        let fetchRequest: NSFetchRequest<DailySong> = DailySong.fetchRequest()
         fetchRequest.predicate = NSPredicate(
             format: "date >= %@ AND date < %@",
             firstDay as NSDate,
             nextMonthFirstDay as NSDate
         )
         
-        var entries: [Date: DailyEntry] = [:]
-        
+        var entries: [Date: [DailyEntry]] = [:]
+
         do {
-            let items = try context.fetch(fetchRequest)
-            
+            let items = try ctx.fetch(fetchRequest)
+
             for item in items {
                 guard let timestamp = item.date else { continue }
                 let startOfDay = calendar.startOfDay(for: timestamp)
-                
+
                 if let entry = createEntry(from: item, using: calendar) {
-                    entries[startOfDay] = entry
+                    entries[startOfDay, default: []].append(entry)
                 }
+            }
+
+            // Sort each day's entries by createdAt (via time string as proxy)
+            for key in entries.keys {
+                entries[key]?.sort { $0.time < $1.time }
             }
         } catch {
             // CoreData fetch hatası - boş entries ile devam et
@@ -139,15 +244,28 @@ class ArchiveStore: ObservableObject {
         // Gerçek seçim zamanı için createdAt kullan, yoksa date'i fallback olarak kullan
         let actualTime = item.createdAt ?? timestamp
         
-        // Fotoğraf URL'sini oluştur (photoData'dan)
+        // Fotoğraf URL'si.
+        //
+        // Sıra kritik: `item.photoData`'ya dokunmak Core Data'nın binary
+        // blob'unu TAMAMEN belleğe fault ediyor (tek fotoğraf 8 MB'a
+        // çıkabiliyor). Arşiv 13 ay yüklüyor ve her `todaySongSaved`
+        // bildiriminde yeniden koşuyor — eskiden bu, her yenilemede
+        // onlarca megabaytın boşuna okunması demekti.
+        //
+        // Bu yüzden önce diskteki temp dosyaya bakıyoruz; varsa blob'a
+        // hiç dokunmuyoruz.
         var photoURL: URL? = nil
-        if let photoData = item.photoData, !photoData.isEmpty {
-            // Temp dizine kaydet ve URL oluştur
-            let tempURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent("\(item.id?.uuidString ?? UUID().uuidString).jpg")
-            try? photoData.write(to: tempURL)
-            photoURL = tempURL
-            ONELogger.debug("Fotoğraf yüklendi: \(item.songName ?? "?") - \(photoData.count) bytes", category: .persistence)
+        let cachedURL = item.id.map {
+            FileManager.default.temporaryDirectory.appendingPathComponent("\($0.uuidString).jpg")
+        }
+
+        if let cachedURL, FileManager.default.fileExists(atPath: cachedURL.path) {
+            photoURL = cachedURL
+        } else if let photoData = item.photoData, !photoData.isEmpty {
+            let target = cachedURL ?? FileManager.default.temporaryDirectory
+                .appendingPathComponent("\(UUID().uuidString).jpg")
+            try? photoData.write(to: target)
+            photoURL = target
         } else if let photoURLString = item.photoURL {
             // Fallback: photoURL string varsa kullan
             photoURL = URL(string: photoURLString)
@@ -157,14 +275,14 @@ class ArchiveStore: ObservableObject {
         return DailyEntry(
             id: item.id ?? UUID(),
             date: timestamp,
-            songName: item.songName ?? "Bilinmeyen Şarkı",
-            artistName: item.artistName ?? "Bilinmeyen Sanatçı",
-            genre: item.genre ?? "Bilinmeyen",
+            songName: item.songName ?? NSLocalizedString("archive.unknownSong", comment: ""),
+            artistName: item.artistName ?? NSLocalizedString("archive.unknownArtist", comment: ""),
+            genre: item.genre ?? NSLocalizedString("archive.unknown", comment: ""),
             moodColor: Color(hex: item.moodColorHex ?? "#607D8B"),
             moodColorHex: item.moodColorHex ?? "#607D8B",
-            moodLabel: item.moodLabel ?? item.moodWord ?? "Nötr",
+            moodLabel: item.moodLabel ?? item.moodWord ?? NSLocalizedString("archive.defaultMood", comment: ""),
             feeling: FeelingType(rawValue: item.feeling ?? "calm") ?? .calm,
-            feelingLabel: item.feelingLabel ?? "Dingin",
+            feelingLabel: item.feelingLabel ?? NSLocalizedString("archive.defaultFeeling", comment: ""),
             time: formatTime(actualTime),
             photoURL: photoURL,
             shareWithCircle: item.shareWithCircle,
@@ -172,7 +290,8 @@ class ArchiveStore: ObservableObject {
             weatherDesc: item.weatherDesc ?? "—",
             spotifyURL: item.spotifyURL.flatMap { URL(string: $0) },
             platform: "Spotify",
-            note: item.dailyNote
+            note: item.dailyNote,
+            passed: item.passed
         )
     }
     

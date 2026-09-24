@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
+    <entity name="DailySong" representedClassName="DailySong" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="songName" optional="YES" attributeType="String"/>
+        <attribute name="artistName" optional="YES" attributeType="String"/>
+        <attribute name="genre" optional="YES" attributeType="String"/>
+        <attribute name="emoji" optional="YES" attributeType="String"/>
+        <attribute name="artworkURL" optional="YES" attributeType="String"/>
+        <attribute name="moodWord" optional="YES" attributeType="String"/>
+        <attribute name="moodColorHex" optional="YES" attributeType="String"/>
+        <attribute name="moodIsDark" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="dailyNote" optional="YES" attributeType="String"/>
+        <attribute name="platform" optional="YES" attributeType="String"/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="isSharedWithCircle" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="shareExpiresAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="viewCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="sharedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="photoData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="photoURL" optional="YES" attributeType="String"/>
+        <attribute name="moodLabel" optional="YES" attributeType="String"/>
+        <attribute name="feeling" optional="YES" attributeType="String"/>
+        <attribute name="feelingLabel" optional="YES" attributeType="String"/>
+        <attribute name="weatherIcon" optional="YES" attributeType="String"/>
+        <attribute name="weatherDesc" optional="YES" attributeType="String"/>
+        <attribute name="spotifyURL" optional="YES" attributeType="String"/>
+        <attribute name="shareWithCircle" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="entryIndex" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="passed" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="Entry" representedClassName="EntryMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="dayKey" optional="YES" attributeType="String"/>
+        <attribute name="timeZoneID" optional="YES" attributeType="String"/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="updatedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="kind" optional="YES" attributeType="String"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="body" optional="YES" attributeType="String"/>
+        <attribute name="wordCount" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="contentRef" optional="YES" attributeType="String"/>
+        <attribute name="contentSnapshot" optional="YES" attributeType="String"/>
+        <attribute name="isBackfilled" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="searchText" optional="YES" attributeType="String"/>
+        <attribute name="sourceContext" optional="YES" attributeType="String"/>
+        <attribute name="comparedEntryID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="mood" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MoodLog" inverseName="entry" inverseEntity="MoodLog"/>
+        <relationship name="answers" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="EntryAnswer" inverseName="entry" inverseEntity="EntryAnswer"/>
+        <relationship name="media" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Media" inverseName="entry" inverseEntity="Media"/>
+        <relationship name="tags" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Tag" inverseName="entries" inverseEntity="Tag"/>
+        <relationship name="template" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Template" inverseName="entries" inverseEntity="Template"/>
+    </entity>
+    <entity name="EntryAnswer" representedClassName="EntryAnswerMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="order" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="stepRef" optional="YES" attributeType="String"/>
+        <attribute name="questionSnapshot" optional="YES" attributeType="String"/>
+        <attribute name="kind" optional="YES" attributeType="String"/>
+        <attribute name="textValue" optional="YES" attributeType="String"/>
+        <attribute name="numberValue" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="hasNumber" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="boolValue" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="hasBool" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="choiceValuesJSON" optional="YES" attributeType="String"/>
+        <attribute name="metricID" optional="YES" attributeType="String"/>
+        <relationship name="entry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Entry" inverseName="answers" inverseEntity="Entry"/>
+    </entity>
+    <entity name="MoodLog" representedClassName="MoodLogMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="dayKey" optional="YES" attributeType="String"/>
+        <attribute name="timeZoneID" optional="YES" attributeType="String"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="score" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="emotionIDsJSON" optional="YES" attributeType="String"/>
+        <attribute name="causeIDsJSON" optional="YES" attributeType="String"/>
+        <attribute name="note" optional="YES" attributeType="String"/>
+        <attribute name="source" optional="YES" attributeType="String"/>
+        <attribute name="healthKitSampleID" optional="YES" attributeType="String"/>
+        <relationship name="entry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Entry" inverseName="mood" inverseEntity="Entry"/>
+    </entity>
+    <entity name="DayRecord" representedClassName="DayRecordMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="dayKey" optional="YES" attributeType="String"/>
+        <attribute name="timeZoneID" optional="YES" attributeType="String"/>
+        <attribute name="dailyCompletedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="morningCompletedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="eveningCompletedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="focusText" optional="YES" attributeType="String"/>
+        <attribute name="backfilledAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="completedBy" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="Tag" representedClassName="TagMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="iconName" optional="YES" attributeType="String"/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="entries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Entry" inverseName="tags" inverseEntity="Entry"/>
+    </entity>
+    <entity name="Media" representedClassName="MediaMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
+        <attribute name="data" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="thumbnail" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="durationSec" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="songCatalogID" optional="YES" attributeType="String"/>
+        <attribute name="songTitle" optional="YES" attributeType="String"/>
+        <attribute name="songArtist" optional="YES" attributeType="String"/>
+        <attribute name="artworkURL" optional="YES" attributeType="String"/>
+        <attribute name="onDeviceDescription" optional="YES" attributeType="String"/>
+        <attribute name="order" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="entry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Entry" inverseName="media" inverseEntity="Entry"/>
+    </entity>
+    <entity name="Template" representedClassName="TemplateMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="isFavorite" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="items" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TemplateItem" inverseName="template" inverseEntity="TemplateItem"/>
+        <relationship name="entries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Entry" inverseName="template" inverseEntity="Entry"/>
+    </entity>
+    <entity name="TemplateItem" representedClassName="TemplateItemMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="order" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="kind" optional="YES" attributeType="String"/>
+        <attribute name="text" optional="YES" attributeType="String"/>
+        <attribute name="contentRef" optional="YES" attributeType="String"/>
+        <relationship name="template" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Template" inverseName="items" inverseEntity="Template"/>
+    </entity>
+    <entity name="MetricDefinition" representedClassName="MetricDefinitionMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="kind" optional="YES" attributeType="String"/>
+        <attribute name="isActive" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="order" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="BadgeAward" representedClassName="BadgeAwardMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="badgeID" optional="YES" attributeType="String"/>
+        <attribute name="earnedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="Practice" representedClassName="PracticeMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="contentRef" optional="YES" attributeType="String"/>
+        <attribute name="order" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="addedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="ContentExposure" representedClassName="ContentExposureMO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="contentID" optional="YES" attributeType="String"/>
+        <attribute name="contentKind" optional="YES" attributeType="String"/>
+        <attribute name="firstSeenAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastSeenAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="seenCount" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="liked" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="likedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastEntryID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="lastWrittenAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="writtenCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <fetchIndex name="byContent">
+            <fetchIndexElement property="contentID" type="Binary" order="ascending"/>
+            <fetchIndexElement property="contentKind" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <elements>
+        <element name="DailySong" positionX="-63" positionY="-18" width="128" height="389"/>
+    </elements>
+</model>

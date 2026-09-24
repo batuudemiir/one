@@ -1,0 +1,721 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "p_000001",
+      "text": "Bugün seni en çok ne şaşırttı?",
+      "pool": "free",
+      "themes": [
+        "merak"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000002",
+      "text": "Şu an zihninde en çok yer kaplayan düşünce ne?",
+      "pool": "free",
+      "themes": [
+        "odak"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000003",
+      "text": "Bu hafta kendinle ilgili fark ettiğin bir şey var mı?",
+      "pool": "free",
+      "themes": [
+        "degisim"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000004",
+      "text": "Bugün kime teşekkür etmek isterdin?",
+      "pool": "free",
+      "themes": [
+        "minnet",
+        "iliskiler"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000005",
+      "text": "Seni son zamanlarda ne yordu?",
+      "pool": "free",
+      "themes": [
+        "dinlenme"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000006",
+      "text": "Bugün neye hayır dedin, neye evet?",
+      "pool": "free",
+      "themes": [
+        "sinirlar"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000007",
+      "text": "Bir yıl önceki sana ne söylemek isterdin?",
+      "pool": "free",
+      "themes": [
+        "degisim",
+        "anlam"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000008",
+      "text": "Bugün kendine nasıl davrandın?",
+      "pool": "free",
+      "themes": [
+        "ozsefkat"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": true,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000009",
+      "text": "Ertelediğin bir şeyi düşün; seni ne durduruyor?",
+      "pool": "free",
+      "themes": [
+        "cesaret",
+        "odak"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000010",
+      "text": "Son günlerde seni gülümseten küçük bir an neydi?",
+      "pool": "free",
+      "themes": [
+        "minnet"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000011",
+      "text": "Şu an bedeninde neler hissediyorsun?",
+      "pool": "free",
+      "themes": [
+        "yavaslik"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000012",
+      "text": "Özlediğin bir şey ya da biri var mı?",
+      "pool": "free",
+      "themes": [
+        "kayip",
+        "iliskiler"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000013",
+      "text": "Bu ay öğrendiğin bir şeyi anlat.",
+      "pool": "free",
+      "themes": [
+        "merak"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000014",
+      "text": "Bugünü tek bir kelimeyle anlatsan hangisi olurdu?",
+      "pool": "free",
+      "themes": [
+        "anlam"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000015",
+      "text": "Yarın için küçük bir niyetin var mı?",
+      "pool": "free",
+      "themes": [
+        "umut",
+        "odak"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000016",
+      "text": "Bu söz sana bugün ne hatırlatıyor?",
+      "pool": "reflection",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000017",
+      "text": "Bu söze katılıyor musun, neden?",
+      "pool": "reflection",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000018",
+      "text": "Bu sözü hayatındaki bir anla eşleştirebilir misin?",
+      "pool": "reflection",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000019",
+      "text": "Bu söz bir arkadaşına söylenmiş olsa ne düşünürdün?",
+      "pool": "reflection",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000020",
+      "text": "Bu sözün seni zorlayan tarafı ne?",
+      "pool": "reflection",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000021",
+      "text": "Bu sözü kendi cümlelerinle yeniden yaz.",
+      "pool": "reflection",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000022",
+      "text": "Bu söz bir yıl önce sana ne ifade ederdi?",
+      "pool": "reflection",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000023",
+      "text": "Bu sözden bugüne taşıyabileceğin küçük bir adım var mı?",
+      "pool": "reflection",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000024",
+      "text": "En son hangi duyguyu adlandırdığında biraz rahatladın?",
+      "pool": "reflection",
+      "themes": [
+        "kabul"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [
+        "q_000037"
+      ],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000025",
+      "text": "Kaybettiğin bir şeyin sana öğrettiği ne oldu?",
+      "pool": "reflection",
+      "themes": [
+        "kayip"
+      ],
+      "timeOfDay": "any",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [
+        "q_000044"
+      ],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000026",
+      "text": "Bu hissi en çok ne besliyor olabilir?",
+      "pool": "checkinFollowUp",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [
+        1,
+        2,
+        3
+      ],
+      "emotionFit": [
+        "kaygi",
+        "ofke"
+      ],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000027",
+      "text": "Bugün sana iyi gelen bir şey oldu mu?",
+      "pool": "checkinFollowUp",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [
+        3,
+        4,
+        5
+      ],
+      "emotionFit": [
+        "nese",
+        "huzur"
+      ],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000028",
+      "text": "Şu an neye ihtiyacın var?",
+      "pool": "checkinFollowUp",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [
+        1,
+        2
+      ],
+      "emotionFit": [
+        "yorgunluk",
+        "huzun"
+      ],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000029",
+      "text": "Bu duyguyu kimle paylaşmak isterdin?",
+      "pool": "checkinFollowUp",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [
+        2,
+        3,
+        4
+      ],
+      "emotionFit": [
+        "sevgi",
+        "huzun"
+      ],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000030",
+      "text": "Bu enerjiyi nereye yöneltmek istersin?",
+      "pool": "checkinFollowUp",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [
+        4,
+        5
+      ],
+      "emotionFit": [
+        "merak",
+        "nese"
+      ],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000031",
+      "text": "Seni biraz olsun rahatlatacak küçük bir şey ne olabilir?",
+      "pool": "checkinFollowUp",
+      "themes": [],
+      "timeOfDay": "any",
+      "moodFit": [
+        1,
+        2
+      ],
+      "emotionFit": [
+        "kaygi"
+      ],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000032",
+      "text": "Bugün için tek bir odak seç.",
+      "pool": "morning",
+      "themes": [
+        "odak"
+      ],
+      "timeOfDay": "morning",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": true,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000033",
+      "text": "Bugün kendine nasıl davranmak istersin?",
+      "pool": "morning",
+      "themes": [
+        "ozsefkat"
+      ],
+      "timeOfDay": "morning",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": true,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000034",
+      "text": "Bugünü neyin güzelleştirebileceğini düşün.",
+      "pool": "morning",
+      "themes": [
+        "umut"
+      ],
+      "timeOfDay": "morning",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000035",
+      "text": "Bugün seni zorlayabilecek şey ne, ona nasıl hazırlanırsın?",
+      "pool": "morning",
+      "themes": [
+        "cesaret"
+      ],
+      "timeOfDay": "morning",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000036",
+      "text": "Bu sabah neye minnettarsın?",
+      "pool": "morning",
+      "themes": [
+        "minnet"
+      ],
+      "timeOfDay": "morning",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000037",
+      "text": "Bugün neler iyi gitti?",
+      "pool": "evening",
+      "themes": [
+        "minnet"
+      ],
+      "timeOfDay": "evening",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": true,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000038",
+      "text": "Bugünden yarına neyi bırakmak istemezsin?",
+      "pool": "evening",
+      "themes": [
+        "kabul"
+      ],
+      "timeOfDay": "evening",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": true,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000039",
+      "text": "Bugün kendinle ilgili neyi fark ettin?",
+      "pool": "evening",
+      "themes": [
+        "degisim"
+      ],
+      "timeOfDay": "evening",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000040",
+      "text": "Sabahki odağın gün içinde nasıl gitti?",
+      "pool": "evening",
+      "themes": [
+        "odak"
+      ],
+      "timeOfDay": "evening",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "p_000041",
+      "text": "Bugünü bir cümleyle kapatsan ne yazardın?",
+      "pool": "evening",
+      "themes": [
+        "anlam"
+      ],
+      "timeOfDay": "evening",
+      "moodFit": [],
+      "emotionFit": [],
+      "quoteIDs": [],
+      "isCore": false,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

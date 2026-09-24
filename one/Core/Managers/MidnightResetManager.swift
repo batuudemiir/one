@@ -8,6 +8,7 @@
 import Foundation
 import CoreData
 import BackgroundTasks
+import Combine
 
 class MidnightResetManager {
     static let shared = MidnightResetManager()
@@ -25,6 +26,14 @@ class MidnightResetManager {
         ) { task in
             guard let refreshTask = task as? BGAppRefreshTask else {
                 task.setTaskCompleted(success: false)
+                return
+            }
+            // ONE 2.0: işleyici kayıtlı kalır (Info.plist'teki kimlik için
+            // kayıtsız bekleyen görev sorun çıkarabilir), ama v3 işi — Çevre
+            // paylaşımlarını sıfırlamak, yani `DailySong`'a yazmak — yapılmaz
+            // (MIGRATION.md §6).
+            if ONE2Flag.isEnabled {
+                task.setTaskCompleted(success: true)
                 return
             }
             self.handleMidnightReset(task: refreshTask)
@@ -59,32 +68,81 @@ class MidnightResetManager {
     }
     
     // MARK: - Handle Reset
-    
+
     private func handleMidnightReset(task: BGAppRefreshTask) {
         // Schedule next reset
         scheduleMidnightReset()
-        
+
         // Perform reset
         let context = PersistenceController.shared.container.newBackgroundContext()
-        
+
         task.expirationHandler = {
-            // Clean up if task expires
             context.reset()
         }
-        
+
+        // BGAppRefreshTask sistem tarafından cold-start ile de çağrılabiliyor;
+        // o durumda `loadPersistentStores` henüz uçuşta olabilir ve fetch'ler
+        // boş dönerdi. isReady'yi bekle, sonra normal işi başlat.
+        Task { @MainActor in
+            for await ready in PersistenceController.shared.$isReady.values where ready {
+                break
+            }
+            self.runReset(task: task, context: context)
+        }
+    }
+
+    private func runReset(task: BGAppRefreshTask, context: NSManagedObjectContext) {
         context.perform {
             self.resetExpiredShares(context: context)
-            
+
+            // v4: ay-sonu push'u kaldırıldı. Aylık portrenin tek sahibi
+            // `MonthlyPortraitScheduler` (ayın 1'i 11:00) — ayın son günü
+            // 20:00'de ikinci bir bildirim aynı şeyi iki kez duyuruyordu.
+
+            // Subscription sağlamlık kontrolü — Apple belirli koşullarda CKSubscription'ları
+            // silebiliyor; gece yarısı sıfırlamasında eksik olanları yeniden kayıt et.
+            CloudKitManager.shared.verifySubscriptions()
+
+            // Lock Screen widget'ı günlük sıfırla (yeni gün = yeni seçim)
+            WidgetDataWriter.clear()
+
+            // Günlük şarkı önerisi cache'ini temizle — sabah taze öneriler yüklensin
+            UserDefaults.standard.removeObject(forKey: "recommendedSongsCache_v1")
+            UserDefaults.standard.removeObject(forKey: "recommendedSongsCacheDate_v1")
+
+            // Gece yarısında tüm Live Activity'leri kapat
+            if #available(iOS 16.1, *) {
+                Task {
+                    await LiveActivityManager.shared.endAllActivities()
+                }
+            }
+
+            let saved: Bool
             do {
                 try context.save()
-                task.setTaskCompleted(success: true)
+                saved = true
                 ONELogger.success("Midnight reset completed successfully", category: .calendar)
             } catch {
+                saved = false
                 ONELogger.error("Midnight reset failed: \(error)", category: .calendar)
-                task.setTaskCompleted(success: false)
+            }
+
+            // Buradan sonrası ana aktörde.
+            //
+            // `setTaskCompleted` buraya indi: BGTask tamamlandı denince
+            // sistem uygulamayı askıya alabiliyor. Bildirim planlaması ondan
+            // sonraya kalsaydı hiç kurulmayabilirdi.
+            //
+            // Cache invalidation zaten main gerektiriyordu (property mutation).
+            Task { @MainActor in
+                NotificationOrchestrator.shared.onMidnight()
+                CloudKitManager.shared.invalidateCircleCache()
+                CloudKitManager.shared.invalidateWeeklyCircleCache()
+                task.setTaskCompleted(success: saved)
             }
         }
     }
+
     
     // MARK: - Reset Logic
     

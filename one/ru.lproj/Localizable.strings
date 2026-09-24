@@ -1,0 +1,919 @@
+/* Share */
+"applock.a11y.locked" = "ONE заблокировано";
+"applock.unlock" = "Разблокировать";
+"applock.unlockWith" = "Открыть через %@";
+"archive.a11y.cellCount" = "%1$d, %2$d моментов";
+"archive.a11y.cellEmpty" = "%d, пусто";
+"archive.a11y.cellMany" = "%1$d, %2$d моментов: %3$@";
+"archive.a11y.cellOne" = "%1$d, %2$@";
+"archive.a11y.meta" = "%1$d дней, %2$d моментов";
+"archive.a11y.metaTop" = ", повторяется %@";
+"archive.addMoment" = "Добавить момент";
+"archive.seg.month" = "Месяц";
+"archive.seg.year" = "Год";
+"avatar.a11y.band" = "Цветная полоса";
+"avatar.a11y.markInk" = "Чернильный знак";
+"avatar.a11y.markKor" = "Знак «уголёк»";
+"avatar.a11y.markKorInvert" = "Инвертированный знак «уголёк»";
+"avatar.a11y.markPaper" = "Бумажный знак";
+"avatar.a11y.mosaic" = "Мозаичный аватар";
+"avatar.a11y.photo" = "Аватар с фото";
+"camera.back" = "ОСНОВНАЯ КАМЕРА";
+"camera.flashOff" = "Вспышка выкл";
+"camera.flashOn" = "Вспышка вкл";
+"camera.front" = "ФРОНТАЛЬНАЯ КАМЕРА";
+"camera.grantInSettings" = "Доступ можно разрешить в настройках.";
+"camera.gridOff" = "Сетка выкл";
+"camera.gridOn" = "Сетка вкл";
+"circle.addShort" = "+ Добавить";
+"circle.blockConfirmTitle" = "Заблокировать этого человека?";
+"circle.cta.accept" = "Принять";
+"circle.cta.add" = "Добавить в круг";
+"circle.cta.decline" = "Отклонить";
+"circle.feed.earlier" = "Ранее";
+"circle.feed.thisWeek" = "На этой неделе";
+"circle.feed.today" = "Сегодня";
+"circle.musicSharing" = "Обмен музыкой";
+"circle.mutualCount" = "• %d общих";
+"circle.toast.blocked" = "Заблокировано";
+"circle.toast.declined" = "Отклонено";
+"circle.toast.nowInCircle" = "Теперь в твоём круге";
+"circle.toast.requestCancelled" = "Запрос отменён";
+"circle.toast.requestSent" = "Запрос отправлен";
+"circle.toast.unblocked" = "Блокировка снята";
+"circle.viewProfile" = "Открыть профиль";
+"common.back" = "← Назад";
+"common.cancel" = "Отмена";
+"common.friend" = "Друг";
+"common.music" = "Музыка";
+"common.openSettings" = "Открыть настройки";
+"common.retry" = "Повторить";
+"echo.factualLine" = "%1$d моментов · %2$@ повторяется";
+"echo.noMomentsThisMonth" = "В этом месяце пока нет моментов.";
+"echo.playCount" = "%d раз";
+"echo.section.last30" = "Последние 30 дней";
+"echo.section.moodMap" = "КАРТА НАСТРОЕНИЙ";
+"echo.section.numbers" = "ЦИФРЫ";
+"echo.section.repeats" = "Повторы этого месяца";
+"echo.section.summary" = "Цифры";
+"echo.section.topTracks" = "ПОВТОРЫ";
+"echo.stat.mostActiveDay" = "Насыщенный день";
+"echo.stat.resonance" = "Резонанс";
+"echo.stat.silentDays" = "Тихие дни";
+"echo.stat.thisMonth" = "В этом месяце";
+"echo.stat.totalMoments" = "Всего моментов";
+"echo.watchStory" = "Посмотреть историю месяца";
+"entry.a11y.backToColor" = "Назад к выбору цвета";
+"entry.a11y.chip" = "%1$@. %2$@. Нажми, чтобы изменить.";
+"entry.a11y.continueWith" = "Дальше, выбрано: %@";
+"entry.a11y.date" = "Дата: %@";
+"entry.a11y.noteCount" = "%1$d символов, максимум %2$d";
+"entry.a11y.noteField" = "Заметка, необязательно, максимум %d символов";
+"entry.a11y.pickHint" = "Выбрать цветом дня";
+"entry.a11y.save" = "Сохранить момент";
+"entry.a11y.todayColor" = "Цвет дня: %@";
+"entry.chip.circle" = "Круг";
+"entry.chip.photo" = "Фото";
+"entry.chip.private" = "Только ты";
+"entry.chip.song" = "Песня";
+"entry.cta.continue" = "Дальше";
+"entry.cta.pickColor" = "Выбери цвет";
+"entry.note.placeholder" = "Двух строк хватит. Можно оставить пустым.";
+"entry.note.title" = "Что случилось?";
+"entry.photo.add" = "Добавить фото";
+"entry.photo.camera" = "Камера";
+"entry.photo.cameraSub" = "Сделай кадр сейчас";
+"entry.photo.change" = "Заменить фото";
+"entry.photo.gallery" = "Галерея";
+"entry.photo.gallerySub" = "Выбери готовый кадр";
+"entry.prompt.today" = "Как ты сегодня?";
+"entry.save" = "Сохранить";
+"entry.scope.circleSub" = "Друзья увидят цвет дня.";
+"entry.scope.circleTitle" = "Поделиться с кругом";
+"entry.scope.privateSub" = "Никто не увидит. Это твоё.";
+"entry.scope.privateTitle" = "Оставить в моём архиве";
+"entry.state.empty" = "пусто";
+"entry.state.onlyYou" = "только у тебя";
+"entry.state.selected" = "выбрано";
+"entry.state.shared" = "видно твоим друзьям";
+"entry.title.another" = "Ещё один\nмомент?";
+"entry.title.today" = "Как ты\nсегодня?";
+"export.failed" = "Не удалось экспортировать архив.";
+"friendProfile.recurringColor" = "повторяющийся цвет";
+"greeting.day" = "Добрый день";
+"greeting.evening" = "Добрый вечер";
+"greeting.morning" = "Доброе утро";
+"greeting.night" = "Доброй ночи";
+"invite.messageBody" = "В ONE я оставляю цвет своего дня. Мой код: %1$@\n\n%2$@";
+"nav.a11y.showTodayMoments" = "Показать сегодняшние моменты";
+"notif.aFriend" = "Кто-то из твоего круга";
+"notif.circle.leftColor" = "Цвет сегодняшнего дня.";
+"notif.circle.leftColors" = "Цвета сегодняшнего дня.";
+"notif.daily.beforeClose" = "Можно оставить цвет, пока день не закончился.";
+"notif.daily.colorless" = "Сегодня сохранится без цвета.";
+"notif.daily.empty" = "Сегодня в архиве пусто.";
+"notif.daily.emptyStanding" = "Сегодня в архиве пока пусто.";
+"notif.daily.noColorYet" = "Цвета на сегодня пока нет.";
+"notif.daily.stillEmpty" = "Сегодня в архиве всё ещё пусто.";
+"notif.daily.stillNotPicked" = "Цвет сегодняшнего дня всё ещё не выбран.";
+"notif.daily.yesterday" = "Вчера — %@. Сегодня пока ничего.";
+"notif.day.evening" = "%@, вечер";
+"notif.day.morning" = "%@, утро";
+"notif.day.night" = "День заканчивается";
+"notif.day.noon" = "%@, день";
+"notif.fallback.body" = "В твоём архиве новая запись.";
+"notif.friendAccepted.body" = "Теперь в твоём круге.";
+"notif.friendRequest.body" = "Хочет добавить тебя в свой круг.";
+"notif.friendShared.noMood" = "Песня на сегодня.";
+"notif.friendShared.withMood" = "%@. Песня на сегодня.";
+"notif.monthly.closed.body" = "Тридцать дней в одном кадре.";
+"notif.monthly.closed.title" = "%@ закончился";
+"notif.monthly.generic.body" = "%@ готов.";
+"notif.monthly.generic.title" = "Портрет месяца";
+"notif.monthly.ready" = "Портрет месяца готов.";
+"notif.people.andOthers" = "%1$@ и ещё %2$d";
+"notif.push.friendAccepted" = "Твоя заявка принята.";
+"notif.push.friendRequest" = "Новая заявка в круг.";
+"notif.push.friendShared" = "В твоём круге появился новый цвет дня.";
+"notif.push.reaction" = "Реакция на твою запись.";
+"notif.reaction.plain" = "Реакция на твою запись.";
+"notif.reaction.withEmoji" = "%@ под твоей записью.";
+"notif.resonance.body" = "Сегодня %@, как и ты.";
+"notif.resonance.bodyNoMood" = "Сегодня в том же тоне, что и ты.";
+"notif.someone" = "Кто-то";
+"notif.someoneInCircle" = "Кто-то из твоего круга";
+"notif.weekly.dominant.body" = "%@.";
+"notif.weekly.dominant.title" = "Основной тон этой недели";
+"notif.weekly.palette.body" = "Семь дней в одном кадре.";
+"notif.weekly.palette.title" = "Палитра недели";
+"notif.weekly.sunday.body" = "Неделя закрыта.";
+"notif.weekly.sunday.title" = "Воскресное отражение";
+"notif.weekly.thisWeek.body" = "Портрет семи дней готов.";
+"notif.weekly.thisWeek.title" = "Эта неделя";
+"notif.yourFriend" = "Кто-то из твоего круга";
+"onboarding.v3.auth.lead" = "Хранится в iCloud. Без пароля.";
+"onboarding.v3.auth.title" = "Войди\nчерез Apple.";
+"onboarding.v3.circle.lead" = "Пригласить можно и позже.";
+"onboarding.v3.circle.title" = "Кто войдёт\nв твой круг?";
+"onboarding.v3.cta.finish" = "Готово";
+"onboarding.v3.cta.next" = "Дальше";
+"onboarding.v3.cta.start" = "Начать";
+"onboarding.v3.done.lead" = "Первый момент — твой.";
+"onboarding.v3.done.title" = "Всё готово.";
+"onboarding.v3.intent.curious" = "Просто любопытно";
+"onboarding.v3.intent.lead" = "Хватит одной фразы. Потом можно изменить.";
+"onboarding.v3.intent.music" = "Связать это с песнями";
+"onboarding.v3.intent.self" = "Узнать себя";
+"onboarding.v3.intent.title" = "Зачем ты здесь?";
+"onboarding.v3.intent.track" = "Следить за настроением";
+"onboarding.v3.mood.lead" = "Выбери цвет. Этого хватит.";
+"onboarding.v3.mood.title" = "Как ты\nсегодня?";
+"onboarding.v3.notif.lead" = "Раз в день, в выбранный тобой час.";
+"onboarding.v3.notif.title" = "Небольшое\nнапоминание?";
+"onboarding.v3.ready" = "Всё готово";
+"onboarding.v3.reward.lead" = "Каждый момент добавляет ещё один цвет.";
+"onboarding.v3.reward.title" = "Твой первый\nквадрат готов.";
+"onboarding.v3.song.lead" = "Можно добавить и позже.";
+"onboarding.v3.song.title" = "Добавить\nпесню?";
+"onboarding.v3.step.auth" = "Вход";
+"onboarding.v3.step.circle" = "Круг";
+"onboarding.v3.step.intent" = "Намерение";
+"onboarding.v3.step.mood" = "Первый цвет";
+"onboarding.v3.step.notif" = "Напоминание";
+"onboarding.v3.step.reward" = "Первый квадрат";
+"onboarding.v3.step.song" = "Песня";
+"profile.a11y.distributionChart" = "График распределения цветов";
+"profile.a11y.distributionRow" = "%1$@, %2$d моментов, %3$d процентов";
+"profile.a11y.distributionValue" = "%1$@ %2$d процентов";
+"profile.a11y.monthlySummary" = "Итоги месяца, %1$@, цвет месяца %2$@. Открыть «Эхо».";
+"profile.a11y.signOut" = "Выйти";
+"profile.distribution.selected" = "%1$@ · %2$d МОМЕНТОВ";
+"profile.intentFor" = "ДЛЯ %@";
+"profile.music.searchOnly" = "Только поиск";
+"profile.photo.pick" = "Выбрать фото";
+"profile.stat.colorsUsed" = "ИСПОЛЬЗОВАНО ЦВЕТОВ";
+"profile.stat.moments" = "МОМЕНТЫ";
+"profile.stat.mostFrequent" = "ЧАЩЕ ВСЕГО";
+"profile.theme.dark" = "Тёмная";
+"profile.theme.light" = "Светлая";
+"publicProfile.a11y.pinnedSong" = "Закреплённая песня: %1$@, %2$@";
+"publicProfile.loadFailed" = "Не удалось загрузить профиль.";
+"reaction.a11y.kind" = "Реакция %@";
+"reaction.a11y.sendReply" = "Отправить ответ";
+"reminder.state.off" = "Выкл · уведомлений нет";
+"reminder.state.on" = "Вкл · каждый день в %@";
+"reminder.tone.quiet" = "Тихо";
+"reminder.tone.recall" = "Со вчера";
+"reminder.tone.short" = "Кратко";
+"saved.manyMoments" = "%2$d моментов за %1$@. Квадрат разделён по цветам.";
+"saved.oneMoment" = "Квадрат сегодняшнего дня заполнен в архиве.";
+"saved.scope.circle" = "Друзья из твоего круга это увидят.";
+"saved.scope.private" = "Только в твоём архиве.";
+"settings.exportArchive" = "Экспортировать архив";
+"settings.exportArchive.note" = "Все твои записи в одном файле.";
+"share.other" = "Ещё";
+"share.photoLoadFailed" = "Не удалось загрузить фото";
+
+/* Default values */
+"signin.button.accessibility" = "Войти через Apple";
+"signin.subtitle" = "Войди через аккаунт Apple, чтобы продолжить.";
+"signin.title" = "Добро пожаловать.";
+"song.searchPlaceholder" = "Песня, исполнитель";
+"story.bg.color" = "Цвет";
+"story.bg.paper" = "Бумага";
+"story.bg.photo" = "Фото";
+"story.content.note" = "Заметка";
+"story.content.song" = "Песня";
+"story.row.background" = "ФОН";
+"story.row.content" = "СОДЕРЖАНИЕ";
+"story.row.ratio" = "ФОРМАТ";
+"story.toast.renderFailed" = "Не удалось создать карточку";
+"story.toast.saved" = "Сохранено в «Фото»";
+"today.entryNotFound" = "Сегодняшняя запись не найдена.";
+"today.liveActivityOff" = "Dynamic Island выключен";
+"today.shareFailed" = "Не удалось поделиться с кругом. Проверь соединение.";
+
+/* Error messages */
+"render_failed" = "Не удалось создать карточку. Попробуйте снова.";
+"image_too_large" = "Изображение слишком большое. Используйте фото меньшего размера.";
+"invalid_format" = "Неверный формат";
+"export_failed" = "Ошибка экспорта";
+"instagram_not_installed" = "Instagram не установлен. Пожалуйста, установите Instagram.";
+"save_failed" = "Не удалось сохранить фото";
+"permission_denied" = "Требуется доступ к библиотеке фото. Разрешите в Настройках.";
+
+/* Recovery suggestions */
+"check_song_data" = "Проверить информацию о песне";
+"try_again" = "Попробуйте снова";
+"reduce_image_size" = "Уменьшить размер фото";
+"check_format" = "Проверить совместимость формата";
+"check_storage" = "Проверить место хранения";
+
+/* Success messages */
+
+/* ── СЕГОДНЯ ── */
+
+/* ── ПОДТВЕРЖДЕНИЕ ── */
+
+/* ── КРУГ ── */
+"circle.removeFriend" = "удалить из друзей?";
+"circle.addFriend" = "Добавить друга";
+
+/* ── ОТКРЫТЬ ── */
+
+/* ── ПРОФИЛЬ / НАСТРОЙКИ ── */
+"profile.language" = "Язык";
+
+/* ── ОНБОРДИНГ ── */
+
+/* ── ЗАСТАВКА ── */
+
+/* ── ОБЩЕЕ ── */
+"general.save" = "Сохранить";
+"general.cancel" = "Отмена";
+"general.back" = "Назад";
+"general.close" = "Закрыть";
+"general.more" = "Ещё";
+"general.loading" = "Загрузка...";
+"general.error" = "Произошла ошибка";
+"general.retry" = "Попробовать снова";
+
+/* ── УВЕДОМЛЕНИЯ ── */
+"notification.acceptFriend" = "Принять";
+"notification.declineFriend" = "Отклонить";
+"notification.openEcho" = "Посмотреть сводку";
+
+/* ── ДОСТУПНОСТЬ ── */
+"accessibility.today.photoViewer" = "Фото дня";
+"accessibility.circle.setupCircle" = "Создать свой Круг";
+
+/* Discover redesign */
+
+/* ── ECHO ── */
+"circle.you" = "ТЫ";
+"circle.pendingRequests" = "%d входящих запросов";
+"circle.notSharedYet" = "Ещё не поделился сегодня";
+"circle.blockUser" = "Заблокировать пользователя";
+"circle.removeAction" = "Удалить";
+"circle.blockAction" = "Заблокировать";
+"circle.unblockAction" = "Разблокировать";
+"circle.iCloudRequired" = "Требуется доступ к iCloud";
+"circle.iCloudMessage" = "Необходимо войти в аккаунт iCloud\nдля использования Круга.";
+"circle.tryAgain" = "Попробовать снова";
+"circle.goToSettings" = "Перейти в настройки";
+"addFriend.requestSent" = "Запрос отправлен.";
+"addFriend.frameQR" = "Наведи на QR-код";
+"addFriend.cameraRequired" = "Требуется доступ к камере";
+"addFriend.ok" = "OK";
+"profile.deleteAccountTitle" = "Удалить аккаунт";
+"profile.deleteAccountMsg" = "Все записи песен, профиль и данные круга будут удалены навсегда.";
+"profile.deleteAccount" = "Удалить аккаунт";
+"profile.name" = "ИМЯ";
+"profile.username" = "ИМЯ ПОЛЬЗОВАТЕЛЯ";
+"profile.color" = "ЦВЕТ";
+"profile.editProfile" = "Редактировать профиль";
+"profile.createProfile" = "Создать профиль";
+"profile.namePlaceholder" = "Твоё имя";
+"contacts.smsNotAvailable" = "Отправка SMS недоступна на этом устройстве.";
+"contacts.smsSendHint" = "Ссылка-приглашение будет отправлена по SMS";
+"archive.photoLoadFailed" = "Не удалось загрузить фото";
+"archive.openSong" = "Открыть песню";
+
+/* --- ONBOARDING EXTRA --- */
+
+/* --- FRIEND REQUESTS --- */
+"friendRequests.title" = "Уведомления";
+"friendRequests.friendAccepted" = "Заявка принята.";
+"friendRequests.requestWithdrawn" = "Запрос отозван";
+"friendRequests.unknown" = "Неизвестно";
+
+/* --- ARCHIVE EXTRA --- */
+"archive.selectedAt" = "Выбрано в %@";
+
+/* --- GENERAL EXTRA --- */
+"general.share" = "Поделиться";
+
+/* --- CIRCLE SHARE TOGGLE --- */
+
+/* --- GENERAL OK --- */
+"general.ok" = "OK";
+"general.ok" = "ОК";
+
+/* --- ONBOARDING FEATURES --- */
+
+/* --- TODAY EXTRA (to be filled per lang) --- */
+"today.timeSelected" = "в %@";
+
+"circle.removeConfirmMessage" = "Вы уверены, что хотите удалить %@ из своего круга?";
+"circle.blockConfirmMessage" = "Вы уверены, что хотите заблокировать %@? Это действие нельзя отменить.";
+"circle.todayFeeling" = "Тон\nсегодня.";
+"circle.note" = "ЗАМЕТКА";
+"circle.waitingPick" = "Сегодня ещё не выбрал.";
+"circle.willAppear" = "Появится, когда они выберут песню";
+"circle.updating" = "Обновление…";
+"circle.notSelectedYet" = "Сегодня ещё\nне выбрано.";
+"contacts.navTitle" = "Пригласить из контактов";
+"contacts.alertSmsCantSend" = "Не удаётся отправить SMS";
+"contacts.inviteCodeText" = "Код приглашения: %@";
+"contacts.contactsRequired" = "Требуется доступ к контактам";
+"contacts.contactsPermissionHint" = "Вы можете разрешить доступ в Настройки → Конфиденциальность → Контакты.";
+"contacts.openSettings" = "Открыть настройки";
+"contacts.contactsLoading" = "Загрузка контактов…";
+"contacts.inviteButton" = "Пригласить";
+"contacts.searchPlaceholder" = "Поиск контактов";
+"contacts.noContacts" = "Нет контактов";
+"contacts.noResults" = "Контакты не найдены";
+"contacts.noName" = "Без имени";
+"search.appleMusicPermission" = "Требуется разрешение Apple Music. Пожалуйста, предоставьте его в настройках.";
+/* --- INVITE SHARE --- */
+"invite.sendInvite" = "Отправить приглашение";
+"invite.formatPicker" = "Формат";
+"invite.story" = "История (9:16)";
+"invite.post" = "Пост / X (16:9)";
+"invite.preparing" = "Подготовка карточки приглашения...";
+"invite.generateFailed" = "Не удалось создать карточку приглашения";
+"invite.shareText" = "Присоединяйся к моему кругу в ONE. Чувствуй, открывай, делись.\n%@";
+
+/* --- SHARE SHEET --- */
+"share.preparing" = "Подготовка сторис...";
+"share.otherApps" = "Другие Приложения";
+"share.cardSaved" = "Карточка сохранена";
+"share.saveCard" = "Сохранить Карточку";
+"share.saveCardHint" = "Добавить карточку в галерею";
+"share.photoSaved" = "Фото сохранено";
+"share.savePhoto" = "Сохранить Фото";
+"share.savePhotoHint" = "Добавить оригинальное фото в галерею";
+
+/* --- DISCOVER EXTRA --- */
+
+/* --- MONTHLY POSTER --- */
+
+/* --- MOOD LABELS --- */
+
+/* --- MOOD MEANINGS (v2.5) --- */
+
+/* --- FEELING LABELS --- */
+
+/* --- TODAY EMPTY VIEW --- */
+
+/* --- SCREEN TITLES (top bar) --- */
+"screen.echo.title" = "Эхо";
+"screen.echoes.title" = "Отклики за сегодня";
+"screen.share.title" = "Поделиться";
+"screen.story.title" = "Карточка истории";
+"screen.camera.title" = "Камера";
+"screen.entry.title" = "Миг";
+"screen.archive.title" = "Архив";
+"screen.circle.title" = "Круг";
+"screen.profile.title" = "Профиль";
+"topbar.settings" = "Настройки";
+"topbar.monthlyEcho" = "Итоги месяца";
+
+/* --- NAVIGATION TABS --- */
+"nav.archive" = "архив";
+"nav.entry" = "миг";
+"nav.circle" = "круг";
+"nav.profile" = "профиль";
+"nav.tabAccessibility" = "вкладка %@";
+
+/* --- DISCOVER CTA LABELS --- */
+
+/* --- ACTIVITY RECOMMENDATION SECTIONS --- */
+
+/* --- ACTIVITY TEMPLATES --- */
+
+
+
+
+
+
+
+
+
+
+
+/* --- ACTIVITY REASONS --- */
+
+/* --- ACTIVITY VENUE HINTS --- */
+
+/* --- SHARE CARD BRANDING --- */
+"share.brandWatermark" = "ONE · Mood Tracker";
+"share.brandWatermarkUpper" = "ONE · MOOD TRACKER";
+
+/* --- DISCOVER LISTEN LABELS --- */
+
+/* --- GENERAL TOAST TITLES --- */
+"general.success" = "Успешно";
+"general.info" = "Инфо";
+"general.warning" = "Предупреждение";
+
+/* --- CAMERA MISSING KEYS --- */
+
+/* --- CIRCLE / SHARE MISSING --- */
+"share.cardFailed" = "Не удалось создать карточку";
+
+/* --- TODAY MISSING KEYS --- */
+
+/* --- DISCOVER STATUS MISSING --- */
+
+/* --- CALENDAR DAY ABBREVIATIONS --- */
+
+/* --- GENRE FALLBACK --- */
+"genre.music" = "Музыка";
+"notification.appUpdate.title" = "Доступна новая версия";
+"notification.appUpdate.body" = "ONE %@ вышло.";
+
+/* Badges */
+
+
+/* Auto-added missing keys — English fallback */
+"addFriend.usernamePlaceholder" = "username";
+"archive.defaultFeeling" = "Calm";
+"archive.defaultMood" = "Neutral";
+"archive.unknown" = "Unknown";
+"archive.unknownArtist" = "Unknown Artist";
+"archive.unknownSong" = "Unknown Song";
+"cloudkit.connectionError" = "Could not connect to iCloud. Check your internet connection and try again.";
+"cloudkit.throttleWait" = "Server busy. Retrying in %d min %02d sec.";
+"echo.empty.body" = "Once you log a day, your week, rhythm, and color palette show up here.";
+"echo.empty.cta" = "Log today";
+"echo.empty.title" = "Echo is quiet for now.";
+"firstEntryInvite.body" = "Let one of your people drop their color tonight too. Seeing what you both feel hits different.";
+"firstEntryInvite.eyebrow" = "FIRST STEP DONE";
+"firstEntryInvite.invite" = "Invite someone close";
+"firstEntryInvite.skip" = "Not now";
+"firstEntryInvite.title" = "ONE feels better with someone close.";
+"friendRequests.accept" = "Kabul Et";
+"friendRequests.decline" = "Decline";
+"friendRequests.markAllRead" = "Tümünü Okundu İşaretle";
+"friendRequests.noNotifications" = "No activity yet";
+"friendRequests.noNotificationsHint" = "Friend acceptances, shares, and\nreactions will appear here.";
+"friendRequests.pending" = "Bekliyor";
+"friendRequests.sentYouRequest" = "%@ sana arkadaşlık isteği gönderdi";
+"friendRequests.withdraw" = "Geri Çek";
+"monthly.storySubtitle" = "You got lost in thoughts mostly at %@.";
+"monthly.storyTitle" = "The Month of %@ Music";
+"myFriends.title" = "My Friends";
+"notification.openCircle" = "Open Circle";
+"profile.changePhoto" = "Change photo";
+"profile.recentWeek.subtitle" = "Your color map";
+"profile.recentWeek.title" = "PAST 7 DAYS";
+"profile.recentWeek.todayShort" = "Today";
+"profile.usernameAvailable" = "Available ✓";
+"profile.usernameCheckFailed" = "Couldn't check availability";
+"profile.usernameTaken" = "This username is taken";
+"share.xTemplate" = "Сегодня %@.\n\n#OneApp";
+"today.moodSaved.a11y" = "Bugünün mood'u kaydedildi";
+"whatsNew.circleFirst.body" = "При запуске сначала видны сегодняшние\nцвета твоих друзей.";
+"whatsNew.circleFirst.title" = "Круг открывается первым";
+"whatsNew.cta.done" = "Начать";
+"whatsNew.cta.next" = "Дальше";
+"whatsNew.mosaic.body" = "Месяцы одним потоком, цвет за цветом.\nВидно и то, что ты чувствовал год назад в этот день.";
+"whatsNew.mosaic.title" = "Мозаика архива";
+"whatsNew.savedMoment.body" = "Когда ты оставляешь цвет, экран\nотвечает волной.";
+"whatsNew.savedMoment.title" = "Новый момент сохранения";
+"whatsNew.twoSteps.body" = "Выбери цвет, выбери песню — готово.\nФото и заметка теперь необязательны.";
+"whatsNew.twoSteps.title" = "Готово за два шага";
+
+/* Circle — arkadaşı olmayan kullanıcı için değer önizlemesi */
+"circle.empty.previewTitle" = "Будь у тебя 5 друзей, сегодня ты увидел бы это.";
+"circle.empty.previewSubtitle" = "Цвета — их. Ты просто смотришь.";
+"circle.empty.invite" = "Пригласить друга";
+"circle.empty.startAlone" = "Пока начну один";
+
+"circle.empty.closing" = "Оставь свой сегодняшний цвет — и друзья увидят тебя.";
+
+
+
+"profile.stat.entries" = "записей";
+"profile.row.musicSource" = "источник музыки";
+
+
+"comeback.headline" = "тебя не было %d дней.
+ты ничего не пропустил.";
+
+
+
+"onboarding.entry.brandTitle" = "one song.
+one colour.
+one day.";
+
+"year.poster" = "poster";
+
+"notif.title" = "Уведомления";
+"notif.markAllRead" = "mark all read";
+"notif.today" = "today";
+"notif.thisWeek" = "this week";
+"notif.earlier" = "earlier";
+"notif.promise" = "ONE reminds you at most once a day. No like or comment notifications.";
+"notif.emptyTitle" = "No notifications yet.";
+"notif.unread" = "unread";
+"notif.now" = "now";
+
+"settings.privacy" = "privacy";
+"settings.privacyAccount" = "privacy & account";
+
+"music.intro" = "Which service should we use to search and play?";
+"music.connected" = "connected";
+"music.notConnected" = "not connected";
+"music.searchOnly" = "search only";
+"music.searchOnlySub" = "no account, no playback";
+"privacy.whoCanSee" = "who can see";
+"privacy.todayColour" = "today's colour";
+"privacy.todaySong" = "today's song";
+"privacy.archive" = "my archive";
+"privacy.notes" = "my notes";
+"privacy.friends" = "friends";
+"privacy.onlyMe" = "only me";
+"privacy.neverShared" = "Archive and notes can never be shared — there isn't even a setting.";
+"privacy.discoverability" = "discoverability";
+"privacy.byUsername" = "find me by username";
+"privacy.byUsernameSub" = "people who know your exact handle can add you";
+
+"friends.addAction" = "＋ add";
+"friends.segAll" = "all · %d";
+"friends.segRequests" = "requests · %d";
+"friends.quickAdd" = "quick add";
+"friends.shareLink" = "share link";
+"friends.showCode" = "show code";
+"friends.scanCode" = "scan code";
+"friends.circleCount" = "your circle · %d";
+"friends.searchPlaceholder" = "search friends";
+"friends.emptyList" = "No one yet — invite your first friend.";
+"friends.noMatch" = "No matching friends.";
+"friends.footer" = "friends only see each other's today. the past stays with each person.";
+"friends.addedYou" = "added you";
+"friends.sentByYou" = "sent by you";
+"friends.waiting" = "waiting";
+"friends.accept" = "accept";
+"friends.ignore" = "ignore";
+"friends.noIncoming" = "No pending requests.";
+"friends.noOutgoing" = "No sent requests.";
+
+"addFriend.screenTitle" = "Добавить друга";
+"addFriend.exactHint" = "type the exact username. ONE never suggests strangers.";
+"addFriend.notFound" = "Not found. Check the spelling.";
+"addFriend.addAction" = "add";
+"addFriend.codeHint" = "show or scan your code. your link is only for people who know you.";
+"addFriend.copyCode" = "copy code";
+"addFriend.codeCopied" = "copied ✓";
+"addFriend.scanWithCamera" = "scan with camera";
+
+"friendProfile.theirRhythm" = "their rhythm";
+"friendProfile.commonSongs" = "shared songs";
+"friendProfile.today" = "today";
+"friendProfile.peakHour" = "peak hour";
+"friendProfile.mutualCount" = "%d mutual friends";
+"friendProfile.remove" = "remove friend";
+
+"poster.title" = "%@ poster";
+"poster.format" = "format";
+"poster.show" = "show";
+"poster.fmtStory" = "story 9:16";
+"poster.fmtSquare" = "square 1:1";
+"poster.fmtWallpaper" = "wallpaper";
+"poster.songs" = "songs";
+"poster.colourGrid" = "colour grid";
+"poster.notes" = "notes";
+"poster.days" = "days";
+"poster.colours" = "colours";
+"poster.mostly" = "повторяется: %@";
+"poster.mostPlayed" = "повтор: %@";
+"poster.notesHint" = "notes included";
+"poster.saveImage" = "save to photos";
+
+
+
+
+
+/* Hızlı ekle — prototip parity */
+"addFriend.mutualCount" = "%d общих";
+"addFriend.sent" = "отправлено";
+"addFriend.inviteMessage" = "Я делюсь настроением и музыкой в ONE. Присоединяйся.";
+"addFriend.tileShareLink" = "поделиться\nссылкой";
+"addFriend.tileShowCode" = "показать\nкод";
+"addFriend.tileScan" = "сканировать\nкод";
+"addFriend.contactsOnOne" = "из твоих контактов в ONE";
+"addFriend.contactsOnlyHint" = "только сохранённые в телефоне. ONE не предлагает незнакомцев.";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "ответить";
+"reaction.replyPlaceholder" = "одна строка (видит только %@)";
+"reaction.sent" = "отправлено";
+"reaction.ephemeralNote" = "исчезнет в конце дня · видит только %@";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "ЭХО СЕГОДНЯ";
+"echoes.reactors" = "КТО ОТВЕТИЛ";
+"echoes.threadWith" = "с %@";
+"echoes.replyPlaceholder" = "ответ";
+"echoes.ephemeralNote" = "Ответы не архивируются — они остаются в моменте";
+"echoes.empty" = "Пока эха нет. Может появиться в течение дня.";
+"echoes.someone" = "Кто-то";
+
+// MARK: - SubCircle
+
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.peopleCount" = "%d чел.";
+"circle.momentCount" = "%d момент.";
+"circle.youCard" = "Ты";
+"circle.youNotShared" = "Сегодня ты не делился";
+"circle.notSharedToday" = "Сегодня не делился";
+"circle.scopeShared" = "опубликовано";
+"circle.scopePrivate" = "только ты";
+"circle.v3EmptyTitle" = "Здесь пока никого.";
+"circle.v3EmptyBody" = "Добавь кого-нибудь и смотрите цвета друг друга.";
+"circle.scanQR" = "Сканировать QR-код";
+"circle.resonance" = "Резонанс";
+"circle.sameColorLabel" = "Тот же цвет сегодня";
+"circle.distributionLabel" = "Цвета твоего круга";
+"circle.yourColorToday" = "Твой цвет сегодня";
+"circle.noColorToday" = "Сегодня без цвета";
+"circle.noColorTodayBody" = "Сохрани момент — и появится резонанс.";
+"circle.sameColorCount" = "%d человек сегодня одного цвета с тобой";
+"circle.requests" = "Запросы в друзья";
+"circle.notifications" = "Уведомления";
+
+/* v3 mood adlari - uygulamanin semantik yuku, koda gomulu olamaz */
+"mood.v3.atesli.label" = "Пылкий";
+"mood.v3.coskulu.label" = "Радостный";
+"mood.v3.gergin.label" = "Напряжённый";
+"mood.v3.mutlu.label" = "Счастливый";
+"mood.v3.enerjik.label" = "Энергичный";
+"mood.v3.odakli.label" = "Сосредоточенный";
+"mood.v3.huzurlu.label" = "Спокойный";
+"mood.v3.huzunlu.label" = "Грустный";
+"mood.v3.yorgun.label" = "Усталый";
+
+/* v3 mood anlamları — VoiceOver değeri ve alt başlık. */
+"mood.v3.atesli.meaning" = "Внутри всё горит";
+"mood.v3.coskulu.meaning" = "Меня переполняет";
+"mood.v3.gergin.meaning" = "Давит изнутри";
+"mood.v3.mutlu.meaning" = "Светится изнутри";
+"mood.v3.enerjik.meaning" = "Живой и быстрый";
+"mood.v3.odakli.meaning" = "Ровно и собранно";
+"mood.v3.huzurlu.meaning" = "Всё хорошо";
+"mood.v3.huzunlu.meaning" = "Внутри сжалось";
+"mood.v3.yorgun.meaning" = "Вымотан, пусто";
+
+/* Merakli hatirlatma tonu - tam cumle, kelime birlestirme yok */
+"reminder.curious.yesterday.atesli" = "Вчера ты был пылким.";
+"reminder.curious.yesterday.coskulu" = "Вчера ты был радостным.";
+"reminder.curious.yesterday.gergin" = "Вчера ты был напряжённым.";
+"reminder.curious.yesterday.mutlu" = "Вчера ты был счастливым.";
+"reminder.curious.yesterday.enerjik" = "Вчера ты был энергичным.";
+"reminder.curious.yesterday.odakli" = "Вчера ты был сосредоточенным.";
+"reminder.curious.yesterday.huzurlu" = "Вчера ты был спокойным.";
+"reminder.curious.yesterday.huzunlu" = "Вчера ты был грустным.";
+"reminder.curious.yesterday.yorgun" = "Вчера ты был усталым.";
+
+/* Legacy 12-mood (ONEMood) - arsiv/echo okuma yollari kullaniyor */
+"archive.previousMonth" = "Предыдущий месяц";
+"archive.nextMonth" = "Следующий месяц";
+
+/* ── v3 ekranlarından kataloğa taşınan metinler ──────────────────────
+   Bu 69 anahtar koda gömülü Türkçe olarak duruyordu: katalog tamdı
+   ama bu ekranlar ona hiç bakmıyordu, dolayısıyla Almanca bir
+   kullanıcı Profil sekmesinde Türkçe görüyordu.
+   TR ve EN gerçek; diğer diller çeviri gelene kadar TR'ye düşüyor. */
+"applock.noPasscode" = "Cihazında parola veya biyometri tanımlı değil.";
+"archive.addMomentToDay" = "Bu güne an ekle";
+"archive.addNow" = "Şimdi ekle";
+"archive.dayEmpty.today" = "Оставь свой первый момент.";
+"archive.dayEmpty.past" = "Этот день пуст.";
+"archive.momentCount.one" = "1 момент";
+"archive.dayCount" = "%lld gün";
+"archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
+"archive.empty.title" = "Arşiv boş.";
+"archive.mostFrequent" = "%@ повторяется";
+"archive.todayWaiting" = "Сегодня в архиве пусто.";
+"block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
+"camera.noAccess" = "Kamera erişimi yok";
+"camera.useThisMoment" = "Bu anı kullan";
+"circle.shareFailed" = "Çevre paylaşımı başarısız — internet bağlantını kontrol et.";
+"echo.monthColour" = "%@ · AYIN RENGİ";
+"echo.monthStory" = "%@ · AY HİKAYESİ";
+"echo.noRepeatSong" = "Aynı şarkı iki kez geçmedi.";
+"echo.posterFailed" = "Poster yüklenemedi";
+"entry.changeColour" = "Rengi değiştir";
+"entry.pickColour" = "Bir renk seç. Yeter.";
+"entry.removePhoto" = "Fotoğrafı kaldır";
+"entry.scopeSubtitle" = "Her an için ayrı seçebilirsin.";
+"entry.scopeTitle" = "Bu an kimde kalsın?";
+"general.a11y.toggle" = "Aç/kapat";
+"general.change" = "Değiştir";
+"general.now" = "şimdi";
+"general.openSettings" = "Ayarları aç";
+"invite.validSevenDays" = "7 GÜN GEÇERLİ";
+"invite.addMeOnONE" = "Beni ONE'da ekle";
+"liveActivity.enableHint" = "Mood'unu Dynamic Island'da görmek için Ayarlar > ONE > Canlı Etkinlikler'i etkinleştir.";
+"moment.a11y.openPhoto" = "Fotoğrafı aç";
+"moment.a11y.hasPhoto" = "С фото";
+"moment.a11y.note" = "Заметка: %@";
+"moment.a11y.song" = "Трек: %@";
+"moment.a11y.privateScope" = "В архиве, в круге не видно";
+"moment.archiveTag" = "· ARŞİV";
+"offline.banner" = "BAĞLANTI YOK · ANLARIN CİHAZINDA BEKLİYOR";
+"privacy.hiddenField" = "%@ bu kişinin gizlilik tercihi nedeniyle görüntülenemiyor";
+"profile.colourBreakdown" = "Renk dağılımı";
+"profile.monthColour" = "%@ · ayın rengi";
+"profile.monthCounts" = "%1$d gün · %2$d an";
+"profile.monthlySummary" = "AYLIK ÖZET";
+"profile.photoVisibility" = "Fotoğrafın çevrendeki arkadaşlara görünür.";
+"profile.pickAvatar" = "Avatar seç";
+"profile.pinned" = "sabitlenmiş";
+"profile.pinnedSong" = "SABİTLENMİŞ ŞARKI";
+"profile.sevenSteps" = "7 adım";
+"profile.signInOptional" = "Giriş yapmasan da ONE tam çalışır.";
+"profile.signOut" = "ÇIKIŞ";
+"profile.signedInWithApple" = "Apple ile giriş yapıldı";
+"profile.syncPitch" = "Arşivini cihazlar\narasında taşı.";
+"profile.versionLine" = "Sürüm %1$@ · %2$d an";
+"publicProfile.inYourCircle" = "Çevrende";
+"publicProfile.mutualFriends" = "%d ortak arkadaşınız var";
+"publicProfile.unavailable" = "Bu profil görüntülenemiyor.";
+"reminder.daily" = "Günlük hatırlatma";
+"reminder.days" = "GÜNLER";
+"reminder.lockPreview" = "KİLİT EKRANI ÖNİZLEMESİ";
+"reminder.subtitle" = "Seçtiğin saatte tek hatırlatma.";
+"reminder.title" = "Hatırlatma";
+"reminder.tone" = "ЧТО ГОВОРИТ";
+"report.notice" = "Bildirimler 24 saat içinde değerlendirilir. Yinelenen şikâyetler içeriği otomatik gizleyebilir.";
+"saved.backToDay" = "Güne dön";
+"saved.goToArchive" = "Arşive git";
+"settings.appearance" = "Görünüm";
+"share.createStoryCard" = "Story kart oluştur";
+"share.noNote" = "Not bırakmadın.";
+"share.noSong" = "Şarkı eklemedin.";
+"share.orSave" = "Paylaş ya da kaydet.";
+"song.pick" = "Şarkı seç";
+"song.preparingSuggestions" = "Готовим подборку.";
+"splash.tagline" = "DUYGU VE ŞARKI GÜNLÜĞÜ";
+"today.howDidItFeel" = "Bugün nasıl hissettirdi?";
+
+/* ── Kodda kullanılıyordu ama katalogda yoktu ────────────────────────
+   Bu anahtarlar `NSLocalizedString` ile çağrılıyor ama hiçbir dilde
+   tanımlı değildi; iOS bu durumda anahtarın kendisini döndürür,
+   yani kullanıcı ekranda "general.copy" yazısını görüyordu. */
+"accessibility.today.closeViewer" = "Fotoğraf görüntüleyiciyi kapat";
+"accessibility.today.photoViewerHint" = "Yakınlaştırmak için çift dokun, kapatmak için aşağı kaydır";
+"accessibility.unread" = "Okunmadı";
+"general.copied" = "Kopyalandı";
+"general.copy" = "Kopyala";
+"invite.shareSubtitle" = "Davet kodun veya link ile seni ekleyebilirler";
+"profile.usernameCurrent" = "Bu zaten senin kullanıcı adın";
+"profile.usernameInvalidFormat" = "Yalnızca harf, rakam ve alt çizgi kullan";
+"profile.usernameTooShort" = "En az 3 karakter olmalı";
+
+
+/* Rapor sheet'i — v3 kabuk geçişi */
+"report.title" = "Пожаловаться";
+"report.reason" = "ПРИЧИНА";
+"report.noteOptional" = "ЗАМЕТКА — НЕОБЯЗАТЕЛЬНО";
+"report.notePlaceholder" = "Добавь подробности";
+"report.submit" = "Отправить жалобу";
+"report.submitted" = "Отправлено";
+"report.target.comment" = "Пожаловаться на комментарий";
+"report.target.user" = "Пожаловаться на %@";
+"report.target.userFallback" = "этого человека";
+"report.target.share" = "Пожаловаться на запись";
+"report.context.comment" = "КОММЕНТАРИЙ";
+"report.context.user" = "ЧЕЛОВЕК";
+"report.context.share" = "ЗАПИСЬ";
+
+"circle.resonanceTitle" = "Созвучие";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "НАСТРОЙКИ";
+"settings.group.circle" = "КРУГ";
+"settings.group.about" = "О ПРИЛОЖЕНИИ";
+"settings.group.developer" = "РАЗРАБОТЧИК";
+"settings.reminder" = "Напоминание";
+"settings.musicSource" = "Источник музыки";
+"settings.myFriends" = "Мои друзья";
+"settings.deleteAccount" = "Удалить аккаунт";
+"settings.watchOnboarding" = "Посмотреть введение";
+"settings.sampleCircleData" = "Тестовые данные";
+"settings.sampleCircleDataNote" = "Заполняет вкладку «Круг» тестовыми друзьями.";
+"settings.appLock" = "Блокировка";
+"settings.appLockGeneric" = "Код устройства";
+
+"hub.momentCount" = "Сегодня моментов: %d";
+
+"hub.addMoment" = "Добавить момент";
+"hub.songLine" = "Трек: %@";
+
+"songPicker.noSuggestions" = "Предложений не найдено.";
+
+/* AppError — hata mesajları ve başlıkları.
+   Türkçe değerlerle dokuz katalogda birden açıldı: davranış bugünküyle
+   aynı, ama artık çevrilebilir. Çeviri geldikçe bu blok doldurulur. */
+"error.networkUnavailable.message" = "İnternet bağlantısı yok. Lütfen bağlantını kontrol et.";
+"error.networkTimeout.message" = "İstek zaman aşımına uğradı. Tekrar dene.";
+"error.networkUnknown.message" = "Bağlantı hatası oluştu. Lütfen tekrar dene.";
+"error.cloudKitNotAvailable.message" = "iCloud kullanılamıyor. Ayarlar'dan iCloud'u kontrol et.";
+"error.cloudKitNotAuthenticated.message" = "iCloud hesabına giriş yapmamışsın.";
+"error.cloudKitRecordNotFound.message" = "Kayıt bulunamadı.";
+"error.cloudKitSchemaError.message" = "Sunucu yapılandırma hatası. Lütfen daha sonra tekrar dene.";
+"error.cloudKitServerConflict.message" = "Sunucu çakışması oluştu. Veriler senkronize ediliyor.";
+"error.cloudKitQuotaExceeded.message" = "iCloud depolama alanın dolu.";
+"error.cloudKitUnknown.message" = "iCloud hatası oluştu. Lütfen tekrar dene.";
+"error.persistenceSaveFailed.message" = "Kayıt sırasında bir hata oluştu.";
+"error.persistenceFetchFailed.message" = "Veriler yüklenirken bir hata oluştu.";
+"error.persistenceDeleteFailed.message" = "Silme işlemi başarısız oldu.";
+"error.persistenceMigrationFailed.message" = "Veri tabanı güncellemesi başarısız oldu.";
+"error.authAppleMusicDenied.message" = "Apple Music izni gerekli. Ayarlar > Gizlilik'ten izin ver.";
+"error.authAppleMusicRestricted.message" = "Apple Music bu cihazda kısıtlanmış.";
+"error.authSpotifyFailed.message" = "Spotify bağlantısı başarısız oldu.";
+"error.authSpotifyTokenExpired.message" = "Spotify oturumun sona erdi. Tekrar bağlan.";
+"error.authSpotifyNotConnected.message" = "Spotify hesabı bağlı değil.";
+"error.musicSearchFailed.message" = "Arama sırasında bir hata oluştu.";
+"error.musicNoResults.message" = "Sonuç bulunamadı.";
+"error.musicPlaybackFailed.message" = "Şarkı çalınamadı.";
+"error.musicServiceUnavailable.message" = "Müzik servisi kullanılamıyor.";
+"error.cameraDenied.message" = "Kamera izni gerekli. Ayarlar'dan izin ver.";
+"error.cameraUnavailable.message" = "Kamera kullanılamıyor.";
+"error.photoSaveFailed.message" = "Fotoğraf kaydedilemedi.";
+"error.circleUserNotFound.message" = "Kullanıcı bulunamadı. Kodu kontrol et.";
+"error.circleAlreadyFriend.message" = "Bu kullanıcı zaten çevrende.";
+"error.circleSelfAdd.message" = "Kendi kendini ekleyemezsin.";
+"error.circleInviteCodeInvalid.message" = "Geçersiz davet kodu.";
+"error.circleFriendRequestFailed.message" = "Arkadaşlık isteği gönderilemedi.";
+"error.title.network" = "Bağlantı Hatası";
+"error.title.cloudKit" = "iCloud Hatası";
+"error.title.persistence" = "Kayıt Hatası";
+"error.title.auth" = "Yetkilendirme";
+"error.title.music" = "Müzik Hatası";
+"error.title.camera" = "Kamera Hatası";
+"error.title.circle" = "Çevre Hatası";
+"error.title.unknown" = "Hata";
+
+/* ONE 2.0 — kabuk (ADR-001 Faz 1 madde 8) */
+"one2.tab.today" = "Сегодня";
+"one2.tab.journey" = "Путь";
+"one2.tab.explore" = "Обзор";
+"one2.tab.profile" = "Профиль";
+"one2.sheet.checkIn" = "Настроение";
+"one2.sheet.paywall" = "ONE+";
+"one2.placeholder.body" = "Этот раздел в разработке.";
+"one2.notice.circleUnavailable" = "В этой версии нет раздела «Круг».";
+"one2.action.dismiss" = "Закрыть";
+"one2.debug.useV3" = "Перейти на v3";
+"one2.debug.restart" = "Вступит в силу после перезапуска приложения.";
+
+/* ONE 2.0 — bildirim planlayıcı (04 › E13) */
+"notif.one2.morning.title" = "Цитата дня";
+"notif.one2.morning.fallback.1" = "Начни день с короткой паузы.";
+"notif.one2.morning.fallback.2" = "Выбери одно намерение на сегодня.";
+"notif.one2.morning.fallback.3" = "Можно написать первую строку утра.";
+"notif.one2.evening.title" = "Время завершить день.";
+"notif.one2.evening.body" = "Можно оставить этот день в нескольких строках.";
+"notif.one2.weeklyTheme.title" = "Тема недели: %@";
+"notif.one2.streak.title" = "Твоя серия может продолжиться сегодня";
+"notif.one2.streak.body" = "Ты здесь уже %d дн. Достаточно короткой записи.";
+"notif.one2.comparison.title" = "Ты уже отвечал(а) на этот вопрос";
+"notif.one2.resurface.title" = "Ты уже писал(а) об этой цитате";

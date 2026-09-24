@@ -1,0 +1,918 @@
+/* Share */
+"applock.a11y.locked" = "ONEはロックされています";
+"applock.unlock" = "ロック解除";
+"applock.unlockWith" = "%@ で解除";
+"archive.a11y.cellCount" = "%1$d、%2$d件の瞬間";
+"archive.a11y.cellEmpty" = "%d、空";
+"archive.a11y.cellMany" = "%1$d、%2$d件の瞬間: %3$@";
+"archive.a11y.cellOne" = "%1$d、%2$@";
+"archive.a11y.meta" = "%1$d日、%2$d件の瞬間";
+"archive.a11y.metaTop" = "、くり返す%@";
+"archive.addMoment" = "瞬間を追加";
+"archive.seg.month" = "月";
+"archive.seg.year" = "年";
+"avatar.a11y.band" = "カラーバンド";
+"avatar.a11y.markInk" = "インクのマーク";
+"avatar.a11y.markKor" = "燠のマーク";
+"avatar.a11y.markKorInvert" = "反転した燠のマーク";
+"avatar.a11y.markPaper" = "紙のマーク";
+"avatar.a11y.mosaic" = "モザイクのアバター";
+"avatar.a11y.photo" = "写真のアバター";
+"camera.back" = "背面カメラ";
+"camera.flashOff" = "フラッシュ オフ";
+"camera.flashOn" = "フラッシュ オン";
+"camera.front" = "フロントカメラ";
+"camera.grantInSettings" = "設定から許可できます。";
+"camera.gridOff" = "グリッド オフ";
+"camera.gridOn" = "グリッド オン";
+"circle.addShort" = "+ 追加";
+"circle.blockConfirmTitle" = "この人をブロックしますか？";
+"circle.cta.accept" = "承認";
+"circle.cta.add" = "サークルに追加";
+"circle.cta.decline" = "辞退";
+"circle.feed.earlier" = "それ以前";
+"circle.feed.thisWeek" = "今週";
+"circle.feed.today" = "今日";
+"circle.musicSharing" = "音楽の共有";
+"circle.mutualCount" = "• 共通%d人";
+"circle.toast.blocked" = "ブロックしました";
+"circle.toast.declined" = "辞退しました";
+"circle.toast.nowInCircle" = "サークルに加わりました";
+"circle.toast.requestCancelled" = "リクエストを取り消しました";
+"circle.toast.requestSent" = "リクエストを送信";
+"circle.toast.unblocked" = "ブロックを解除しました";
+"circle.viewProfile" = "プロフィールを見る";
+"common.back" = "← 戻る";
+"common.cancel" = "キャンセル";
+"common.friend" = "友だち";
+"common.music" = "音楽";
+"common.openSettings" = "設定を開く";
+"common.retry" = "もう一度";
+"echo.factualLine" = "%1$d件の瞬間 · %2$@ がくり返し";
+"echo.noMomentsThisMonth" = "今月はまだ瞬間がありません。";
+"echo.playCount" = "%d回";
+"echo.section.last30" = "過去30日";
+"echo.section.moodMap" = "ムードマップ";
+"echo.section.numbers" = "数字";
+"echo.section.repeats" = "今月のリピート";
+"echo.section.summary" = "数字";
+"echo.section.topTracks" = "くり返した曲";
+"echo.stat.mostActiveDay" = "よく残した日";
+"echo.stat.resonance" = "レゾナンス";
+"echo.stat.silentDays" = "静かな日";
+"echo.stat.thisMonth" = "今月";
+"echo.stat.totalMoments" = "合計の瞬間";
+"echo.watchStory" = "今月のストーリーを見る";
+"entry.a11y.backToColor" = "色の選択に戻る";
+"entry.a11y.chip" = "%1$@。%2$@。タップで変更。";
+"entry.a11y.continueWith" = "つづける、%@を選択";
+"entry.a11y.date" = "日付: %@";
+"entry.a11y.noteCount" = "%1$d文字、最大%2$d";
+"entry.a11y.noteField" = "メモ、任意、最大%d文字";
+"entry.a11y.pickHint" = "今日の色として選ぶ";
+"entry.a11y.save" = "この瞬間を保存";
+"entry.a11y.todayColor" = "今日の色: %@";
+"entry.chip.circle" = "サークル";
+"entry.chip.photo" = "写真";
+"entry.chip.private" = "自分だけ";
+"entry.chip.song" = "曲";
+"entry.cta.continue" = "つづける";
+"entry.cta.pickColor" = "色を選ぶ";
+"entry.note.placeholder" = "二行で十分。空のままでも。";
+"entry.note.title" = "何がありましたか？";
+"entry.photo.add" = "写真を追加";
+"entry.photo.camera" = "カメラ";
+"entry.photo.cameraSub" = "いま一枚撮る";
+"entry.photo.change" = "写真を変更";
+"entry.photo.gallery" = "ライブラリ";
+"entry.photo.gallerySub" = "既存の一枚を選ぶ";
+"entry.prompt.today" = "今日はどんな気分？";
+"entry.save" = "保存";
+"entry.scope.circleSub" = "友だちが今日の色を見られます。";
+"entry.scope.circleTitle" = "サークルと共有";
+"entry.scope.privateSub" = "誰にも見えません。あなたのものです。";
+"entry.scope.privateTitle" = "自分のアーカイブに残す";
+"entry.state.empty" = "未設定";
+"entry.state.onlyYou" = "自分だけ";
+"entry.state.selected" = "選択済み";
+"entry.state.shared" = "友だちと共有中";
+"entry.title.another" = "もう一つ\n瞬間を？";
+"entry.title.today" = "今日は\nどんな気分？";
+"export.failed" = "アーカイブを書き出せませんでした。";
+"friendProfile.recurringColor" = "くり返す色";
+"greeting.day" = "こんにちは";
+"greeting.evening" = "こんばんは";
+"greeting.morning" = "おはよう";
+"greeting.night" = "おやすみなさい";
+"invite.messageBody" = "ONEで一日の色を残しています。コード: %1$@\n\n%2$@";
+"nav.a11y.showTodayMoments" = "今日の瞬間を表示";
+"notif.aFriend" = "友だち";
+"notif.circle.leftColor" = "今日の色を残しました。";
+"notif.circle.leftColors" = "今日の色を残しました。";
+"notif.daily.beforeClose" = "一日が終わる前に色を残せます。";
+"notif.daily.colorless" = "今日は色なしで記録されます。";
+"notif.daily.empty" = "今日はアーカイブが空です。";
+"notif.daily.emptyStanding" = "今日はまだ空のままです。";
+"notif.daily.noColorYet" = "今日の色はまだありません。";
+"notif.daily.stillEmpty" = "今日はいまだに空のままです。";
+"notif.daily.stillNotPicked" = "今日の色はまだ選ばれていません。";
+"notif.daily.yesterday" = "昨日は%@。今日はまだです。";
+"notif.day.evening" = "%@の夜";
+"notif.day.morning" = "%@の朝";
+"notif.day.night" = "一日が終わります";
+"notif.day.noon" = "%@の昼";
+"notif.fallback.body" = "アーカイブに新しい記録があります。";
+"notif.friendAccepted.body" = "サークルに加わりました。";
+"notif.friendRequest.body" = "サークルに追加したいそうです。";
+"notif.friendShared.noMood" = "今日の曲を残しました。";
+"notif.friendShared.withMood" = "%@。曲を残しました。";
+"notif.monthly.closed.body" = "30日間が一枚に。";
+"notif.monthly.closed.title" = "%@が終わりました";
+"notif.monthly.generic.body" = "%@ができました。";
+"notif.monthly.generic.title" = "月のポートレート";
+"notif.monthly.ready" = "今月のポートレートができました。";
+"notif.people.andOthers" = "%1$@ と他%2$d人";
+"notif.push.friendAccepted" = "申請が承認されました。";
+"notif.push.friendRequest" = "新しいサークルの申請があります。";
+"notif.push.friendShared" = "サークルの誰かが今日の色を残しました。";
+"notif.push.reaction" = "あなたの記録に反応がありました。";
+"notif.reaction.plain" = "あなたの記録に反応しました。";
+"notif.reaction.withEmoji" = "あなたの記録に%@を残しました。";
+"notif.resonance.body" = "今日はあなたと同じ%@。";
+"notif.resonance.bodyNoMood" = "今日はあなたと同じ色調です。";
+"notif.someone" = "誰か";
+"notif.someoneInCircle" = "サークルの誰か";
+"notif.weekly.dominant.body" = "%@。";
+"notif.weekly.dominant.title" = "今週の主な色調";
+"notif.weekly.palette.body" = "7日間が一枚に。";
+"notif.weekly.palette.title" = "今週のパレット";
+"notif.weekly.sunday.body" = "一週間が終わりました。";
+"notif.weekly.sunday.title" = "日曜の振り返り";
+"notif.weekly.thisWeek.body" = "7日間のポートレートができました。";
+"notif.weekly.thisWeek.title" = "今週";
+"notif.yourFriend" = "友だち";
+"onboarding.v3.auth.lead" = "iCloudに保存されます。パスワードなし。";
+"onboarding.v3.auth.title" = "Appleで\nサインイン。";
+"onboarding.v3.circle.lead" = "あとから招待もできます。";
+"onboarding.v3.circle.title" = "サークルには\n誰を入れますか？";
+"onboarding.v3.cta.finish" = "完了";
+"onboarding.v3.cta.next" = "つづける";
+"onboarding.v3.cta.start" = "はじめる";
+"onboarding.v3.done.lead" = "最初の瞬間はあなたのものです。";
+"onboarding.v3.done.title" = "準備完了。";
+"onboarding.v3.intent.curious" = "ただの興味";
+"onboarding.v3.intent.lead" = "一文で十分です。あとで変えられます。";
+"onboarding.v3.intent.music" = "曲と結びつけるため";
+"onboarding.v3.intent.self" = "自分を知るため";
+"onboarding.v3.intent.title" = "なぜここに来ましたか？";
+"onboarding.v3.intent.track" = "気持ちを記録するため";
+"onboarding.v3.mood.lead" = "色をひとつ選ぶだけ。";
+"onboarding.v3.mood.title" = "今日は\nどんな気分？";
+"onboarding.v3.notif.lead" = "好きな時間に、一日一度。";
+"onboarding.v3.notif.title" = "小さな\nリマインダー？";
+"onboarding.v3.ready" = "準備完了";
+"onboarding.v3.reward.lead" = "一つの瞬間が色をひとつ足します。";
+"onboarding.v3.reward.title" = "最初のマスが\nできました。";
+"onboarding.v3.song.lead" = "あとからでも追加できます。";
+"onboarding.v3.song.title" = "曲も\n添えますか？";
+"onboarding.v3.step.auth" = "サインイン";
+"onboarding.v3.step.circle" = "サークル";
+"onboarding.v3.step.intent" = "目的";
+"onboarding.v3.step.mood" = "最初の色";
+"onboarding.v3.step.notif" = "リマインダー";
+"onboarding.v3.step.reward" = "最初のマス";
+"onboarding.v3.step.song" = "曲";
+"profile.a11y.distributionChart" = "色の分布グラフ";
+"profile.a11y.distributionRow" = "%1$@、%2$d件の瞬間、%3$dパーセント";
+"profile.a11y.distributionValue" = "%1$@ %2$dパーセント";
+"profile.a11y.monthlySummary" = "月間まとめ、%1$@、今月の色は%2$@。Echoを開く。";
+"profile.a11y.signOut" = "サインアウト";
+"profile.distribution.selected" = "%1$@ · %2$d件の瞬間";
+"profile.intentFor" = "%@ のために";
+"profile.music.searchOnly" = "検索のみ";
+"profile.photo.pick" = "写真を選ぶ";
+"profile.stat.colorsUsed" = "使った色";
+"profile.stat.moments" = "瞬間";
+"profile.stat.mostFrequent" = "最も多い";
+"profile.theme.dark" = "ダーク";
+"profile.theme.light" = "ライト";
+"publicProfile.a11y.pinnedSong" = "固定した曲: %1$@、%2$@";
+"publicProfile.loadFailed" = "プロフィールを読み込めませんでした。";
+"reaction.a11y.kind" = "%@ のリアクション";
+"reaction.a11y.sendReply" = "返信を送信";
+"reminder.state.off" = "オフ · 通知なし";
+"reminder.state.on" = "オン · 毎日 %@";
+"reminder.tone.quiet" = "静か";
+"reminder.tone.recall" = "昨日を添えて";
+"reminder.tone.short" = "短め";
+"saved.manyMoments" = "%1$@には%2$d件の瞬間。マスが色で分かれました。";
+"saved.oneMoment" = "今日のマスがアーカイブに入りました。";
+"saved.scope.circle" = "サークルの友だちが見られます。";
+"saved.scope.private" = "あなたのアーカイブだけに。";
+"settings.exportArchive" = "アーカイブを書き出す";
+"settings.exportArchive.note" = "すべての記録を一つのファイルに。";
+"share.other" = "その他";
+"share.photoLoadFailed" = "写真を読み込めませんでした";
+
+/* Default values */
+"signin.button.accessibility" = "Appleでサインイン";
+"signin.subtitle" = "続けるにはAppleアカウントでサインインしてください。";
+"signin.title" = "ようこそ。";
+"song.searchPlaceholder" = "曲、アーティスト";
+"story.bg.color" = "色";
+"story.bg.paper" = "紙";
+"story.bg.photo" = "写真";
+"story.content.note" = "メモ";
+"story.content.song" = "曲";
+"story.row.background" = "背景";
+"story.row.content" = "内容";
+"story.row.ratio" = "比率";
+"story.toast.renderFailed" = "カードを作成できませんでした";
+"story.toast.saved" = "写真に保存しました";
+"today.entryNotFound" = "今日の記録が見つかりません。";
+"today.liveActivityOff" = "Dynamic Islandがオフです";
+"today.shareFailed" = "サークルへの共有に失敗しました。接続を確認してください。";
+
+/* Error messages */
+"render_failed" = "カードを作成できませんでした。もう一度お試しください。";
+"image_too_large" = "画像が大きすぎます。小さい写真を使用してください。";
+"invalid_format" = "無効な形式";
+"export_failed" = "エクスポートに失敗しました";
+"instagram_not_installed" = "Instagramがインストールされていません。Instagramをインストールしてください。";
+"save_failed" = "写真を保存できませんでした";
+"permission_denied" = "フォトライブラリへのアクセスが必要です。設定で許可してください。";
+
+/* Recovery suggestions */
+"check_song_data" = "曲情報を確認してください";
+"try_again" = "もう一度お試しください";
+"reduce_image_size" = "写真サイズを縮小してください";
+"check_format" = "フォーマットの互換性を確認してください";
+"check_storage" = "ストレージ容量を確認してください";
+
+/* Success messages */
+
+/* ── 今日 ── */
+
+/* ── 確認 ── */
+
+/* ── サークル ── */
+"circle.removeFriend" = "友達から削除しますか？";
+"circle.addFriend" = "友達を追加";
+
+/* ── 発見 ── */
+
+/* ── プロフィール / 設定 ── */
+"profile.language" = "言語";
+
+/* ── オンボーディング ── */
+
+/* ── スプラッシュ ── */
+
+/* ── 一般 ── */
+"general.save" = "保存";
+"general.cancel" = "キャンセル";
+"general.back" = "戻る";
+"general.close" = "閉じる";
+"general.more" = "その他";
+"general.loading" = "読み込み中...";
+"general.error" = "エラーが発生しました";
+"general.retry" = "再試行";
+
+/* ── 通知 ── */
+"notification.acceptFriend" = "承認";
+"notification.declineFriend" = "拒否";
+"notification.openEcho" = "まとめを見る";
+
+/* ── アクセシビリティ ── */
+"accessibility.today.photoViewer" = "今日の写真";
+"accessibility.circle.setupCircle" = "サークルを作る";
+
+/* Discover redesign */
+
+/* ── ECHO ── */
+"circle.you" = "あなた";
+"circle.pendingRequests" = "%d 件の受信リクエスト";
+"circle.notSharedYet" = "まだ今日シェアしていません";
+"circle.blockUser" = "ユーザーをブロック";
+"circle.removeAction" = "削除";
+"circle.blockAction" = "ブロック";
+"circle.unblockAction" = "ブロック解除";
+"circle.iCloudRequired" = "iCloudアクセスが必要です";
+"circle.iCloudMessage" = "サークル機能を使うには\niCloudアカウントでサインインが必要です。";
+"circle.tryAgain" = "再試行";
+"circle.goToSettings" = "設定を開く";
+"addFriend.requestSent" = "リクエストを送信しました。";
+"addFriend.frameQR" = "QRコードをフレームに合わせる";
+"addFriend.cameraRequired" = "カメラアクセスが必要です";
+"addFriend.ok" = "OK";
+"profile.deleteAccountTitle" = "アカウントを削除";
+"profile.deleteAccountMsg" = "すべての曲、プロフィール、サークルデータが永久に削除されます。この操作は取り消せません。";
+"profile.deleteAccount" = "アカウントを削除";
+"profile.name" = "名前";
+"profile.username" = "ユーザー名";
+"profile.color" = "カラー";
+"profile.editProfile" = "プロフィールを編集";
+"profile.createProfile" = "プロフィールを作成";
+"profile.namePlaceholder" = "あなたの名前";
+"contacts.smsNotAvailable" = "このデバイスではSMS送信が利用できません。";
+"contacts.smsSendHint" = "招待リンクがSMSで送信されます";
+"archive.photoLoadFailed" = "写真を読み込めませんでした";
+"archive.openSong" = "曲を開く";
+
+/* --- ONBOARDING EXTRA --- */
+
+/* --- FRIEND REQUESTS --- */
+"friendRequests.title" = "通知";
+"friendRequests.friendAccepted" = "フレンドになりました。";
+"friendRequests.requestWithdrawn" = "リクエストを取り消しました";
+"friendRequests.unknown" = "不明";
+
+/* --- ARCHIVE EXTRA --- */
+"archive.selectedAt" = "%@に選択";
+
+/* --- GENERAL EXTRA --- */
+"general.share" = "共有";
+
+/* --- CIRCLE SHARE TOGGLE --- */
+
+/* --- GENERAL OK --- */
+"general.ok" = "OK";
+
+/* --- ONBOARDING FEATURES --- */
+
+/* --- TODAY EXTRA (to be filled per lang) --- */
+"today.timeSelected" = "%@に";
+
+"circle.removeConfirmMessage" = "%@をサークルから削除してもよろしいですか？";
+"circle.blockConfirmMessage" = "%@をブロックしてもよろしいですか？この操作は元に戻せません。";
+"circle.todayFeeling" = "今日の\nトーン。";
+"circle.note" = "ノート";
+"circle.waitingPick" = "今日はまだ選んでいません。";
+"circle.willAppear" = "曲を選んだときに表示されます";
+"circle.updating" = "更新中…";
+"circle.notSelectedYet" = "今日はまだ\n選んでいません。";
+"contacts.navTitle" = "連絡先から招待";
+"contacts.alertSmsCantSend" = "SMSを送信できません";
+"contacts.inviteCodeText" = "招待コード：%@";
+"contacts.contactsRequired" = "連絡先へのアクセスが必要です";
+"contacts.contactsPermissionHint" = "設定 → プライバシー → 連絡先 から許可を付与できます。";
+"contacts.openSettings" = "設定を開く";
+"contacts.contactsLoading" = "連絡先を読み込み中…";
+"contacts.inviteButton" = "招待する";
+"contacts.searchPlaceholder" = "連絡先を検索";
+"contacts.noContacts" = "連絡先なし";
+"contacts.noResults" = "連絡先が見つかりません";
+"contacts.noName" = "名前なし";
+"search.appleMusicPermission" = "Apple Musicの権限が必要です。設定から許可してください。";
+/* --- INVITE SHARE --- */
+"invite.sendInvite" = "招待を送る";
+"invite.formatPicker" = "フォーマット";
+"invite.story" = "ストーリー (9:16)";
+"invite.post" = "投稿 / X (16:9)";
+"invite.preparing" = "招待カードを準備中...";
+"invite.generateFailed" = "招待カードを作成できませんでした";
+"invite.shareText" = "ONEで私のサークルに参加しよう。感じて、発見して、共有して。\n%@";
+
+/* --- SHARE SHEET --- */
+"share.preparing" = "ストーリーを準備中...";
+"share.otherApps" = "他のアプリ";
+"share.cardSaved" = "カードを保存しました";
+"share.saveCard" = "カードを保存";
+"share.saveCardHint" = "ストーリーカードをギャラリーに追加";
+"share.photoSaved" = "写真を保存しました";
+"share.savePhoto" = "写真を保存";
+"share.savePhotoHint" = "元の写真をギャラリーに追加";
+
+/* --- DISCOVER EXTRA --- */
+
+/* --- MONTHLY POSTER --- */
+
+/* --- MOOD LABELS --- */
+
+/* --- MOOD MEANINGS (v2.5) --- */
+
+/* --- FEELING LABELS --- */
+
+/* --- TODAY EMPTY VIEW --- */
+
+/* --- SCREEN TITLES (top bar) --- */
+"screen.echo.title" = "エコー";
+"screen.echoes.title" = "今日のエコー";
+"screen.share.title" = "共有";
+"screen.story.title" = "ストーリーカード";
+"screen.camera.title" = "カメラ";
+"screen.entry.title" = "瞬間";
+"screen.archive.title" = "アーカイブ";
+"screen.circle.title" = "サークル";
+"screen.profile.title" = "プロフィール";
+"topbar.settings" = "設定";
+"topbar.monthlyEcho" = "月のまとめ";
+
+/* --- NAVIGATION TABS --- */
+"nav.archive" = "アーカイブ";
+"nav.entry" = "瞬間";
+"nav.circle" = "サークル";
+"nav.profile" = "プロフィール";
+"nav.tabAccessibility" = "%@タブ";
+
+/* --- DISCOVER CTA LABELS --- */
+
+/* --- ACTIVITY RECOMMENDATION SECTIONS --- */
+
+/* --- ACTIVITY TEMPLATES --- */
+
+
+
+
+
+
+
+
+
+
+
+/* --- ACTIVITY REASONS --- */
+
+/* --- ACTIVITY VENUE HINTS --- */
+
+/* --- SHARE CARD BRANDING --- */
+"share.brandWatermark" = "ONE · Mood Tracker";
+"share.brandWatermarkUpper" = "ONE · MOOD TRACKER";
+
+/* --- DISCOVER LISTEN LABELS --- */
+
+/* --- GENERAL TOAST TITLES --- */
+"general.success" = "成功";
+"general.info" = "情報";
+"general.warning" = "警告";
+
+/* --- CAMERA MISSING KEYS --- */
+
+/* --- CIRCLE / SHARE MISSING --- */
+"share.cardFailed" = "共有カードを作成できませんでした";
+
+/* --- TODAY MISSING KEYS --- */
+
+/* --- DISCOVER STATUS MISSING --- */
+
+/* --- CALENDAR DAY ABBREVIATIONS --- */
+
+/* --- GENRE FALLBACK --- */
+"genre.music" = "音楽";
+"notification.appUpdate.title" = "新しいバージョンが利用可能";
+"notification.appUpdate.body" = "ONE %@ が公開されました。";
+
+/* Badges */
+
+
+/* Auto-added missing keys — English fallback */
+"addFriend.usernamePlaceholder" = "username";
+"archive.defaultFeeling" = "Calm";
+"archive.defaultMood" = "Neutral";
+"archive.unknown" = "Unknown";
+"archive.unknownArtist" = "Unknown Artist";
+"archive.unknownSong" = "Unknown Song";
+"cloudkit.connectionError" = "Could not connect to iCloud. Check your internet connection and try again.";
+"cloudkit.throttleWait" = "Server busy. Retrying in %d min %02d sec.";
+"echo.empty.body" = "Once you log a day, your week, rhythm, and color palette show up here.";
+"echo.empty.cta" = "Log today";
+"echo.empty.title" = "Echo is quiet for now.";
+"firstEntryInvite.body" = "Let one of your people drop their color tonight too. Seeing what you both feel hits different.";
+"firstEntryInvite.eyebrow" = "FIRST STEP DONE";
+"firstEntryInvite.invite" = "Invite someone close";
+"firstEntryInvite.skip" = "Not now";
+"firstEntryInvite.title" = "ONE feels better with someone close.";
+"friendRequests.accept" = "Kabul Et";
+"friendRequests.decline" = "Decline";
+"friendRequests.markAllRead" = "Tümünü Okundu İşaretle";
+"friendRequests.noNotifications" = "No activity yet";
+"friendRequests.noNotificationsHint" = "Friend acceptances, shares, and\nreactions will appear here.";
+"friendRequests.pending" = "Bekliyor";
+"friendRequests.sentYouRequest" = "%@ sana arkadaşlık isteği gönderdi";
+"friendRequests.withdraw" = "Geri Çek";
+"monthly.storySubtitle" = "You got lost in thoughts mostly at %@.";
+"monthly.storyTitle" = "The Month of %@ Music";
+"myFriends.title" = "My Friends";
+"notification.openCircle" = "Open Circle";
+"profile.changePhoto" = "Change photo";
+"profile.recentWeek.subtitle" = "Your color map";
+"profile.recentWeek.title" = "PAST 7 DAYS";
+"profile.recentWeek.todayShort" = "Today";
+"profile.usernameAvailable" = "Available ✓";
+"profile.usernameCheckFailed" = "Couldn't check availability";
+"profile.usernameTaken" = "This username is taken";
+"share.xTemplate" = "今日は %@。\n\n#OneApp";
+"today.moodSaved.a11y" = "Bugünün mood'u kaydedildi";
+"whatsNew.circleFirst.body" = "アプリを開くと、まず友だちの\n今日の色が見えます。";
+"whatsNew.circleFirst.title" = "最初にサークル";
+"whatsNew.cta.done" = "はじめる";
+"whatsNew.cta.next" = "つぎへ";
+"whatsNew.mosaic.body" = "月がひと続きに、色ごとに。\n一年前の今日の気持ちも見えます。";
+"whatsNew.mosaic.title" = "アーカイブのモザイク";
+"whatsNew.savedMoment.body" = "色を残すと、画面が\n波で応えます。";
+"whatsNew.savedMoment.title" = "新しい保存の瞬間";
+"whatsNew.twoSteps.body" = "色を選び、曲を選び、残すだけ。\n写真とメモは任意になりました。";
+"whatsNew.twoSteps.title" = "二歩で完了";
+
+/* Circle — arkadaşı olmayan kullanıcı için değer önizlemesi */
+"circle.empty.previewTitle" = "友だちが5人いたら、今日はこう見えるはず。";
+"circle.empty.previewSubtitle" = "色は友だちのもの。きみはただ眺めるだけ。";
+"circle.empty.invite" = "友だちを招待";
+"circle.empty.startAlone" = "今はひとりで始める";
+
+"circle.empty.closing" = "今日の色を残せば、友だちもきみを見られるようになる。";
+
+
+
+"profile.stat.entries" = "記録";
+"profile.row.musicSource" = "音楽ソース";
+
+
+"comeback.headline" = "%d日いなかったね。
+何も逃してないよ。";
+
+
+
+"onboarding.entry.brandTitle" = "one song.
+one colour.
+one day.";
+
+"year.poster" = "poster";
+
+"notif.title" = "通知";
+"notif.markAllRead" = "mark all read";
+"notif.today" = "today";
+"notif.thisWeek" = "this week";
+"notif.earlier" = "earlier";
+"notif.promise" = "ONE reminds you at most once a day. No like or comment notifications.";
+"notif.emptyTitle" = "No notifications yet.";
+"notif.unread" = "unread";
+"notif.now" = "now";
+
+"settings.privacy" = "privacy";
+"settings.privacyAccount" = "privacy & account";
+
+"music.intro" = "Which service should we use to search and play?";
+"music.connected" = "connected";
+"music.notConnected" = "not connected";
+"music.searchOnly" = "search only";
+"music.searchOnlySub" = "no account, no playback";
+"privacy.whoCanSee" = "who can see";
+"privacy.todayColour" = "today's colour";
+"privacy.todaySong" = "today's song";
+"privacy.archive" = "my archive";
+"privacy.notes" = "my notes";
+"privacy.friends" = "friends";
+"privacy.onlyMe" = "only me";
+"privacy.neverShared" = "Archive and notes can never be shared — there isn't even a setting.";
+"privacy.discoverability" = "discoverability";
+"privacy.byUsername" = "find me by username";
+"privacy.byUsernameSub" = "people who know your exact handle can add you";
+
+"friends.addAction" = "＋ add";
+"friends.segAll" = "all · %d";
+"friends.segRequests" = "requests · %d";
+"friends.quickAdd" = "quick add";
+"friends.shareLink" = "share link";
+"friends.showCode" = "show code";
+"friends.scanCode" = "scan code";
+"friends.circleCount" = "your circle · %d";
+"friends.searchPlaceholder" = "search friends";
+"friends.emptyList" = "No one yet — invite your first friend.";
+"friends.noMatch" = "No matching friends.";
+"friends.footer" = "friends only see each other's today. the past stays with each person.";
+"friends.addedYou" = "added you";
+"friends.sentByYou" = "sent by you";
+"friends.waiting" = "waiting";
+"friends.accept" = "accept";
+"friends.ignore" = "ignore";
+"friends.noIncoming" = "No pending requests.";
+"friends.noOutgoing" = "No sent requests.";
+
+"addFriend.screenTitle" = "友だちを追加";
+"addFriend.exactHint" = "type the exact username. ONE never suggests strangers.";
+"addFriend.notFound" = "Not found. Check the spelling.";
+"addFriend.addAction" = "add";
+"addFriend.codeHint" = "show or scan your code. your link is only for people who know you.";
+"addFriend.copyCode" = "copy code";
+"addFriend.codeCopied" = "copied ✓";
+"addFriend.scanWithCamera" = "scan with camera";
+
+"friendProfile.theirRhythm" = "their rhythm";
+"friendProfile.commonSongs" = "shared songs";
+"friendProfile.today" = "today";
+"friendProfile.peakHour" = "peak hour";
+"friendProfile.mutualCount" = "%d mutual friends";
+"friendProfile.remove" = "remove friend";
+
+"poster.title" = "%@ poster";
+"poster.format" = "format";
+"poster.show" = "show";
+"poster.fmtStory" = "story 9:16";
+"poster.fmtSquare" = "square 1:1";
+"poster.fmtWallpaper" = "wallpaper";
+"poster.songs" = "songs";
+"poster.colourGrid" = "colour grid";
+"poster.notes" = "notes";
+"poster.days" = "days";
+"poster.colours" = "colours";
+"poster.mostly" = "くり返し: %@";
+"poster.mostPlayed" = "くり返した曲: %@";
+"poster.notesHint" = "notes included";
+"poster.saveImage" = "save to photos";
+
+
+
+
+
+/* Hızlı ekle — prototip parity */
+"addFriend.mutualCount" = "共通%d人";
+"addFriend.sent" = "送信済み";
+"addFriend.inviteMessage" = "ONEで気分と音楽をシェアしています。あなたも。";
+"addFriend.tileShareLink" = "リンクを\n共有";
+"addFriend.tileShowCode" = "コードを\n表示";
+"addFriend.tileScan" = "コードを\n読取";
+"addFriend.contactsOnOne" = "連絡先でONEにいる人";
+"addFriend.contactsOnlyHint" = "電話に登録済みの人だけ。ONEは知らない人を勧めません。";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "応える";
+"reaction.replyPlaceholder" = "一行だけ（%@ だけが見ます）";
+"reaction.sent" = "送信済み";
+"reaction.ephemeralNote" = "一日の終わりに消えます · %@だけが見ます";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "今日の反響";
+"echoes.reactors" = "応えた人";
+"echoes.threadWith" = "%@と";
+"echoes.replyPlaceholder" = "返信";
+"echoes.ephemeralNote" = "応えは保存されません — その瞬間だけ";
+"echoes.empty" = "まだ反響はありません。日が進むと現れるかも。";
+"echoes.someone" = "誰か";
+
+// MARK: - SubCircle
+
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.peopleCount" = "%d人";
+"circle.momentCount" = "%d件";
+"circle.youCard" = "あなた";
+"circle.youNotShared" = "今日はまだ記録なし";
+"circle.notSharedToday" = "今日はまだ記録なし";
+"circle.scopeShared" = "共有済み";
+"circle.scopePrivate" = "自分だけ";
+"circle.v3EmptyTitle" = "まだ誰もいません。";
+"circle.v3EmptyBody" = "誰かを追加して、互いの色を見よう。";
+"circle.scanQR" = "QRコードをスキャン";
+"circle.resonance" = "共鳴";
+"circle.sameColorLabel" = "同じ色の人";
+"circle.distributionLabel" = "サークルの色分布";
+"circle.yourColorToday" = "今日のあなたの色";
+"circle.noColorToday" = "今日の色はまだ";
+"circle.noColorTodayBody" = "瞬間を記録すると共鳴が見えます。";
+"circle.sameColorCount" = "今日あなたと同じ色の人は%d人";
+"circle.requests" = "友達リクエスト";
+"circle.notifications" = "通知";
+
+/* v3 mood adlari - uygulamanin semantik yuku, koda gomulu olamaz */
+"mood.v3.atesli.label" = "情熱的";
+"mood.v3.coskulu.label" = "陽気";
+"mood.v3.gergin.label" = "緊張";
+"mood.v3.mutlu.label" = "幸せ";
+"mood.v3.enerjik.label" = "元気";
+"mood.v3.odakli.label" = "集中";
+"mood.v3.huzurlu.label" = "穏やか";
+"mood.v3.huzunlu.label" = "物憂げ";
+"mood.v3.yorgun.label" = "疲れ";
+
+/* v3 mood anlamları — VoiceOver değeri ve alt başlık. */
+"mood.v3.atesli.meaning" = "内側が燃えている";
+"mood.v3.coskulu.meaning" = "あふれ出しそう";
+"mood.v3.gergin.meaning" = "重圧に押されている";
+"mood.v3.mutlu.meaning" = "内側から輝いている";
+"mood.v3.enerjik.meaning" = "生き生きと速い";
+"mood.v3.odakli.meaning" = "落ち着いて定まっている";
+"mood.v3.huzurlu.meaning" = "すべて順調";
+"mood.v3.huzunlu.meaning" = "胸が締めつけられる";
+"mood.v3.yorgun.meaning" = "消耗して空っぽ";
+
+/* Merakli hatirlatma tonu - tam cumle, kelime birlestirme yok */
+"reminder.curious.yesterday.atesli" = "昨日は情熱的でしたね。";
+"reminder.curious.yesterday.coskulu" = "昨日は陽気でしたね。";
+"reminder.curious.yesterday.gergin" = "昨日は緊張していましたね。";
+"reminder.curious.yesterday.mutlu" = "昨日は幸せでしたね。";
+"reminder.curious.yesterday.enerjik" = "昨日は元気でしたね。";
+"reminder.curious.yesterday.odakli" = "昨日は集中していましたね。";
+"reminder.curious.yesterday.huzurlu" = "昨日は穏やかでしたね。";
+"reminder.curious.yesterday.huzunlu" = "昨日は物憂げでしたね。";
+"reminder.curious.yesterday.yorgun" = "昨日は疲れていましたね。";
+
+/* Legacy 12-mood (ONEMood) - arsiv/echo okuma yollari kullaniyor */
+"archive.previousMonth" = "前の月";
+"archive.nextMonth" = "次の月";
+
+/* ── v3 ekranlarından kataloğa taşınan metinler ──────────────────────
+   Bu 69 anahtar koda gömülü Türkçe olarak duruyordu: katalog tamdı
+   ama bu ekranlar ona hiç bakmıyordu, dolayısıyla Almanca bir
+   kullanıcı Profil sekmesinde Türkçe görüyordu.
+   TR ve EN gerçek; diğer diller çeviri gelene kadar TR'ye düşüyor. */
+"applock.noPasscode" = "Cihazında parola veya biyometri tanımlı değil.";
+"archive.addMomentToDay" = "Bu güne an ekle";
+"archive.addNow" = "Şimdi ekle";
+"archive.dayEmpty.today" = "最初の一瞬を残そう。";
+"archive.dayEmpty.past" = "その日は空です。";
+"archive.momentCount.one" = "1件";
+"archive.dayCount" = "%lld gün";
+"archive.empty.body" = "İlk rengini seç, mozaik buradan başlasın.";
+"archive.empty.title" = "Arşiv boş.";
+"archive.mostFrequent" = "%@ がくり返し";
+"archive.todayWaiting" = "今日はアーカイブで空のままです。";
+"block.confirmBody" = "Yorumları ve paylaşımları artık görünmeyecek.";
+"camera.noAccess" = "Kamera erişimi yok";
+"camera.useThisMoment" = "Bu anı kullan";
+"circle.shareFailed" = "Çevre paylaşımı başarısız — internet bağlantını kontrol et.";
+"echo.monthColour" = "%@ · AYIN RENGİ";
+"echo.monthStory" = "%@ · AY HİKAYESİ";
+"echo.noRepeatSong" = "Aynı şarkı iki kez geçmedi.";
+"echo.posterFailed" = "Poster yüklenemedi";
+"entry.changeColour" = "Rengi değiştir";
+"entry.pickColour" = "Bir renk seç. Yeter.";
+"entry.removePhoto" = "Fotoğrafı kaldır";
+"entry.scopeSubtitle" = "Her an için ayrı seçebilirsin.";
+"entry.scopeTitle" = "Bu an kimde kalsın?";
+"general.a11y.toggle" = "Aç/kapat";
+"general.change" = "Değiştir";
+"general.now" = "şimdi";
+"general.openSettings" = "Ayarları aç";
+"invite.validSevenDays" = "7 GÜN GEÇERLİ";
+"invite.addMeOnONE" = "Beni ONE'da ekle";
+"liveActivity.enableHint" = "Mood'unu Dynamic Island'da görmek için Ayarlar > ONE > Canlı Etkinlikler'i etkinleştir.";
+"moment.a11y.openPhoto" = "Fotoğrafı aç";
+"moment.a11y.hasPhoto" = "写真あり";
+"moment.a11y.note" = "メモ: %@";
+"moment.a11y.song" = "曲: %@";
+"moment.a11y.privateScope" = "アーカイブのみ、サークルには表示されません";
+"moment.archiveTag" = "· ARŞİV";
+"offline.banner" = "BAĞLANTI YOK · ANLARIN CİHAZINDA BEKLİYOR";
+"privacy.hiddenField" = "%@ bu kişinin gizlilik tercihi nedeniyle görüntülenemiyor";
+"profile.colourBreakdown" = "Renk dağılımı";
+"profile.monthColour" = "%@ · ayın rengi";
+"profile.monthCounts" = "%1$d gün · %2$d an";
+"profile.monthlySummary" = "AYLIK ÖZET";
+"profile.photoVisibility" = "Fotoğrafın çevrendeki arkadaşlara görünür.";
+"profile.pickAvatar" = "Avatar seç";
+"profile.pinned" = "sabitlenmiş";
+"profile.pinnedSong" = "SABİTLENMİŞ ŞARKI";
+"profile.sevenSteps" = "7 adım";
+"profile.signInOptional" = "Giriş yapmasan da ONE tam çalışır.";
+"profile.signOut" = "ÇIKIŞ";
+"profile.signedInWithApple" = "Apple ile giriş yapıldı";
+"profile.syncPitch" = "Arşivini cihazlar\narasında taşı.";
+"profile.versionLine" = "Sürüm %1$@ · %2$d an";
+"publicProfile.inYourCircle" = "Çevrende";
+"publicProfile.mutualFriends" = "%d ortak arkadaşınız var";
+"publicProfile.unavailable" = "Bu profil görüntülenemiyor.";
+"reminder.daily" = "Günlük hatırlatma";
+"reminder.days" = "GÜNLER";
+"reminder.lockPreview" = "KİLİT EKRANI ÖNİZLEMESİ";
+"reminder.subtitle" = "Seçtiğin saatte tek hatırlatma.";
+"reminder.title" = "Hatırlatma";
+"reminder.tone" = "文面";
+"report.notice" = "Bildirimler 24 saat içinde değerlendirilir. Yinelenen şikâyetler içeriği otomatik gizleyebilir.";
+"saved.backToDay" = "Güne dön";
+"saved.goToArchive" = "Arşive git";
+"settings.appearance" = "Görünüm";
+"share.createStoryCard" = "Story kart oluştur";
+"share.noNote" = "Not bırakmadın.";
+"share.noSong" = "Şarkı eklemedin.";
+"share.orSave" = "Paylaş ya da kaydet.";
+"song.pick" = "Şarkı seç";
+"song.preparingSuggestions" = "候補を準備しています。";
+"splash.tagline" = "DUYGU VE ŞARKI GÜNLÜĞÜ";
+"today.howDidItFeel" = "Bugün nasıl hissettirdi?";
+
+/* ── Kodda kullanılıyordu ama katalogda yoktu ────────────────────────
+   Bu anahtarlar `NSLocalizedString` ile çağrılıyor ama hiçbir dilde
+   tanımlı değildi; iOS bu durumda anahtarın kendisini döndürür,
+   yani kullanıcı ekranda "general.copy" yazısını görüyordu. */
+"accessibility.today.closeViewer" = "Fotoğraf görüntüleyiciyi kapat";
+"accessibility.today.photoViewerHint" = "Yakınlaştırmak için çift dokun, kapatmak için aşağı kaydır";
+"accessibility.unread" = "Okunmadı";
+"general.copied" = "Kopyalandı";
+"general.copy" = "Kopyala";
+"invite.shareSubtitle" = "Davet kodun veya link ile seni ekleyebilirler";
+"profile.usernameCurrent" = "Bu zaten senin kullanıcı adın";
+"profile.usernameInvalidFormat" = "Yalnızca harf, rakam ve alt çizgi kullan";
+"profile.usernameTooShort" = "En az 3 karakter olmalı";
+
+
+/* Rapor sheet'i — v3 kabuk geçişi */
+"report.title" = "報告";
+"report.reason" = "理由";
+"report.noteOptional" = "メモ — 任意";
+"report.notePlaceholder" = "詳細を追加";
+"report.submit" = "報告を送信";
+"report.submitted" = "送信済み";
+"report.target.comment" = "コメントを報告";
+"report.target.user" = "%@ を報告";
+"report.target.userFallback" = "この人";
+"report.target.share" = "投稿を報告";
+"report.context.comment" = "コメント";
+"report.context.user" = "ユーザー";
+"report.context.share" = "投稿";
+
+"circle.resonanceTitle" = "共鳴";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "設定";
+"settings.group.circle" = "サークル";
+"settings.group.about" = "アプリについて";
+"settings.group.developer" = "開発者";
+"settings.reminder" = "リマインダー";
+"settings.musicSource" = "音楽ソース";
+"settings.myFriends" = "友だち";
+"settings.deleteAccount" = "アカウントを削除";
+"settings.watchOnboarding" = "はじめかたを見る";
+"settings.sampleCircleData" = "サンプルデータ";
+"settings.sampleCircleDataNote" = "サークルタブをサンプルの友だちで埋めます。";
+"settings.appLock" = "アプリロック";
+"settings.appLockGeneric" = "デバイスパスコード";
+
+"hub.momentCount" = "今日の記録 %d 件";
+
+"hub.addMoment" = "記録を追加";
+"hub.songLine" = "曲: %@";
+
+"songPicker.noSuggestions" = "候補が見つかりません。";
+
+/* AppError — hata mesajları ve başlıkları.
+   Türkçe değerlerle dokuz katalogda birden açıldı: davranış bugünküyle
+   aynı, ama artık çevrilebilir. Çeviri geldikçe bu blok doldurulur. */
+"error.networkUnavailable.message" = "İnternet bağlantısı yok. Lütfen bağlantını kontrol et.";
+"error.networkTimeout.message" = "İstek zaman aşımına uğradı. Tekrar dene.";
+"error.networkUnknown.message" = "Bağlantı hatası oluştu. Lütfen tekrar dene.";
+"error.cloudKitNotAvailable.message" = "iCloud kullanılamıyor. Ayarlar'dan iCloud'u kontrol et.";
+"error.cloudKitNotAuthenticated.message" = "iCloud hesabına giriş yapmamışsın.";
+"error.cloudKitRecordNotFound.message" = "Kayıt bulunamadı.";
+"error.cloudKitSchemaError.message" = "Sunucu yapılandırma hatası. Lütfen daha sonra tekrar dene.";
+"error.cloudKitServerConflict.message" = "Sunucu çakışması oluştu. Veriler senkronize ediliyor.";
+"error.cloudKitQuotaExceeded.message" = "iCloud depolama alanın dolu.";
+"error.cloudKitUnknown.message" = "iCloud hatası oluştu. Lütfen tekrar dene.";
+"error.persistenceSaveFailed.message" = "Kayıt sırasında bir hata oluştu.";
+"error.persistenceFetchFailed.message" = "Veriler yüklenirken bir hata oluştu.";
+"error.persistenceDeleteFailed.message" = "Silme işlemi başarısız oldu.";
+"error.persistenceMigrationFailed.message" = "Veri tabanı güncellemesi başarısız oldu.";
+"error.authAppleMusicDenied.message" = "Apple Music izni gerekli. Ayarlar > Gizlilik'ten izin ver.";
+"error.authAppleMusicRestricted.message" = "Apple Music bu cihazda kısıtlanmış.";
+"error.authSpotifyFailed.message" = "Spotify bağlantısı başarısız oldu.";
+"error.authSpotifyTokenExpired.message" = "Spotify oturumun sona erdi. Tekrar bağlan.";
+"error.authSpotifyNotConnected.message" = "Spotify hesabı bağlı değil.";
+"error.musicSearchFailed.message" = "Arama sırasında bir hata oluştu.";
+"error.musicNoResults.message" = "Sonuç bulunamadı.";
+"error.musicPlaybackFailed.message" = "Şarkı çalınamadı.";
+"error.musicServiceUnavailable.message" = "Müzik servisi kullanılamıyor.";
+"error.cameraDenied.message" = "Kamera izni gerekli. Ayarlar'dan izin ver.";
+"error.cameraUnavailable.message" = "Kamera kullanılamıyor.";
+"error.photoSaveFailed.message" = "Fotoğraf kaydedilemedi.";
+"error.circleUserNotFound.message" = "Kullanıcı bulunamadı. Kodu kontrol et.";
+"error.circleAlreadyFriend.message" = "Bu kullanıcı zaten çevrende.";
+"error.circleSelfAdd.message" = "Kendi kendini ekleyemezsin.";
+"error.circleInviteCodeInvalid.message" = "Geçersiz davet kodu.";
+"error.circleFriendRequestFailed.message" = "Arkadaşlık isteği gönderilemedi.";
+"error.title.network" = "Bağlantı Hatası";
+"error.title.cloudKit" = "iCloud Hatası";
+"error.title.persistence" = "Kayıt Hatası";
+"error.title.auth" = "Yetkilendirme";
+"error.title.music" = "Müzik Hatası";
+"error.title.camera" = "Kamera Hatası";
+"error.title.circle" = "Çevre Hatası";
+"error.title.unknown" = "Hata";
+
+/* ONE 2.0 — kabuk (ADR-001 Faz 1 madde 8) */
+"one2.tab.today" = "今日";
+"one2.tab.journey" = "記録";
+"one2.tab.explore" = "見つける";
+"one2.tab.profile" = "プロフィール";
+"one2.sheet.checkIn" = "気分";
+"one2.sheet.paywall" = "ONE+";
+"one2.placeholder.body" = "このセクションは準備中です。";
+"one2.notice.circleUnavailable" = "このバージョンにはサークルがありません。";
+"one2.action.dismiss" = "閉じる";
+"one2.debug.useV3" = "v3に切り替える";
+"one2.debug.restart" = "アプリの再起動後に反映されます。";
+
+/* ONE 2.0 — bildirim planlayıcı (04 › E13) */
+"notif.one2.morning.title" = "今日の言葉";
+"notif.one2.morning.fallback.1" = "短い一息から一日を始めよう。";
+"notif.one2.morning.fallback.2" = "今日の意図をひとつ選ぼう。";
+"notif.one2.morning.fallback.3" = "朝の最初の一行を書いてみよう。";
+"notif.one2.evening.title" = "一日を締めくくる時間です。";
+"notif.one2.evening.body" = "数行で今日を置いていこう。";
+"notif.one2.weeklyTheme.title" = "今週のテーマ：%@";
+"notif.one2.streak.title" = "今日も連続記録を続けられます";
+"notif.one2.streak.body" = "%d日続いています。短い記録で十分です。";
+"notif.one2.comparison.title" = "この問いには以前答えました";
+"notif.one2.resurface.title" = "この言葉について以前書きました";

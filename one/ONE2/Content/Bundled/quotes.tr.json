@@ -1,0 +1,1260 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "q_000001",
+      "text": "İnsanları rahatsız eden şeylerin kendisi değil, onlar hakkındaki yargılarıdır.",
+      "kind": "quote",
+      "license": "publicDomain",
+      "themes": [
+        "kabul",
+        "odak"
+      ],
+      "paths": [
+        "filozof",
+        "sakin"
+      ],
+      "emotionFit": [
+        "kaygi"
+      ],
+      "moodFit": [
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "author": "Epiktetos",
+      "source": "Encheiridion, 5",
+      "translation": "oneTranslation",
+      "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000002",
+      "text": "Bazı şeyler senin elindedir, bazıları değildir.",
+      "kind": "quote",
+      "license": "publicDomain",
+      "themes": [
+        "kabul",
+        "sinirlar"
+      ],
+      "paths": [
+        "filozof"
+      ],
+      "emotionFit": [
+        "kaygi",
+        "ofke"
+      ],
+      "moodFit": [
+        1,
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "author": "Epiktetos",
+      "source": "Encheiridion, 1",
+      "translation": "oneTranslation",
+      "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000003",
+      "text": "Az zamanımız olduğu doğru değil; çoğunu boşa harcıyoruz.",
+      "kind": "quote",
+      "license": "publicDomain",
+      "themes": [
+        "odak",
+        "anlam"
+      ],
+      "paths": [
+        "filozof",
+        "uretken"
+      ],
+      "emotionFit": [],
+      "moodFit": [
+        3,
+        4,
+        5
+      ],
+      "timeOfDay": "morning",
+      "premium": false,
+      "author": "Seneca",
+      "source": "Hayatın Kısalığı Üzerine, 1",
+      "translation": "oneTranslation",
+      "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000004",
+      "text": "Kendini kendine geri al.",
+      "kind": "quote",
+      "license": "publicDomain",
+      "themes": [
+        "dinlenme",
+        "sinirlar"
+      ],
+      "paths": [
+        "filozof",
+        "sakin"
+      ],
+      "emotionFit": [
+        "yorgunluk"
+      ],
+      "moodFit": [
+        1,
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "author": "Seneca",
+      "source": "Lucilius’a Mektuplar, 1",
+      "translation": "oneTranslation",
+      "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000005",
+      "text": "En iyi karşılık, sana kötülük edene benzememektir.",
+      "kind": "quote",
+      "license": "publicDomain",
+      "themes": [
+        "sinirlar",
+        "iliskiler"
+      ],
+      "paths": [
+        "filozof",
+        "cesur"
+      ],
+      "emotionFit": [
+        "ofke"
+      ],
+      "moodFit": [
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "author": "Marcus Aurelius",
+      "source": "Kendime Düşünceler, 6.6",
+      "translation": "oneTranslation",
+      "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000006",
+      "text": "Evren değişimdir; hayat, düşüncelerimizin ona verdiği biçimdir.",
+      "kind": "quote",
+      "license": "publicDomain",
+      "themes": [
+        "degisim",
+        "anlam"
+      ],
+      "paths": [
+        "filozof"
+      ],
+      "emotionFit": [
+        "merak"
+      ],
+      "moodFit": [
+        3,
+        4,
+        5
+      ],
+      "timeOfDay": "any",
+      "premium": true,
+      "author": "Marcus Aurelius",
+      "source": "Kendime Düşünceler, 4.3",
+      "translation": "oneTranslation",
+      "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000007",
+      "text": "Aynı ırmakta iki kez yıkanılmaz.",
+      "kind": "quote",
+      "license": "publicDomain",
+      "themes": [
+        "degisim"
+      ],
+      "paths": [
+        "filozof",
+        "sakin"
+      ],
+      "emotionFit": [
+        "merak"
+      ],
+      "moodFit": [
+        3,
+        4,
+        5
+      ],
+      "timeOfDay": "any",
+      "premium": true,
+      "author": "Herakleitos",
+      "source": "Fragmanlar (Platon, Kratylos 402a aktarımıyla)",
+      "translation": "oneTranslation",
+      "licenseNote": "PLACEHOLDER — kaynak ve çeviri içerik ekibince doğrulanacak",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000008",
+      "text": "Gelin tanış olalım, işi kolay kılalım.",
+      "kind": "quote",
+      "license": "publicDomain",
+      "themes": [
+        "iliskiler",
+        "umut"
+      ],
+      "paths": [
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "sevgi"
+      ],
+      "moodFit": [
+        3,
+        4,
+        5
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "author": "Yunus Emre",
+      "source": "Divan",
+      "translation": "original",
+      "licenseNote": "PLACEHOLDER — beyit kaynağı içerik ekibince doğrulanacak",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000009",
+      "text": "Bugün yavaş gitmek de ilerlemektir.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "yavaslik"
+      ],
+      "paths": [
+        "sakin",
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "yorgunluk"
+      ],
+      "moodFit": [
+        1,
+        2
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000010",
+      "text": "Hissettiğin her şeye yer var.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "kabul",
+        "ozsefkat"
+      ],
+      "paths": [
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "huzun",
+        "kaygi"
+      ],
+      "moodFit": [
+        1,
+        2
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000011",
+      "text": "Küçük bir adım da sayılır.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "cesaret"
+      ],
+      "paths": [
+        "cesur",
+        "uretken"
+      ],
+      "emotionFit": [],
+      "moodFit": [
+        1,
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000012",
+      "text": "Kendine bir arkadaşına konuştuğun gibi konuşabilirsin.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "ozsefkat"
+      ],
+      "paths": [
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "huzun"
+      ],
+      "moodFit": [
+        1,
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000013",
+      "text": "Dinlenmek de işin bir parçası.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "dinlenme"
+      ],
+      "paths": [
+        "sakin",
+        "uretken"
+      ],
+      "emotionFit": [
+        "yorgunluk"
+      ],
+      "moodFit": [
+        1,
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000014",
+      "text": "Bugün yalnızca bugünü taşıman yeterli.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "kabul",
+        "yavaslik"
+      ],
+      "paths": [
+        "sakin",
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "kaygi"
+      ],
+      "moodFit": [
+        1,
+        2
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000015",
+      "text": "Sınır koymak sevgisizlik değildir.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "sinirlar"
+      ],
+      "paths": [
+        "cesur",
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "ofke"
+      ],
+      "moodFit": [
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": true,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000016",
+      "text": "Merak ettiğin şeye bir adım daha yaklaş.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "merak",
+        "cesaret"
+      ],
+      "paths": [
+        "cesur"
+      ],
+      "emotionFit": [
+        "merak"
+      ],
+      "moodFit": [
+        4,
+        5
+      ],
+      "timeOfDay": "morning",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000017",
+      "text": "Nefesin hep seninle; ona dönebilirsin.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "yavaslik",
+        "dinlenme"
+      ],
+      "paths": [
+        "sakin"
+      ],
+      "emotionFit": [
+        "kaygi"
+      ],
+      "moodFit": [
+        1,
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000018",
+      "text": "Zor bir günü yaşamak da bir beceridir.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "kabul",
+        "umut"
+      ],
+      "paths": [
+        "sefkatli",
+        "cesur"
+      ],
+      "emotionFit": [
+        "huzun",
+        "yorgunluk"
+      ],
+      "moodFit": [
+        1,
+        2
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000019",
+      "text": "Bugün bir şeyi iyi yaptın; onu fark et.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "minnet"
+      ],
+      "paths": [
+        "uretken",
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "nese"
+      ],
+      "moodFit": [
+        3,
+        4,
+        5
+      ],
+      "timeOfDay": "evening",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000020",
+      "text": "İstediğin hızda değişebilirsin.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "degisim",
+        "sabir"
+      ],
+      "paths": [
+        "sakin",
+        "cesur"
+      ],
+      "emotionFit": [],
+      "moodFit": [
+        2,
+        3,
+        4
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000021",
+      "text": "Kararsız kalmak da bir durak, son değil.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "kabul",
+        "degisim"
+      ],
+      "paths": [
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "kaygi"
+      ],
+      "moodFit": [
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000022",
+      "text": "Sesini duymaya değer biri var: sen.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "ozsefkat"
+      ],
+      "paths": [
+        "sefkatli",
+        "cesur"
+      ],
+      "emotionFit": [],
+      "moodFit": [
+        1,
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": true,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000023",
+      "text": "Yeni bir sabah, yeni bir başlangıç demek değil; yeni bir deneme demek.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "umut",
+        "degisim"
+      ],
+      "paths": [
+        "cesur"
+      ],
+      "emotionFit": [],
+      "moodFit": [
+        2,
+        3,
+        4
+      ],
+      "timeOfDay": "morning",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000024",
+      "text": "Gün bitti; taşıdığın her şeyi bir kenara bırakabilirsin.",
+      "kind": "affirmation",
+      "license": "original",
+      "themes": [
+        "dinlenme",
+        "kabul"
+      ],
+      "paths": [
+        "sakin"
+      ],
+      "emotionFit": [
+        "yorgunluk"
+      ],
+      "moodFit": [
+        1,
+        2,
+        3
+      ],
+      "timeOfDay": "evening",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000025",
+      "text": "Damlaya damlaya göl olur.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "sabir",
+        "odak"
+      ],
+      "paths": [
+        "uretken",
+        "sakin"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": false,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000026",
+      "text": "Sabır acıdır, meyvesi tatlıdır.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "sabir"
+      ],
+      "paths": [
+        "sakin",
+        "filozof"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": false,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000027",
+      "text": "Ağaç yaşken eğilir.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "degisim"
+      ],
+      "paths": [
+        "uretken"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": false,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000028",
+      "text": "Bir elin nesi var, iki elin sesi var.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "iliskiler"
+      ],
+      "paths": [
+        "sefkatli"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": false,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000029",
+      "text": "Acele işe şeytan karışır.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "yavaslik"
+      ],
+      "paths": [
+        "sakin"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": false,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000030",
+      "text": "Gülme komşuna, gelir başına.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "iliskiler"
+      ],
+      "paths": [
+        "filozof"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": true,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000031",
+      "text": "Ayağını yorganına göre uzat.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "sinirlar"
+      ],
+      "paths": [
+        "uretken"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": false,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000032",
+      "text": "Her işte bir hayır vardır.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "kabul",
+        "umut"
+      ],
+      "paths": [
+        "sakin",
+        "sefkatli"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": false,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000033",
+      "text": "Söz gümüşse sükût altındır.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "yavaslik",
+        "sinirlar"
+      ],
+      "paths": [
+        "filozof",
+        "sakin"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": false,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000034",
+      "text": "Taşıma su ile değirmen dönmez.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "odak",
+        "anlam"
+      ],
+      "paths": [
+        "uretken"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": false,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000035",
+      "text": "Üzüm üzüme baka baka kararır.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "iliskiler",
+        "degisim"
+      ],
+      "paths": [
+        "filozof"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": false,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000036",
+      "text": "Yavaş yürüyen tez varır.",
+      "kind": "proverb",
+      "license": "publicDomain",
+      "themes": [
+        "yavaslik",
+        "sabir"
+      ],
+      "paths": [
+        "sakin",
+        "uretken"
+      ],
+      "emotionFit": [],
+      "moodFit": [],
+      "timeOfDay": "any",
+      "premium": true,
+      "translation": "original",
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000037",
+      "text": "Bir duyguyu adlandırmak, onunla aranda küçük bir mesafe açar.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "kabul"
+      ],
+      "paths": [
+        "filozof",
+        "sakin"
+      ],
+      "emotionFit": [
+        "kaygi",
+        "ofke"
+      ],
+      "moodFit": [
+        1,
+        2,
+        3
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "reflectionPromptIDs": [
+        "p_000024"
+      ],
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000038",
+      "text": "Yorgunluk bazen bir şeyin değil, çok şeyin toplamıdır.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "dinlenme"
+      ],
+      "paths": [
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "yorgunluk"
+      ],
+      "moodFit": [
+        1,
+        2
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000039",
+      "text": "Dikkatini verdiğin şey büyür.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "odak"
+      ],
+      "paths": [
+        "uretken",
+        "filozof"
+      ],
+      "emotionFit": [],
+      "moodFit": [
+        3,
+        4,
+        5
+      ],
+      "timeOfDay": "morning",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000040",
+      "text": "Minnet, elinde olanı yeniden görmektir.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "minnet"
+      ],
+      "paths": [
+        "sakin",
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "sevgi"
+      ],
+      "moodFit": [
+        3,
+        4,
+        5
+      ],
+      "timeOfDay": "evening",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000041",
+      "text": "Değişim çoğu zaman sessiz gelir; ancak geriye bakınca görünür.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "degisim",
+        "sabir"
+      ],
+      "paths": [
+        "filozof"
+      ],
+      "emotionFit": [],
+      "moodFit": [
+        2,
+        3,
+        4
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000042",
+      "text": "Bir günü iyi ya da kötü diye değil, yaşanmış diye de tartabilirsin.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "kabul"
+      ],
+      "paths": [
+        "sakin"
+      ],
+      "emotionFit": [
+        "huzun"
+      ],
+      "moodFit": [
+        1,
+        2,
+        3
+      ],
+      "timeOfDay": "evening",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000043",
+      "text": "Hayır demek, başka bir şeye evet demenin yoludur.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "sinirlar"
+      ],
+      "paths": [
+        "cesur",
+        "uretken"
+      ],
+      "emotionFit": [],
+      "moodFit": [
+        2,
+        3,
+        4
+      ],
+      "timeOfDay": "any",
+      "premium": true,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000044",
+      "text": "Kaybettiğin şey, ona verdiğin değeri de gösterir.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "kayip"
+      ],
+      "paths": [
+        "sefkatli",
+        "filozof"
+      ],
+      "emotionFit": [
+        "huzun"
+      ],
+      "moodFit": [
+        1,
+        2
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "reflectionPromptIDs": [
+        "p_000025"
+      ],
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000045",
+      "text": "Merak, korkunun yanına oturabilen tek misafirdir.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "merak",
+        "cesaret"
+      ],
+      "paths": [
+        "cesur"
+      ],
+      "emotionFit": [
+        "merak",
+        "kaygi"
+      ],
+      "moodFit": [
+        2,
+        3,
+        4
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000046",
+      "text": "Sessizlik de bir cevaptır; bazen en dürüst olanı.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "yavaslik"
+      ],
+      "paths": [
+        "sakin",
+        "filozof"
+      ],
+      "emotionFit": [],
+      "moodFit": [
+        2,
+        3,
+        4
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000047",
+      "text": "Bugün yazdığın bir cümle, yarın sana yol gösterebilir.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "anlam"
+      ],
+      "paths": [
+        "uretken"
+      ],
+      "emotionFit": [],
+      "moodFit": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000048",
+      "text": "İyi bir gün çoğu zaman küçük anlardan kurulur.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "minnet"
+      ],
+      "paths": [
+        "sakin",
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "nese",
+        "huzur"
+      ],
+      "moodFit": [
+        3,
+        4,
+        5
+      ],
+      "timeOfDay": "evening",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000049",
+      "text": "Umudun büyük olması gerekmez; yeter ki yerinde dursun.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "umut"
+      ],
+      "paths": [
+        "sefkatli",
+        "cesur"
+      ],
+      "emotionFit": [
+        "huzun"
+      ],
+      "moodFit": [
+        1,
+        2
+      ],
+      "timeOfDay": "any",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "q_000050",
+      "text": "Yakınlık, anlatmakla değil dinlenmekle başlar.",
+      "kind": "reflection",
+      "license": "original",
+      "themes": [
+        "iliskiler"
+      ],
+      "paths": [
+        "sefkatli"
+      ],
+      "emotionFit": [
+        "sevgi",
+        "huzun"
+      ],
+      "moodFit": [
+        2,
+        3,
+        4
+      ],
+      "timeOfDay": "any",
+      "premium": true,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

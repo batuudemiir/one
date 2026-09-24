@@ -1,0 +1,185 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "c_uyku",
+      "label": "Uyku",
+      "icon": "bed.double",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_is",
+      "label": "İş",
+      "icon": "briefcase",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_okul",
+      "label": "Okul",
+      "icon": "book",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_aile",
+      "label": "Aile",
+      "icon": "house",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_arkadaslar",
+      "label": "Arkadaşlar",
+      "icon": "person.2",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_iliski",
+      "label": "İlişki",
+      "icon": "heart",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_saglik",
+      "label": "Sağlık",
+      "icon": "cross.case",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_hareket",
+      "label": "Hareket",
+      "icon": "figure.walk",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_beslenme",
+      "label": "Beslenme",
+      "icon": "fork.knife",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_para",
+      "label": "Para",
+      "icon": "creditcard",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_hava",
+      "label": "Hava",
+      "icon": "cloud.sun",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_sosyal_medya",
+      "label": "Sosyal medya",
+      "icon": "iphone",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_yalnizlik",
+      "label": "Yalnızlık",
+      "icon": "person",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_doga",
+      "label": "Doğa",
+      "icon": "leaf",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_muzik",
+      "label": "Müzik",
+      "icon": "music.note",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_yaraticilik",
+      "label": "Yaratıcılık",
+      "icon": "paintbrush",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_haberler",
+      "label": "Haberler",
+      "icon": "newspaper",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_ev",
+      "label": "Ev",
+      "icon": "sofa",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_yol",
+      "label": "Yol",
+      "icon": "car",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "c_kendime_zaman",
+      "label": "Kendime zaman",
+      "icon": "cup.and.saucer",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

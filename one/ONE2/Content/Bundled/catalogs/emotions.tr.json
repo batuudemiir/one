@@ -1,0 +1,365 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "emo_neseli",
+      "label": "neşeli",
+      "family": "nese",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_coskulu",
+      "label": "coşkulu",
+      "family": "nese",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_keyifli",
+      "label": "keyifli",
+      "family": "nese",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_hafif",
+      "label": "hafif",
+      "family": "nese",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_gururlu",
+      "label": "gururlu",
+      "family": "nese",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_huzurlu",
+      "label": "huzurlu",
+      "family": "huzur",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_sakin",
+      "label": "sakin",
+      "family": "huzur",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_dingin",
+      "label": "dingin",
+      "family": "huzur",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_rahat",
+      "label": "rahat",
+      "family": "huzur",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_guvende",
+      "label": "güvende",
+      "family": "huzur",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_sevgi_dolu",
+      "label": "sevgi dolu",
+      "family": "sevgi",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_minnettar",
+      "label": "minnettar",
+      "family": "sevgi",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_bagli",
+      "label": "bağlı",
+      "family": "sevgi",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_sefkatli",
+      "label": "şefkatli",
+      "family": "sevgi",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_yakin",
+      "label": "yakın",
+      "family": "sevgi",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_merakli",
+      "label": "meraklı",
+      "family": "merak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_ilham_dolu",
+      "label": "ilham dolu",
+      "family": "merak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_heyecanli",
+      "label": "heyecanlı",
+      "family": "merak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_umutlu",
+      "label": "umutlu",
+      "family": "merak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_odakli",
+      "label": "odaklı",
+      "family": "merak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_huzunlu",
+      "label": "hüzünlü",
+      "family": "huzun",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_yalniz",
+      "label": "yalnız",
+      "family": "huzun",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_kirgin",
+      "label": "kırgın",
+      "family": "huzun",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_ozlem_dolu",
+      "label": "özlem dolu",
+      "family": "huzun",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_boslukta",
+      "label": "boşlukta",
+      "family": "huzun",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_kaygili",
+      "label": "kaygılı",
+      "family": "kaygi",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_gergin",
+      "label": "gergin",
+      "family": "kaygi",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_tedirgin",
+      "label": "tedirgin",
+      "family": "kaygi",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_bunalmis",
+      "label": "bunalmış",
+      "family": "kaygi",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_kararsiz",
+      "label": "kararsız",
+      "family": "kaygi",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_ofkeli",
+      "label": "öfkeli",
+      "family": "ofke",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_sinirli",
+      "label": "sinirli",
+      "family": "ofke",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_hayal_kirikliginda",
+      "label": "hayal kırıklığında",
+      "family": "ofke",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_sabirsiz",
+      "label": "sabırsız",
+      "family": "ofke",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_kiskanc",
+      "label": "kıskanç",
+      "family": "ofke",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_yorgun",
+      "label": "yorgun",
+      "family": "yorgunluk",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_tukenmis",
+      "label": "tükenmiş",
+      "family": "yorgunluk",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_uykulu",
+      "label": "uykulu",
+      "family": "yorgunluk",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_isteksiz",
+      "label": "isteksiz",
+      "family": "yorgunluk",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "emo_daginik",
+      "label": "dağınık",
+      "family": "yorgunluk",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

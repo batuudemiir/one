@@ -1,15 +1,239 @@
 /* Share button */
-"share_to_instagram" = "Share";
-"save_to_library" = "Save";
-"generating" = "Generating...";
+"applock.a11y.locked" = "ONE is locked";
+"applock.unlock" = "Unlock";
+"applock.unlockWith" = "Unlock with %@";
+"archive.a11y.cellCount" = "%1$d, %2$d moments";
+"archive.a11y.cellEmpty" = "%d, empty";
+"archive.a11y.cellMany" = "%1$d, %2$d moments: %3$@";
+"archive.a11y.cellOne" = "%1$d, %2$@";
+"archive.a11y.meta" = "%1$d days, %2$d moments";
+"archive.a11y.metaTop" = ", recurring %@";
+"archive.addMoment" = "Add a moment";
+"archive.seg.month" = "Month";
+"archive.seg.year" = "Year";
+"avatar.a11y.band" = "Color band";
+"avatar.a11y.markInk" = "Ink mark";
+"avatar.a11y.markKor" = "Ember mark";
+"avatar.a11y.markKorInvert" = "Inverted ember mark";
+"avatar.a11y.markPaper" = "Paper mark";
+"avatar.a11y.mosaic" = "Mosaic avatar";
+"avatar.a11y.photo" = "Photo avatar";
+"camera.back" = "BACK CAMERA";
+"camera.flashOff" = "Flash off";
+"camera.flashOn" = "Flash on";
+"camera.front" = "FRONT CAMERA";
+"camera.grantInSettings" = "You can grant access in Settings.";
+"camera.gridOff" = "Grid off";
+"camera.gridOn" = "Grid on";
+"circle.addShort" = "+ Add";
+"circle.blockConfirmTitle" = "Block this person?";
+"circle.cta.accept" = "Accept";
+"circle.cta.add" = "Add to your circle";
+"circle.cta.decline" = "Decline";
+"circle.feed.earlier" = "Earlier";
+"circle.feed.thisWeek" = "This week";
+"circle.feed.today" = "Today";
+"circle.musicSharing" = "Music sharing";
+"circle.mutualCount" = "• %d mutual";
+"circle.toast.blocked" = "Blocked";
+"circle.toast.declined" = "Declined";
+"circle.toast.nowInCircle" = "Now in your circle";
+"circle.toast.requestCancelled" = "Request cancelled";
+"circle.toast.requestSent" = "Request sent";
+"circle.toast.unblocked" = "Unblocked";
+"circle.viewProfile" = "View profile";
+"common.back" = "← Back";
+"common.cancel" = "Cancel";
+"common.friend" = "Friend";
+"common.music" = "Music";
+"common.openSettings" = "Open Settings";
+"common.retry" = "Try again";
+"echo.factualLine" = "%1$d moments · %2$@ recurs";
+"echo.noMomentsThisMonth" = "No moments this month yet.";
+"echo.playCount" = "%d times";
+"echo.section.last30" = "Last 30 days";
+"echo.section.moodMap" = "MOOD MAP";
+"echo.section.numbers" = "NUMBERS";
+"echo.section.repeats" = "This month’s repeats";
+"echo.section.summary" = "Numbers";
+"echo.section.topTracks" = "REPEATED";
+"echo.stat.mostActiveDay" = "Busy day";
+"echo.stat.resonance" = "Resonance";
+"echo.stat.silentDays" = "Silent days";
+"echo.stat.thisMonth" = "This month";
+"echo.stat.totalMoments" = "Total moments";
+"echo.watchStory" = "Watch the month’s story";
+"entry.a11y.backToColor" = "Back to color selection";
+"entry.a11y.chip" = "%1$@. %2$@. Tap to change.";
+"entry.a11y.continueWith" = "Continue, %@ selected";
+"entry.a11y.date" = "Date: %@";
+"entry.a11y.noteCount" = "%1$d characters, %2$d max";
+"entry.a11y.noteField" = "Note, optional, %d characters max";
+"entry.a11y.pickHint" = "Choose as today’s color";
+"entry.a11y.save" = "Save the moment";
+"entry.a11y.todayColor" = "Today’s color: %@";
+"entry.chip.circle" = "Circle";
+"entry.chip.photo" = "Photo";
+"entry.chip.private" = "Only you";
+"entry.chip.song" = "Song";
+"entry.cta.continue" = "Continue";
+"entry.cta.pickColor" = "Pick a color";
+"entry.note.placeholder" = "Two lines are enough. Or leave it empty.";
+"entry.note.title" = "What happened?";
+"entry.photo.add" = "Add a photo";
+"entry.photo.camera" = "Camera";
+"entry.photo.cameraSub" = "Take one now";
+"entry.photo.change" = "Change photo";
+"entry.photo.gallery" = "Gallery";
+"entry.photo.gallerySub" = "Pick an existing frame";
+"entry.prompt.today" = "How are you today?";
+"entry.save" = "Save";
+"entry.scope.circleSub" = "Your friends see today’s color.";
+"entry.scope.circleTitle" = "Share with my circle";
+"entry.scope.privateSub" = "No one sees it. It’s yours.";
+"entry.scope.privateTitle" = "Keep it in my archive";
+"entry.state.empty" = "empty";
+"entry.state.onlyYou" = "only with you";
+"entry.state.selected" = "selected";
+"entry.state.shared" = "shared with your friends";
+"entry.title.another" = "One more\nmoment?";
+"entry.title.today" = "How are you\ntoday?";
+"export.failed" = "Couldn’t export the archive.";
+"friendProfile.recurringColor" = "recurring color";
+"greeting.day" = "Good day";
+"greeting.evening" = "Good evening";
+"greeting.morning" = "Good morning";
+"greeting.night" = "Good night";
+"invite.messageBody" = "I leave the color of my day on ONE. My code: %1$@\n\n%2$@";
+"nav.a11y.showTodayMoments" = "Show today’s moments";
+"notif.aFriend" = "A friend";
+"notif.circle.leftColor" = "Left today’s color.";
+"notif.circle.leftColors" = "Left today’s colors.";
+"notif.daily.beforeClose" = "You can leave a color before the day closes.";
+"notif.daily.colorless" = "Today will be saved without a color.";
+"notif.daily.empty" = "Today is empty in the archive.";
+"notif.daily.emptyStanding" = "Today sits empty in the archive.";
+"notif.daily.noColorYet" = "No color for today yet.";
+"notif.daily.stillEmpty" = "Today is still empty in the archive.";
+"notif.daily.stillNotPicked" = "Today’s color still isn’t picked.";
+"notif.daily.yesterday" = "Yesterday, %@. Today, nothing yet.";
+"notif.day.evening" = "%@ evening";
+"notif.day.morning" = "%@ morning";
+"notif.day.night" = "The day is ending";
+"notif.day.noon" = "%@, midday";
+"notif.fallback.body" = "A new entry in your archive.";
+"notif.friendAccepted.body" = "Now in your circle.";
+"notif.friendRequest.body" = "Wants to add you to their circle.";
+"notif.friendShared.noMood" = "Left a song for today.";
+"notif.friendShared.withMood" = "%@. Left a song.";
+"notif.monthly.closed.body" = "Thirty days, one frame.";
+"notif.monthly.closed.title" = "%@ has closed";
+"notif.monthly.generic.body" = "%@ is ready.";
+"notif.monthly.generic.title" = "Monthly portrait";
+"notif.monthly.ready" = "The month’s portrait is ready.";
+"notif.people.andOthers" = "%1$@ and %2$d more";
+"notif.push.friendAccepted" = "Your request was accepted.";
+"notif.push.friendRequest" = "A new circle request.";
+"notif.push.friendShared" = "Someone in your circle left today’s color.";
+"notif.push.reaction" = "A reaction on your entry.";
+"notif.reaction.plain" = "Reacted to your entry.";
+"notif.reaction.withEmoji" = "Left %@ on your entry.";
+"notif.resonance.body" = "Today, %@ like you.";
+"notif.resonance.bodyNoMood" = "In the same tone as you today.";
+"notif.someone" = "Someone";
+"notif.someoneInCircle" = "Someone in your circle";
+"notif.weekly.dominant.body" = "%@.";
+"notif.weekly.dominant.title" = "This week’s dominant tone";
+"notif.weekly.palette.body" = "Seven days, one frame.";
+"notif.weekly.palette.title" = "The week’s palette";
+"notif.weekly.sunday.body" = "The week has closed.";
+"notif.weekly.sunday.title" = "Sunday reflection";
+"notif.weekly.thisWeek.body" = "The portrait of seven days is ready.";
+"notif.weekly.thisWeek.title" = "This week";
+"notif.yourFriend" = "Your friend";
+"onboarding.v3.auth.lead" = "Kept in iCloud. No password.";
+"onboarding.v3.auth.title" = "Sign in\nwith Apple.";
+"onboarding.v3.circle.lead" = "You can invite people later too.";
+"onboarding.v3.circle.title" = "Who’s in\nyour circle?";
+"onboarding.v3.cta.finish" = "Finish";
+"onboarding.v3.cta.next" = "Continue";
+"onboarding.v3.cta.start" = "Start";
+"onboarding.v3.done.lead" = "The first moment is yours.";
+"onboarding.v3.done.title" = "You’re set.";
+"onboarding.v3.intent.curious" = "Just curious";
+"onboarding.v3.intent.lead" = "One line is enough. It can change later.";
+"onboarding.v3.intent.music" = "To match it with songs";
+"onboarding.v3.intent.self" = "To know myself";
+"onboarding.v3.intent.title" = "Why are you here?";
+"onboarding.v3.intent.track" = "To track how I feel";
+"onboarding.v3.mood.lead" = "Pick a color. That’s it.";
+"onboarding.v3.mood.title" = "How are you\ntoday?";
+"onboarding.v3.notif.lead" = "Once a day, at the hour you pick.";
+"onboarding.v3.notif.title" = "A small\nreminder?";
+"onboarding.v3.ready" = "You’re set";
+"onboarding.v3.reward.lead" = "Every moment adds one more color.";
+"onboarding.v3.reward.title" = "Your first\nsquare is here.";
+"onboarding.v3.song.lead" = "You can add it later too.";
+"onboarding.v3.song.title" = "Add a song\ntoo?";
+"onboarding.v3.step.auth" = "Sign in";
+"onboarding.v3.step.circle" = "Circle";
+"onboarding.v3.step.intent" = "Intent";
+"onboarding.v3.step.mood" = "First color";
+"onboarding.v3.step.notif" = "Reminder";
+"onboarding.v3.step.reward" = "First square";
+"onboarding.v3.step.song" = "Song";
+"profile.a11y.distributionChart" = "Color distribution chart";
+"profile.a11y.distributionRow" = "%1$@, %2$d moments, %3$d percent";
+"profile.a11y.distributionValue" = "%1$@ %2$d percent";
+"profile.a11y.monthlySummary" = "Monthly summary, %1$@, color of the month %2$@. Open Echo.";
+"profile.a11y.signOut" = "Sign out";
+"profile.distribution.selected" = "%1$@ · %2$d MOMENTS";
+"profile.intentFor" = "FOR %@";
+"profile.music.searchOnly" = "Search only";
+"profile.photo.pick" = "Choose a photo";
+"profile.stat.colorsUsed" = "COLORS USED";
+"profile.stat.moments" = "MOMENTS";
+"profile.stat.mostFrequent" = "MOST FREQUENT";
+"profile.theme.dark" = "Dark";
+"profile.theme.light" = "Light";
+"publicProfile.a11y.pinnedSong" = "Pinned song: %1$@, %2$@";
+"publicProfile.loadFailed" = "Couldn’t load the profile.";
+"reaction.a11y.kind" = "%@ reaction";
+"reaction.a11y.sendReply" = "Send reply";
+"reminder.state.off" = "Off · no notifications";
+"reminder.state.on" = "On · every day at %@";
+"reminder.tone.quiet" = "Quiet";
+"reminder.tone.recall" = "With yesterday";
+"reminder.tone.short" = "Short";
+"saved.manyMoments" = "%2$d moments for %1$@. The square is split by color.";
+"saved.oneMoment" = "Today’s square is filled in the archive.";
+"saved.scope.circle" = "Friends in your circle can see it.";
+"saved.scope.private" = "Only in your archive.";
+"settings.exportArchive" = "Export the archive";
+"settings.exportArchive.note" = "All your entries, in one file.";
+"share.other" = "More";
+"share.photoLoadFailed" = "Couldn’t load the photo";
 
 /* Default values */
-"untitled_song" = "Untitled";
-"unknown_artist" = "Unknown Artist";
+"signin.button.accessibility" = "Sign in with Apple";
+"signin.subtitle" = "Sign in with your Apple account to continue.";
+"signin.title" = "Welcome.";
+"song.searchPlaceholder" = "Song, artist";
+"story.bg.color" = "Color";
+"story.bg.paper" = "Paper";
+"story.bg.photo" = "Photo";
+"story.content.note" = "Note";
+"story.content.song" = "Song";
+"story.row.background" = "BACKGROUND";
+"story.row.content" = "CONTENT";
+"story.row.ratio" = "RATIO";
+"story.toast.renderFailed" = "Couldn’t create the card";
+"story.toast.saved" = "Saved to Photos";
+"today.entryNotFound" = "Today’s entry wasn’t found.";
+"today.liveActivityOff" = "Dynamic Island is off";
+"today.shareFailed" = "Sharing to your circle failed. Check your connection.";
 
 /* Error messages */
-"missing_data_coverImage" = "Cover image missing";
-"missing_data_songName" = "Song name missing";
 "render_failed" = "Failed to create card. Please try again.";
 "image_too_large" = "Image size too large. Please use a smaller photo.";
 "invalid_format" = "Invalid format";
@@ -24,8 +248,798 @@
 "reduce_image_size" = "Reduce photo size";
 "check_format" = "Check format compatibility";
 "check_storage" = "Check storage space";
-"install_instagram" = "Install Instagram app";
 
 /* Success messages */
-"card_generated" = "Card ready!";
-"saved_to_library" = "Saved to Photos";
+
+/* ── TODAY ── */
+
+/* ── CONFIRM ── */
+
+/* ── CIRCLE ── */
+"circle.removeFriend" = "remove from friends?";
+"circle.addFriend" = "Add Friend";
+
+/* ── DISCOVER ── */
+
+/* ── PROFILE / SETTINGS ── */
+"profile.language" = "Language";
+
+/* ── ONBOARDING ── */
+
+/* Welcome */
+
+/* Promise */
+
+/* Tutorial */
+
+/* Magic moment — mood pick & reveal */
+
+/* Music */
+
+/* Soft notification ask */
+
+/* ── SPLASH ── */
+
+/* ── GENERAL ── */
+"general.save" = "Save";
+"general.cancel" = "Cancel";
+"general.back" = "Back";
+"general.close" = "Close";
+"general.more" = "More";
+"general.loading" = "Loading...";
+"general.error" = "An error occurred";
+"general.retry" = "Try Again";
+
+/* ── NOTIFICATIONS ── */
+"notification.acceptFriend" = "Accept";
+"notification.declineFriend" = "Decline";
+"notification.openEcho" = "View Summary";
+"notification.openCircle" = "Open Circle";
+
+/* ── ACCESSIBILITY ── */
+"accessibility.today.photoViewer" = "Today's photo";
+"accessibility.circle.setupCircle" = "Set up your Circle";
+
+/* Discover redesign */
+
+/* ── ECHO ── */
+
+/* ── CIRCLE (extended) ── */
+"circle.you" = "YOU";
+"circle.pendingRequests" = "%d incoming requests";
+"circle.notSharedYet" = "Hasn't shared today";
+"circle.blockUser" = "Block User";
+"circle.removeAction" = "Remove";
+"circle.blockAction" = "Block";
+"circle.unblockAction" = "Unblock";
+"circle.iCloudRequired" = "iCloud access required";
+"circle.iCloudMessage" = "You must sign in with your iCloud\naccount to use the Circle feature.";
+"circle.tryAgain" = "Try Again";
+"circle.goToSettings" = "Go to Settings";
+
+/* ── ADD FRIEND ── */
+"addFriend.requestSent" = "Request sent.";
+"addFriend.frameQR" = "Frame the QR code";
+"addFriend.cameraRequired" = "Camera access required";
+"addFriend.ok" = "OK";
+"addFriend.usernamePlaceholder" = "username";
+"friendRequests.decline" = "Decline";
+
+/* ── PROFILE (extended) ── */
+"profile.usernameAvailable" = "Available ✓";
+"profile.usernameTaken" = "This username is taken";
+"profile.usernameCheckFailed" = "Couldn't check availability";
+"profile.deleteAccountTitle" = "Delete Account";
+"profile.deleteAccountMsg" = "All your song records, profile, and circle data will be permanently deleted. This action cannot be undone.";
+"profile.deleteAccount" = "Delete Account";
+"profile.name" = "NAME";
+"profile.username" = "USERNAME";
+"profile.color" = "COLOR";
+"profile.editProfile" = "Edit Profile";
+"profile.createProfile" = "Create Profile";
+"profile.namePlaceholder" = "Your name";
+
+/* ── DISCOVER (extended) ── */
+
+/* ── ONBOARDING (extended) ── */
+
+/* ── CONTACTS ── */
+"contacts.smsNotAvailable" = "SMS sending is not available on this device.";
+"contacts.smsSendHint" = "Invite link will be sent via SMS";
+
+/* ── ARCHIVE ── */
+"archive.photoLoadFailed" = "Photo could not be loaded";
+"archive.openSong" = "Open Song";
+
+/* --- ONBOARDING EXTRA --- */
+
+/* --- FRIEND REQUESTS --- */
+"friendRequests.title" = "Notifications";
+"friendRequests.friendAccepted" = "Friendship accepted.";
+"friendRequests.requestWithdrawn" = "Request withdrawn";
+"friendRequests.unknown" = "Unknown";
+"friendRequests.noNotifications" = "No activity yet";
+"friendRequests.noNotificationsHint" = "Friend acceptances, shares, and\nreactions will appear here.";
+
+/* --- ARCHIVE EXTRA --- */
+"archive.selectedAt" = "Selected at %@";
+
+/* --- GENERAL EXTRA --- */
+"general.share" = "Share";
+
+/* --- CIRCLE SHARE TOGGLE --- */
+
+/* --- GENERAL OK --- */
+"general.ok" = "OK";
+
+/* --- ONBOARDING FEATURES --- */
+
+/* --- TODAY EXTRA --- */
+"today.timeSelected" = "at %@";
+
+/* --- MOOD EVENTS SHEET --- */
+
+/* --- CAMERA / PHOTO --- */
+
+/* --- DISCOVER EXTRA --- */
+
+/* --- CIRCLE FRIEND DETAIL --- */
+"circle.removeConfirmMessage" = "Are you sure you want to remove %@ from your circle?";
+"circle.blockConfirmMessage" = "Are you sure you want to block %@? This action cannot be undone.";
+"circle.todayFeeling" = "Today’s\ntone.";
+"circle.note" = "NOTE";
+"circle.waitingPick" = "Hasn’t picked yet.";
+"circle.willAppear" = "Will appear when they pick a song";
+"circle.updating" = "Updating…";
+"circle.notSelectedYet" = "Hasn't picked\na song yet.";
+
+/* --- CONTACTS --- */
+"contacts.navTitle" = "Invite from Contacts";
+"contacts.alertSmsCantSend" = "Can't Send SMS";
+"contacts.inviteCodeText" = "Invite code: %@";
+"contacts.contactsRequired" = "Contacts Access Required";
+"contacts.contactsPermissionHint" = "You can grant permission from Settings → Privacy → Contacts.";
+"contacts.openSettings" = "Open Settings";
+"contacts.contactsLoading" = "Loading contacts…";
+"contacts.inviteButton" = "Invite";
+"contacts.searchPlaceholder" = "Search contacts";
+"contacts.noContacts" = "No contacts";
+"contacts.noResults" = "No contact found";
+"contacts.noName" = "Unnamed";
+
+/* --- SHARE --- */
+
+/* --- MONTHLY SUMMARY --- */
+
+/* --- DISCOVER EXTRA --- */
+
+/* --- SEARCH SCREEN --- */
+"search.appleMusicPermission" = "Apple Music permission required. Please grant it from Settings.";
+
+/* --- CONFIRM SCREEN --- */
+
+/* --- DONE SCREEN --- */
+
+/* --- COLOR PICKER --- */
+/* --- INVITE SHARE --- */
+"invite.sendInvite" = "Send Invite";
+"invite.formatPicker" = "Format";
+"invite.story" = "Story (9:16)";
+"invite.post" = "Post / X (16:9)";
+"invite.preparing" = "Preparing invite card...";
+"invite.generateFailed" = "Couldn't create invite card";
+"invite.shareText" = "Join my circle on ONE. Feel, discover, share.\n%@";
+
+/* --- COLOR PICKER --- */
+
+/* --- SHARE SHEET --- */
+"share.preparing" = "Preparing story...";
+"share.otherApps" = "Other Apps";
+"share.cardSaved" = "Card saved";
+"share.saveCard" = "Save Card";
+"share.saveCardHint" = "Add story card to gallery";
+"share.photoSaved" = "Photo saved";
+"share.savePhoto" = "Save Photo";
+"share.savePhotoHint" = "Add original photo to gallery";
+
+/* --- DISCOVER EXTRA --- */
+
+/* --- MONTHLY POSTER --- */
+
+/* --- MOOD LABELS --- */
+
+/* --- MOOD MEANINGS (v2.5) --- */
+
+/* --- FEELING LABELS --- */
+
+/* --- TODAY EMPTY VIEW --- */
+
+/* --- CIRCLE / ADD FRIEND --- */
+
+/* --- SHARE ERRORS --- */
+"share.cardFailed" = "Couldn't create share card";
+
+/* --- DISCOVER PRICING --- */
+
+/* --- TODAY PLAYING --- */
+
+/* --- TODAY GREETINGS --- */
+
+/* --- TODAY PHOTO --- */
+
+/* --- CAMERA --- */
+
+/* --- ARCHIVE FALLBACKS --- */
+"archive.unknownSong" = "Unknown Song";
+"archive.unknownArtist" = "Unknown Artist";
+"archive.unknown" = "Unknown";
+"archive.defaultMood" = "Neutral";
+"archive.defaultFeeling" = "Calm";
+
+/* --- DISCOVER STATUS --- */
+
+/* --- CALENDAR DAY ABBREVIATIONS --- */
+
+/* --- GENRE FALLBACK --- */
+"genre.music" = "Music";
+
+/* --- SCREEN TITLES (top bar) --- */
+"screen.echo.title" = "Echo";
+"screen.echoes.title" = "Today's echoes";
+"screen.share.title" = "Share";
+"screen.story.title" = "Story card";
+"screen.camera.title" = "Camera";
+"screen.entry.title" = "Moment";
+"screen.archive.title" = "Archive";
+"screen.circle.title" = "Circle";
+"screen.profile.title" = "Profile";
+"topbar.settings" = "Settings";
+"topbar.monthlyEcho" = "Monthly recap";
+
+/* --- NAVIGATION TABS --- */
+"nav.archive" = "archive";
+"nav.entry" = "moment";
+"nav.circle" = "circle";
+"nav.profile" = "profile";
+"nav.tabAccessibility" = "%@ tab";
+
+/* --- DISCOVER CTA LABELS --- */
+
+/* --- ACTIVITY RECOMMENDATION SECTIONS --- */
+
+/* --- ACTIVITY TEMPLATES --- */
+
+
+
+
+
+
+
+
+
+
+
+/* --- ACTIVITY REASONS --- */
+
+/* --- SHARE CARD BRANDING --- */
+"share.brandWatermark" = "ONE · Mood Tracker";
+"share.brandWatermarkUpper" = "ONE · MOOD TRACKER";
+
+/* --- DISCOVER LISTEN LABELS --- */
+
+/* --- GENERAL TOAST TITLES --- */
+"general.success" = "Success";
+"general.info" = "Info";
+"general.warning" = "Warning";
+
+/* --- ACTIVITY VENUE HINTS --- */
+"cloudkit.connectionError" = "Could not connect to iCloud. Check your internet connection and try again.";
+"cloudkit.throttleWait" = "Server busy. Retrying in %d min %02d sec.";
+
+
+/* --- ONE+ PREMIUM --- */
+
+/* Premium Status Card */
+
+/* Apple Music Playlist — A4 */
+
+/* Monthly Summary — B3 */
+
+/* Premium Status — D4 */
+
+/* Premium Special Feel — E3, E7 */
+
+/* Month-End Summary Notification */
+
+/* Badges */
+
+/* Yearly Summary */
+"whatsNew.circleFirst.body" = "When you open the app you see your friends’\ncolors for today first.";
+"whatsNew.circleFirst.title" = "Circle opens first";
+"whatsNew.cta.done" = "Start";
+"whatsNew.cta.next" = "Next";
+"whatsNew.mosaic.body" = "Months in one flow, color by color.\nYou also see what you felt a year ago today.";
+"whatsNew.mosaic.title" = "The archive mosaic";
+"whatsNew.savedMoment.body" = "When you leave your color, the screen\nanswers with a wave.";
+"whatsNew.savedMoment.title" = "A new saving moment";
+"whatsNew.twoSteps.body" = "Pick a color, pick a song, leave it.\nPhoto and note are optional now.";
+"whatsNew.twoSteps.title" = "Two steps and done";
+"notification.appUpdate.title" = "New version available";
+"notification.appUpdate.body" = "ONE %@ is out.";
+
+/* First entry — Circle invite hook (A4) */
+"firstEntryInvite.eyebrow" = "FIRST STEP DONE";
+"firstEntryInvite.title" = "ONE feels better with someone close.";
+"firstEntryInvite.body" = "Let one of your people drop their color tonight too. Seeing what you both feel hits different.";
+"firstEntryInvite.invite" = "Invite someone close";
+"firstEntryInvite.skip" = "Not now";
+
+/* A5 — Empty state next-action prompts */
+"echo.empty.title" = "Echo is quiet for now.";
+"echo.empty.body" = "Once you log a day, your week, rhythm, and color palette show up here.";
+"echo.empty.cta" = "Log today";
+
+/* B1 — Streak / freeze (soft streak) */
+
+/* B5 — Widget install nudge */
+
+/* C1 — Discovery Mood DNA */
+
+/* D2 — Loss aversion loyalty card */
+
+/* Profile footer */
+
+/* Profile invite code chip */
+
+/* Add Friend redesign — two-intent architecture */
+
+/* Profile redesign — BeReal-style hero */
+
+/* Profile settings sheet */
+
+/* Profile redesign — share button + recent mood strip */
+"profile.recentWeek.title" = "PAST 7 DAYS";
+"profile.recentWeek.subtitle" = "Your color map";
+"profile.recentWeek.todayShort" = "Today";
+
+/* Profile friends list */
+"profile.changePhoto" = "Change photo";
+
+/* My Friends list (profile tab) */
+"myFriends.title" = "My Friends";
+
+/* Time-based Badges */
+
+/* Viral Sharing */
+"share.xTemplate" = "Today, %@.\n\n#OneApp";
+
+/* Storytelling */
+"monthly.storyTitle" = "The Month of %@ Music";
+"monthly.storySubtitle" = "You got lost in thoughts mostly at %@.";
+
+/* Resonance (v2.6) */
+
+/* P1.1 — Onboarding music optional */
+
+/* P1.6 — Onboarding streak freeze hint */
+
+/* Accessibility — DayCell */
+
+/* Accessibility — WaveStrip */
+
+/* Accessibility — MoodBarStrip (Req 13) */
+
+
+/* Auto-added missing keys */
+"friendRequests.accept" = "Accept";
+"friendRequests.markAllRead" = "Mark All Read";
+"friendRequests.pending" = "Pending";
+"friendRequests.sentYouRequest" = "%@ sent you a friend request";
+"friendRequests.withdraw" = "Withdraw";
+"today.moodSaved.a11y" = "Today's mood saved";
+
+/* Circle — arkadaşı olmayan kullanıcı için değer önizlemesi */
+"circle.empty.previewTitle" = "If you had 5 friends, this is what today would look like.";
+"circle.empty.previewSubtitle" = "The colors are theirs. You just get to look.";
+"circle.empty.invite" = "Invite a friend";
+"circle.empty.startAlone" = "Start on my own for now";
+
+"circle.empty.closing" = "When you leave today's colour, your friends will see you too.";
+
+
+
+"profile.stat.entries" = "entries";
+"profile.row.musicSource" = "music source";
+
+
+"comeback.headline" = "you were away %d days.
+you missed nothing.";
+
+
+
+"onboarding.entry.brandTitle" = "one song.
+one colour.
+one day.";
+
+"year.poster" = "poster";
+
+"notif.title" = "Notifications";
+"notif.markAllRead" = "mark all read";
+"notif.today" = "today";
+"notif.thisWeek" = "this week";
+"notif.earlier" = "earlier";
+"notif.promise" = "ONE reminds you at most once a day. No like or comment notifications.";
+"notif.emptyTitle" = "No notifications yet.";
+"notif.unread" = "unread";
+"notif.now" = "now";
+
+"settings.privacy" = "privacy";
+"settings.privacyAccount" = "privacy & account";
+
+"music.intro" = "Which service should we use to search and play?";
+"music.connected" = "connected";
+"music.notConnected" = "not connected";
+"music.searchOnly" = "search only";
+"music.searchOnlySub" = "no account, no playback";
+"privacy.whoCanSee" = "who can see";
+"privacy.todayColour" = "today's colour";
+"privacy.todaySong" = "today's song";
+"privacy.archive" = "my archive";
+"privacy.notes" = "my notes";
+"privacy.friends" = "friends";
+"privacy.onlyMe" = "only me";
+"privacy.neverShared" = "Archive and notes can never be shared — there isn't even a setting.";
+"privacy.discoverability" = "discoverability";
+"privacy.byUsername" = "find me by username";
+"privacy.byUsernameSub" = "people who know your exact handle can add you";
+
+"friends.addAction" = "＋ add";
+"friends.segAll" = "all · %d";
+"friends.segRequests" = "requests · %d";
+"friends.quickAdd" = "quick add";
+"friends.shareLink" = "share link";
+"friends.showCode" = "show code";
+"friends.scanCode" = "scan code";
+"friends.circleCount" = "your circle · %d";
+"friends.searchPlaceholder" = "search friends";
+"friends.emptyList" = "No one yet — invite your first friend.";
+"friends.noMatch" = "No matching friends.";
+"friends.footer" = "friends only see each other's today. the past stays with each person.";
+"friends.addedYou" = "added you";
+"friends.sentByYou" = "sent by you";
+"friends.waiting" = "waiting";
+"friends.accept" = "accept";
+"friends.ignore" = "ignore";
+"friends.noIncoming" = "No pending requests.";
+"friends.noOutgoing" = "No sent requests.";
+
+"addFriend.screenTitle" = "Add a friend";
+"addFriend.exactHint" = "type the exact username. ONE never suggests strangers.";
+"addFriend.notFound" = "Not found. Check the spelling.";
+"addFriend.addAction" = "add";
+"addFriend.codeHint" = "show or scan your code. your link is only for people who know you.";
+"addFriend.copyCode" = "copy code";
+"addFriend.codeCopied" = "copied ✓";
+"addFriend.scanWithCamera" = "scan with camera";
+
+"friendProfile.theirRhythm" = "their rhythm";
+"friendProfile.commonSongs" = "shared songs";
+"friendProfile.today" = "today";
+"friendProfile.peakHour" = "peak hour";
+"friendProfile.mutualCount" = "%d mutual friends";
+"friendProfile.remove" = "remove friend";
+
+"poster.title" = "%@ poster";
+"poster.format" = "format";
+"poster.show" = "show";
+"poster.fmtStory" = "story 9:16";
+"poster.fmtSquare" = "square 1:1";
+"poster.fmtWallpaper" = "wallpaper";
+"poster.songs" = "songs";
+"poster.colourGrid" = "colour grid";
+"poster.notes" = "notes";
+"poster.days" = "days";
+"poster.colours" = "colours";
+"poster.mostly" = "recurring: %@";
+"poster.mostPlayed" = "repeated: %@";
+"poster.notesHint" = "notes included";
+"poster.saveImage" = "save to photos";
+
+
+
+
+
+/* Hızlı ekle — prototip parity */
+"addFriend.mutualCount" = "%d mutual";
+"addFriend.sent" = "sent";
+"addFriend.inviteMessage" = "I share my mood and music on ONE. Come join me.";
+"addFriend.tileShareLink" = "share\nlink";
+"addFriend.tileShowCode" = "show\ncode";
+"addFriend.tileScan" = "scan\ncode";
+"addFriend.contactsOnOne" = "in your contacts on ONE";
+"addFriend.contactsOnlyHint" = "only people saved on your phone. ONE never suggests strangers.";
+
+
+/* Efemer karşılık — prototip */
+"reaction.respond" = "respond";
+"reaction.replyPlaceholder" = "one line (only %@ sees)";
+"reaction.sent" = "sent";
+"reaction.ephemeralNote" = "this fades at day's end · only %@ sees it";
+
+
+/* Yankılar — prototip */
+"echoes.title" = "TODAY’S ECHOES";
+"echoes.reactors" = "WHO RESPONDED";
+"echoes.threadWith" = "with %@";
+"echoes.replyPlaceholder" = "reply";
+"echoes.ephemeralNote" = "Responses aren’t archived — they stay in the moment";
+"echoes.empty" = "No echoes yet. They may appear as the day goes on.";
+"echoes.someone" = "Someone";
+
+// MARK: - SubCircle
+
+
+/* v3 — Çevre (prototip 10/11/22) */
+"circle.peopleCount" = "%d people";
+"circle.momentCount" = "%d moments";
+"circle.youCard" = "You";
+"circle.youNotShared" = "You haven't shared today";
+"circle.notSharedToday" = "Hasn't shared today";
+"circle.scopeShared" = "shared";
+"circle.scopePrivate" = "only you";
+"circle.v3EmptyTitle" = "No one here yet.";
+"circle.v3EmptyBody" = "Add someone and see each other's colors.";
+"circle.scanQR" = "Scan QR code";
+"circle.resonance" = "Resonance";
+"circle.sameColorLabel" = "Same color today";
+"circle.distributionLabel" = "Colors in your circle";
+"circle.yourColorToday" = "Your color today";
+"circle.noColorToday" = "No color today";
+"circle.noColorTodayBody" = "Save a moment to see the resonance.";
+"circle.sameColorCount" = "%d people share your color today";
+"circle.requests" = "Friend requests";
+"circle.notifications" = "Notifications";
+
+/* v3 mood adlari - uygulamanin semantik yuku, koda gomulu olamaz */
+"mood.v3.atesli.label" = "Fiery";
+"mood.v3.coskulu.label" = "Joyful";
+"mood.v3.gergin.label" = "Tense";
+"mood.v3.mutlu.label" = "Happy";
+"mood.v3.enerjik.label" = "Energetic";
+"mood.v3.odakli.label" = "Focused";
+"mood.v3.huzurlu.label" = "Calm";
+"mood.v3.huzunlu.label" = "Wistful";
+"mood.v3.yorgun.label" = "Tired";
+
+/* v3 mood anlamları — VoiceOver değeri ve alt başlık.
+   Eskiden `bridgedMood.meaning` üzerinden legacy 12-mood tablosundan
+   okunuyordu; köprü kayıplı olduğu için ekran okuyucu yanlış anlamı
+   söylüyordu (ör. "odaklı" → "dengede, sabit" derin'in anlamıydı). */
+"mood.v3.atesli.meaning" = "burning inside";
+"mood.v3.coskulu.meaning" = "overflowing";
+"mood.v3.gergin.meaning" = "under pressure";
+"mood.v3.mutlu.meaning" = "glowing from within";
+"mood.v3.enerjik.meaning" = "alive and fast";
+"mood.v3.odakli.meaning" = "steady, centred";
+"mood.v3.huzurlu.meaning" = "all is well";
+"mood.v3.huzunlu.meaning" = "a tightness inside";
+"mood.v3.yorgun.meaning" = "spent, running empty";
+
+/* Merakli hatirlatma tonu - tam cumle, kelime birlestirme yok */
+"reminder.curious.yesterday.atesli" = "You were fiery yesterday.";
+"reminder.curious.yesterday.coskulu" = "You were joyful yesterday.";
+"reminder.curious.yesterday.gergin" = "You were tense yesterday.";
+"reminder.curious.yesterday.mutlu" = "You were happy yesterday.";
+"reminder.curious.yesterday.enerjik" = "You were energetic yesterday.";
+"reminder.curious.yesterday.odakli" = "You were focused yesterday.";
+"reminder.curious.yesterday.huzurlu" = "You were calm yesterday.";
+"reminder.curious.yesterday.huzunlu" = "You were wistful yesterday.";
+"reminder.curious.yesterday.yorgun" = "You were tired yesterday.";
+
+/* Legacy 12-mood (ONEMood) - arsiv/echo okuma yollari kullaniyor */
+"archive.previousMonth" = "Previous month";
+"archive.nextMonth" = "Next month";
+
+/* ── v3 ekranlarından kataloğa taşınan metinler ──────────────────────
+   Bu 69 anahtar koda gömülü Türkçe olarak duruyordu: katalog tamdı
+   ama bu ekranlar ona hiç bakmıyordu, dolayısıyla Almanca bir
+   kullanıcı Profil sekmesinde Türkçe görüyordu.
+   TR ve EN gerçek; diğer diller çeviri gelene kadar TR'ye düşüyor. */
+"applock.noPasscode" = "No passcode or biometrics set on this device.";
+"archive.addMomentToDay" = "Add a moment to this day";
+"archive.addNow" = "Add now";
+"archive.dayEmpty.today" = "Leave your first moment.";
+"archive.dayEmpty.past" = "That day is empty.";
+"archive.momentCount.one" = "1 moment";
+"archive.dayCount" = "%lld days";
+"archive.empty.body" = "Pick your first colour — the mosaic starts here.";
+"archive.empty.title" = "Your archive is empty.";
+"archive.mostFrequent" = "%@ recurs";
+"archive.todayWaiting" = "Today is empty in the archive.";
+"block.confirmBody" = "Their replies and shares will no longer be visible.";
+"camera.noAccess" = "No camera access";
+"camera.useThisMoment" = "Use this moment";
+"circle.shareFailed" = "Couldn't share to your circle — check your connection.";
+"echo.monthColour" = "%@ · COLOUR OF THE MONTH";
+"echo.monthStory" = "%@ · STORY OF THE MONTH";
+"echo.noRepeatSong" = "No song came up twice.";
+"echo.posterFailed" = "Couldn't load the poster";
+"entry.changeColour" = "Change colour";
+"entry.pickColour" = "Pick a colour. That's all.";
+"entry.removePhoto" = "Remove photo";
+"entry.scopeSubtitle" = "You can choose separately for each moment.";
+"entry.scopeTitle" = "Who is this moment for?";
+"general.a11y.toggle" = "Toggle";
+"general.change" = "Retake";
+"general.now" = "now";
+"general.openSettings" = "Open Settings";
+"invite.validSevenDays" = "VALID FOR 7 DAYS";
+"invite.addMeOnONE" = "Add me on ONE";
+"liveActivity.enableHint" = "To see your mood in the Dynamic Island, enable Settings > ONE > Live Activities.";
+"moment.a11y.openPhoto" = "Open photo";
+"moment.a11y.hasPhoto" = "With photo";
+"moment.a11y.note" = "Note: %@";
+"moment.a11y.song" = "Song: %@";
+"moment.a11y.privateScope" = "In archive, not visible in your circle";
+"moment.archiveTag" = "· ARCHIVE";
+"offline.banner" = "NO CONNECTION · YOUR MOMENTS ARE WAITING ON THIS DEVICE";
+"privacy.hiddenField" = "%@ is hidden by this person's privacy settings";
+"profile.colourBreakdown" = "Colour breakdown";
+"profile.monthColour" = "%@ · colour of the month";
+"profile.monthCounts" = "%1$d days · %2$d moments";
+"profile.monthlySummary" = "MONTHLY SUMMARY";
+"profile.photoVisibility" = "Your photo is visible to friends in your circle.";
+"profile.pickAvatar" = "Pick an avatar";
+"profile.pinned" = "pinned";
+"profile.pinnedSong" = "PINNED SONG";
+"profile.sevenSteps" = "7 steps";
+"profile.signInOptional" = "ONE works fully without signing in.";
+"profile.signOut" = "SIGN OUT";
+"profile.signedInWithApple" = "Signed in with Apple";
+"profile.syncPitch" = "Carry your archive\nbetween devices.";
+"profile.versionLine" = "Version %1$@ · %2$d moments";
+"publicProfile.inYourCircle" = "In your circle";
+"publicProfile.mutualFriends" = "%d mutual friends";
+"publicProfile.unavailable" = "This profile can't be shown.";
+"reminder.daily" = "Daily reminder";
+"reminder.days" = "DAYS";
+"reminder.lockPreview" = "LOCK SCREEN PREVIEW";
+"reminder.subtitle" = "One reminder, at the time you choose.";
+"reminder.title" = "Reminder";
+"reminder.tone" = "WHAT IT SAYS";
+"report.notice" = "Reports are reviewed within 24 hours. Repeated reports may hide the content automatically.";
+"saved.backToDay" = "Back to today";
+"saved.goToArchive" = "Go to archive";
+"settings.appearance" = "Appearance";
+"share.createStoryCard" = "Create a story card";
+"share.noNote" = "You didn't leave a note.";
+"share.noSong" = "You didn't add a song.";
+"share.orSave" = "Share it or save it.";
+"song.pick" = "Pick a song";
+"song.preparingSuggestions" = "Preparing suggestions.";
+"splash.tagline" = "A DIARY OF MOODS AND SONGS";
+"today.howDidItFeel" = "How did today feel?";
+
+/* ── Kodda kullanılıyordu ama katalogda yoktu ────────────────────────
+   Bu anahtarlar `NSLocalizedString` ile çağrılıyor ama hiçbir dilde
+   tanımlı değildi; iOS bu durumda anahtarın kendisini döndürür,
+   yani kullanıcı ekranda "general.copy" yazısını görüyordu. */
+"accessibility.today.closeViewer" = "Close the photo viewer";
+"accessibility.today.photoViewerHint" = "Double-tap to zoom, swipe down to close";
+"accessibility.unread" = "Unread";
+"general.copied" = "Copied";
+"general.copy" = "Copy";
+"invite.shareSubtitle" = "They can add you with your invite code or link";
+"profile.usernameCurrent" = "That's already your username";
+"profile.usernameInvalidFormat" = "Use only letters, numbers and underscores";
+"profile.usernameTooShort" = "Must be at least 3 characters";
+
+
+/* Rapor sheet'i — v3 kabuk geçişi */
+"report.title" = "Report";
+"report.reason" = "REASON";
+"report.noteOptional" = "NOTE — OPTIONAL";
+"report.notePlaceholder" = "Add more detail";
+"report.submit" = "Send report";
+"report.submitted" = "Sent";
+"report.target.comment" = "Report comment";
+"report.target.user" = "Report %@";
+"report.target.userFallback" = "this person";
+"report.target.share" = "Report post";
+"report.context.comment" = "COMMENT";
+"report.context.user" = "PERSON";
+"report.context.share" = "POST";
+
+"circle.resonanceTitle" = "Resonance";
+
+
+/* Ayarlar — paylaşılan SettingsRow geçişi */
+"settings.group.settings" = "SETTINGS";
+"settings.group.circle" = "CIRCLE";
+"settings.group.about" = "ABOUT";
+"settings.group.developer" = "DEVELOPER";
+"settings.reminder" = "Reminder";
+"settings.musicSource" = "Music source";
+"settings.myFriends" = "My friends";
+"settings.deleteAccount" = "Delete account";
+"settings.watchOnboarding" = "Watch onboarding";
+"settings.sampleCircleData" = "Sample circle data";
+"settings.sampleCircleDataNote" = "Fills the Circle tab with sample friends.";
+"settings.appLock" = "App lock";
+"settings.appLockGeneric" = "Device passcode";
+
+"hub.momentCount" = "%d moments today";
+
+"hub.addMoment" = "Add a moment";
+"hub.songLine" = "Song: %@";
+
+"songPicker.noSuggestions" = "No suggestions found.";
+
+/* AppError — hata mesajları ve başlıkları.
+   Türkçe değerlerle dokuz katalogda birden açıldı: davranış bugünküyle
+   aynı, ama artık çevrilebilir. Çeviri geldikçe bu blok doldurulur. */
+"error.networkUnavailable.message" = "İnternet bağlantısı yok. Lütfen bağlantını kontrol et.";
+"error.networkTimeout.message" = "İstek zaman aşımına uğradı. Tekrar dene.";
+"error.networkUnknown.message" = "Bağlantı hatası oluştu. Lütfen tekrar dene.";
+"error.cloudKitNotAvailable.message" = "iCloud kullanılamıyor. Ayarlar'dan iCloud'u kontrol et.";
+"error.cloudKitNotAuthenticated.message" = "iCloud hesabına giriş yapmamışsın.";
+"error.cloudKitRecordNotFound.message" = "Kayıt bulunamadı.";
+"error.cloudKitSchemaError.message" = "Sunucu yapılandırma hatası. Lütfen daha sonra tekrar dene.";
+"error.cloudKitServerConflict.message" = "Sunucu çakışması oluştu. Veriler senkronize ediliyor.";
+"error.cloudKitQuotaExceeded.message" = "iCloud depolama alanın dolu.";
+"error.cloudKitUnknown.message" = "iCloud hatası oluştu. Lütfen tekrar dene.";
+"error.persistenceSaveFailed.message" = "Kayıt sırasında bir hata oluştu.";
+"error.persistenceFetchFailed.message" = "Veriler yüklenirken bir hata oluştu.";
+"error.persistenceDeleteFailed.message" = "Silme işlemi başarısız oldu.";
+"error.persistenceMigrationFailed.message" = "Veri tabanı güncellemesi başarısız oldu.";
+"error.authAppleMusicDenied.message" = "Apple Music izni gerekli. Ayarlar > Gizlilik'ten izin ver.";
+"error.authAppleMusicRestricted.message" = "Apple Music bu cihazda kısıtlanmış.";
+"error.authSpotifyFailed.message" = "Spotify bağlantısı başarısız oldu.";
+"error.authSpotifyTokenExpired.message" = "Spotify oturumun sona erdi. Tekrar bağlan.";
+"error.authSpotifyNotConnected.message" = "Spotify hesabı bağlı değil.";
+"error.musicSearchFailed.message" = "Arama sırasında bir hata oluştu.";
+"error.musicNoResults.message" = "Sonuç bulunamadı.";
+"error.musicPlaybackFailed.message" = "Şarkı çalınamadı.";
+"error.musicServiceUnavailable.message" = "Müzik servisi kullanılamıyor.";
+"error.cameraDenied.message" = "Kamera izni gerekli. Ayarlar'dan izin ver.";
+"error.cameraUnavailable.message" = "Kamera kullanılamıyor.";
+"error.photoSaveFailed.message" = "Fotoğraf kaydedilemedi.";
+"error.circleUserNotFound.message" = "Kullanıcı bulunamadı. Kodu kontrol et.";
+"error.circleAlreadyFriend.message" = "Bu kullanıcı zaten çevrende.";
+"error.circleSelfAdd.message" = "Kendi kendini ekleyemezsin.";
+"error.circleInviteCodeInvalid.message" = "Geçersiz davet kodu.";
+"error.circleFriendRequestFailed.message" = "Arkadaşlık isteği gönderilemedi.";
+"error.title.network" = "Bağlantı Hatası";
+"error.title.cloudKit" = "iCloud Hatası";
+"error.title.persistence" = "Kayıt Hatası";
+"error.title.auth" = "Yetkilendirme";
+"error.title.music" = "Müzik Hatası";
+"error.title.camera" = "Kamera Hatası";
+"error.title.circle" = "Çevre Hatası";
+"error.title.unknown" = "Hata";
+
+/* ONE 2.0 — kabuk (ADR-001 Faz 1 madde 8) */
+"one2.tab.today" = "Today";
+"one2.tab.journey" = "Journey";
+"one2.tab.explore" = "Explore";
+"one2.tab.profile" = "Profile";
+"one2.sheet.checkIn" = "Mood check-in";
+"one2.sheet.paywall" = "ONE+";
+"one2.placeholder.body" = "This section is in progress.";
+"one2.notice.circleUnavailable" = "Circle isn't part of this version.";
+"one2.action.dismiss" = "Dismiss";
+"one2.debug.useV3" = "Switch to v3";
+"one2.debug.restart" = "Takes effect after you restart the app.";
+
+/* ONE 2.0 — bildirim planlayıcı (04 › E13) */
+"notif.one2.morning.title" = "Today's quote";
+"notif.one2.morning.fallback.1" = "Start the day with a short pause.";
+"notif.one2.morning.fallback.2" = "Choose one intention for today.";
+"notif.one2.morning.fallback.3" = "You can write the first line of the morning.";
+"notif.one2.evening.title" = "Time to close the day.";
+"notif.one2.evening.body" = "You can leave today in a few lines.";
+"notif.one2.weeklyTheme.title" = "This week's theme: %@";
+"notif.one2.streak.title" = "Your streak can continue today";
+"notif.one2.streak.body" = "You've been here %d days. A short entry is enough.";
+"notif.one2.comparison.title" = "You answered this question before";
+"notif.one2.resurface.title" = "You wrote about this quote before";

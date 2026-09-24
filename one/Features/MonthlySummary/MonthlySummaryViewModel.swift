@@ -51,7 +51,7 @@ class MonthlySummaryViewModel: ObservableObject {
         comps.year = year; comps.month = month; comps.day = 1
         let firstDay = calendar.date(from: comps) ?? Date()
         let monthFmt = DateFormatter()
-        monthFmt.locale = Locale(identifier: "tr_TR")
+        monthFmt.locale = LanguageManager.shared.currentLocale
         monthFmt.dateFormat = "MMMM"
         let monthName = monthFmt.string(from: firstDay).capitalized
 
@@ -91,6 +91,14 @@ class MonthlySummaryViewModel: ObservableObject {
         }
         let maxRepeat = songCount.values.max() ?? 1
 
+        // Benzersiz gün sayısı (daysLogged)
+        let loggedDayNumbers: Set<Int> = Set(songs.compactMap { s -> Int? in
+            guard let d = s.date else { return nil }
+            return calendar.component(.day, from: d)
+        })
+        let daysLogged = loggedDayNumbers.count
+
+
         // Baskın mood (en çok tekrar eden moodWord)
         var moodCount: [String: (count: Int, hex: String)] = [:]
         for s in songs {
@@ -104,64 +112,74 @@ class MonthlySummaryViewModel: ObservableObject {
         let dominantMood     = dominantEntry?.key ?? "—"
         let dominantColor    = Color(hex: dominantEntry?.value.hex ?? "#C97840")
 
-        // Duygu dağılımı — 12 yeni mood etiketleri + eski uyum
-        let moodPalette: [String: Color] = [
-            "Ateşli"     : ONETokens.oneRed,
-            "Coşkulu"    : ONETokens.moodOrange,
-            "Mutlu"      : ONETokens.moodYellow,
-            "Doğal"      : ONETokens.moodLime,
-            "Huzurlu"    : ONETokens.oneGreen,
-            "Özgür"      : ONETokens.moodTeal,
-            "Derin"      : ONETokens.oneBlue,
-            "Nostaljik"  : ONETokens.moodIndigo,
-            "Gizemli"    : ONETokens.moodPurple,
-            "Hassas"     : ONETokens.moodRose,
-            "Sessiz"     : ONETokens.moodDark,
-            "Nötr"       : ONETokens.oneIvory,
-            // Legacy labels
-            "Enerjik"    : ONETokens.moodOrange,
-            "Neşeli"     : ONETokens.moodYellow,
-            "Sakin"      : ONETokens.oneGreen,
-            "Melankolik" : ONETokens.moodPurple,
-            "Gergin"     : ONETokens.oneRed,
-            "Üzgün"      : ONETokens.moodIndigo,
-        ]
-        let total = Double(max(1, songs.count))
+        // Duygu dağılımı.
+        //
+        // Burada ada göre anahtarlanmış bir renk sözlüğü vardı ("Gizemli",
+        // "Hassas", "Sessiz", "Melankolik"…) — uygulamanın **dördüncü** mood
+        // kelime dağarcığı. Ne `V3Mood`'un dokuzuyla ne `ONEMood`'un on
+        // ikisiyle örtüşüyordu, dolayısıyla listede olmayan her etiket
+        // sessizce ham hex'e düşüyordu.
+        //
+        // Kayıt zaten kendi `moodColorHex`'ini taşıyor: renk oradan
+        // çözülüyor, `V3Mood.closest(toHex:)` ile v3 paletine hizalanıyor.
+        // Ada göre eşleme yok — yeni bir etiket eklendiğinde burada
+        // güncellenecek bir tablo da yok.
+        let total = Double(max(1, daysLogged))
         let emotionBreakdown: [(name: String, percentage: Double, color: Color)] = moodCount
             .sorted { $0.value.count > $1.value.count }
             .prefix(5)
             .map { word, val in
-                let c = moodPalette[word] ?? Color(hex: val.hex)
-                return (name: word, percentage: Double(val.count) / total, color: c)
+                let c = V3Mood.closest(toHex: val.hex)?.color ?? Color(hex: val.hex)
+                return (name: word, percentage: min(1.0, Double(val.count) / total), color: c)
             }
 
-        // Top parçalar (en fazla tekrar eden, max 5)
-        let gradientPairs: [[Color]] = [
-            [Color(red: 0.85, green: 0.35, blue: 0.10), Color(red: 0.90, green: 0.65, blue: 0.10)],
-            [Color(red: 0.25, green: 0.44, blue: 0.80), Color(red: 0.25, green: 0.66, blue: 0.61)],
-            [Color(red: 0.47, green: 0.25, blue: 0.80), Color(red: 0.78, green: 0.25, blue: 0.25)],
-            [Color(red: 0.78, green: 0.25, blue: 0.25), Color(red: 0.85, green: 0.50, blue: 0.10)],
-            [Color(red: 0.25, green: 0.66, blue: 0.61), Color(red: 0.25, green: 0.44, blue: 0.80)],
-        ]
+        // Top parçalar (en fazla tekrar eden, max 5) — eşitlikte en yakın tarihe göre
+        //
+        // Burada `gradientPairs` diye on ham hex'lik ikinci bir palet vardı
+        // ("mood paletiyle ilgisi yok" diye de savunuluyordu). İki sorunu
+        // birden vardı: ONE'ın dokuz renginde karşılığı olmayan sekiz renk
+        // uyduruyordu, **ve** beslediği `TrackEntry.gradientColors` alanını
+        // hiçbir view okumuyordu. Ölü alanı besleyen ölü bir palet.
+        // Build recency map for tie-breaking
+        var recencyMap: [String: Date] = [:]
+        for s in songs {
+            guard let n = s.songName, let a = s.artistName, let d = s.date else { continue }
+            let k = "\(n)|\(a)"
+            recencyMap[k] = max(recencyMap[k] ?? .distantPast, d)
+        }
         let topTracks: [TrackEntry] = songCount
-            .sorted { $0.value > $1.value }
+            .sorted { lhs, rhs in
+                if lhs.value != rhs.value { return lhs.value > rhs.value }
+                return (recencyMap[lhs.key] ?? .distantPast) > (recencyMap[rhs.key] ?? .distantPast)
+            }
             .prefix(5)
             .enumerated()
             .map { idx, pair -> TrackEntry in
                 let parts   = pair.key.components(separatedBy: "|")
                 let name    = parts[0]
                 let artist  = parts.count > 1 ? parts[1] : ""
-                // emoji'yi kayıtlı veriden bul
                 let emoji   = songs.first { $0.songName == name && $0.artistName == artist }?.emoji ?? "🎵"
                 return TrackEntry(
                     rank:           idx + 1,
                     name:           name,
                     artist:         artist,
                     days:           pair.value,
-                    gradientColors: gradientPairs[idx % gradientPairs.count],
                     emoji:          emoji
                 )
             }
+            
+        // MARK: - Storytelling Elements
+        var hourCount: [Int: Int] = [:]
+        for s in songs {
+            guard let d = s.date else { continue }
+            let hour = calendar.component(.hour, from: d)
+            hourCount[hour, default: 0] += 1
+        }
+        let mostActiveHour = hourCount.max(by: { $0.value < $1.value })?.key ?? 20
+        let hourString = String(format: "%02d:00", mostActiveHour)
+
+        let storyTitle = String(format: NSLocalizedString("monthly.storyTitle", comment: ""), dominantMood)
+        let storySubtitle = String(format: NSLocalizedString("monthly.storySubtitle", comment: ""), hourString)
 
         return MonthlySummaryData(
             month:              monthName,
@@ -175,7 +193,11 @@ class MonthlySummaryViewModel: ObservableObject {
             emotionBreakdown:   emotionBreakdown.isEmpty
                                     ? [(name: "—", percentage: 1.0, color: .gray.opacity(0.3))]
                                     : emotionBreakdown,
-            topTracks:          topTracks
+            topTracks:          topTracks,
+            totalEntries:       songs.count,
+            daysLogged:         daysLogged,
+            storyTitle:         storyTitle,
+            storySubtitle:      storySubtitle
         )
     }
 }

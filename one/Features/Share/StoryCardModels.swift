@@ -117,13 +117,12 @@ extension DailySong {
         guard let date = date else { return "" }
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM yyyy"
-        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.locale = LanguageManager.shared.currentLocale
         return formatter.string(from: date)
     }
     
     var isValidForCard: Bool {
-        // At minimum, we need a song name
-        return songName != nil && !songName!.isEmpty
+        songName?.isEmpty == false
     }
 }
 
@@ -141,7 +140,7 @@ struct StoryCardLogger {
         if let error = error {
             ONELogger.debug("\(logMessage) - Error: \(error)", category: .share)
         } else {
-            print(logMessage)
+            ONELogger.debug(logMessage, category: .share)
         }
         
         // In production, send to analytics/crash reporting

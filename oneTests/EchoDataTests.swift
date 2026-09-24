@@ -2,7 +2,11 @@
 //  EchoDataTests.swift
 //  oneTests
 //
-//  Tests for EchoData, RepeatedSong, StreakInfo models.
+//  Tests for EchoData and RepeatedSong models.
+//
+//  `StreakInfo` ve `EchoData.longestStreak` testleri kaldırıldı: seri
+//  (streak) sayacı üründen çıktı — CLAUDE.md "Yapılmayacaklar" listesinde.
+//  Testler tipin kendisinden sonra da duruyordu, yani derlenmiyorlardı.
 //
 
 import Testing
@@ -41,15 +45,6 @@ struct EchoDataTests {
         let data = EchoData.empty
         #expect(data.silentDays == 0)
         #expect(data.silentDates.isEmpty)
-    }
-
-    @Test("EchoData.empty streak is zero days")
-    func testEmptyStreak() {
-        let data = EchoData.empty
-        #expect(data.longestStreak.days == 0)
-        #expect(data.longestStreak.startDate == "—")
-        #expect(data.longestStreak.endDate == "—")
-        #expect(data.longestStreak.colors.isEmpty)
     }
 
     @Test("EchoData.empty has empty hourDistribution")
@@ -109,13 +104,6 @@ struct EchoDataTests {
         #expect(data.silentDates.count == 12)
     }
 
-    @Test("EchoData.mock has longestStreak")
-    func testMockLongestStreak() {
-        let data = EchoData.mock()
-        #expect(data.longestStreak.days == 14)
-        #expect(data.longestStreak.colors.count == 14)
-    }
-
     @Test("EchoData.mock has hourDistribution data")
     func testMockHourDistribution() {
         let data = EchoData.mock()
@@ -165,32 +153,5 @@ struct EchoDataTests {
 
         // They should have different ids
         #expect(a.id != b.id)
-    }
-
-    // MARK: - StreakInfo
-
-    @Test("StreakInfo initializes correctly")
-    func testStreakInfoInit() {
-        let streak = StreakInfo(
-            days: 14,
-            startDate: "3 Oca",
-            endDate: "16 Oca",
-            colors: [ONETokens.oneRed, ONETokens.oneBlue]
-        )
-
-        #expect(streak.days == 14)
-        #expect(streak.startDate == "3 Oca")
-        #expect(streak.endDate == "16 Oca")
-        #expect(streak.colors.count == 2)
-    }
-
-    @Test("StreakInfo zero days")
-    func testStreakInfoZero() {
-        let streak = StreakInfo(days: 0, startDate: "—", endDate: "—", colors: [])
-
-        #expect(streak.days == 0)
-        #expect(streak.startDate == "—")
-        #expect(streak.endDate == "—")
-        #expect(streak.colors.isEmpty)
     }
 }

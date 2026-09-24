@@ -1,0 +1,41 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "g_minnet_01",
+      "title": "Üç iyi şey",
+      "summary": "Günün küçük iyiliklerini fark et.",
+      "durationMinutes": 2,
+      "tags": [
+        "minnet"
+      ],
+      "timeOfDay": "evening",
+      "steps": [
+        {
+          "id": "g_minnet_01_s1",
+          "kind": "text",
+          "prompt": "Bugün iyi giden ilk şey neydi?"
+        },
+        {
+          "id": "g_minnet_01_s2",
+          "kind": "text",
+          "prompt": "İkinci iyi şey?"
+        },
+        {
+          "id": "g_minnet_01_s3",
+          "kind": "text",
+          "prompt": "Üçüncü iyi şey?"
+        },
+        {
+          "id": "g_minnet_01_s4",
+          "kind": "yesNo",
+          "prompt": "Bunlardan birinde senin payın var mıydı?"
+        }
+      ],
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

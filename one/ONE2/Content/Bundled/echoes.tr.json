@@ -1,0 +1,581 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "e_000001",
+      "text": "Zor bir gün olduğunu yazman da bir adım.",
+      "conditions": {
+        "scoreIn": [
+          1
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000002",
+      "text": "Bugün ağır geldiyse, bunu fark etmen yeterli.",
+      "conditions": {
+        "scoreIn": [
+          1
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000003",
+      "text": "Kötü hissetmek bir hata değil, bir bilgi.",
+      "conditions": {
+        "scoreIn": [
+          1,
+          2
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000004",
+      "text": "Bugün kendine biraz daha yumuşak davranabilirsin.",
+      "conditions": {
+        "scoreIn": [
+          1,
+          2
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000005",
+      "text": "Bu hissi yazıya dökmek, onu biraz hafifletebilir.",
+      "conditions": {
+        "scoreIn": [
+          1,
+          2
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000006",
+      "text": "Bir şeyler zorluyorsa, dinlenmek de bir seçenek.",
+      "conditions": {
+        "scoreIn": [
+          1,
+          2
+        ],
+        "emotionFamilyAny": [
+          "yorgunluk"
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000007",
+      "text": "Kaygı çoğu zaman önemsediğin bir şeyi gösterir.",
+      "conditions": {
+        "scoreIn": [
+          1,
+          2,
+          3
+        ],
+        "emotionFamilyAny": [
+          "kaygi"
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000008",
+      "text": "Öfken bir sınırın zorlandığını söylüyor olabilir.",
+      "conditions": {
+        "scoreIn": [
+          1,
+          2,
+          3
+        ],
+        "emotionFamilyAny": [
+          "ofke"
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000009",
+      "text": "Hüzün de geçmek için yer ister.",
+      "conditions": {
+        "scoreIn": [
+          1,
+          2,
+          3
+        ],
+        "emotionFamilyAny": [
+          "huzun"
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000010",
+      "text": "Uykusuz bir gece her şeyi daha ağır gösterebilir.",
+      "conditions": {
+        "scoreIn": [
+          1,
+          2,
+          3
+        ],
+        "causeAny": [
+          "c_uyku"
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000011",
+      "text": "Akşam oldu; günü burada bırakabilirsin.",
+      "conditions": {
+        "scoreIn": [
+          1,
+          2
+        ],
+        "timeOfDay": "evening"
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000012",
+      "text": "Güne zor başladın; gün henüz yeni.",
+      "conditions": {
+        "scoreIn": [
+          1,
+          2
+        ],
+        "timeOfDay": "morning"
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000013",
+      "text": "Son günler inişliydi; bunu görmen önemli.",
+      "conditions": {
+        "trend": "down"
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000014",
+      "text": "Ortada bir gün; o da bir yerdir.",
+      "conditions": {
+        "scoreIn": [
+          3
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000015",
+      "text": "Ne iyi ne kötü; bazen gün sadece gündür.",
+      "conditions": {
+        "scoreIn": [
+          3
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000016",
+      "text": "Dengede bir gün, küçük şeyleri fark etmeye elverişli.",
+      "conditions": {
+        "scoreIn": [
+          3
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000017",
+      "text": "Bugünü olduğu gibi kaydettin.",
+      "conditions": {
+        "scoreIn": [
+          3
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000018",
+      "text": "Kararsız hissetmek, seçeneklerin olduğunu da gösterir.",
+      "conditions": {
+        "scoreIn": [
+          2,
+          3
+        ],
+        "emotionFamilyAny": [
+          "kaygi"
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000019",
+      "text": "İyi bir gün; neyin iyi geldiğini not etmeye değer.",
+      "conditions": {
+        "scoreIn": [
+          4
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000020",
+      "text": "Bu hafiflik nereden geliyor, biraz bakabilirsin.",
+      "conditions": {
+        "scoreIn": [
+          4,
+          5
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000021",
+      "text": "Güzel bir an; onu biraz daha tutabilirsin.",
+      "conditions": {
+        "scoreIn": [
+          5
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000022",
+      "text": "Bugün sana iyi gelen şeyi hatırla.",
+      "conditions": {
+        "scoreIn": [
+          4,
+          5
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000023",
+      "text": "Minnet duyduğun bir şey varsa, yazmak onu büyütür.",
+      "conditions": {
+        "scoreIn": [
+          4,
+          5
+        ],
+        "emotionFamilyAny": [
+          "sevgi"
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000024",
+      "text": "Merakın açık; nereye götürdüğüne bak.",
+      "conditions": {
+        "scoreIn": [
+          4,
+          5
+        ],
+        "emotionFamilyAny": [
+          "merak"
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000025",
+      "text": "Huzurlu bir an, kendi başına bir kazanç.",
+      "conditions": {
+        "scoreIn": [
+          4,
+          5
+        ],
+        "emotionFamilyAny": [
+          "huzur"
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000026",
+      "text": "Hareket etmek bugün iyi gelmiş.",
+      "conditions": {
+        "scoreIn": [
+          4,
+          5
+        ],
+        "causeAny": [
+          "c_hareket"
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000027",
+      "text": "Yakın biriyle geçen zaman iz bırakmış.",
+      "conditions": {
+        "scoreIn": [
+          4,
+          5
+        ],
+        "causeAny": [
+          "c_arkadaslar",
+          "c_aile"
+        ]
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000028",
+      "text": "Son günler yükselişte; bunu fark etmek de güzel.",
+      "conditions": {
+        "trend": "up"
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000029",
+      "text": "Günler birbirine benziyor; bu da bir ritim.",
+      "conditions": {
+        "trend": "flat"
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000030",
+      "text": "İlk kaydın burada; gerisi kendiliğinden gelir.",
+      "conditions": {
+        "firstCheckin": true
+      },
+      "weight": 3.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000031",
+      "text": "Başladın; bu çoğu zaman en zor kısım.",
+      "conditions": {
+        "firstCheckin": true
+      },
+      "weight": 3.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000032",
+      "text": "Sabah kaydı günün tonunu anlamana yardım eder.",
+      "conditions": {
+        "timeOfDay": "morning"
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000033",
+      "text": "Akşam kaydı günü kapatmanın bir yolu.",
+      "conditions": {
+        "timeOfDay": "evening"
+      },
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000034",
+      "text": "Kendini dinlemek için ayırdığın bu an önemli.",
+      "conditions": {},
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000035",
+      "text": "Bugünün de yerini aldı.",
+      "conditions": {},
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000036",
+      "text": "Adım adım da varılır; bugün de bir adımdı.",
+      "conditions": {},
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000037",
+      "text": "Nasıl hissettiğini bilmek, ne istediğini bilmeye yaklaştırır.",
+      "conditions": {},
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000038",
+      "text": "Bir kayıt daha; zamanla bir desen belirir.",
+      "conditions": {},
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000039",
+      "text": "Hissettiğin şey geçici, fark etmen kalıcı.",
+      "conditions": {},
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "e_000040",
+      "text": "Bugünü kaydettin; bu kadarı yeterli.",
+      "conditions": {},
+      "weight": 1.0,
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}
