@@ -1,0 +1,303 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>ONE 2.0 video</title>
+<link rel="stylesheet" href="fonts.css">
+<style>html,body{margin:0;background:#000}canvas{display:block}</style>
+</head><body><canvas id="c" width="1080" height="1080"></canvas>
+<script>
+const W = 1080, H = 1080, FPS = 30;
+const c = document.getElementById('c'), x = c.getContext('2d');
+
+// Tasarım sistemi token'ları (docs/one2/design-system/tokens.json, tema: gece)
+const T = {
+  ground:'#000000', surface:'#141416', raised:'#1E1E21', line:'#26262A', lineStrong:'#66666E',
+  ink:'#F4F4F5', muted:'#A3A3AA', faint:'#85858D', primary:'#E8E8EA', onPrimary:'#111113',
+  brand:'#9AA6FF', brandSoft:'#232B57', onBrandSoft:'#C9CFFF',
+  sabah:'#F2B84B', aksam:'#7D8BE0', success:'#5CC08C', warning:'#F0A640',
+};
+const EMO = ['#E9AE2E','#6FA684','#E97650','#DB7D9B','#A27FBA','#7394C8','#D0654D','#8D96A3'];
+const SCORE = ['#5B6CCB','#8F99D0','#9A9C94','#E9B650','#F08A2E'];
+const SANS = "'Plus Jakarta Sans'", MONO = "'IBM Plex Mono'";
+
+// yardımcılar
+const clamp = (v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const prog = (t,a,d)=>clamp((t-a)/d);
+const eo = p=>1-Math.pow(1-p,3);
+const eio = p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+const back = p=>{const s=1.70158;return 1+(s+1)*Math.pow(p-1,3)+s*Math.pow(p-1,2)};
+function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+
+function rr(px,py,w,h,r){x.beginPath();x.roundRect(px,py,w,h,r)}
+function tile(cx,cy,s,r,fill,alpha=1,stroke=null,lw=2){
+  if(s<=0.5||alpha<=0)return;
+  x.save();x.globalAlpha*=alpha;rr(cx-s/2,cy-s/2,s,s,r);
+  if(fill){x.fillStyle=fill;x.fill()}
+  if(stroke){x.strokeStyle=stroke;x.lineWidth=lw;x.stroke()}
+  x.restore();
+}
+function text(str,px,py,{size=40,weight=700,color=T.ink,align='left',font=SANS,alpha=1,ls=0,base='alphabetic'}={}){
+  if(alpha<=0)return;
+  x.save();x.globalAlpha*=alpha;x.font=`${weight} ${size}px ${font}`;x.fillStyle=color;
+  x.textAlign=align;x.textBaseline=base;x.letterSpacing=ls+'px';x.fillText(str,px,py);x.restore();
+}
+function check(cx,cy,s,color,p){ // çizilerek gelen ✓
+  if(p<=0)return;
+  const pts=[[-.32,.02],[-.1,.24],[.34,-.22]].map(([a,b])=>[cx+a*s,cy+b*s]);
+  const l1=Math.hypot(pts[1][0]-pts[0][0],pts[1][1]-pts[0][1]),l2=Math.hypot(pts[2][0]-pts[1][0],pts[2][1]-pts[1][1]);
+  const L=(l1+l2)*p;x.save();x.strokeStyle=color;x.lineWidth=s*.12;x.lineCap='round';x.lineJoin='round';
+  x.beginPath();x.moveTo(...pts[0]);
+  if(L<=l1){const k=L/l1;x.lineTo(pts[0][0]+(pts[1][0]-pts[0][0])*k,pts[0][1]+(pts[1][1]-pts[0][1])*k)}
+  else{x.lineTo(...pts[1]);const k=(L-l1)/l2;x.lineTo(pts[1][0]+(pts[2][0]-pts[1][0])*k,pts[1][1]+(pts[2][1]-pts[1][1])*k)}
+  x.stroke();x.restore();
+}
+// sahne başlığı: küçük üst etiket + büyük başlık, kare işaretiyle
+function header(t,kicker,title,color=T.brand){
+  const a=eo(prog(t,0,.5)),dy=(1-a)*24;
+  tile(96,118+dy,22,6,color,a);
+  text(kicker,124,126+dy,{size:24,weight:600,color:T.muted,font:MONO,alpha:a,ls:1});
+  const b=eo(prog(t,.15,.6));
+  x.font=`800 68px ${SANS}`;x.letterSpacing='-1.5px';const tw=x.measureText(title).width;
+  text(title,84,212+(1-b)*30,{size:tw>900?Math.floor(68*900/tw):68,weight:800,alpha:b,ls:-1.5});
+}
+function footer(t,str){text(str,84,1010,{size:26,weight:500,color:T.faint,alpha:eo(prog(t,.8,.6))})}
+
+// ——— sahneler (t: sahne içi saniye) ———
+const S = [];
+
+// 1) Açılış: bir yılın mood kareleri → ONE 2.0
+S.push({d:5.2,f(t){
+  const N=13,g=62,s=48,ox=W/2-(N-1)*g/2,oy=H/2-(N-1)*g/2,r=rng(7);
+  const fade=1-eo(prog(t,2.6,.9));
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){
+    const k=r(),col=k<.12?T.raised:(k<.55?EMO[(r()*8)|0]:SCORE[(r()*5)|0]);
+    const d=Math.hypot(i-6,j-6)*.09+r()*.25,p=back(prog(t,d,.45));
+    tile(ox+j*g,oy+i*g,s*clamp(p,0,1.15),12,col,.95*fade);
+  }
+  const a=eo(prog(t,2.9,.8));
+  text('ONE',W/2,H/2+20-(1-a)*20,{size:210,weight:800,align:'center',alpha:a,ls:-8});
+  const b=eo(prog(t,3.3,.7));
+  tile(W/2+228,H/2-96,70,18,T.brand,b);
+  text('2.0',W/2+228,H/2-83,{size:34,weight:800,color:'#0F1218',align:'center',alpha:b});
+  text('günlük · mood · ritüel',W/2,H/2+110,{size:40,weight:500,color:T.muted,align:'center',alpha:eo(prog(t,3.7,.7))});
+}});
+
+// 2) Ne yapıyoruz: altı özellik karosu
+S.push({d:6.4,f(t){
+  header(t,'NE YAPIYORUZ','Her gün için tek bir yer');
+  const items=[
+    ['Günlük','yaz, geri dön, oku',T.brand,'journal'],
+    ['Mood check-in','günde birden çok',EMO[1],'mood'],
+    ['Sabah ve akşam','iki kısa ritüel',T.sabah,'ritual'],
+    ['Haftalık tema','her hafta bir odak',EMO[4],'theme'],
+    ['Seri ve rozetler','N gün üst üste',SCORE[4],'streak'],
+    ['Geriye dönük giriş','dünü tamamla',EMO[5],'back'],
+  ];
+  const cw=440,ch=200,gx=30,gy=28,ox=84,oy=290;
+  items.forEach(([title,sub,col,kind],i)=>{
+    const cx=ox+(i%2)*(cw+gx),cy=oy+((i/2)|0)*(ch+gy);
+    const p=prog(t,.6+i*.18,.55),a=eo(p),sc=.9+.1*back(p);
+    if(a<=0)return;
+    x.save();x.translate(cx+cw/2,cy+ch/2);x.scale(sc,sc);x.translate(-cw/2,-ch/2);x.globalAlpha=a;
+    rr(0,0,cw,ch,28);x.fillStyle=T.surface;x.fill();x.strokeStyle=T.line;x.lineWidth=2;x.stroke();
+    // ikon kuyusu: tema rengi kare + içinde mini kare desen
+    rr(28,28,64,64,18);x.fillStyle=T.raised;x.fill();
+    const q=prog(t,1+i*.18,1.2);
+    glyph(kind,60,60,col,q);
+    text(title,28,146,{size:36,weight:700});
+    text(sub,28,182,{size:25,weight:500,color:T.muted});
+    x.restore();
+  });
+  footer(t,'Referans bir akış; içerik ve marka bizim.');
+}});
+function glyph(kind,cx,cy,col,q){
+  if(kind==='journal'){for(let k=0;k<3;k++){const w=34*clamp(q*3-k);rr(cx-17,cy-12+k*11,w,6,3);x.fillStyle=k?T.muted:col;x.fill()}}
+  else if(kind==='mood'){const r=[-1,0,1];r.forEach((o,k)=>tile(cx+o*13,cy,10*clamp(q*3-k)+0.1,3,SCORE[[0,2,4][k]]))}
+  else if(kind==='ritual'){x.save();x.beginPath();x.arc(cx,cy,15,Math.PI,Math.PI+Math.PI*clamp(q*1.2));x.lineTo(cx,cy);x.fillStyle=T.sabah;x.fill();
+    x.beginPath();x.arc(cx,cy,15,0,Math.PI*clamp(q*1.2-.2));x.lineTo(cx,cy);x.fillStyle=T.aksam;x.fill();x.restore()}
+  else if(kind==='theme'){for(let k=0;k<7;k++)tile(cx-18+k*6,cy+8-(k===3?16*clamp(q*2):0),4.5,1.5,k===3?col:T.lineStrong)}
+  else if(kind==='streak'){for(let k=0;k<4;k++)tile(cx-15+k*10,cy,8,2,clamp(q*4-k)>0?col:T.lineStrong)}
+  else if(kind==='back'){tile(cx-8,cy,20,5,null,1,T.lineStrong,2);tile(cx+8,cy,20*clamp(q*1.5),5,col)}
+}
+
+// 3) Faz 0 kapandı: dört belge
+S.push({d:5.6,f(t){
+  header(t,'FAZ 0 · 23 EYLÜL 2026','Önce plan, sonra kod',T.success);
+  const docs=[
+    ['AUDIT.md','v3 envanteri, riskler R1–R17'],
+    ['02_veri_modeli.md','varlıklar ve CloudKit kuralları'],
+    ['MIGRATION.md','taşıma kararı: B′, kopya yok'],
+    ['ADR-001.md','mimari kararı · kabul edildi'],
+  ];
+  docs.forEach(([name,sub],i)=>{
+    const y=300+i*150,p=prog(t,.6+i*.3,.5),a=eo(p);if(a<=0)return;
+    x.save();x.globalAlpha=a;x.translate((1-a)*-40,0);
+    rr(84,y,912,122,28);x.fillStyle=T.surface;x.fill();x.strokeStyle=T.line;x.lineWidth=2;x.stroke();
+    const cp=prog(t,1.1+i*.3,.4);
+    rr(112,y+29,64,64,18);x.fillStyle=cp>0?T.success:T.raised;x.globalAlpha=a*(0.35+.65*eo(cp));x.fill();x.globalAlpha=a;
+    check(144,y+61,44,'#15181D',eo(cp));
+    text(name,204,y+56,{size:34,weight:700,font:MONO});
+    text(sub,204,y+95,{size:26,weight:500,color:T.muted});
+    x.restore();
+  });
+  footer(t,'Faz 0’da ürün kodu yok: denetim, doküman, karar.');
+}});
+
+// 4) Veri: one / one 2 dokunulmaz, one 3 yeni
+S.push({d:6,f(t){
+  header(t,'VERİ','Eski veri güvende, yenisi yanında',T.aksam);
+  const layers=[['one','v3 · DailySong',false],['one 2','v3 · DailySong',false],['one 3','günlük, mood, gün, rozet',true]];
+  layers.forEach(([n,sub,isNew],i)=>{
+    const s=250,cx=230+i*310,cy=520,p=prog(t,.5+i*.35,.6),a=eo(p);
+    if(a<=0)return;
+    const sc=isNew?.85+.15*back(p):1;
+    x.save();x.globalAlpha=a;x.translate(cx,cy+(1-a)*40);x.scale(sc,sc);
+    rr(-s/2,-s/2,s,s,36);
+    if(isNew){x.fillStyle=T.brandSoft;x.fill();x.strokeStyle=T.brand;x.lineWidth=3;x.stroke()}
+    else{x.fillStyle=T.surface;x.fill();x.strokeStyle=T.line;x.lineWidth=2;x.stroke()}
+    // mini kare deseni: kayıtlar
+    const rg=rng(11+i);
+    for(let k=0;k<12;k++){const col=isNew?EMO[(rg()*8)|0]:T.raised;const q=isNew?eo(prog(t,1.4+k*.05,.3)):1;
+      tile(-78+(k%4)*52,-72+((k/4)|0)*40,30*q,8,col)}
+    text(n,0,86,{size:40,weight:800,align:'center',font:MONO,color:isNew?T.ink:T.muted});
+    x.restore();
+    text(sub,cx,cy+175,{size:24,weight:500,color:T.muted,align:'center',alpha:a});
+    if(!isNew){ // kilit
+      const lp=eo(prog(t,1.5+i*.2,.4));
+      x.save();x.globalAlpha=lp;x.translate(cx+s/2-30,cy-s/2+30);
+      rr(-26,-22,52,44,12);x.fillStyle=T.raised;x.fill();
+      x.strokeStyle=T.muted;x.lineWidth=4;x.beginPath();x.arc(0,-2,9,Math.PI,0);x.stroke();
+      rr(-12,-2,24,16,4);x.fillStyle=T.muted;x.fill();x.restore();
+      text('dokunulmaz',cx,cy+212,{size:22,weight:600,color:T.faint,align:'center',font:MONO,alpha:lp});
+    } else text('lightweight migration',cx,cy+212,{size:22,weight:600,color:T.brand,align:'center',font:MONO,alpha:eo(prog(t,1.8,.5))});
+  });
+  // CloudKit bandı
+  const b=eo(prog(t,2.6,.6));
+  rr(84,880,912,76,38);x.save();x.globalAlpha=b;x.fillStyle=T.raised;x.fill();x.restore();
+  text('Core Data + CloudKit · tek container',W/2,929,{size:28,weight:600,align:'center',alpha:b});
+}});
+
+// 5) Faz 1: ilk 10 iş
+S.push({d:6.4,f(t){
+  header(t,'FAZ 1 · İLK 10 İŞ','Dokuzu bitti, biri cihaz bekliyor',T.success);
+  const L=['Proje hijyeni','Kurtarmada yedek','Test ve CI','Guard güncellemesi','one 3 model sürümü',
+           'DayKey, Clock, Streak','Veri depoları','Tek build, iki kabuk','Deep link ve temizlik','Canlı veri doğrulama'];
+  const s=160,g=28,ox=W/2-(5*s+4*g)/2+s/2,oy=400;
+  let cur=-1;
+  for(let i=0;i<10;i++){
+    const cx=ox+(i%5)*(s+g),cy=oy+((i/5)|0)*(s+g);
+    const ap=eo(prog(t,.5+i*.05,.4));
+    const fp=prog(t,1.2+i*.35,.35);
+    if(i<9){
+      tile(cx,cy,s*ap,30,T.surface,1,T.line);
+      if(fp>0){cur=i;tile(cx,cy,(s-2)*back(fp),30,T.success,.92);check(cx,cy,70,'#15181D',eo(prog(t,1.35+i*.35,.3)))}
+      text(String(i+1),cx-s/2+20,cy-s/2+38,{size:24,weight:600,font:MONO,color:fp>0?'#15181D':T.faint,alpha:ap});
+    } else {
+      const pulse=.5+.5*Math.sin(t*5);
+      tile(cx,cy,s*ap,30,T.surface,1,fp>0?T.warning:T.lineStrong,fp>0?3+2*pulse:2);
+      text('10',cx-s/2+20,cy-s/2+38,{size:24,weight:600,font:MONO,color:fp>0?T.warning:T.faint,alpha:ap});
+      if(fp>0){cur=9;for(let k=0;k<3;k++)tile(cx-24+k*24,cy+8,12,3,T.warning,.3+.7*clamp(Math.sin(t*6-k)))}
+    }
+  }
+  if(cur>=0){
+    const i=cur,la=eo(prog(t,1.2+i*.35,.25));
+    text(L[i],W/2,800,{size:44,weight:700,align:'center',alpha:la,color:i===9?T.warning:T.ink});
+    text(i===9?'iCloud hesaplı cihaz ve Metal Toolchain':'tamam ✓',W/2,852,{size:26,weight:500,align:'center',alpha:la,color:T.muted});
+  }
+}});
+
+// 6) Arka plan motorları E1–E14
+S.push({d:6.4,f(t){
+  header(t,'ARKA PLAN MOTORLARI','14 motor, ekranlardan önce');
+  const E=['İçerik','Söz','Maruz kalma','Soru','Tema takvimi','Yankı','Öneri','Gün ve seri','Rozet','İçgörü','Arama','Profil','Bildirim','Widget'];
+  const cols=[T.brand,T.sabah,EMO[1],EMO[4],EMO[3],EMO[5],SCORE[4],T.success,SCORE[3],T.aksam,EMO[7],EMO[0],EMO[2],EMO[6]];
+  const s=216,g=16,h=128,ox=84+s/2,oy=330;
+  // yol: sıralı yanma, aralarında akan nokta
+  for(let i=0;i<14;i++){
+    const cx=ox+(i%4)*(s+g),cy=oy+((i/4)|0)*(h+g);
+    const ap=eo(prog(t,.4+i*.04,.35)),lp=prog(t,1+i*.22,.3);
+    x.save();x.globalAlpha=ap;
+    rr(cx-s/2,cy-h/2,s,h,24);x.fillStyle=lp>0?T.surface:'#0C0C0E';x.fill();
+    x.strokeStyle=lp>0?cols[i]:T.line;x.lineWidth=lp>0?2.5:2;x.stroke();
+    tile(cx-s/2+32,cy-h/2+34,20*(0.4+.6*back(lp)),5,lp>0?cols[i]:T.raised);
+    text('E'+(i+1),cx-s/2+54,cy-h/2+42,{size:24,weight:600,font:MONO,color:lp>0?cols[i]:T.faint});
+    text(E[i],cx-s/2+22,cy+h/2-26,{size:30,weight:700,color:lp>0?T.ink:T.faint});
+    x.restore();
+  }
+  footer(t,'Saf tipler, test edilebilir kurallar, ekran yok.');
+}});
+
+// 7) Seri: bir hafta dolar
+S.push({d:6,f(t){
+  header(t,'SERİ VE ROZET','Her gün bir kare daha',SCORE[4]);
+  const days=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'],s=112,g=18,ox=W/2-(7*s+6*g)/2+s/2,cy=500;
+  let n=0;
+  days.forEach((d,i)=>{
+    const cx=ox+i*(s+g),ap=eo(prog(t,.4+i*.04,.35)),fp=prog(t,1+i*.38,.35);
+    text(d,cx,cy-s/2-24,{size:24,weight:600,color:T.faint,align:'center',alpha:ap});
+    tile(cx,cy,s*ap,26,T.surface,1,i===6?T.lineStrong:T.line,2);
+    if(fp>0){n=i+1;
+      // 5. gün geriye dönük dolduruluyor: önce boş kalır, sonra kesikli çerçeveyle gelir
+      const col=EMO[[1,0,5,3,2,1,0][i]];
+      tile(cx,cy,(s-8)*back(fp),22,col);
+      if(i===4){text('dün',cx,cy+s/2+36,{size:22,weight:600,color:T.muted,align:'center',font:MONO,alpha:eo(fp)})}
+    }
+  });
+  const na=eo(prog(t,1.2,.3));
+  text(String(n),W/2-10,780,{size:150,weight:800,align:'right',alpha:na,ls:-4});
+  text('gün üst üste',W/2+10,760,{size:44,weight:700,color:T.muted,alpha:na});
+  // rozet
+  const bp=prog(t,4.1,.6);
+  if(bp>0){
+    const a=eo(bp),sc=back(bp);
+    x.save();x.translate(W/2,900);x.scale(sc,sc);x.globalAlpha=a;
+    rr(-190,-40,380,80,40);x.fillStyle=T.brandSoft;x.fill();x.strokeStyle=T.brand;x.lineWidth=2;x.stroke();
+    x.save();x.translate(-150,0);x.rotate(Math.PI/4);rr(-14,-14,28,28,6);x.fillStyle=SCORE[4];x.fill();x.restore();
+    text('Rozet: ilk hafta',20,11,{size:30,weight:700,align:'center',color:T.onBrandSoft});
+    x.restore();
+  }
+}});
+
+// 8) Kapanış
+S.push({d:5,f(t){
+  const N=9,g=74,s=58,ox=W/2-(N-1)*g/2,oy=H/2-(N-1)*g/2-40,r=rng(3);
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){
+    const k=r(),col=k<.5?EMO[(r()*8)|0]:SCORE[(r()*5)|0];
+    const d=(i+j)*.05+r()*.1,p=eo(prog(t,d,.5));
+    const edge=Math.min(i,j,N-1-i,N-1-j);
+    if(edge<2)tile(ox+j*g,oy+i*g,s*p,14,col,.9);
+  }
+  const a=eo(prog(t,1,.7));
+  text('ONE',W/2,oy+4*g+40,{size:130,weight:800,align:'center',alpha:a,ls:-6});
+  tile(W/2+150,oy+4*g-66,56,14,T.brand,a);
+  text('2.0',W/2+150,oy+4*g-55,{size:27,weight:800,color:'#0F1218',align:'center',alpha:a});
+  const b=eo(prog(t,1.6,.7));
+  text('Sırada: ekran spesifikasyonu',W/2,995,{size:36,weight:700,align:'center',alpha:b});
+  text('docs/one2 · Eylül 2026',W/2,1040,{size:24,weight:500,color:T.faint,align:'center',font:MONO,alpha:eo(prog(t,2,.7))});
+}});
+
+// sahneler arası kare perdesi
+const TR=.7;
+function wipe(p,dir){ // p: 0→1 kapanır (dir=1) / açılır (dir=-1)
+  const n=12,s=W/n;
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+    const d=(i+j)/(2*(n-1))*.55;let q=clamp((p-d)/.45);q=eio(q);
+    if(dir<0)q=1-q;
+    tile(j*s+s/2,i*s+s/2,(s+2)*q,8*(1-q),T.raised);
+  }
+}
+const total=S.reduce((a,s)=>a+s.d,0);
+function draw(time){
+  x.fillStyle=T.ground;x.fillRect(0,0,W,H);
+  let t=time,k=0;while(k<S.length-1&&t>=S[k].d){t-=S[k].d;k++}
+  S[k].f(t);
+  // geçişler: sahne sonunda kapanır, sonraki başında açılır
+  if(k<S.length-1&&t>S[k].d-TR/2)wipe((t-(S[k].d-TR/2))/(TR/2),1);
+  if(k>0&&t<TR/2)wipe(t/(TR/2),-1);
+  // son kararma
+  if(time>total-.6){x.fillStyle=`rgba(0,0,0,${eo(prog(time,total-.6,.6))})`;x.fillRect(0,0,W,H)}
+}
+window.TOTAL=total;window.FPS=FPS;window.draw=draw;
+window.ready=document.fonts.ready.then(()=>Promise.all([
+  "800 40px 'Plus Jakarta Sans'","700 40px 'Plus Jakarta Sans'","600 40px 'Plus Jakarta Sans'","500 40px 'Plus Jakarta Sans'",
+  "400 40px 'IBM Plex Mono'","500 40px 'IBM Plex Mono'","600 40px 'IBM Plex Mono'"
+].map(f=>document.fonts.load(f,'AğşıİçöüÇŞÖÜ✓′'))));
+</script></body></html>
