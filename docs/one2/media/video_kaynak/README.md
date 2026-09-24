@@ -1,21 +1,21 @@
-# ONE 2.0 hikâye videosu — kaynak
+# ONE 2.0 günlük akışı videosu — kaynak
 
-`../one2_hikaye.mp4`: 1080×1080, 30 fps, 67,5 sn. Anlatı tarzı: krem zemin,
-elle çizilmiş gibi beliren çizgiler (saniyede 8 kez hafif titreşim), serif
-anlatı cümleleri kelime kelime. Kahraman "gün = kare".
+`../one2_gunluk_akisi.mp4`: 1080×1920 (Reels / TikTok / Shorts), 30 fps, 46,5 sn.
+Piksel sanatı: sahne 180×320 pikselde çizilir, 6 kat büyütülür; yazılar
+Pixelify Sans ile aynı ızgarada basılır. Arayüz renkleri `design-system/tokens.json` (gece).
 
-Bölümler: 1 her gün bir kare · 2 çoğu geçip gider · 3 ONE doğdu (v3) ·
-4 günün tamamı (sabah, check-in, günlük, akşam) · 5 eski anılar güvende ·
-6 Faz 0 planı · 7 temel: 14 motor · 8 seri ve rozet · 9 hikâye yeni başlıyor.
+Öykü, bir salı gününün giriş akışı (`05_ux_promptlari.md` UX-4/5/6):
+kilit ekranı bildirimi → Bugün → check-in (skor, duygular, nedenler, not) →
+"Kaydedildi." → gün içinde yeni anlar → akşam haftalık tema sorusuna yazı →
+"Bugün kapandı." → yıl mozaiği → kapanış kartı. Gökyüzü şafaktan geceye döner.
 
 ## Yeniden üretmek
 
-1. Fontlar (Lora, Poppins): `npm pack @fontsource/lora @fontsource/poppins`,
-   paketleri bu klasörde `fonts/` altına aç; ağırlık CSS'lerini
-   (Lora `400`, `400-italic`, `500`; Poppins `400`–`700`) `url(fonts/<paket>/files/…)`
-   yoluyla birleştirip `fonts.css` olarak kaydet.
-2. `python3 -m http.server 8766` (bu klasörde).
-3. `NODE_PATH=$(npm root -g) node render.js http://localhost:8766/index.html out.mp4 <ffmpeg>`
-   Tek kare önizleme: son argümana saniye listesi ver (`… prev x 5.5,12`).
+1. Font: `npm pack @fontsource/pixelify-sans`, paketi bu klasörde `fonts/` altına aç;
+   `400`, `500`, `700` CSS'lerini `url(fonts/<paket>/files/…)` yoluyla birleştirip
+   `fonts.css` olarak kaydet.
+2. `python3 -m http.server 8767` (bu klasörde).
+3. `NODE_PATH=$(npm root -g) node render.js http://localhost:8767/index.html out.mp4 <ffmpeg>`
+   Tek kare önizleme: son argümana saniye listesi ver (`… prev x 6,12.6`).
 
-Durum değişince (ADR-001 iş listesi, motor sayısı, "Sırada" satırı) metinleri güncelle.
+Zamanlama `K` nesnesinde, anlatı cümleleri `draw()` sonundaki `caption` çağrılarında.

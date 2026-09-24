@@ -3,7 +3,7 @@ const { spawn } = require('child_process');
 const [,, url, out, ffmpeg, only] = process.argv;
 (async () => {
   const b = await chromium.launch();
-  const p = await b.newPage({ viewport: { width: 1080, height: 1080 } });
+  const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
   await p.goto(url); await p.evaluate(() => window.ready);
   const total = await p.evaluate(() => window.TOTAL), fps = 30;
   if (only) { // tek kare önizleme: only = saniye listesi
