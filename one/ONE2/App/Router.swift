@@ -77,6 +77,9 @@ final class Router {
     var sheet: SheetRoute?
     var cover: CoverRoute?
     var notice: RouterNotice?
+    /// Uygulama bu oturumda bir bağlantıyla (bildirim, widget, derin bağlantı)
+    /// açıldı: açılış check-in'i kendiliğinden açılmaz (07 §5.2).
+    private(set) var openedFromLink = false
 
     func path(for tab: ONE2Tab) -> [Route] { paths[tab] ?? [] }
 
@@ -113,6 +116,7 @@ final class Router {
     @discardableResult
     func handle(_ url: URL) -> Bool {
         guard let destination = DeepLink.destination(for: url) else { return false }
+        openedFromLink = true
         open(destination)
         return true
     }

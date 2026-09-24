@@ -16,6 +16,11 @@ struct ONE2RootView: View {
     let environment: AppEnvironment
 
     @State private var dockHeight: CGFloat = 0
+    /// Kabuk oturumundaki akış taslakları ve bitişleri (UX-11'de motorda).
+    @State private var flowDrafts: [FlowKind: FlowDraftData] = [:]
+    @State private var finishedFlows: [FlowKind: FlowSession] = [:]
+    /// Açılış check-in'i bu süreçte bir kez denenir (günün ilk açılışı motordan).
+    @State private var didCheckLaunch = false
     /// + sayfası kapanınca açılacak hedef (sheet ile cover aynı anda sunulmaz).
     @State private var pendingPlus: PlusAction?
 
@@ -52,7 +57,27 @@ struct ONE2RootView: View {
         .tint(ONE2Color.ink)
         .environment(\.one2, environment)
         .environment(router)
+        .task { await openLaunchCheckInIfNeeded() }
     }
+
+    /// Bağlantının açılışı yakalaması için kısa bir bekleme; sonra 07 §5.2 kuralı.
+    private func openLaunchCheckInIfNeeded() async {
+        guard !didCheckLaunch else { return }
+        didCheckLaunch = true
+        try? await Task.sleep(for: .milliseconds(Self.launchCheckInDelayMS))
+        let hour = environment.clock.calendar.component(.hour, from: environment.clock.now)
+        let open = LaunchCheckIn.shouldOpen(
+            isEnabled: TodayFixture.launchCheckInEnabled,
+            isFirstOpenToday: true,
+            openedViaLink: router.openedFromLink,
+            mode: TodayFixture.notStarted.mode,
+            hour: hour
+        )
+        guard open, router.cover == nil, router.sheet == nil else { return }
+        router.cover = .flow(.moodCheckIn, day: nil)
+    }
+
+    static let launchCheckInDelayMS = 600
 
     private func pathBinding(for tab: ONE2Tab) -> Binding<[Route]> {
         Binding(get: { router.path(for: tab) }, set: { router.setPath($0, for: tab) })
@@ -63,7 +88,7 @@ struct ONE2RootView: View {
     @ViewBuilder
     private func tabRoot(_ tab: ONE2Tab) -> some View {
         switch tab {
-        case .today:    TodayScreen(clock: environment.clock, source: TodayFixture.app)
+        case .today:    TodayScreen(clock: environment.clock, source: TodayFixture.app(drafts: flowDrafts, finished: finishedFlows))
         case .quotes:   QuotesScreen()
         case .explore:  ExploreScreen()
         case .journey:  JourneyScreen()
@@ -95,8 +120,24 @@ struct ONE2RootView: View {
         }
     }
 
+    @ViewBuilder
     private func coverScreen(_ cover: CoverRoute) -> some View {
-        CoverPlaceholderScreen(title: cover.title) { router.cover = nil }
+        switch cover {
+        case .flow(let kind, let day):
+            // Geri doldurmada taslak kullanılmaz; taslaklar yalnız bugüne ait.
+            FlowScreen(
+                flow: FlowFixture.flow(kind, day: day ?? FixtureClock.today, draft: day == nil ? flowDrafts[kind] : nil),
+                onDraft: { draft in if day == nil { flowDrafts[kind] = draft } },
+                onFinish: { session in
+                    guard day == nil else { return }
+                    flowDrafts[kind] = nil
+                    finishedFlows[kind] = session
+                },
+                onClose: { router.cover = nil }
+            )
+        default:
+            CoverPlaceholderScreen(title: cover.title) { router.cover = nil }
+        }
     }
 
     private func runPendingPlus() {

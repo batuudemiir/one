@@ -261,7 +261,40 @@ nonisolated enum TodayFixture {
     }
 
     /// Uygulamanın kabukta gösterdiği varsayılan (UX-11'e kadar).
-    static var app: TodaySource { source(notStarted) }
+    static var app: TodaySource { app(drafts: [:], finished: [:]) }
+
+    /// Kabuk oturumunda yarıda bırakılan ve biten akışlar kartlara yansır:
+    /// taslak → "Devam et · n/m", bitiş → tamam (skor ve yankıyla).
+    static func app(drafts: [FlowKind: FlowDraftData], finished: [FlowKind: FlowSession]) -> TodaySource {
+        let cards = notStarted.checkIns.map { card -> CheckInCardData in
+            if let session = finished[card.flow] {
+                let summary = CheckInSummary(
+                    id: "fx_checkin_session_\(card.flow.rawValue)",
+                    time: FixtureClock.now,
+                    slot: card.slot,
+                    score: session.score ?? 3,
+                    emotions: [],
+                    causes: [],
+                    echo: session.flow.echo
+                )
+                return CheckInCardData(slot: card.slot, flow: card.flow, status: .done(summary, detail: nil), minutes: card.minutes)
+            }
+            if let draft = drafts[card.flow] {
+                let total = FlowFixture.flow(card.flow).steps.count
+                return CheckInCardData(slot: card.slot, flow: card.flow,
+                                       status: .inProgress(step: draft.stepIndex + 1, total: total), minutes: card.minutes)
+            }
+            return card
+        }
+        let data = TodayData(
+            userName: notStarted.userName, mode: notStarted.mode, isFirstDay: false, streak: notStarted.streak,
+            resurface: notStarted.resurface, checkIns: cards, practices: notStarted.practices, theme: notStarted.theme
+        )
+        return source(data)
+    }
+
+    /// Profil › açılış check-in'i (UX-11'de ayar deposundan).
+    static let launchCheckInEnabled = true
 
     static var loading: TodaySource {
         TodaySource(today: today, weeks: weeks) { _ in .loading }

@@ -58,6 +58,8 @@ nonisolated struct FlowStepViewData: Identifiable, Equatable, Sendable {
     var quote: QuoteCardData? = nil
     /// `practices`: bugünkü pratikler (Bugün'deki işaretlerle senkron).
     var practices: [PracticeTileData]? = nil
+    /// `emotions`: duygu kataloğu, aile sırasıyla (E1 katalog).
+    var emotions: [EmotionItem]? = nil
 }
 
 /// Adım cevabı. Taslakta adım kimliğiyle saklanır.
@@ -117,6 +119,10 @@ nonisolated struct FlowViewData: Identifiable, Equatable, Sendable {
     let minutes: Int
     /// Varsa akış bu adımdan devam eder.
     let draft: FlowDraftData?
+    /// Kapanışta tek cümle yankı (E6); motor kayıttan sonra üretir.
+    var echo: String? = nil
+    /// Akşam: sabah `list3`'te işaretlenmemiş maddeler ("Yarına taşıyayım mı?").
+    var carryOver: [String] = []
 
     var startIndex: Int { min(draft?.stepIndex ?? 0, max(steps.count - 1, 0)) }
 }

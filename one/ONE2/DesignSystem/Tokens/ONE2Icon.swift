@@ -24,6 +24,7 @@ nonisolated enum ONE2Icon: String, CaseIterable, Sendable {
     case chevronDown = "chevron.down"
     case chevronRight = "chevron.right"
     case add = "plus"
+    case minus = "minus"
     case share = "square.and.arrow.up"
     case like = "heart"
     case liked = "heart.fill"

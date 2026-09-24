@@ -3,8 +3,9 @@
 //  ONE 2.0
 //
 //  1–5 mood skoru (components/ScoreScale.md, `.o-score`): beş disk, her biri
-//  kendi `score-N` renginde ve rakamlı; altında kısa etiket. Yüz ifadesi yok.
-//  Seçili: `ground` boşluk + `ink` halka, etiket `ink`. Seçimde `selection`
+//  kendi `score-N` renginde ve rakamlı; altında etiket (07 §5.2: Çok zor ·
+//  Zor · İdare eder · İyi · Çok iyi). Yüz ifadesi yok. Seçili: `ground`
+//  boşluk + `ink` halka (180 ms, 07 §7), etiket `ink`. Seçimde `selection`
 //  haptiği. Diskler 60pt; beşi sığmıyorsa genişliğe göre küçülür.
 //  VoiceOver: "4, İyi".
 //
@@ -13,9 +14,18 @@ import SwiftUI
 
 struct ScoreScale: View {
     var selection: Int? = nil
+    /// Beş etiket (1…5); yoksa mood skoru etiketleri. Uyku adımı kendi
+    /// etiketlerini verir (07 §5.2 Akış 3).
+    var labels: [String]? = nil
     let onSelect: (Int) -> Void
 
     @State private var width: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private func label(_ score: Int) -> String {
+        guard let labels, labels.indices.contains(score - 1) else { return ONE2Score.label(score) }
+        return labels[score - 1]
+    }
 
     private var discDiameter: CGFloat {
         let count = CGFloat(ONE2Score.range.count)
@@ -41,7 +51,8 @@ struct ScoreScale: View {
         } label: {
             VStack(spacing: ONE2Space.s2) {
                 ScoreDisc(score: score, isSelected: isSelected, fittedDiameter: discDiameter)
-                Text(ONE2Score.label(score, compact: true))
+                    .animation(ONE2Motion.animation(.chip, reduceMotion: reduceMotion), value: isSelected)
+                Text(label(score))
                     .one2Type(.callout)
                     .foregroundStyle(isSelected ? ONE2Color.ink : ONE2Color.inkMuted)
                     .multilineTextAlignment(.center)
@@ -53,7 +64,7 @@ struct ScoreScale: View {
         }
         .buttonStyle(.one2Press)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(ONE2Score.accessibilityLabel(score)))
+        .accessibilityLabel(Text("\(score), \(label(score))"))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 }
