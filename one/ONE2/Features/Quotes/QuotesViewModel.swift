@@ -14,6 +14,9 @@
 
 import Foundation
 import Observation
+#if canImport(CoreGraphics)
+import CoreGraphics
+#endif
 
 /// Kartın görülme ölçümünün dışarı açılan sözleşmesi (UX-7).
 protocol QuoteFeedActions: AnyObject {
