@@ -71,7 +71,7 @@ final class AppEnvironment {
                                  moodScore: { [clock] in (try? mood.logs(on: clock.today))?.last?.score })
         prompts = LivePromptEngine(content: self.content, exposure: exposure, journal: journal,
                                    profile: self.profile, clock: clock, local: local)
-        echoes = EchoEngine(content: self.content, exposure: exposure, profile: self.profile, clock: clock)
+        echoes = EchoEngine(content: self.content, exposure: exposure, profile: self.profile, clock: clock, mood: mood)
         recommendations = RecommendationEngine(content: self.content, prompts: prompts, journal: journal, day: day,
                                                mood: mood, profile: self.profile, clock: clock)
         badges = BadgeEngine(content: self.content, journal: journal, day: day, library: library, profile: self.profile)

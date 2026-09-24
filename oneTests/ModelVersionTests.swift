@@ -95,6 +95,7 @@ struct ModelVersionTests {
         let expected: [String: [String]] = [
             "Entry": ["searchText", "sourceContext", "comparedEntryID"],
             "DayRecord": ["completedBy"],
+            "MoodLog": ["echoID"],
             "ContentExposure": ["id", "contentID", "contentKind", "firstSeenAt", "lastSeenAt",
                                 "seenCount", "liked", "likedAt", "lastEntryID", "lastWrittenAt",
                                 "writtenCount"],

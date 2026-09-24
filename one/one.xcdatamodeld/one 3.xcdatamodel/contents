@@ -78,6 +78,7 @@
         <attribute name="note" optional="YES" attributeType="String"/>
         <attribute name="source" optional="YES" attributeType="String"/>
         <attribute name="healthKitSampleID" optional="YES" attributeType="String"/>
+        <attribute name="echoID" optional="YES" attributeType="String"/>
         <relationship name="entry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Entry" inverseName="mood" inverseEntity="Entry"/>
     </entity>
     <entity name="DayRecord" representedClassName="DayRecordMO" syncable="YES" codeGenerationType="class">

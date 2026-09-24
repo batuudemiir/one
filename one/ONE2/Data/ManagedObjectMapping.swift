@@ -126,7 +126,9 @@ extension MoodLogMO {
             note: note,
             source: source.flatMap(MoodSource.init(rawValue:)) ?? .checkIn,
             healthKitSampleID: healthKitSampleID,
-            entryID: entry?.id
+            entryID: entry?.id,
+            entryKind: entry?.kind.flatMap(EntryKind.init(rawValue:)),
+            echoID: echoID
         )
     }
 }

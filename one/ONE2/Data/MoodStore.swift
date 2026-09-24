@@ -65,6 +65,14 @@ final class MoodStore {
         try context.saveIfNeeded()
     }
 
+    /// Check-in'e gösterilen yankı saklanır (E6): kart yeniden açıldığında
+    /// ve diğer cihazda aynı cümle görünür.
+    func setEchoID(_ echoID: String, for id: UUID) throws {
+        guard let row: MoodLogMO = try context.fetchOne(ONE2Entity.mood, id: id) else { throw StoreError.notFound }
+        row.echoID = echoID
+        try context.saveIfNeeded()
+    }
+
     func delete(_ id: UUID) throws {
         guard let row: MoodLogMO = try context.fetchOne(ONE2Entity.mood, id: id) else { return }
         context.delete(row)
