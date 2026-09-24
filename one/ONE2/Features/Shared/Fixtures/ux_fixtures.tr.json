@@ -1,0 +1,63 @@
+{
+  "_note": "UX fixture içeriği (06_giris_akislari.md). Yalnız önizleme ve testler; gerçek içerik motordan gelir (UX-11).",
+  "streak": 12,
+  "practices": [
+    { "id": "pr_nefes", "label": "Nefes molası", "group": "wind" },
+    { "id": "pr_yuruyus", "label": "Kısa yürüyüş", "group": "figure.walk" },
+    { "id": "pr_okuma", "label": "On sayfa okuma", "group": "book" }
+  ],
+  "theme": {
+    "name": "Yavaşlık",
+    "dayIndex": 3,
+    "prompt": "Bugün neyi acele etmeden yaptın?",
+    "writtenFirstLine": "Sabah kahvemi oturarak içtim, telefona bakmadan."
+  },
+  "echoes": {
+    "moodCheckIn": "Nasıl olduğunu fark etmek de bir adım.",
+    "daily": "Bugünü birkaç satırla tuttun.",
+    "morning": "Güne ne istediğini bilerek giriyorsun.",
+    "evening": "Günü kendi kelimelerinle kapattın."
+  },
+  "dailyPrompts": [
+    "Bugün seni en çok ne meşgul etti?",
+    "Bu hafta kendine nasıl iyi davrandın?",
+    "Bugün ertelediğin küçük bir şey var mı?"
+  ],
+  "previousAnswer": "İş yerindeki toplantı aklımdan çıkmadı.\nAkşam yürüyüşe çıkınca biraz hafifledim.\nYarın daha erken başlamak istiyorum.",
+  "quote": {
+    "id": "q_fixture_01",
+    "text": "Yavaşlamak da ileri gitmenin bir yoludur."
+  },
+  "emotions": [
+    { "id": "e_mutlu", "label": "Mutlu", "group": "nese" },
+    { "id": "e_umutlu", "label": "Umutlu", "group": "nese" },
+    { "id": "e_huzurlu", "label": "Huzurlu", "group": "huzur" },
+    { "id": "e_rahat", "label": "Rahat", "group": "huzur" },
+    { "id": "e_hevesli", "label": "Hevesli", "group": "enerji" },
+    { "id": "e_odakli", "label": "Odaklı", "group": "enerji" },
+    { "id": "e_minnettar", "label": "Minnettar", "group": "sevgi" },
+    { "id": "e_yakin", "label": "Yakın", "group": "sevgi" },
+    { "id": "e_kaygili", "label": "Kaygılı", "group": "kaygi" },
+    { "id": "e_gergin", "label": "Gergin", "group": "kaygi" },
+    { "id": "e_huzunlu", "label": "Hüzünlü", "group": "huzun" },
+    { "id": "e_yalniz", "label": "Yalnız", "group": "huzun" },
+    { "id": "e_kizgin", "label": "Kızgın", "group": "ofke" },
+    { "id": "e_sabirsiz", "label": "Sabırsız", "group": "ofke" },
+    { "id": "e_yorgun", "label": "Yorgun", "group": "yorgun" },
+    { "id": "e_bitkin", "label": "Bitkin", "group": "yorgun" }
+  ],
+  "causes": [
+    { "id": "c_is", "label": "İş" },
+    { "id": "c_uyku", "label": "Uyku" },
+    { "id": "c_aile", "label": "Aile" },
+    { "id": "c_arkadaslar", "label": "Arkadaşlar" },
+    { "id": "c_saglik", "label": "Sağlık" },
+    { "id": "c_hava", "label": "Hava" },
+    { "id": "c_hareket", "label": "Hareket" },
+    { "id": "c_para", "label": "Para" }
+  ],
+  "morningList": ["Raporu bitir", "Annemi ara", "Akşam yürüyüşü"],
+  "morningDoneItems": [0],
+  "morningFocus": "sabir",
+  "moodEmotions": ["Huzurlu", "Minnettar"]
+}

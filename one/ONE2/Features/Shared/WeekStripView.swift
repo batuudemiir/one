@@ -2,25 +2,27 @@
 //  WeekStripView.swift
 //  ONE 2.0
 //
-//  Hafta şeridi (WeekStrip.md): gün kısaltması + tarih; kapanan günde
-//  tarih yerine tik, bugün çerçeveli. Kapanışta (`revealToday`) bugünün
-//  hücresi ekranda tike döner. Geriye dönük doldurma akışı gelene kadar
-//  hücreler dokunulamaz.
+//  Hafta şeridi (WeekStrip.md, 06 › Bugün 2): gün kısaltması + tarih.
+//  done: tik · half: yarım disk · gap: sönük tarih (7 gün içindeyse
+//  dokununca doldurma) · today: çerçeveli, kalın · future: sönük,
+//  dokunulamaz. Kapanışta (`revealToday`) bugünün hücresi tike döner.
 //
 
 import SwiftUI
 
 struct WeekStripView: View {
-    let cells: [WeekDayCell]
+    let days: [WeekDayViewData]
     var revealToday = false
+    /// Doldurulabilir boş güne dokunuş; `nil` ise hücreler dokunulamaz.
+    var onBackfill: ((WeekDayViewData) -> Void)?
 
     @State private var revealed = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(cells) { cell in
-                column(cell)
+            ForEach(days) { day in
+                cell(day)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -31,31 +33,44 @@ struct WeekStripView: View {
         }
     }
 
-    private func state(_ cell: WeekDayCell) -> WeekDayState {
-        revealToday && cell.isToday && !revealed ? .open : cell.state
+    private func status(_ day: WeekDayViewData) -> WeekDayStatus {
+        revealToday && day.isToday && !revealed ? .today : day.status
     }
 
-    private func column(_ cell: WeekDayCell) -> some View {
+    @ViewBuilder
+    private func cell(_ day: WeekDayViewData) -> some View {
+        if day.canBackfill, let onBackfill {
+            Button { onBackfill(day) } label: {
+                column(day).contentShape(Rectangle())
+            }
+            .buttonStyle(.onePressable)
+            .accessibilityHint(NSLocalizedString("one2.week.backfillHint", comment: "Week strip: tap to fill this day"))
+        } else {
+            column(day)
+        }
+    }
+
+    private func column(_ day: WeekDayViewData) -> some View {
         VStack(spacing: V3Tokens.spacingXS) {
-            Text(Calendar.current.shortStandaloneWeekdaySymbols[WeekStripModel.symbolIndex(for: cell.day)])
+            Text(day.weekdayLabel)
                 .v3MicroLabel(0.4)
                 .foregroundColor(V3Tokens.mutedText)
-            mark(cell)
+            mark(day)
                 .frame(width: V3Tokens.minTouchTarget, height: V3Tokens.minTouchTarget)
                 .overlay {
-                    if cell.isToday {
+                    if day.isToday {
                         RoundedRectangle(cornerRadius: V3Tokens.radiusInner, style: .continuous)
-                            .strokeBorder(V3Tokens.ink, lineWidth: 1)
+                            .strokeBorder(V3Tokens.lineStrong, lineWidth: 1)
                     }
                 }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(accessibilityLabel(cell))
+        .accessibilityLabel(accessibilityLabel(day))
     }
 
     @ViewBuilder
-    private func mark(_ cell: WeekDayCell) -> some View {
-        switch state(cell) {
+    private func mark(_ day: WeekDayViewData) -> some View {
+        switch status(day) {
         case .done:
             Image(systemName: "checkmark")
                 .iconMD(weight: .semibold)
@@ -65,26 +80,25 @@ struct WeekStripView: View {
             Image(systemName: "circle.lefthalf.filled")
                 .iconSM()
                 .foregroundColor(V3Tokens.ink)
-        case .open:
-            Text(verbatim: "\(cell.day.day)")
+        case .today:
+            Text(verbatim: "\(day.dayNumber)")
                 .bodyMDSemibold()
-                .foregroundColor(cell.isToday ? V3Tokens.ink : V3Tokens.faintText)
-        case .future:
-            Text(verbatim: "\(cell.day.day)")
+                .foregroundColor(V3Tokens.ink)
+        case .gap, .future:
+            Text(verbatim: "\(day.dayNumber)")
                 .bodyMD()
                 .foregroundColor(V3Tokens.faintText)
         }
     }
 
-    private func accessibilityLabel(_ cell: WeekDayCell) -> String {
-        let date = cell.day.startDate(in: .current)?.formatted(.dateTime.weekday(.wide).day().month(.wide)) ?? cell.day.string
+    private func accessibilityLabel(_ day: WeekDayViewData) -> String {
         let status: String
-        switch cell.state {
+        switch day.status {
         case .done:   status = NSLocalizedString("one2.week.done", comment: "Week strip: day complete")
         case .half:   status = NSLocalizedString("one2.week.half", comment: "Week strip: half complete")
-        case .open:   status = NSLocalizedString("one2.week.open", comment: "Week strip: not complete")
+        case .gap, .today: status = NSLocalizedString("one2.week.open", comment: "Week strip: not complete")
         case .future: status = NSLocalizedString("one2.week.future", comment: "Week strip: upcoming day")
         }
-        return cell.isToday ? "\(ONE2Tab.today.title), \(date), \(status)" : "\(date), \(status)"
+        return day.isToday ? "\(ONE2Tab.today.title), \(day.longLabel), \(status)" : "\(day.longLabel), \(status)"
     }
 }

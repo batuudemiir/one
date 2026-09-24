@@ -49,7 +49,7 @@ struct SealView: View {
                 }
                 .multilineTextAlignment(.center)
 
-                WeekStripView(cells: seal.week, revealToday: seal.completedDay)
+                WeekStripView(days: WeekStripAdapter.viewData(seal.week), revealToday: seal.completedDay)
                     .padding(.top, V3Tokens.spacingSM)
 
                 ForEach(seal.badges, id: \.self) { badge in

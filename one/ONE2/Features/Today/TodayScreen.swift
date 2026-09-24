@@ -47,7 +47,7 @@ struct TodayScreen: View {
                 if router.notice == .circleUnavailable {
                     CircleNoticeCard { router.notice = nil }
                 }
-                WeekStripView(cells: model.week)
+                WeekStripView(days: WeekStripAdapter.viewData(model.week))
                 if let quote = model.dailyQuote {
                     dailyQuoteCard(quote, written: model.wroteAboutDailyQuote)
                 }

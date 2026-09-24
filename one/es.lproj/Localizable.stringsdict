@@ -162,5 +162,37 @@
 			<string>%lld palabras</string>
 		</dict>
 	</dict>
+	<key>one2.today.streak</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Racha de %lld día</string>
+			<key>other</key>
+			<string>Racha de %lld días</string>
+		</dict>
+	</dict>
+	<key>one2.ritual.summary.practices</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld práctica hecha</string>
+			<key>other</key>
+			<string>%lld prácticas hechas</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

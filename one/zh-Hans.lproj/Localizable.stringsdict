@@ -142,5 +142,33 @@
 			<string>%lld 字</string>
 		</dict>
 	</dict>
+	<key>one2.today.streak</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>连续 %lld 天</string>
+		</dict>
+	</dict>
+	<key>one2.ritual.summary.practices</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>完成 %lld 项练习</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

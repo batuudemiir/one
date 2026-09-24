@@ -130,6 +130,8 @@ Commit, rapor (gece/gün iki simülatör ekran görüntüsü), dur.
 
 ## UX-4 — Bugün ekranı
 
+> **Geçersiz:** yerini `06_giris_akislari.md` (UX-4b / UX-5b) aldı.
+
 ```
 UX-4: Features/Today/ — Bugün ekranını ScreenBugun.preview.html'e birebir kur (fixture verisiyle).
 
@@ -152,6 +154,8 @@ Commit, rapor, dur.
 ---
 
 ## UX-5 — Check-in akışı
+
+> **Geçersiz:** yerini `06_giris_akislari.md` (UX-4b / UX-5b) aldı.
 
 ```
 UX-5: Features/Checkin/ — tam ekran check-in akışı (fullScreenCover), 4 adım, üstte ince ilerleme çizgileri ve kapatma.

@@ -93,6 +93,71 @@ enum V3Tokens {
     static let ghostText  = adaptive(light: "#72727E", dark: "#80808E",
                                      lightHigh: "#5B5B67", darkHigh: "#9D9DAB")  // yer tutucu, sayaç (4.55 / 4.63 → 6.41 / 6.73)
 
+    // MARK: ONE 2.0 (docs/one2/design-system/tokens.json)
+    //
+    // Değerler tokens.json'dan (gün = açık, gece = koyu). Zemin/metin
+    // nötrleri henüz v3'te; bunlar ONE 2.0'ın yeni anlam renkleri.
+
+    /// Tek vurgu, mürekkep mavisi. Bugün ekranında yalnız seri sayısı.
+    static let brand       = adaptive(light: "#2438C8", dark: "#9AA6FF")
+    /// Seçili etiket zemini ve üstündeki metin.
+    static let brandSoft   = adaptive(light: "#E4E7FB", dark: "#232B57")
+    static let onBrandSoft = adaptive(light: "#2438C8", dark: "#C9CFFF")
+    /// Anlam taşıyan sınır: seçilmemiş kontrol, bugün hücresi (3:1+).
+    static let lineStrong  = adaptive(light: "#8A8A90", dark: "#66666E")
+
+    /// Mood skoru 1–5 (renk körlüğünde güvenli; her zaman rakamla).
+    static let score1 = adaptive(light: "#2E3F8F", dark: "#5B6CCB")
+    static let score2 = adaptive(light: "#7883BD", dark: "#8F99D0")
+    static let score3 = adaptive(light: "#A6A89F", dark: "#9A9C94")
+    static let score4 = adaptive(light: "#E9B650", dark: "#E9B650")
+    static let score5 = adaptive(light: "#E07A1F", dark: "#F08A2E")
+    static let onScoreLight = adaptive(light: "#FFFFFF", dark: "#FFFFFF")
+    static let onScoreDark  = adaptive(light: "#15181D", dark: "#15181D")
+
+    static func score(_ value: Int) -> Color {
+        switch value {
+        case ...1: return score1
+        case 2:    return score2
+        case 3:    return score3
+        case 4:    return score4
+        default:   return score5
+        }
+    }
+
+    /// Skor diskinin üstündeki rakam: 1'de açık, diğerlerinde koyu.
+    static func onScore(_ value: Int) -> Color { value <= 1 ? onScoreLight : onScoreDark }
+
+    /// Duygu aileleri (EmotionChip noktası ve seçili dolgusu).
+    static let emoNese   = adaptive(light: "#E3A21A", dark: "#E9AE2E")
+    static let emoHuzur  = adaptive(light: "#5E8F71", dark: "#6FA684")
+    static let emoEnerji = adaptive(light: "#E0643E", dark: "#E97650")
+    static let emoSevgi  = adaptive(light: "#CF6A8A", dark: "#DB7D9B")
+    static let emoKaygi  = adaptive(light: "#7D5596", dark: "#A27FBA")
+    static let emoHuzun  = adaptive(light: "#46679A", dark: "#7394C8")
+    static let emoOfke   = adaptive(light: "#A93F2C", dark: "#D0654D")
+    static let emoYorgun = adaptive(light: "#687080", dark: "#8D96A3")
+    /// Seçili duygu dolgusunun üstündeki metin: gün temasında son dört aile açık.
+    static let onEmoDark      = adaptive(light: "#15181D", dark: "#15181D")
+    static let onEmoContrast  = adaptive(light: "#FFFFFF", dark: "#15181D")
+
+    static func emotion(_ family: String?) -> Color {
+        switch family {
+        case "nese":   return emoNese
+        case "huzur":  return emoHuzur
+        case "enerji": return emoEnerji
+        case "sevgi":  return emoSevgi
+        case "kaygi":  return emoKaygi
+        case "huzun":  return emoHuzun
+        case "ofke":   return emoOfke
+        default:       return emoYorgun
+        }
+    }
+
+    static func onEmotion(_ family: String?) -> Color {
+        ["kaygi", "huzun", "ofke", "yorgun"].contains(family ?? "yorgun") ? onEmoContrast : onEmoDark
+    }
+
     /// Tema-bağımsız sabitler — koyu zeminli yüzeyler (poster, kamera vizörü,
     /// hikaye modu) açık temada da koyu kalmalı.
     static let darkGround = Color(hex: "#0C0C10")
