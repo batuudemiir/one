@@ -98,7 +98,8 @@ struct ModelVersionTests {
             "MoodLog": ["echoID"],
             "ContentExposure": ["id", "contentID", "contentKind", "firstSeenAt", "lastSeenAt",
                                 "seenCount", "liked", "likedAt", "lastEntryID", "lastWrittenAt",
-                                "writtenCount"],
+                                "writtenCount", "shareCount", "lastSharedAt", "longLookCount",
+                                "lastLongLookAt", "skipCount", "lastSkippedAt"],
         ]
         for (entity, names) in expected {
             let attrs = try #require(entities[entity]).attributesByName

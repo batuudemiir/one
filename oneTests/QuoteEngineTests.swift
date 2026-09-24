@@ -24,8 +24,11 @@ enum QuoteFixture {
             let kind: QuoteKind = i % 10 == 9 ? .affirmation : .quote
             let text = i % 3 == 0 ? "Kısa söz \(i)." : "Bu biraz daha uzun bir cümle, sayısı \(i), ve sakin bir düşünce taşıyor."
             return Quote(id: String(format: "q_%06d", i + 1), text: text, kind: kind,
-                         author: kind == .quote ? "Yazar \(i % authorCount)" : nil, source: kind == .quote ? "Eser" : nil,
+                         authorID: kind == .quote ? authorID(i % authorCount) : nil,
+                         sourceRef: kind == .quote ? SourceRef(work: "Eser", translation: .original) : nil,
                          license: kind == .quote ? .publicDomain : .original,
+                         // Ton yoldan ve yazardan bağımsız dağılır (i/5).
+                         tones: [QuoteTone.allCases[(i / 5) % QuoteTone.allCases.count].rawValue],
                          themes: [themes[i % themes.count], themes[(i / 3) % themes.count]],
                          paths: [paths[i % paths.count]], moodFit: [1 + i % 5],
                          timeOfDay: [.any, .morning, .evening, .day][i % 4],
@@ -217,10 +220,16 @@ struct QuoteEngineTests {
             }
             return all
         }
-        let free = await drain(QuoteFixture.rig(quotes), .forYou)
+        let freeRig = QuoteFixture.rig(quotes)
+        let free = await drain(freeRig, .forYou)
+        // Keşif payı (S4): ücretsizde kilitsiz tanıtım kartı, günde en fazla 2.
+        let intros = free.filter { freeRig.engine.isDiscovery($0.id) }
+        #expect(intros.count <= QuoteSelection.introDailyLimit)
+        #expect(intros.allSatisfy { !$0.paths.contains("stoacilar") })
+        let regular = free.filter { !freeRig.engine.isDiscovery($0.id) }
         let expectedFree = quotes.filter { $0.kind == .quote && $0.verified && !$0.premium && $0.paths == ["stoacilar"] }
-        #expect(Set(free.map(\.id)) == Set(expectedFree.map(\.id)))
-        #expect(free.count == expectedFree.count)
+        #expect(Set(regular.map(\.id)) == Set(expectedFree.map(\.id)))
+        #expect(regular.count == expectedFree.count)
 
         let premium = await drain(QuoteFixture.rig(quotes, paths: ["stoacilar"], premium: true), .forYou)
         let expectedPremium = quotes.filter { $0.kind == .quote && $0.verified }

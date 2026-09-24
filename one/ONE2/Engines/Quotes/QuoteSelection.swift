@@ -34,19 +34,40 @@ nonisolated enum QuoteFeedMode: Hashable, Sendable {
     /// Favoriler ve yazılanlar kendi listeleri; akış kuralları uygulanmaz (E2.2 kural 5).
     var isList: Bool { self == .favorites || self == .written }
 
-    var isThinker: Bool { if case .thinker = self { return true } else { return false } }
 }
 
-/// Puan bileşenlerinin ağırlıkları (E2.3 tablo); `quotes` yapılandırmasıyla değişebilir.
+/// Puan bileşenlerinin ağırlıkları (08 §4.3 tablo; E2.3'ü geçersiz kılar).
+/// Yapılandırmayla değişebilir; testte varsayılan sabit.
 nonisolated struct QuoteWeights: Hashable, Sendable {
-    var path = 0.30
-    var theme = 0.15
-    var timeOfDay = 0.10
-    var mood = 0.20
-    var interest = 0.15
+    var path = 0.20
+    var affinity = 0.15
+    var theme = 0.10
+    /// Ruh hali ve ton.
+    var mood = 0.15
+    var timeOfDay = 0.05
+    var interest = 0.10
+    var novelty = 0.15
     var random = 0.10
 
     static let `default` = QuoteWeights()
+}
+
+/// Çeşitlilik kurallarının moda göre açık olanları (08 §4.4).
+nonisolated struct DiversityRules: Hashable, Sendable {
+    /// Aynı düşünür 8 kartta 1, günde 2.
+    var sameThinker = true
+    /// Aynı yol en fazla 3 arka arkaya.
+    var samePath = true
+
+    static let all = DiversityRules()
+
+    static func `for`(_ mode: QuoteFeedMode) -> DiversityRules {
+        switch mode {
+        case .thinker: return DiversityRules(sameThinker: false, samePath: false)
+        case .path: return DiversityRules(sameThinker: true, samePath: false)
+        default: return .all
+        }
+    }
 }
 
 /// Seçim anındaki kullanıcı bağlamı.
@@ -99,6 +120,14 @@ nonisolated enum QuoteSelection {
     static let cycleTwoMinimumAge: TimeInterval = 60 * 86_400
     /// Düşük skorda öne çıkan yumuşak temalar.
     static let softThemes: Set<String> = ["ozsefkat", "kabul", "dinlenme", "umut", "yavaslik"]
+    /// Skor ≤ 2 iken artı ve eksi tonlar (08 §4.3).
+    static let lowMoodTones: Set<String> = [QuoteTone.sefkatli.rawValue, QuoteTone.sakin.rawValue]
+    static let highEnergyTones: Set<String> = [QuoteTone.cesur.rawValue, QuoteTone.uretken.rawValue]
+    /// Düşünür günde en fazla bu kadar (düşünür modu hariç).
+    static let thinkerDailyLimit = 2
+    /// Keşif payı: her 10 kartta 1; ücretsizde tanıtım kartı günde en fazla 2.
+    static let discoveryEvery = 10
+    static let introDailyLimit = 2
 
     // MARK: - Aday havuzu
 
@@ -157,16 +186,45 @@ nonisolated enum QuoteSelection {
         return (old, 2)
     }
 
+    /// Keşif adayları (08 §4.4): kullanıcının seçmediği bir yoldan görülmemiş
+    /// sözler. Yetki kapısı yok: ücretsizde tanıtım kartı. Sıralamayı
+    /// `discoveryOrder` verir.
+    static func discoveryCandidates(_ quotes: [Quote], context: QuoteContext,
+                                    exposure: ExposureSnapshot, excluding: Set<QuoteID>) -> [Quote] {
+        let selected = Set(context.quotePaths.isEmpty ? [context.freePath] : context.quotePaths)
+        return quotes.filter { q in
+            q.active && q.lang == context.lang && isFeedItem(q) && !excluding.contains(q.id)
+                && exposure[q.id]?.wasSeen != true
+                && !q.paths.isEmpty && selected.isDisjoint(with: q.paths) && q.authorID != nil
+        }
+    }
+
+    /// Önce hiç görülmemiş düşünürler (puan sırasıyla), sonra en uzun süredir
+    /// görülmeyenler. Havuz büyüdükçe ilk grup kalıcı olarak tükenir; ikinci
+    /// grup payın kurumasını önler.
+    static func discoveryOrder(_ ranked: [Quote], signals: ThinkerSignals) -> [Quote] {
+        ranked.enumerated().sorted { a, b in
+            let la = a.element.authorID.flatMap { signals.lastSeen[$0] } ?? .distantPast
+            let lb = b.element.authorID.flatMap { signals.lastSeen[$0] } ?? .distantPast
+            return la != lb ? la < lb : a.offset < b.offset
+        }.map(\.element)
+    }
+
+    /// Ücretsiz kullanıcıya kilitli olan (tanıtım) kart mı?
+    static func isIntro(_ q: Quote, context: QuoteContext) -> Bool { !isOpen(q, context: context) }
+
     // MARK: - Puan
 
     static func score(_ q: Quote, context: QuoteContext, interest: QuoteInterest, catalog: ContentCatalog,
-                      rng: inout SeededRandom) -> Double {
+                      signals: ThinkerSignals = .empty, rng: inout SeededRandom) -> Double {
         let w = context.weights
         return w.path * pathScore(q, context: context, catalog: catalog)
+            + w.affinity * signals.scaled(q.authorID)
             + w.theme * (context.weekThemeTags.isDisjoint(with: q.themes) ? 0 : 1)
             + w.timeOfDay * timeScore(q, context.dayPart)
             + w.mood * moodScore(q, context.moodScore)
             + w.interest * interestScore(q, interest)
+            + w.novelty * signals.novelty(q.authorID, now: context.now)
             + w.random * rng.unit()
     }
 
@@ -184,15 +242,18 @@ nonisolated enum QuoteSelection {
         return q.timeOfDay == part ? 1 : 0
     }
 
-    /// Skor ≤ 2 iken olumlama ve yumuşak temalar öne çıkar.
+    /// `moodFit` uyumu; skor ≤ 2 iken `sefkatli`/`sakin` artı, `cesur`/`uretken`
+    /// eksi, yumuşak tema küçük artı (08 §4.3). 0–1.
     static func moodScore(_ q: Quote, _ score: Int?) -> Double {
         guard let score else { return 0.5 }
+        var s = q.moodFit.isEmpty ? 0.5 : (q.moodFit.contains(score) ? 1 : 0)
         if score <= 2 {
-            if q.kind == .affirmation { return 1 }
-            if !softThemes.isDisjoint(with: q.themes) { return q.moodFit.isEmpty || q.moodFit.contains(score) ? 1 : 0.7 }
+            let tones = Set(q.tones)
+            if !tones.isDisjoint(with: lowMoodTones) { s += 0.5 }
+            if !tones.isDisjoint(with: highEnergyTones) { s -= 0.5 }
+            if !softThemes.isDisjoint(with: q.themes) { s += 0.25 }
         }
-        if q.moodFit.isEmpty { return 0.5 }
-        return q.moodFit.contains(score) ? 1 : 0
+        return min(1, max(0, s))
     }
 
     static func interestScore(_ q: Quote, _ interest: QuoteInterest) -> Double {
@@ -203,47 +264,96 @@ nonisolated enum QuoteSelection {
 
     /// Puana göre azalan; eşitlikte ID. Döngü 2'de puan yerine en eski görülme sırası korunur.
     static func ranked(_ quotes: [Quote], context: QuoteContext, interest: QuoteInterest,
-                       catalog: ContentCatalog, rng: inout SeededRandom) -> [Quote] {
-        let scored = quotes.map { ($0, score($0, context: context, interest: interest, catalog: catalog, rng: &rng)) }
+                       catalog: ContentCatalog, signals: ThinkerSignals = .empty,
+                       rng: inout SeededRandom) -> [Quote] {
+        let scored = quotes.map {
+            ($0, score($0, context: context, interest: interest, catalog: catalog, signals: signals, rng: &rng))
+        }
         return scored.sorted { ($0.1, $1.0.id) > ($1.1, $0.0.id) }.map(\.0)
     }
 
-    // MARK: - Çeşitlilik (E2.3)
+    // MARK: - Çeşitlilik (E2.3, 08 §4.4)
 
-    /// Sıralı adaylardan `count` tanesini çeşitlilik kısıtlarıyla dizer:
-    /// aynı yazar arka arkaya gelmez ve 8 kartta en fazla 1; aynı tür en fazla
-    /// 3 arka arkaya; her 5 kartta en az 1 kısa; aynı tema en fazla 2 arka
-    /// arkaya. `history` kuyrukta zaten sırada olan (ya da son gösterilen)
-    /// kartlardır; pencere onlarla devam eder. Kısıtı sağlayan aday yoksa en
-    /// az kısıt çiğneyen seçilir (havuz tükenirken boş akış yok).
-    /// `sameThinkerAllowed`: düşünür modunda aynı düşünür kısıtı yok (08 §4.4).
+    /// Sıralı adaylardan `count` tanesini çeşitlilik kısıtlarıyla dizer
+    /// (`violations`). `history` kuyrukta zaten sırada olan (ya da son
+    /// gösterilen) kartlardır; pencere onlarla devam eder. Kısıtı sağlayan
+    /// aday yoksa en az kısıt çiğneyen seçilir (havuz tükenirken boş akış yok).
     static func diversified(_ ranked: [Quote], count: Int, history: [Quote] = [],
-                            sameThinkerAllowed: Bool = false) -> [Quote] {
+                            rules: DiversityRules = .all, dayCounts: [ThinkerID: Int] = [:]) -> [Quote] {
+        assemble(ranked, discovery: [], count: count, history: history, rules: rules, dayCounts: dayCounts).quotes
+    }
+
+    /// `diversified` + keşif payı: sıra numarası (`startIndex` + yerleşen)
+    /// her `discoveryEvery`. karta geldiğinde kısıt çiğnemeyen ilk keşif adayı
+    /// konur; yoksa sıradaki kartta yeniden denenir. `introLimit` ücretsizde
+    /// kalan tanıtım hakkıdır (nil = sınırsız); `isIntro` hangi kartın hakkı
+    /// tükettiğini söyler. Keşif düşünürü bir kez kullanılır; normal akışta
+    /// yer alan düşünür keşif havuzundan düşer.
+    static func assemble(_ ranked: [Quote], discovery: [Quote], count: Int, history: [Quote] = [],
+                         startIndex: Int = 0, rules: DiversityRules = .all, dayCounts: [ThinkerID: Int] = [:],
+                         introLimit: Int? = nil, isIntro: (Quote) -> Bool = { _ in false })
+        -> (quotes: [Quote], discoveryIDs: [QuoteID]) {
         var remaining = ranked
+        var pool = discovery
         var placed: [Quote] = []
-        while placed.count < count, !remaining.isEmpty {
-            let sequence = history + placed
-            var bestIndex = 0, bestViolations = Int.max
-            for (i, q) in remaining.enumerated() {
-                let v = violations(q, after: sequence, sameThinkerAllowed: sameThinkerAllowed)
+        var discoveryIDs: [QuoteID] = []
+        var counts = dayCounts
+        var intros = introLimit
+        func best(_ list: [Quote], _ sequence: [Quote]) -> Int? {
+            var bestIndex: Int?, bestViolations = Int.max
+            for (i, q) in list.enumerated() {
+                let v = violations(q, after: sequence, rules: rules, dayCounts: counts)
                 if v < bestViolations { bestIndex = i; bestViolations = v }
                 if v == 0 { break }
             }
-            placed.append(remaining.remove(at: bestIndex))
+            return bestIndex
         }
-        return placed
+        var due = false
+        while placed.count < count {
+            let sequence = history + placed
+            let position = startIndex + placed.count
+            if position % discoveryEvery == discoveryEvery - 1 { due = true }
+            if due {
+                let allowed = pool.filter { q in intros.map { $0 > 0 || !isIntro(q) } ?? true }
+                if let i = best(allowed, sequence),
+                   violations(allowed[i], after: sequence, rules: rules, dayCounts: counts) == 0 {
+                    due = false
+                    let q = allowed[i]
+                    pool.removeAll { $0.authorID == q.authorID }
+                    remaining.removeAll { $0.id == q.id }
+                    if isIntro(q) { intros = intros.map { $0 - 1 } }
+                    placed.append(q)
+                    discoveryIDs.append(q.id)
+                    if let id = q.authorID { counts[id, default: 0] += 1 }
+                    continue
+                }
+            }
+            guard let i = best(remaining, sequence) else { break }
+            let q = remaining.remove(at: i)
+            pool.removeAll { $0.id == q.id || $0.authorID == q.authorID }
+            placed.append(q)
+            if let id = q.authorID { counts[id, default: 0] += 1 }
+        }
+        return (placed, discoveryIDs)
     }
 
     /// Kısıt ihlali sayısı; 0 = uygun.
-    static func violations(_ q: Quote, after sequence: [Quote], sameThinkerAllowed: Bool = false) -> Int {
+    /// - Aynı düşünür 8 kartta en fazla 1, günde en fazla 2 (`rules.sameThinker`).
+    /// - Aynı yol en fazla 3 arka arkaya (`rules.samePath`). 2+ yolda "her 10
+    ///   kartta en az 2 yol" bundan çıkar.
+    /// - Her 5 kartta en az 1 kısa; aynı tema en fazla 2 arka arkaya.
+    /// - Söz dışı türde aynı tür en fazla 3 arka arkaya (akış yalnız `quote`).
+    static func violations(_ q: Quote, after sequence: [Quote], rules: DiversityRules = .all,
+                           dayCounts: [ThinkerID: Int] = [:]) -> Int {
         var v = 0
         // Aynı düşünür: kimlik `authorID` (08); ad satırı yalnız gösterim.
-        if !sameThinkerAllowed, let author = q.authorID ?? q.author {
+        if rules.sameThinker, let author = q.authorID ?? q.author {
             if sequence.suffix(7).contains(where: { ($0.authorID ?? $0.author) == author }) { v += 1 }
+            if (dayCounts[author] ?? 0) >= thinkerDailyLimit { v += 1 }
         }
-        // Tür kuralı yalnız karışık türlü dizilerde anlamlı; akış artık yalnız
-        // `quote` (08 §1). Yerini S4'te yol kuralı alır.
         let lastThree = sequence.suffix(3)
+        if rules.samePath, lastThree.count == 3, !q.paths.isEmpty,
+           !lastThree.reduce(Set(q.paths), { $0.intersection($1.paths) }).isEmpty { v += 1 }
         if q.kind != .quote, lastThree.count == 3, lastThree.allSatisfy({ $0.kind == q.kind }) { v += 1 }
         let lastFour = sequence.suffix(4)
         if lastFour.count == 4, q.length != .short, !lastFour.contains(where: { $0.length == .short }) { v += 1 }
