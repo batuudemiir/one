@@ -7,6 +7,8 @@
 //  silme isteği.
 //
 //  Koordinatöre bağlı çalışır: yalnız izlenen store'a yapılan kayıtlara bakar.
+//  CloudKit aynasının kayıtları (başka cihazdaki v3'ün yazdıkları içeri
+//  alınırken) kural dışı değil; onlar sayılmaz.
 //  Varsayılan tepki DEBUG'da `assertionFailure`; release'de yalnız log.
 //  `ONE2Flag` açıkken kurulur (ADR-001 Faz 1 madde 8).
 //
@@ -24,7 +26,8 @@ nonisolated final class LegacyWriteGuard: @unchecked Sendable {
             forName: .NSManagedObjectContextWillSave, object: nil, queue: nil
         ) { [weak coordinator] note in
             guard let context = note.object as? NSManagedObjectContext,
-                  let coordinator, context.persistentStoreCoordinator === coordinator else { return }
+                  let coordinator, context.persistentStoreCoordinator === coordinator,
+                  !Self.isCloudKitMirroring(context) else { return }
             // willSave, context'in kendi kuyruğunda eşzamanlı gönderiliyor.
             for message in Self.violations(in: context) { onViolation(message) }
         }
@@ -32,6 +35,12 @@ nonisolated final class LegacyWriteGuard: @unchecked Sendable {
 
     deinit {
         NotificationCenter.default.removeObserver(observer)
+    }
+
+    /// `NSPersistentCloudKitContainer`'ın içe/dışa aktarma context'leri.
+    static func isCloudKitMirroring(_ context: NSManagedObjectContext) -> Bool {
+        let prefix = "NSCloudKitMirroringDelegate"
+        return context.transactionAuthor?.hasPrefix(prefix) == true || context.name?.hasPrefix(prefix) == true
     }
 
     static func violations(in context: NSManagedObjectContext) -> [String] {
