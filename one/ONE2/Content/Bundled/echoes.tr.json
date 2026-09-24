@@ -83,7 +83,7 @@
           2
         ],
         "emotionFamilyAny": [
-          "yorgunluk"
+          "yorgun"
         ]
       },
       "weight": 1.0,
@@ -371,7 +371,7 @@
           5
         ],
         "emotionFamilyAny": [
-          "merak"
+          "enerji"
         ]
       },
       "weight": 1.0,

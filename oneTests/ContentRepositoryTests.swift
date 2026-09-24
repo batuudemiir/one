@@ -90,7 +90,10 @@ struct ContentRepositoryTests {
             #expect(Set(e.conditions.emotionFamilyAny ?? []).isSubset(of: families), "\(e.id) family")
         }
         for t in c.themes + c.evergreenThemes { #expect(t.days.map(\.day) == Array(1...7), "\(t.id)") }
-        #expect(families.count == 8)
+        // UX sözleşmesi (UX_istekleri.md §1): 38 duygu, <aile>.<ad>, sekiz aile.
+        #expect(families == ["nese", "huzur", "enerji", "sevgi", "kaygi", "huzun", "ofke", "yorgun"])
+        #expect(c.emotions.count == 38 && c.emotions.first?.id == "nese.minnettar")
+        #expect(c.emotions.allSatisfy { $0.id.hasPrefix($0.family + ".") })
     }
 
     // MARK: - Doğrulama

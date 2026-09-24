@@ -185,7 +185,7 @@ struct EchoEngineTests {
         var picked: Set<String> = []
         for i in 0..<300 {
             var rng = SeededRandom("t", String(i))
-            let families = ["huzun", "kaygi", "ofke", "yorgunluk", "nese"]
+            let families = ["huzun", "kaygi", "ofke", "yorgun", "nese"]
             let emotion = catalog.emotions.first { $0.family == families[i % families.count] }!.id
             let input = EchoInput(score: 1, emotionIDs: [emotion], causeIDs: i % 2 == 0 ? ["c_uyku"] : [],
                                   dayPart: [.morning, .day, .evening][i % 3], isFirstCheckin: i % 7 == 0,

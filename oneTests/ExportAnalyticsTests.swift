@@ -60,7 +60,7 @@ struct ExportV2Tests {
         let entry = try r.journal.create(EntryDraft(kind: .quoteReflection, body: "Söze cevabım.", contentRef: "q_000001",
                                                     answers: [EntryAnswer(kind: .text, questionSnapshot: "Bu söz ne hatırlatıyor?", text: "Sabrı")],
                                                     tagIDs: [tag.id], sourceContext: .quote))
-        try r.mood.log(score: 4, emotionIDs: ["emo_huzurlu"], causeIDs: ["c_uyku"], note: "iyi", source: .checkIn, linkedTo: entry.id)
+        try r.mood.log(score: 4, emotionIDs: ["huzur.sakin"], causeIDs: ["c_uyku"], note: "iyi", source: .checkIn, linkedTo: entry.id)
         try r.day.markCompleted(.daily)
         try r.day.setFocus("sakin kal")
         _ = try r.library.award("b_first_entry")
@@ -85,7 +85,7 @@ struct ExportV2Tests {
         #expect(e.contentText == "İnsanları rahatsız eden şeylerin kendisi değil, onlar hakkındaki yargılarıdır.")
         #expect(e.tags == ["Uyku"] && e.source == "quote" && e.answers.first?.question == "Bu söz ne hatırlatıyor?")
         #expect(e.media.first?.file?.hasPrefix("media/") == true)
-        #expect(export.moods.first?.emotions.first?.label == "huzurlu")
+        #expect(export.moods.first?.emotions.first?.label == "Sakin")
         #expect(export.moods.first?.causes.first?.label == "Uyku")
         #expect(export.days.first?.focus == "sakin kal" && export.days.first?.completedBy == "ritual")
         #expect(export.badges.first?.title == "İlk sayfa")
@@ -126,7 +126,7 @@ struct ExportV2Tests {
         #expect(today.contains("**\(MarkdownArchive.focusLabel):** sakin kal"))
         #expect(today.contains("> İnsanları rahatsız eden"))
         #expect(today.contains("**Bu söz ne hatırlatıyor?**") && today.contains("Sabrı"))
-        #expect(today.contains("4/5 · huzurlu · Uyku"))
+        #expect(today.contains("4/5 · Sakin · Uyku"))
         #expect(today.contains("#Uyku") && today.contains("![](media/"))
         #expect(files.keys.filter { $0.hasPrefix("ONE 1/") }.count == 2)
     }

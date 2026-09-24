@@ -3,4 +3,4 @@ id,text,pool,themes,timeOfDay,moodFit,emotionFit,quoteIDs,isCore,premium,active,
 p_000101,Bugün seni en çok ne şaşırttı?,free,merak,any,,,,false,false,true,2,tr
 p_000102,Bu söz sana bugün ne hatırlatıyor?,reflection,,any,,,,false,false,true,2,tr
 p_000103,Bugün için tek bir odak seç.,morning,odak,morning,,,,true,false,true,2,tr
-p_000104,Şu an neye ihtiyacın var?,checkinFollowUp,,any,1;2,yorgunluk;huzun,,false,false,true,2,tr
+p_000104,Şu an neye ihtiyacın var?,checkinFollowUp,,any,1;2,yorgun;huzun,,false,false,true,2,tr

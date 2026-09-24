@@ -196,7 +196,7 @@ struct WidgetBridgeTests {
         let prompts = LivePromptEngine(content: content, exposure: exposure, journal: journal, profile: profile,
                                        clock: clock, local: MemoryKeyValueStore())
         let echoes = EchoEngine(content: content, exposure: exposure, profile: profile, clock: clock)
-        try mood.log(score: 4, emotionIDs: ["emo_huzurlu"], source: .checkIn)
+        try mood.log(score: 4, emotionIDs: ["huzur.sakin"], source: .checkIn)
         let echo = try #require(echoes.echo(for: EchoInput(score: 4, checkInID: "x")))
         try day.markCompleted(.daily)
 
@@ -207,7 +207,7 @@ struct WidgetBridgeTests {
         #expect(s.dailyQuoteNext?.day == "2026-09-24")
         #expect(s.dailyQuote?.id != s.dailyQuoteNext?.id)
         #expect(s.theme?.title == content.catalog.theme(week: "2026-W39")?.title)
-        #expect(s.todayCheckIn == WidgetCheckIn(score: 4, label: "huzurlu", echo: echo.text))
+        #expect(s.todayCheckIn == WidgetCheckIn(score: 4, label: "Sakin", echo: echo.text))
         #expect(s.streak?.count == 1)
         #expect(s.week.first { $0.isToday }?.status == .full)
     }

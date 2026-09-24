@@ -53,7 +53,11 @@ ID_PATTERNS = {
     "prompt": re.compile(r"^p_\w+$"),
     "theme": re.compile(r"^t_(\d{4}w\d{2}|ev_\d{3})$"),
     "echo": re.compile(r"^e_\d{6}$"),
+    # UX sözleşmesi (UX_istekleri.md §1): <aile>.<ad>, küçük harf ASCII.
+    "emotion": re.compile(r"^[a-z]+\.[a-z]+$"),
 }
+# Sekiz duygu ailesi (tokens.json `emo-*`, ONE2EmotionFamily).
+EMOTION_FAMILIES = {"nese", "huzur", "enerji", "sevgi", "kaygi", "huzun", "ofke", "yorgun"}
 QUOTE_LENGTH = (12, 220)
 DUPLICATE_THRESHOLD = 0.85
 
@@ -410,6 +414,14 @@ def validate(c: Content, report: Report, previous: Content | None = None) -> Rep
             report.error(w, "weight > 0 olmalı")
         check_typography(w, e.get("text", ""), report)
         check_tone(w, e.get("text", ""), report)
+
+    for e in c.emotions:
+        w = f"emotion:{e.get('id')}"
+        require(e, ["id", "label", "family"], w, report)
+        if e.get("family") not in EMOTION_FAMILIES:
+            report.error(w, f"bilinmeyen aile: {e.get('family')}")
+        if str(e.get("id", "")).split(".")[0] != e.get("family"):
+            report.error(w, "ID öneki aileyle aynı olmalı (<aile>.<ad>)")
 
     for g in c.guided:
         w = f"guided:{g.get('id')}"

@@ -338,10 +338,10 @@ nonisolated struct Echo: ContentItem, Hashable {
 // MARK: - Kataloglar
 
 nonisolated struct EmotionDefinition: ContentItem, Hashable {
-    /// `emo_huzurlu`.
+    /// `<aile>.<ad>`: `huzur.sakin` (UX_istekleri.md §1; ID kalıcı).
     let id: String
     let label: String
-    /// Aile: `nese`, `huzur`, `sevgi`, `merak`, `huzun`, `kaygi`, `ofke`, `yorgunluk`.
+    /// Aile (tokens.json `emo-*`): `nese`, `huzur`, `enerji`, `sevgi`, `kaygi`, `huzun`, `ofke`, `yorgun`.
     let family: String
     let premium: Bool
     let active: Bool

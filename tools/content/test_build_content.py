@@ -120,6 +120,23 @@ class SchemaTests(unittest.TestCase):
         self.assertTrue(any("bilinmeyen neden" in e for e in errs))
 
 
+class EmotionCatalogTests(unittest.TestCase):
+    def test_ux_contract(self):
+        emotions = base_content().emotions
+        self.assertEqual(len(emotions), 38)
+        self.assertEqual({e["family"] for e in emotions}, bc.EMOTION_FAMILIES)
+        self.assertEqual(emotions[0]["id"], "nese.minnettar")
+
+    def test_bad_id_and_family(self):
+        c = base_content()
+        c.emotions.append({"id": "emo_yeni", "label": "Yeni", "family": "merak",
+                           "premium": False, "active": True, "addedIn": 2, "lang": "tr"})
+        errs = [e for e in errors(c) if "emo_yeni" in e]
+        self.assertTrue(any("ID biçimi" in e for e in errs))
+        self.assertTrue(any("bilinmeyen aile" in e for e in errs))
+        self.assertTrue(any("öneki" in e for e in errs))
+
+
 class TurkishTests(unittest.TestCase):
     def report(self, text: str) -> bc.Report:
         r = bc.Report()

@@ -59,7 +59,7 @@ ADR §5 kararı geçerli: bundle + `https://one.forvibe.app/content/v1/`, manife
 | `themes/evergreen.tr.json` | Takvimde boşluk olursa kullanılacak yedek temalar |
 | `guided/<id>.tr.json` | Rehberli günlükler: adımlar, adım tipi, soru metni |
 | `echoes.tr.json` | Check-in yankı cümleleri ve koşulları (E6) |
-| `catalogs/emotions.tr.json` | ~40 duygu, 8 aileye bağlı (`emo-*` token'ları) |
+| `catalogs/emotions.tr.json` | 38 duygu, 8 aileye bağlı (`emo-*` token'ları: `nese`, `huzur`, `enerji`, `sevgi`, `kaygi`, `huzun`, `ofke`, `yorgun`). ID `<aile>.<ad>` (`huzur.sakin`), liste UX_istekleri.md §1 |
 | `catalogs/causes.tr.json` | ~20 "ne etkiliyor" etiketi |
 | `catalogs/badges.tr.json` | Rozetler ve kuralları (E9) |
 | `catalogs/paths.tr.json` | Söz yolları (onboarding'de seçilen "sesler"), E2 ağırlıkları |
