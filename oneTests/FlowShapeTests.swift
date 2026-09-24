@@ -28,6 +28,23 @@ struct FlowShapeTests {
         #expect(closing.seal == .none && !closing.echo.isEmpty && closing.week.isEmpty)
     }
 
+    @Test("Akış 2 · günlük: skor → duygular → nedenler → günün sorusu (önceki cevapla) → minnet; tam mühür")
+    func daily() {
+        #expect(Self.kinds(.daily) == [.score, .emotions, .causes, .text, .list3])
+        let steps = FlowFixtures.steps(.daily)
+        #expect(steps.filter { !$0.optional }.map(\.kind) == [.score])
+        #expect(steps[3].prompt == UXFixtures.content.dailyPrompts.first && steps[3].previousAnswer != nil)
+        let closing = FlowFixtures.flow(.daily).closing
+        #expect(closing.seal == .full && closing.week.first { $0.isToday }?.status == .done)
+    }
+
+    @Test("Liste cevabı: en az bir dolu madde yeter")
+    func listAnswer() {
+        let m = FlowViewModel(flow: FlowFixtures.flow(.daily), drafts: InMemoryFlowDraftStore())
+        m.setAnswer(.list(["", "Sabah yürüyüşü", ""]), for: "daily.gratitude")
+        #expect(m.answer(for: "daily.gratitude")?.isMeaningful == true)
+    }
+
     @Test("Duygular aile sırasıyla gelir")
     func emotionsByFamily() {
         let families = (FlowFixtures.steps(.moodCheckIn)[1].options ?? []).compactMap(\.group)

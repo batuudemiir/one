@@ -141,6 +141,9 @@ struct TextStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
             GrowingSerifField(text: binding, accessibilityLabel: step.prompt)
+            if let previous = step.previousAnswer, !previous.isEmpty {
+                PreviousAnswerBox(text: previous)
+            }
         }
     }
 
@@ -151,6 +154,73 @@ struct TextStep: View {
                 return ""
             },
             set: { model.setAnswer(.text($0), for: step.id) }
+        )
+    }
+}
+
+/// "Geçen sefer şöyle yazmıştın: …" — önceki cevabın ilk iki satırı.
+struct PreviousAnswerBox: View {
+    let text: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
+            Text(NSLocalizedString("one2.flow.previous", comment: "Label above the previous answer"))
+                .v3MicroLabel()
+                .foregroundColor(V3Tokens.mutedText)
+            Text(text)
+                .font(V3Typography.journal(16))
+                .foregroundColor(V3Tokens.mutedText)
+                .lineLimit(2)
+        }
+        .padding(V3Tokens.spacingLG)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
+                .fill(V3Tokens.wash)
+        )
+        .accessibilityElement(children: .combine)
+    }
+}
+
+// MARK: - list3
+
+/// 1–3 madde; her biri tek satırdan büyüyen serif alan, önünde mono sıra.
+struct List3Step: View {
+    let step: FlowStepViewData
+    let model: FlowViewModel
+
+    static let count = 3
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: V3Tokens.spacingMD) {
+            ForEach(0..<Self.count, id: \.self) { index in
+                HStack(alignment: .firstTextBaseline, spacing: V3Tokens.spacingMD) {
+                    Text(verbatim: "\(index + 1)")
+                        .monoSM()
+                        .foregroundColor(V3Tokens.mutedText)
+                        .accessibilityHidden(true)
+                    GrowingSerifField(text: binding(index), accessibilityLabel: String.localizedStringWithFormat(
+                        NSLocalizedString("one2.flow.list.item", comment: "List item n"), index + 1))
+                }
+            }
+        }
+    }
+
+    private var items: [String] {
+        if case .list(let values) = model.answer(for: step.id) {
+            return values + Array(repeating: "", count: max(0, Self.count - values.count))
+        }
+        return Array(repeating: "", count: Self.count)
+    }
+
+    private func binding(_ index: Int) -> Binding<String> {
+        Binding(
+            get: { items[index] },
+            set: { value in
+                var values = items
+                values[index] = value
+                model.setAnswer(.list(values), for: step.id)
+            }
         )
     }
 }

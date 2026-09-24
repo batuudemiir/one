@@ -58,3 +58,17 @@ struct FlowStepGallery: View {
 #Preview("Mood check-in · AX3") {
     FlowStepGallery(kind: .moodCheckIn).dynamicTypeSize(.accessibility3)
 }
+
+// MARK: - Akış 2: Günlük check-in
+
+#Preview("Daily · dark") {
+    FlowStepGallery(kind: .daily).preferredColorScheme(.dark)
+}
+
+#Preview("Daily · light") {
+    FlowStepGallery(kind: .daily).preferredColorScheme(.light)
+}
+
+#Preview("Daily · AX3") {
+    FlowStepGallery(kind: .daily).dynamicTypeSize(.accessibility3)
+}
