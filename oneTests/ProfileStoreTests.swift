@@ -21,7 +21,7 @@ struct ProfileStoreTests {
         #expect(p.streakVisible)
         #expect(p.resurfaceWritten)
         #expect(p.contentLang == "tr")
-        #expect(p.quotePaths.isEmpty && p.freeQuotePath == nil)
+        #expect(p.quotePaths.isEmpty && p.freeQuotePath == "stoacilar")
         #expect(cloud.object(forKey: ProfileStore.Key.userSalt) as? String == p.userSalt.uuidString)
         #expect(local.object(forKey: ProfileStore.Key.userSalt) as? String == p.userSalt.uuidString)
     }
@@ -43,7 +43,7 @@ struct ProfileStoreTests {
         store.update {
             $0.name = "Deniz"
             $0.focusAreas = ["kaygi", "uyku"]
-            $0.quotePaths = ["sakin", "filozof"]
+            $0.quotePaths = ["varoluscular", "stoacilar"]
             $0.ritualMode = .morningEvening
             $0.morningTime = ReminderTime(hour: 7, minute: 5)!
             $0.eveningTime = ReminderTime("22:40")!
@@ -52,7 +52,7 @@ struct ProfileStoreTests {
         }
         let other = ProfileStore(cloud: cloud, local: MemoryKeyValueStore())
         #expect(other.profile == store.profile)
-        #expect(other.profile.freeQuotePath == "sakin")
+        #expect(other.profile.freeQuotePath == "varoluscular")
         #expect(cloud.object(forKey: ProfileStore.Key.morningTime) as? String == "07:05")
     }
 
@@ -65,11 +65,11 @@ struct ProfileStoreTests {
         }
         defer { NotificationCenter.default.removeObserver(token) }
 
-        store.update { $0.quotePaths = ["cesur"] }
+        store.update { $0.quotePaths = ["antik_yunan"] }
         #expect(store.revision == 1)
         #expect(keys == [ProfileStore.Key.quotePaths])
 
-        store.update { $0.quotePaths = ["cesur"] }
+        store.update { $0.quotePaths = ["antik_yunan"] }
         #expect(store.revision == 1)
     }
 
@@ -106,10 +106,10 @@ struct ProfileStoreTests {
 
         // Diğer cihaz kendi tuzunu ve yol seçimini yazdı.
         cloud.set(small.uuidString, forKey: ProfileStore.Key.userSalt)
-        cloud.set(["filozof"], forKey: ProfileStore.Key.quotePaths)
+        cloud.set(["antik_yunan"], forKey: ProfileStore.Key.quotePaths)
         store.reloadFromCloud()
         #expect(store.profile.userSalt == small)
-        #expect(store.profile.quotePaths == ["filozof"])
+        #expect(store.profile.quotePaths == ["antik_yunan"])
         #expect(store.revision == 1)
 
         // Ters yönde: gelen tuz büyükse yerel küçük tuz buluta geri yazılır.
@@ -125,5 +125,23 @@ struct ProfileStoreTests {
         #expect(ReminderTime("24:00") == nil)
         #expect(ReminderTime("7") == nil)
         #expect(ReminderTime(hour: 8, minute: 0)! < ReminderTime(hour: 21, minute: 0)!)
+    }
+
+    @Test("v1 ses yolları tonlara taşınır, düşünce yolları kalır; taşınmış hâl bir kez geri yazılır (08 §3.3)")
+    func legacyVoicePathsMigrate() {
+        let cloud = MemoryKeyValueStore(), local = MemoryKeyValueStore()
+        cloud.set(["sakin", "varoluscular", "filozof", "sakin"], forKey: ProfileStore.Key.quotePaths)
+        let store = ProfileStore(cloud: cloud, local: local)
+        #expect(store.profile.quotePaths == ["varoluscular"])
+        #expect(store.profile.quoteTones == ["sakin", "derin"])
+        #expect(store.profile.freeQuotePath == "varoluscular")
+        #expect(cloud.object(forKey: ProfileStore.Key.quotePaths) as? [String] == ["varoluscular"])
+        #expect(local.object(forKey: ProfileStore.Key.quoteTones) as? [String] == ["sakin", "derin"])
+
+        // Yalnız ses yolu seçmiş eski kullanıcı: açık yol stoacilar.
+        let only = MemoryKeyValueStore()
+        only.set(["cesur"], forKey: ProfileStore.Key.quotePaths)
+        let p = ProfileStore(cloud: only, local: MemoryKeyValueStore()).profile
+        #expect(p.quotePaths.isEmpty && p.quoteTones == ["cesur"] && p.freeQuotePath == "stoacilar")
     }
 }

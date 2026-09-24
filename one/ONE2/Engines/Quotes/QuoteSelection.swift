@@ -9,12 +9,13 @@
 
 import Foundation
 
-/// Akış modu (E2.5).
+/// Akış modu (E2.5, 08 §4.2). Tür modu kalktı: akışta yalnız `quote` var (08 §1).
 nonisolated enum QuoteFeedMode: Hashable, Sendable {
     case forYou
-    case path(String)
+    case path(PathID)
+    /// Düşünür sayfası ve "Bu hafta onunla": yalnız o düşünürün sözleri.
+    case thinker(ThinkerID)
     case theme(String)
-    case kind(QuoteKind)
     case favorites
     case written
 
@@ -23,8 +24,8 @@ nonisolated enum QuoteFeedMode: Hashable, Sendable {
         switch self {
         case .forYou: return "forYou"
         case .path(let id): return "path:\(id)"
+        case .thinker(let id): return "thinker:\(id)"
         case .theme(let id): return "theme:\(id)"
-        case .kind(let kind): return "kind:\(kind.rawValue)"
         case .favorites: return "favorites"
         case .written: return "written"
         }
@@ -32,6 +33,8 @@ nonisolated enum QuoteFeedMode: Hashable, Sendable {
 
     /// Favoriler ve yazılanlar kendi listeleri; akış kuralları uygulanmaz (E2.2 kural 5).
     var isList: Bool { self == .favorites || self == .written }
+
+    var isThinker: Bool { if case .thinker = self { return true } else { return false } }
 }
 
 /// Puan bileşenlerinin ağırlıkları (E2.3 tablo); `quotes` yapılandırmasıyla değişebilir.
@@ -58,6 +61,10 @@ nonisolated struct QuoteContext: Sendable {
     var moodScore: Int?
     var now: Date
     var weights: QuoteWeights = .default
+
+    /// Ücretsiz kullanıcının açık yolu: onboarding'de seçilen ilk yol,
+    /// seçilmediyse `stoacilar` (08 §3.3).
+    var freePath: PathID { quotePaths.first ?? QuotePath.defaultFreeID }
 }
 
 /// Beğenilen ve yazılan sözlerden türetilen ilgi (son 90 gün).
@@ -95,26 +102,41 @@ nonisolated enum QuoteSelection {
 
     // MARK: - Aday havuzu
 
-    /// Moda açık mı? Ücretsiz: Sana özel + ilk yol (04 › karar 4).
-    static func isAccessible(_ mode: QuoteFeedMode, context: QuoteContext) -> Bool {
+    /// Moda açık mı? Ücretsiz: Sana özel + açık yol (08 §3.3). Düşünür sayfası,
+    /// düşünür açık yoldaysa açık; `catalog` verilmezse karar söz kapısına kalır.
+    static func isAccessible(_ mode: QuoteFeedMode, context: QuoteContext,
+                             catalog: ContentCatalog? = nil) -> Bool {
         if context.hasPremium { return true }
         switch mode {
         case .forYou, .favorites, .written: return true
-        case .path(let id): return id == context.quotePaths.first
-        case .theme, .kind: return false
+        case .path(let id): return id == context.freePath
+        case .thinker(let id): return catalog.map { $0.thinker(id)?.pathIDs.contains(context.freePath) == true } ?? true
+        case .theme: return false
         }
     }
 
-    /// `active` ∧ `lang` ∧ (premium ise yetki) ∧ moda uygun. Görülme filtresi yok.
+    /// Söz ücretsiz kullanıcıya açık mı: premium işaretsiz ve açık yolda.
+    static func isOpen(_ q: Quote, context: QuoteContext) -> Bool {
+        context.hasPremium || (!q.premium && q.paths.contains(context.freePath))
+    }
+
+    /// Akışa girebilir mi (08 §1): yalnız doğrulanmış `quote`.
+    static func isFeedItem(_ q: Quote) -> Bool { q.kind == .quote && q.verified }
+
+    /// `active` ∧ `lang` ∧ `quote` ∧ doğrulanmış ∧ yetki ∧ moda uygun.
+    /// Görülme filtresi yok. Listeler (favoriler, yazılanlar) kullanıcının
+    /// kendi kaydıdır; tür ve yetki filtresi uygulanmaz.
     static func eligible(_ quotes: [Quote], mode: QuoteFeedMode, context: QuoteContext) -> [Quote] {
         guard isAccessible(mode, context: context) else { return [] }
         return quotes.filter { q in
-            guard q.active, q.lang == context.lang, context.hasPremium || !q.premium else { return false }
+            guard q.active, q.lang == context.lang else { return false }
+            if mode.isList { return true }
+            guard isFeedItem(q), isOpen(q, context: context) else { return false }
             switch mode {
             case .forYou, .favorites, .written: return true
             case .path(let id): return q.paths.contains(id)
+            case .thinker(let id): return q.authorID == id
             case .theme(let id): return q.themes.contains(id)
-            case .kind(let kind): return q.kind == kind
             }
         }
     }
@@ -194,14 +216,16 @@ nonisolated enum QuoteSelection {
     /// arkaya. `history` kuyrukta zaten sırada olan (ya da son gösterilen)
     /// kartlardır; pencere onlarla devam eder. Kısıtı sağlayan aday yoksa en
     /// az kısıt çiğneyen seçilir (havuz tükenirken boş akış yok).
-    static func diversified(_ ranked: [Quote], count: Int, history: [Quote] = []) -> [Quote] {
+    /// `sameThinkerAllowed`: düşünür modunda aynı düşünür kısıtı yok (08 §4.4).
+    static func diversified(_ ranked: [Quote], count: Int, history: [Quote] = [],
+                            sameThinkerAllowed: Bool = false) -> [Quote] {
         var remaining = ranked
         var placed: [Quote] = []
         while placed.count < count, !remaining.isEmpty {
             let sequence = history + placed
             var bestIndex = 0, bestViolations = Int.max
             for (i, q) in remaining.enumerated() {
-                let v = violations(q, after: sequence)
+                let v = violations(q, after: sequence, sameThinkerAllowed: sameThinkerAllowed)
                 if v < bestViolations { bestIndex = i; bestViolations = v }
                 if v == 0 { break }
             }
@@ -211,14 +235,16 @@ nonisolated enum QuoteSelection {
     }
 
     /// Kısıt ihlali sayısı; 0 = uygun.
-    static func violations(_ q: Quote, after sequence: [Quote]) -> Int {
+    static func violations(_ q: Quote, after sequence: [Quote], sameThinkerAllowed: Bool = false) -> Int {
         var v = 0
         // Aynı düşünür: kimlik `authorID` (08); ad satırı yalnız gösterim.
-        if let author = q.authorID ?? q.author {
+        if !sameThinkerAllowed, let author = q.authorID ?? q.author {
             if sequence.suffix(7).contains(where: { ($0.authorID ?? $0.author) == author }) { v += 1 }
         }
+        // Tür kuralı yalnız karışık türlü dizilerde anlamlı; akış artık yalnız
+        // `quote` (08 §1). Yerini S4'te yol kuralı alır.
         let lastThree = sequence.suffix(3)
-        if lastThree.count == 3, lastThree.allSatisfy({ $0.kind == q.kind }) { v += 1 }
+        if q.kind != .quote, lastThree.count == 3, lastThree.allSatisfy({ $0.kind == q.kind }) { v += 1 }
         let lastFour = sequence.suffix(4)
         if lastFour.count == 4, q.length != .short, !lastFour.contains(where: { $0.length == .short }) { v += 1 }
         let lastTwo = sequence.suffix(2)

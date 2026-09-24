@@ -101,6 +101,7 @@ final class LiveQuoteEngine: QuoteEngine {
         if mode.isList { return list(mode, catalog: catalog, snapshot: snapshot, count: count) }
 
         let context = makeContext()
+        guard QuoteSelection.isAccessible(mode, context: context, catalog: catalog) else { return [] }
         var queue = validQueue(mode, context: context, catalog: catalog)
         let cycleTwo = Set(queue.cycleTwo)
         queue.ids.removeAll { snapshot[$0]?.wasSeen == true && !cycleTwo.contains($0) }
@@ -203,7 +204,7 @@ final class LiveQuoteEngine: QuoteEngine {
 
     /// Modun erişilebilir olup olmadığı (arayüz kilidi için).
     func isAccessible(_ mode: QuoteFeedMode) -> Bool {
-        QuoteSelection.isAccessible(mode, context: makeContext())
+        QuoteSelection.isAccessible(mode, context: makeContext(), catalog: content.catalog)
     }
 
     // MARK: - Günün sözü (saf)
@@ -290,14 +291,16 @@ final class LiveQuoteEngine: QuoteEngine {
         let next: [Quote]
         if cycle == 2 {
             // En uzun süredir görülmeyen önce; yalnız çeşitlilik uygulanır.
-            next = QuoteSelection.diversified(candidates, count: need, history: history)
+            next = QuoteSelection.diversified(candidates, count: need, history: history,
+                                              sameThinkerAllowed: mode.isThinker)
             queue.cycleTwo.append(contentsOf: next.map(\.id))
         } else {
             var rng = SeededRandom("quote.feed", profile.profile.userSalt.uuidString, clock.today.string, mode.key,
                                    String(queue.ids.count), String(snapshot.seenIDs.count))
             let interest = QuoteInterest.from(snapshot, catalog: catalog, now: context.now)
             let ranked = QuoteSelection.ranked(candidates, context: context, interest: interest, catalog: catalog, rng: &rng)
-            next = QuoteSelection.diversified(ranked, count: need, history: history)
+            next = QuoteSelection.diversified(ranked, count: need, history: history,
+                                              sameThinkerAllowed: mode.isThinker)
         }
         queue.ids.append(contentsOf: next.map(\.id))
     }

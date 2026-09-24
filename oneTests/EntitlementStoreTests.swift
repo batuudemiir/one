@@ -106,11 +106,11 @@ struct EntitlementStoreTests {
     func enginesSeePremium() async {
         let backend = FakeStoreBackend()
         let r = AppEnvironmentLifecycleTests.rig(storeBackend: backend)
-        r.env.profile.update { $0.quotePaths = ["sakin", "cesur"] }
+        r.env.profile.update { $0.quotePaths = ["stoacilar", "varoluscular"] }
         await r.env.entitlements.start()
-        #expect(!r.env.quotes.isAccessible(.path("cesur")))
+        #expect(!r.env.quotes.isAccessible(.path("varoluscular")))
         backend.active = [PremiumProduct.yearly.rawValue]
         await r.env.entitlements.refresh()
-        #expect(r.env.quotes.isAccessible(.path("cesur")))
+        #expect(r.env.quotes.isAccessible(.path("varoluscular")))
     }
 }
