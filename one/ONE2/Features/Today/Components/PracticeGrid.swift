@@ -2,31 +2,32 @@
 //  PracticeGrid.swift
 //  ONE 2.0
 //
-//  "Pratiklerin" ızgarası (components/PracticeTile.md, `.o-tiles`): 2 sütun,
-//  `surface` karo, ortada 72pt `raised` ikon kuyusu, altında ad (`headline`).
-//  Son karo "+ Ekle": şeffaf zemin, 1px `line`. Uzun basma: öne al, sona
-//  al, kaldır.
-//  Başlıktaki "düzenle" (sliders) ikonu çizilmedi: uzun basma menüsünden
-//  başka işi yok; işlevsiz kontrol olmasın diye.
+//  "Pratiklerin" ızgarası (07 §5.1; components/PracticeTile.md zemini):
+//  2 sütun (AX3 ve üstünde tek, 07 §9), `surface` karo, 72pt `raised` ikon
+//  kuyusu, ad (`headline`), bugün yapıldıysa tik. Karoya dokunma o pratiği
+//  bugün için işaretler (tik 180 ms, `light` haptik; 07 §7). Son karo
+//  "+ Ekle": şeffaf zemin, 1px `line`. Uzun basma: başa al, sona al, kaldır.
 //
 
 import SwiftUI
 
 struct PracticeGrid: View {
     let practices: [PracticeTileData]
-    let onOpen: (PracticeTileData) -> Void
+    let onToggle: (PracticeTileData) -> Void
     let onAdd: () -> Void
     let onMove: (PracticeTileData, PracticeMove) -> Void
 
-    private let columns = [
-        GridItem(.flexible(), spacing: ONE2Space.cardGap, alignment: .top),
-        GridItem(.flexible(), spacing: ONE2Space.cardGap, alignment: .top),
-    ]
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var columns: [GridItem] {
+        let count = dynamicTypeSize >= .accessibility3 ? 1 : 2
+        return Array(repeating: GridItem(.flexible(), spacing: ONE2Space.cardGap, alignment: .top), count: count)
+    }
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: ONE2Space.cardGap) {
             ForEach(practices) { practice in
-                PracticeTile(practice: practice) { onOpen(practice) }
+                PracticeTile(practice: practice) { onToggle(practice) }
                     .contextMenu {
                         if practice.id != practices.first?.id {
                             Button(one2String("one2.today.practice.moveFirst")) { onMove(practice, .first) }
@@ -59,9 +60,18 @@ nonisolated enum PracticeMove: Sendable {
     }
 }
 
+extension PracticeTileData {
+    /// Bugün işaretini çevirir.
+    func toggled() -> PracticeTileData {
+        PracticeTileData(id: id, title: title, icon: icon, contentID: contentID, isDoneToday: !isDoneToday)
+    }
+}
+
 private struct PracticeTile: View {
     let practice: PracticeTileData
     let action: () -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Button(action: action) {
@@ -70,6 +80,13 @@ private struct PracticeTile: View {
                     .foregroundStyle(ONE2Color.ink)
                     .frame(width: ONE2Size.iconWell, height: ONE2Size.iconWell)
                     .background(ONE2Color.raised, in: Circle())
+                    .overlay(alignment: .bottomTrailing) {
+                        if practice.isDoneToday {
+                            DoneMark()
+                                .transition(ONE2Motion.transition(.scale.combined(with: .opacity), reduceMotion: reduceMotion))
+                        }
+                    }
+                    .animation(ONE2Motion.animation(.chip, reduceMotion: reduceMotion), value: practice.isDoneToday)
                     .accessibilityHidden(true)
                 Text(practice.title)
                     .one2Type(.headline)
@@ -81,6 +98,20 @@ private struct PracticeTile: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.one2Press)
+        .accessibilityElement(children: .combine)
+        .accessibilityValue(Text(practice.isDoneToday ? one2String("one2.today.practice.done") : ""))
+        .accessibilityAddTraits(practice.isDoneToday ? [.isButton, .isSelected] : .isButton)
+    }
+}
+
+/// Kuyunun köşesinde `ink` disk + tik.
+private struct DoneMark: View {
+    var body: some View {
+        ONE2Icon.check.image(size: ONE2Size.weekTick)
+            .fontWeight(.semibold)
+            .foregroundStyle(ONE2Color.ground)
+            .frame(width: ONE2Size.weekGlyph, height: ONE2Size.weekGlyph)
+            .background(ONE2Color.ink, in: Circle())
     }
 }
 
@@ -120,10 +151,14 @@ private struct PracticeGridSample: View {
 
     var body: some View {
         VStack(spacing: ONE2Space.s8) {
-            PracticeGrid(practices: practices, onOpen: { _ in }, onAdd: {}) { item, move in
+            PracticeGrid(
+                practices: practices,
+                onToggle: { item in practices = practices.map { $0.id == item.id ? $0.toggled() : $0 } },
+                onAdd: {}
+            ) { item, move in
                 practices = move.apply(to: practices, id: item.id)
             }
-            PracticeGrid(practices: [], onOpen: { _ in }, onAdd: {}, onMove: { _, _ in })
+            PracticeGrid(practices: [], onToggle: { _ in }, onAdd: {}, onMove: { _, _ in })
         }
     }
 }

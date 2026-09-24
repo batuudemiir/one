@@ -4,7 +4,8 @@
 //
 //  Yükleniyor durumu (components/States.md): `raised` iskelet çubukları,
 //  gerçek yerleşimde; spinner ve shimmer yok. Hafif opaklık nefesi;
-//  Reduce Motion'da sabit. VoiceOver "Yükleniyor" okur.
+//  Reduce Motion'da sabit. VoiceOver "Yükleniyor" okur. 300 ms'den kısa
+//  yüklemelerde hiç görünmez (07 §6).
 //
 
 import SwiftUI
@@ -24,13 +25,20 @@ struct SkeletonBar: View {
 
 /// İskelet grubu: içeriği nefes alır ve tek bir erişilebilirlik öğesidir.
 struct Skeleton<Content: View>: View {
+    static var showDelayMS: Int { 300 }
     @ViewBuilder let content: () -> Content
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var dimmed = false
+    /// 07 §6: 300 ms'den kısa yüklemelerde iskelet görünmez.
+    @State private var isShown = false
 
     var body: some View {
         content()
-            .opacity(dimmed ? ONE2Motion.breathLowOpacity : 1)
+            .opacity(isShown ? (dimmed ? ONE2Motion.breathLowOpacity : 1) : 0)
+            .task {
+                try? await Task.sleep(for: .milliseconds(Self.showDelayMS))
+                isShown = true
+            }
             .onAppear {
                 guard !reduceMotion else { return }
                 withAnimation(.easeInOut(duration: ONE2Motion.breathDuration).repeatForever(autoreverses: true)) {

@@ -325,6 +325,15 @@ Tek eğri `cubic-bezier(0.2, 0.8, 0.2, 1)`. Reduce Motion: yalnız opaklık. Red
 | Silme onayı | Bu girdi silinsin mi? Geri alınamaz. · Sil · Vazgeç |
 | Hata | Kaydedilemedi. Bağlantını kontrol edip tekrar dene. |
 | Kilit | {AppBrand.name} kilitli · Kilidi aç |
+| Seri hapı | {n} gün |
+| Ritüel kartı | Günlük check-in · Sabah hazırlığı · Akşam değerlendirmesi · {n} dk · Başla · Devam et · {n}/{m} · Yine de yap |
+| Akşam özeti | {n}/{m} pratik |
+| Geçmiş gün | Bugüne dön · Bu güne kayıt yok. |
+| Geri doldurma eylemleri | Check-in yap · Yaz |
+| Haftalık tema etiketi | HAFTALIK TEMA · GÜN {n}/7 |
+| Geri dönüş etiketi | BİR YIL ÖNCE BUGÜN · {n} GÜN ÖNCE · Oku · Bugün için gizle |
+| Yükleme hatası | Yüklenemedi. Birkaç saniye sonra tekrar dene. · Tekrar dene |
+| Pratik (VoiceOver) | bugün yapıldı |
 
 Tüm metinler `Localizable` (tr); en yer tutucu. Yeni metin bu tabloya eklenir.
 

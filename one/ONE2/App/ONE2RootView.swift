@@ -104,7 +104,7 @@ struct ONE2RootView: View {
         pendingPlus = nil
         switch action {
         case .blank:       router.cover = .journalEditor(.blank)
-        case .checkIn:     router.cover = .checkIn
+        case .checkIn:     router.cover = .flow(.moodCheckIn, day: nil)
         case .dailyPrompt: router.cover = .journalEditor(.prompt(TodayFixture.freePromptID))
         case .templates:   router.push(.templates)
         case .library:     router.push(.library)
@@ -147,7 +147,7 @@ extension Route {
 extension CoverRoute {
     var title: String {
         switch self {
-        case .checkIn:         return one2String("one2.route.checkIn")
+        case .flow(let kind, _): return kind.title
         case .journalEditor:   return one2String("one2.route.journal")
         case .quoteReflection: return one2String("one2.route.quoteReflection")
         }

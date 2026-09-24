@@ -63,9 +63,15 @@ nonisolated enum ONE2Size {
     /// Hafta şeridi: hücre arası (`.o-week` 2px), tarih/tik satırı.
     static let weekCellGap: CGFloat = 2
     static let weekGlyph: CGFloat = 24
-    /// Haftalık tema gün çizgileri (`.o-theme__days`): yükseklik ve ara.
-    static let themeBar: CGFloat = 6
-    static let themeBarGap: CGFloat = 6
+    /// Hafta şeridi diskindeki tik ve `gap` halkasının kesik uzunluğu (07 §5.1).
+    static let weekTick: CGFloat = 13
+    static let weekDash: CGFloat = 3
+    /// Tema günü noktası (07 §5.1: "7 nokta").
+    static let themeDot: CGFloat = 8
+    /// Ritüel kartındaki ilerleme çizgisi yüksekliği.
+    static let progressLine: CGFloat = 4
+    /// Haftalık tema gün noktaları arası.
+    static let themeDotGap: CGFloat = 6
     /// Yatay sayfalı kartlarda bir sonraki kartın görünen payı.
     static let pagePeek: CGFloat = 16
     /// EmotionChip aile noktası.

@@ -44,7 +44,7 @@ nonisolated enum DeepLink {
         switch host {
         // v3 widget ve kilit ekranı: ones://today → bugün + check-in.
         case "today", "checkin":
-            return Destination(tab: .today, cover: .checkIn)
+            return Destination(tab: .today, cover: .flow(.moodCheckIn, day: nil))
         case "entry":
             return Destination(tab: .today, cover: .journalEditor(.blank))
         case "journal":
@@ -76,7 +76,7 @@ nonisolated enum DeepLink {
     // MARK: - https://one.forvibe.app
 
     private static func universal(path: String) -> Destination? {
-        if path.hasPrefix("/event/mood") { return Destination(tab: .today, cover: .checkIn) }
+        if path.hasPrefix("/event/mood") { return Destination(tab: .today, cover: .flow(.moodCheckIn, day: nil)) }
         if path.hasPrefix("/invite") || path.hasPrefix("/add-friend") {
             return Destination(tab: .today, notice: .circleUnavailable)
         }

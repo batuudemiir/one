@@ -2,9 +2,9 @@
 //  TodayFixture.swift
 //  ONE 2.0
 //
-//  ÖRNEK VERİ (ID'ler `fx_` önekli). Bugün ekranı: boş (ilk gün), az
-//  (check-in yok, 2 günlük seri risk altında), çok (check-in yapıldı, tema yazıldı),
-//  sabah+akşam modu.
+//  ÖRNEK VERİ (ID'ler `fx_` önekli). Bugün ekranı (07 §5.1) durumları:
+//  ilk gün, başlamadı, yarıda, tamam, sabah+akşam (sabah tamam / sabah
+//  kaçırıldı), seri gizli; hafta şeridi ve geçmiş günler.
 //
 
 import Foundation
@@ -13,26 +13,7 @@ nonisolated enum TodayFixture {
 
     private static var today: DayKey { FixtureClock.today }
 
-    /// Pazartesi ve salı tamam, çarşamba boş, bugün (perşembe) açık.
-    static var weekFew: WeekStripData {
-        WeekStripData.week(containing: today, today: today, completions: [
-            today.adding(days: -3): .done,
-            today.adding(days: -2): .done,
-        ])
-    }
-
-    static var weekEmpty: WeekStripData {
-        WeekStripData.week(containing: today, today: today, completions: [:])
-    }
-
-    static var weekMany: WeekStripData {
-        WeekStripData.week(containing: today, today: today, completions: [
-            today.adding(days: -3): .done,
-            today.adding(days: -2): .half,
-            today.adding(days: -1): .done,
-            today: .done,
-        ])
-    }
+    // MARK: - Parçalar
 
     static let checkInEvening = CheckInSummary(
         id: "fx_checkin_1",
@@ -50,7 +31,7 @@ nonisolated enum TodayFixture {
         slot: .morning,
         score: 4,
         emotions: [EmotionCatalogFixture.emotion("enerji.merakli")],
-        causes: ["Hareket"],
+        causes: ["Spor"],
         echo: "Güne merakla başlamak da bir niyet."
     )
 
@@ -58,9 +39,9 @@ nonisolated enum TodayFixture {
     static let freePromptID = "fx_prompt_free_01"
 
     static let practices: [PracticeTileData] = [
-        PracticeTileData(id: "fx_practice_morning", title: "Sabah hazırlığı", icon: .today, contentID: "fx_ritual_morning"),
-        PracticeTileData(id: "fx_practice_evening", title: "Akşam refleksiyonu", icon: .moon, contentID: "fx_ritual_evening"),
-        PracticeTileData(id: "fx_practice_gratitude", title: "Üç küçük minnet", icon: .leaf, contentID: "fx_guided_gratitude"),
+        PracticeTileData(id: "fx_practice_breath", title: "Üç nefes", icon: .leaf, contentID: "fx_guided_breath", isDoneToday: true),
+        PracticeTileData(id: "fx_practice_walk", title: "Kısa yürüyüş", icon: .today, contentID: "fx_exercise_walk", isDoneToday: false),
+        PracticeTileData(id: "fx_practice_read", title: "On sayfa okuma", icon: .library, contentID: "fx_exercise_read", isDoneToday: false),
     ]
 
     static let theme = ThemeCardData(
@@ -81,45 +62,140 @@ nonisolated enum TodayFixture {
         firstLine: "Durakta on iki dakika bekledim ve ilk kez telefona bakmadım."
     )
 
-    static let empty = TodayData(
-        week: weekEmpty,
+    static let resurfaceYearAgo = ResurfaceCardData(
+        id: "fx_resurface_1",
+        kind: .yearAgo,
+        entryID: UUID(uuidString: "00000000-0000-0000-0000-00000000F001")!,
+        writtenAt: FixtureClock.daysAgo(365, 22, 10),
+        excerpt: "Bugün ilk kez yalnız başına sinemaya gittim. Salon neredeyse boştu ve bu hiç de kötü değildi.",
+        promptID: nil,
+        quoteID: nil
+    )
+
+    static let resurfaceQuestion = ResurfaceCardData(
+        id: "fx_resurface_2",
+        kind: .questionAgain(daysAgo: 30),
+        entryID: UUID(uuidString: "00000000-0000-0000-0000-00000000F002")!,
+        writtenAt: FixtureClock.daysAgo(30, 21, 0),
+        excerpt: "Beni en çok yoran şey başkalarının beklentisi değil, benim onları tahmin etmeye çalışmam.",
+        promptID: "fx_prompt_free_07",
+        quoteID: nil
+    )
+
+    // MARK: - Kartlar
+
+    static func dailyCard(_ status: RitualStatus) -> CheckInCardData {
+        CheckInCardData(slot: .daily, flow: .dailyCheckIn, status: status, minutes: 2)
+    }
+
+    static func morningCard(_ status: RitualStatus) -> CheckInCardData {
+        CheckInCardData(slot: .morning, flow: .morning, status: status, minutes: 2)
+    }
+
+    static func eveningCard(_ status: RitualStatus) -> CheckInCardData {
+        CheckInCardData(slot: .evening, flow: .evening, status: status, minutes: 3)
+    }
+
+    private static let streak2 = StreakData(current: 2, longest: 2, isVisible: true, isAtRisk: true)
+    private static let streak12 = StreakData(current: 12, longest: 21, isVisible: true, isAtRisk: false)
+
+    // MARK: - Günler
+
+    /// İlk gün: seri hapı yok, hafta şeridinde yalnız bugün, geri dönüş yok.
+    static let firstDay = TodayData(
+        userName: nil,
+        mode: .daily,
+        isFirstDay: true,
         streak: StreakData(current: 0, longest: 0, isVisible: true, isAtRisk: false),
-        checkIns: [CheckInCardData(slot: .daily, summary: nil)],
+        resurface: nil,
+        checkIns: [dailyCard(.notStarted)],
         practices: [],
         theme: theme
     )
 
-    static let few = TodayData(
-        week: weekFew,
-        streak: StreakData(current: 2, longest: 2, isVisible: true, isAtRisk: true),
-        checkIns: [CheckInCardData(slot: .daily, summary: nil)],
+    /// Ritüel başlamadı; iki günlük seri risk altında.
+    static let notStarted = TodayData(
+        userName: "Deniz",
+        mode: .daily,
+        isFirstDay: false,
+        streak: streak2,
+        resurface: resurfaceQuestion,
+        checkIns: [dailyCard(.notStarted)],
         practices: Array(practices.prefix(2)),
         theme: theme
     )
 
-    static let many = TodayData(
-        week: weekMany,
-        streak: StreakData(current: 12, longest: 21, isVisible: true, isAtRisk: false),
-        checkIns: [CheckInCardData(slot: .daily, summary: checkInEvening)],
+    /// Akış yarıda kaldı: "Devam et · 3/5".
+    static let inProgress = TodayData(
+        userName: "Deniz",
+        mode: .daily,
+        isFirstDay: false,
+        streak: streak2,
+        resurface: nil,
+        checkIns: [dailyCard(.inProgress(step: 3, total: 5))],
+        practices: Array(practices.prefix(2)),
+        theme: theme
+    )
+
+    /// Ritüel tamam, tema yazıldı.
+    static let done = TodayData(
+        userName: "Deniz",
+        mode: .daily,
+        isFirstDay: false,
+        streak: streak12,
+        resurface: resurfaceYearAgo,
+        checkIns: [dailyCard(.done(checkInEvening, detail: nil))],
         practices: practices,
         theme: themeWritten
     )
 
+    /// Sabah tamam (odak), akşam başlamadı.
     static let morningEvening = TodayData(
-        week: weekMany,
-        streak: StreakData(current: 12, longest: 21, isVisible: true, isAtRisk: false),
+        userName: "Deniz",
+        mode: .morningEvening,
+        isFirstDay: false,
+        streak: streak12,
+        resurface: nil,
         checkIns: [
-            CheckInCardData(slot: .morning, summary: checkInMorning),
-            CheckInCardData(slot: .evening, summary: nil),
+            morningCard(.done(checkInMorning, detail: "Odak: Sabır")),
+            eveningCard(.notStarted),
         ],
         practices: practices,
         theme: theme
     )
 
+    /// Sabah 14:00'e kadar yapılmadı; akşam başlamadı.
+    static let morningMissed = TodayData(
+        userName: nil,
+        mode: .morningEvening,
+        isFirstDay: false,
+        streak: streak2,
+        resurface: nil,
+        checkIns: [morningCard(.missed), eveningCard(.notStarted)],
+        practices: practices,
+        theme: theme
+    )
+
+    /// Seri profil ayarından gizli.
+    static let streakHidden = TodayData(
+        userName: done.userName,
+        mode: done.mode,
+        isFirstDay: false,
+        streak: StreakData(current: 12, longest: 21, isVisible: false, isAtRisk: false),
+        resurface: nil,
+        checkIns: done.checkIns,
+        practices: done.practices,
+        theme: done.theme
+    )
+
     // MARK: - Hafta şeridi ve gün kaynağı
 
-    /// Son dört haftanın tamamlanması: bu hafta `weekFew` ile aynı (çarşamba
-    /// boş), önceki haftalarda birkaç boşluk ve yarım gün.
+    /// Bu hafta: pazartesi ve salı tamam, çarşamba (dün) boş, bugün açık.
+    static var weekFew: WeekStripData {
+        WeekStripData.week(containing: today, today: today, completions: completions)
+    }
+
+    /// Son dört haftanın tamamlanması: önceki haftalarda boşluk ve yarım gün var.
     static var completions: [DayKey: WeekDayState.Completion] {
         var result: [DayKey: WeekDayState.Completion] = [:]
         let pattern: [WeekDayState.Completion] = [.done, .done, .none, .done, .half, .done, .none]
@@ -139,43 +215,53 @@ nonisolated enum TodayFixture {
         }
     }
 
-    /// Geçmiş bir günün görünümü: tamamlandıysa check-in özeti, değilse boş.
+    /// Geçmiş bir günün görünümü: tamamlandıysa özet; boş ve son 7 gündeyse
+    /// doldurulabilir (başlamadı); daha eskiyse kayıt yok. Pratik ve tema yok.
     static func pastDay(_ day: DayKey) -> TodayData {
         let completion = completions[day] ?? .none
+        let distance = day.days(to: today)
         let echoes = [
             "Yavaş bir gündü; yavaşlık da bir cevap.",
             "Yorgunluğunu adlandırmak onu biraz hafifletti.",
             "Küçük bir şey iyi gitti ve bunu gördün.",
         ]
         let seed = day.string.unicodeScalars.reduce(0) { $0 + Int($1.value) }
-        let summary = completion == .none ? nil : CheckInSummary(
-            id: "fx_checkin_\(day.string)",
-            time: FixtureClock.daysAgo(day.days(to: today), 21, 10),
-            slot: .daily,
-            score: [2, 3, 4, 4, 5][seed % 5],
-            emotions: [EmotionCatalogFixture.emotion("huzur.sakin")],
-            causes: ["İş"],
-            echo: echoes[seed % echoes.count]
-        )
+        let status: RitualStatus
+        if completion == .none {
+            status = distance <= WeekStripData.backfillWindow ? .notStarted : .empty
+        } else {
+            status = .done(CheckInSummary(
+                id: "fx_checkin_\(day.string)",
+                time: FixtureClock.daysAgo(distance, 21, 10),
+                slot: .daily,
+                score: [2, 3, 4, 4, 5][seed % 5],
+                emotions: [EmotionCatalogFixture.emotion("huzur.sakin")],
+                causes: ["İş"],
+                echo: echoes[seed % echoes.count]
+            ), detail: nil)
+        }
         return TodayData(
-            week: few.week,
-            streak: few.streak,
-            checkIns: [CheckInCardData(slot: .daily, summary: summary)],
-            practices: few.practices,
+            userName: notStarted.userName,
+            mode: .daily,
+            isFirstDay: false,
+            streak: notStarted.streak,
+            resurface: nil,
+            checkIns: [dailyCard(status)],
+            practices: [],
             theme: nil
         )
     }
 
     /// Bugün `data`, geçmiş günler `pastDay`.
-    static func source(_ data: TodayData, isOffline: Bool = false) -> TodaySource {
+    static func source(_ data: TodayData, isContentStale: Bool = false) -> TodaySource {
         let today = today
-        return TodaySource(today: today, weeks: weeks, isOffline: isOffline) { day in
+        return TodaySource(today: today, weeks: weeks, isContentStale: isContentStale) { day in
             .loaded(day == today ? data : pastDay(day))
         }
     }
 
     /// Uygulamanın kabukta gösterdiği varsayılan (UX-11'e kadar).
-    static var app: TodaySource { source(few) }
+    static var app: TodaySource { source(notStarted) }
 
     static var loading: TodaySource {
         TodaySource(today: today, weeks: weeks) { _ in .loading }
@@ -184,13 +270,4 @@ nonisolated enum TodayFixture {
     static var failed: TodaySource {
         TodaySource(today: today, weeks: weeks) { _ in .failed(message: "fixture") }
     }
-
-    /// Seri profil ayarından gizli.
-    static let streakHidden = TodayData(
-        week: many.week,
-        streak: StreakData(current: 12, longest: 21, isVisible: false, isAtRisk: false),
-        checkIns: many.checkIns,
-        practices: many.practices,
-        theme: many.theme
-    )
 }

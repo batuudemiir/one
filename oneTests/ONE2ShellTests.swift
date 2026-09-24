@@ -35,8 +35,8 @@ struct DeepLinkTests {
 
     @Test("v3 widget linki bugün + check-in açar")
     func widgetLink() {
-        #expect(dest("ones://today") == .init(tab: .today, cover: .checkIn))
-        #expect(dest("ones://checkin") == .init(tab: .today, cover: .checkIn))
+        #expect(dest("ones://today") == .init(tab: .today, cover: .flow(.moodCheckIn, day: nil)))
+        #expect(dest("ones://checkin") == .init(tab: .today, cover: .flow(.moodCheckIn, day: nil)))
     }
 
     @Test("v3 sekme linkleri yeni karşılıklarına düşer")
@@ -77,7 +77,7 @@ struct DeepLinkTests {
 
     @Test("Universal link: mood etkinliği check-in açar")
     func universalMood() {
-        #expect(dest("https://one.forvibe.app/event/mood") == .init(tab: .today, cover: .checkIn))
+        #expect(dest("https://one.forvibe.app/event/mood") == .init(tab: .today, cover: .flow(.moodCheckIn, day: nil)))
     }
 
     @Test("Tanınmayanlar ve Spotify dönüşü nil")
@@ -90,7 +90,7 @@ struct DeepLinkTests {
 
     @Test("Şema ve host büyük/küçük harf duyarsız")
     func caseInsensitive() {
-        #expect(dest("ONES://Today") == .init(tab: .today, cover: .checkIn))
+        #expect(dest("ONES://Today") == .init(tab: .today, cover: .flow(.moodCheckIn, day: nil)))
     }
 }
 
@@ -111,7 +111,7 @@ struct RouterTests {
         #expect(router.path(for: .explore) == [.theme("w40")])
         #expect(router.path(for: .journey) == [.dayDetail(DayKey("2026-09-23")!)]) // diğer sekmenin yığını korunur
         router.handle(URL(string: "ones://today")!)
-        #expect(router.cover == .checkIn)
+        #expect(router.cover == .flow(.moodCheckIn, day: nil))
         #expect(router.sheet == nil)
     }
 

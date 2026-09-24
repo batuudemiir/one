@@ -13,18 +13,20 @@ nonisolated struct TodaySource: Sendable {
     let today: DayKey
     /// Eskiden yeniye; sonuncusu bugünün haftası.
     let weeks: [WeekStripData]
-    let isOffline: Bool
+    /// Çevrimdışı ve önbellekteki içerik eski: üstte uyarı şeridi (07 §6).
+    /// Yalnız çevrimdışı olmak şerit göstermez; yerel veri eksiksizdir.
+    let isContentStale: Bool
     let day: @Sendable (DayKey) -> Loadable<TodayData>
 
     init(
         today: DayKey,
         weeks: [WeekStripData],
-        isOffline: Bool = false,
+        isContentStale: Bool = false,
         day: @escaping @Sendable (DayKey) -> Loadable<TodayData>
     ) {
         self.today = today
         self.weeks = weeks
-        self.isOffline = isOffline
+        self.isContentStale = isContentStale
         self.day = day
     }
 }

@@ -2,9 +2,10 @@
 //  StreakPill.swift
 //  ONE 2.0
 //
-//  Bugün üst çubuğunun seri hapı (`.o-streakpill`): alev + `brand` renkli
-//  mono sayı, `raised` hap. Yalnız gösterge; dokunma eylemi yok (işlevsiz
-//  kontrol olmasın diye buton değil). Seri gizliyse ekran hapı hiç çizmez.
+//  Bugün üst çubuğunun seri hapı (07 §4.1): alev ikonu yok; `brand`
+//  renkli mono sayı + "gün", `raised` hap. Yalnız gösterge; dokunma eylemi
+//  yok (işlevsiz kontrol olmasın diye buton değil). Seri gizliyse ya da ilk
+//  günse ekran hapı hiç çizmez.
 //
 
 import SwiftUI
@@ -13,15 +14,15 @@ struct StreakPill: View {
     let count: Int
 
     var body: some View {
-        HStack(spacing: ONE2Space.s2) {
-            ONE2Icon.streak.image(size: ONE2Size.iconSmall)
-                .foregroundStyle(ONE2Color.ink)
-                .accessibilityHidden(true)
+        HStack(alignment: .firstTextBaseline, spacing: ONE2Space.s1) {
             Text(verbatim: "\(count)")
                 .one2Type(.time)
                 .foregroundStyle(ONE2Color.brand)
-                .lineLimit(1)
+            Text(one2String("one2.today.streak.unit"))
+                .one2Type(.callout)
+                .foregroundStyle(ONE2Color.ink)
         }
+        .lineLimit(1)
         .padding(.horizontal, ONE2Size.pillPadding)
         .frame(minHeight: ONE2Size.control)
         .background(ONE2Color.raised, in: Capsule())

@@ -2,10 +2,11 @@
 //  WeeklyThemeCard.swift
 //  ONE 2.0
 //
-//  Haftalık temanın bugünkü sorusu (components/WeeklyThemeCard.md,
-//  `.o-theme`): `label` "HAFTALIK TEMA · 4/7", tema adı, soru (`prompt`
-//  serif), 7 çizgi (açılmış gün `ink`, kilitli gün 1px `line` kenar), tam
-//  genişlik `primary` "Yaz". Yazıldıysa "Devam et" + ilk satır.
+//  Haftalık temanın bugünkü sorusu (07 §5.1; components/WeeklyThemeCard.md
+//  zemini): mono label "HAFTALIK TEMA · GÜN 4/7", tema adı `title`, soru
+//  Literata `prompt`, `Yaz` ikincil hap (ekranın birincil eylemi ritüel
+//  kartında). Yazıldıysa ilk satır + "Devam et". Kartın altında 7 nokta:
+//  açılmış günler dolu, gelecek günler kilitli (boş halka).
 //
 
 import SwiftUI
@@ -18,13 +19,12 @@ struct WeeklyThemeCard: View {
         VStack(alignment: .leading, spacing: ONE2Space.s4) {
             ONE2Label(String(format: one2String("one2.today.theme.label"), theme.day, 7))
             Text(theme.name)
-                .one2Type(.greeting)
+                .one2Type(.title)
                 .foregroundStyle(ONE2Color.ink)
                 .accessibilityAddTraits(.isHeader)
             Text(theme.question)
                 .one2Type(.prompt)
                 .foregroundStyle(ONE2Color.ink)
-            dayBars
             if theme.isWritten, let firstLine = theme.firstLine {
                 Text(firstLine)
                     .one2Type(.journal)
@@ -35,7 +35,9 @@ struct WeeklyThemeCard: View {
                 Text(one2String(theme.isWritten ? "one2.today.theme.continue" : "one2.today.theme.write"))
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.one2(.primary, fullWidth: true))
+            .buttonStyle(.one2(.secondary))
+            dayDots
+                .padding(.top, ONE2Space.s1)
         }
         .padding(.top, ONE2Space.s6)
         .padding([.horizontal, .bottom], ONE2Space.s5)
@@ -43,15 +45,17 @@ struct WeeklyThemeCard: View {
         .background(ONE2Color.surface, in: ONE2Radius.shape(ONE2Radius.lg))
     }
 
-    private var dayBars: some View {
-        HStack(spacing: ONE2Size.themeBarGap) {
+    private var dayDots: some View {
+        HStack(spacing: ONE2Size.themeDotGap) {
             ForEach(1...7, id: \.self) { day in
-                let shape = Capsule()
-                if day <= theme.unlockedDays {
-                    shape.fill(ONE2Color.ink).frame(height: ONE2Size.themeBar)
-                } else {
-                    shape.strokeBorder(ONE2Color.line, lineWidth: ONE2Size.hairline).frame(height: ONE2Size.themeBar)
+                Group {
+                    if day <= theme.unlockedDays {
+                        Circle().fill(ONE2Color.ink)
+                    } else {
+                        Circle().strokeBorder(ONE2Color.lineStrong, lineWidth: ONE2Size.hairline)
+                    }
                 }
+                .frame(width: ONE2Size.themeDot, height: ONE2Size.themeDot)
             }
         }
         .accessibilityElement(children: .ignore)

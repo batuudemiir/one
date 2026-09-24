@@ -71,6 +71,7 @@ adaptörü: `required = needed`, `current = have`.
 `WritingStats`, `ChangePair` motor tipleriyle çakıştı. Motor tarafı
 `InsightResult`, `WritingSummary`, `AnswerChangePair` olarak adlandırıldı
 (faz1 1641f5a); view data adları olduğu gibi. Yeni tip eklerken bu altı addan kaçın.
+UX-4'te motorun `RitualMode` tipiyle çakışma: view data tarafı `RitualModeData`.
 
 ## 1 durumu
 

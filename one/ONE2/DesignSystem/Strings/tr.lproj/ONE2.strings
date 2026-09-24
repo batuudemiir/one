@@ -24,7 +24,7 @@
 /* Durumlar */
 "one2.state.loading" = "Yükleniyor";
 "one2.state.offline" = "Çevrimdışısın. Yazdıkların cihazında duruyor.";
-"one2.action.retry" = "Yeniden dene";
+"one2.action.retry" = "Tekrar dene";
 
 /* Sekmeler */
 "one2.tab.today" = "Bugün";
@@ -92,7 +92,6 @@
 "one2.route.content" = "içerik";
 "one2.route.day" = "gün";
 "one2.route.entry" = "girdi";
-"one2.route.checkIn" = "check-in";
 "one2.route.journal" = "yaz";
 "one2.route.quoteReflection" = "söze yaz";
 "one2.route.paywall" = "%@";
@@ -117,23 +116,36 @@
 "one2.today.week.gap" = "boş";
 "one2.today.streak.a11y" = "%d günlük seri";
 "one2.today.backToToday" = "Bugüne dön";
-"one2.today.checkIn.question" = "Şu an nasılsın?";
-"one2.today.checkIn.questionPast" = "O gün nasıldın?";
-"one2.today.checkIn.noEntry" = "Bu güne kayıt yok.";
-"one2.today.slot.morning" = "Sabah";
-"one2.today.slot.evening" = "Akşam";
 "one2.today.practice.add" = "Ekle";
 "one2.today.practice.moveFirst" = "Başa al";
 "one2.today.practice.moveLast" = "Sona al";
 "one2.today.practice.remove" = "Kaldır";
-"one2.today.theme.label" = "Haftalık tema · %d/%d";
+"one2.today.theme.label" = "Haftalık tema · Gün %d/%d";
 "one2.today.theme.days.a11y" = "%d/%d gün açıldı";
 "one2.today.theme.write" = "Yaz";
 "one2.today.theme.continue" = "Devam et";
 "one2.today.backfill.yesterday" = "Dün boş kaldı.";
 "one2.today.backfill.day" = "%@ boş kaldı.";
 "one2.today.backfill.body" = "İstersen şimdi doldurabilirsin.";
-"one2.today.backfill.fill" = "Doldur";
 "one2.today.error.title" = "Yüklenemedi.";
-"one2.today.error.message" = "Uygulamayı kapatıp yeniden aç.";
-"one2.action.notNow" = "Şimdi değil";
+"one2.today.error.message" = "Birkaç saniye sonra tekrar dene.";
+
+/* Bugün (UX-4, 07 §5.1, §5.11) */
+"one2.flow.moodCheckIn" = "Mood check-in";
+"one2.flow.dailyCheckIn" = "Günlük check-in";
+"one2.flow.morning" = "Sabah hazırlığı";
+"one2.flow.evening" = "Akşam değerlendirmesi";
+"one2.today.ritual.start" = "Başla";
+"one2.today.ritual.resume" = "Devam et · %d/%d";
+"one2.today.ritual.anyway" = "Yine de yap";
+"one2.today.ritual.empty" = "Bu güne kayıt yok.";
+"one2.today.ritual.minutes" = "%d dk";
+"one2.today.practice.done" = "bugün yapıldı";
+"one2.today.streak.unit" = "gün";
+"one2.resurface.yearAgo" = "Bir yıl önce bugün";
+"one2.resurface.daysAgo" = "%d gün önce";
+"one2.resurface.hide" = "Bugün için gizle";
+"one2.resurface.rewrite" = "Tekrar yaz";
+"one2.resurface.read" = "Oku";
+"one2.today.backfill.checkIn" = "Check-in yap";
+"one2.today.backfill.write" = "Yaz";

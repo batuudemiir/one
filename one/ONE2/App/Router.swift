@@ -56,7 +56,8 @@ nonisolated enum SheetRoute: Hashable, Identifiable, Sendable {
 
 /// Tam ekran akışlar.
 nonisolated enum CoverRoute: Hashable, Identifiable, Sendable {
-    case checkIn
+    /// Giriş akışı (07 §5.2). `day`: geri doldurulan gün; `nil` bugün.
+    case flow(FlowKind, day: DayKey?)
     case journalEditor(JournalContext)
     case quoteReflection(quoteID: String)
 
