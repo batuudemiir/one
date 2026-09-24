@@ -233,7 +233,9 @@ struct oneApp: App {
                 // Rebuild the entire SwiftUI tree when the language changes
                 .id(languageManager.refreshToken)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
-                .preferredColorScheme(isDarkMode ? .dark : .light)
+                // v3 kendi koyu mod anahtarını uygular; ONE 2.0 sistemi izler
+                // (design-system README, "İki tema").
+                .preferredColorScheme(one2Environment == nil ? (isDarkMode ? .dark : .light) : nil)
                 // Uygulama kilidi — perde her şeyin üstünde, dil değişiminin
                 // `.id()` yeniden kurmasından da etkilenmesin diye en dışta.
                 .overlay {
