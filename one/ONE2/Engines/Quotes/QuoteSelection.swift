@@ -213,8 +213,9 @@ nonisolated enum QuoteSelection {
     /// Kısıt ihlali sayısı; 0 = uygun.
     static func violations(_ q: Quote, after sequence: [Quote]) -> Int {
         var v = 0
-        if let author = q.author {
-            if sequence.suffix(7).contains(where: { $0.author == author }) { v += 1 }
+        // Aynı düşünür: kimlik `authorID` (08); ad satırı yalnız gösterim.
+        if let author = q.authorID ?? q.author {
+            if sequence.suffix(7).contains(where: { ($0.authorID ?? $0.author) == author }) { v += 1 }
         }
         let lastThree = sequence.suffix(3)
         if lastThree.count == 3, lastThree.allSatisfy({ $0.kind == q.kind }) { v += 1 }

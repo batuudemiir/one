@@ -119,11 +119,12 @@ struct ContentRepositoryTests {
         #expect(throws: ContentLoadError.hashMismatch(ContentFiles.quotes)) { try ContentLoader.load(from: source) }
     }
 
-    @Test("schemaVersion major'ı büyükse reddediliyor")
+    @Test("schemaVersion major'ı büyükse reddediliyor (v1 ve v2 okunur, 08)")
     func schemaTooNew() {
-        let source = ContentFixture.source([:], schema: "2.0")
-        #expect(throws: ContentLoadError.unsupportedSchema("2.0")) { try ContentLoader.load(from: source) }
+        let source = ContentFixture.source([:], schema: "3.0")
+        #expect(throws: ContentLoadError.unsupportedSchema("3.0")) { try ContentLoader.load(from: source) }
         #expect((try? ContentLoader.load(from: ContentFixture.source([:], schema: "1.7"))) != nil)
+        #expect((try? ContentLoader.load(from: ContentFixture.source([:], schema: "2.0"))) != nil)
     }
 
     @Test("Manifestteki dosya eksikse reddediliyor")

@@ -97,10 +97,23 @@ final class ContentRepository {
         let cacheSource = DirectoryContentSource(root: cache)
         let cached = cacheSource.data(at: ContentFiles.manifest) == nil ? nil
             : try? ContentLoader.load(from: LayeredContentSource(top: cacheSource, base: bundle))
-        if let cached, cached.contentVersion >= (bundled?.contentVersion ?? -1) { return (cached, .cache) }
-        if let bundled { return (bundled, .bundle) }
+        if let cached, cached.contentVersion >= (bundled?.contentVersion ?? -1) {
+            logUnmatchedAuthors(cached)
+            return (cached, .cache)
+        }
+        if let bundled {
+            logUnmatchedAuthors(bundled)
+            return (bundled, .bundle)
+        }
         ONELogger.error("[content] bundled content failed to load")
         return (.empty, .none)
+    }
+
+    /// v1'den gelen ve düşünüre eşlenemeyen sözler pasifleşti (08 §3.2).
+    static func logUnmatchedAuthors(_ catalog: ContentCatalog) {
+        guard !catalog.unmatchedAuthors.isEmpty else { return }
+        let list = catalog.unmatchedAuthors.map { "\($0.quoteID) (\($0.name))" }.joined(separator: ", ")
+        ONELogger.warning("[content] unmatched authors, quotes deactivated: \(list)")
     }
 
     /// Günde en fazla bir kez uzak manifesti sorar (Tier 2). `force` testler ve
@@ -156,6 +169,7 @@ final class ContentRepository {
         do { try Self.writeAtomically(downloaded, to: cacheDirectory) }
         catch { return .failed }
 
+        Self.logUnmatchedAuthors(loaded)
         catalog = loaded
         origin = .cache
         NotificationCenter.default.post(name: Self.didUpdate, object: self)
