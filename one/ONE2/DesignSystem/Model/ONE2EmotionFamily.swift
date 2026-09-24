@@ -8,8 +8,14 @@
 
 import SwiftUI
 
-enum ONE2EmotionFamily: String, CaseIterable, Hashable, Sendable {
+nonisolated enum ONE2EmotionFamily: String, CaseIterable, Hashable, Sendable {
     case nese, huzur, enerji, sevgi, kaygi, huzun, ofke, yorgun
+
+    var title: String { one2String("one2.emotion.family.\(rawValue)") }
+}
+
+@MainActor
+extension ONE2EmotionFamily {
 
     var fill: Color {
         switch self {
@@ -36,6 +42,4 @@ enum ONE2EmotionFamily: String, CaseIterable, Hashable, Sendable {
         case .yorgun: return ONE2Color.onEmoYorgun
         }
     }
-
-    var title: String { one2String("one2.emotion.family.\(rawValue)") }
 }

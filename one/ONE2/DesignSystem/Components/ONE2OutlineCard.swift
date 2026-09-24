@@ -11,11 +11,13 @@ import SwiftUI
 
 struct ONE2OutlineCard<Content: View>: View {
     var padding: CGFloat = ONE2Space.s6
+    /// Kartın dış en küçük yüksekliği (check-in kartı 300pt).
+    var minHeight: CGFloat? = nil
     @ViewBuilder let content: () -> Content
 
     var body: some View {
         content()
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, minHeight: minHeight.map { max(0, $0 - 2 * padding) })
             .padding(padding)
             .background(ONE2Color.ground, in: ONE2Radius.shape(ONE2Radius.lg))
             .overlay {

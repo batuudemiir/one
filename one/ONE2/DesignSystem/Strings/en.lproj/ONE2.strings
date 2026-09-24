@@ -21,3 +21,70 @@
 "one2.state.loading" = "Loading";
 "one2.state.offline" = "You're offline. Your writing stays on this device.";
 "one2.action.retry" = "Try again";
+
+"one2.tab.today" = "Today";
+"one2.tab.quotes" = "Quotes";
+"one2.tab.explore" = "Explore";
+"one2.tab.journey" = "Journey";
+"one2.tab.insights" = "Trends";
+
+"one2.screen.explore" = "explore";
+"one2.screen.journey" = "journey";
+"one2.screen.insights" = "trends";
+
+"one2.greeting.morning" = "good morning";
+"one2.greeting.day" = "good afternoon";
+"one2.greeting.evening" = "good evening";
+
+"one2.weekday.short.1" = "Mon";
+"one2.weekday.short.2" = "Tue";
+"one2.weekday.short.3" = "Wed";
+"one2.weekday.short.4" = "Thu";
+"one2.weekday.short.5" = "Fri";
+"one2.weekday.short.6" = "Sat";
+"one2.weekday.short.7" = "Sun";
+
+"one2.today.practices" = "Your practices";
+"one2.today.weeklyTheme" = "Weekly theme";
+"one2.quotes.mode.forYou" = "For you";
+"one2.journey.period.days" = "Days";
+"one2.insights.period.days14" = "14 days";
+"one2.insights.general" = "overview";
+
+"one2.action.profile" = "Profile";
+"one2.action.search" = "Search";
+"one2.action.filter" = "Filter";
+"one2.action.background" = "Background";
+"one2.action.play" = "Play";
+"one2.action.add" = "New entry";
+"one2.action.close" = "Close";
+"one2.action.back" = "Back";
+
+"one2.plus.blank" = "Blank page";
+"one2.plus.blank.detail" = "No prompt, just you and the page.";
+"one2.plus.checkIn" = "Mood check-in";
+"one2.plus.checkIn.detail" = "How are you right now, in one tap.";
+"one2.plus.prompt" = "Daily prompt";
+"one2.plus.prompt.detail" = "One question for today.";
+"one2.plus.templates" = "Templates";
+"one2.plus.templates.detail" = "Morning, evening and guided flows.";
+"one2.plus.library" = "Library";
+"one2.plus.library.detail" = "Journals and quotes you saved.";
+
+"one2.route.profile" = "profile";
+"one2.route.settings" = "settings";
+"one2.route.themeList" = "weekly themes";
+"one2.route.templates" = "templates";
+"one2.route.library" = "library";
+"one2.route.theme" = "theme";
+"one2.route.content" = "content";
+"one2.route.day" = "day";
+"one2.route.entry" = "entry";
+"one2.route.checkIn" = "check-in";
+"one2.route.journal" = "write";
+"one2.route.quoteReflection" = "write on a quote";
+"one2.route.paywall" = "ONE+";
+
+"one2.notice.circleUnavailable" = "Circle isn't part of this version.";
+"one2.debug.useV3" = "Switch to the old interface";
+"one2.debug.restart" = "Takes effect after restarting the app.";

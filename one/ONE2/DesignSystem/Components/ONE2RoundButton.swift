@@ -14,11 +14,12 @@ struct ONE2RoundButton: View {
     let accessibilityLabel: String
     var filled = true
     let action: () -> Void
+    @Environment(\.isEnabled) private var isEnabled
 
     var body: some View {
         Button(action: action) {
             icon.image()
-                .foregroundStyle(ONE2Color.ink)
+                .foregroundStyle(isEnabled ? ONE2Color.ink : ONE2Color.inkFaint)
                 .frame(width: ONE2Size.control, height: ONE2Size.control)
                 .background(filled ? ONE2Color.raised : .clear, in: Circle())
                 .contentShape(Rectangle())

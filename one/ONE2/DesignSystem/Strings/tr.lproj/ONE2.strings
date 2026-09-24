@@ -25,3 +25,79 @@
 "one2.state.loading" = "Yükleniyor";
 "one2.state.offline" = "Çevrimdışısın. Yazdıkların cihazında duruyor.";
 "one2.action.retry" = "Yeniden dene";
+
+/* Sekmeler */
+"one2.tab.today" = "Bugün";
+"one2.tab.quotes" = "Sözler";
+"one2.tab.explore" = "Keşfet";
+"one2.tab.journey" = "Yolculuk";
+"one2.tab.insights" = "Eğilimler";
+
+/* Sekme başlıkları: küçük harf, noktasız */
+"one2.screen.explore" = "keşfet";
+"one2.screen.journey" = "yolculuk";
+"one2.screen.insights" = "eğilimler";
+
+/* Selamlama */
+"one2.greeting.morning" = "günaydın";
+"one2.greeting.day" = "iyi günler";
+"one2.greeting.evening" = "iyi akşamlar";
+
+/* Hafta şeridi: gün kısaltmaları (1 = pazartesi) */
+"one2.weekday.short.1" = "Pzt";
+"one2.weekday.short.2" = "Sal";
+"one2.weekday.short.3" = "Çar";
+"one2.weekday.short.4" = "Per";
+"one2.weekday.short.5" = "Cum";
+"one2.weekday.short.6" = "Cmt";
+"one2.weekday.short.7" = "Paz";
+
+/* Bölümler ve haplar */
+"one2.today.practices" = "Pratiklerin";
+"one2.today.weeklyTheme" = "Haftalık tema";
+"one2.quotes.mode.forYou" = "Sana özel";
+"one2.journey.period.days" = "Günler";
+"one2.insights.period.days14" = "14 gün";
+"one2.insights.general" = "genel içgörüler";
+
+/* Eylem etiketleri */
+"one2.action.profile" = "Profil";
+"one2.action.search" = "Ara";
+"one2.action.filter" = "Filtrele";
+"one2.action.background" = "Arka plan";
+"one2.action.play" = "Oynat";
+"one2.action.add" = "Yeni girdi";
+"one2.action.close" = "Kapat";
+"one2.action.back" = "Geri";
+
+/* + sayfası */
+"one2.plus.blank" = "Boş sayfa";
+"one2.plus.blank.detail" = "Soru yok, yalnız sen ve sayfa.";
+"one2.plus.checkIn" = "Mood check-in";
+"one2.plus.checkIn.detail" = "Şu an nasılsın, bir dokunuşla.";
+"one2.plus.prompt" = "Günlük önerisi";
+"one2.plus.prompt.detail" = "Bugün için tek bir soru.";
+"one2.plus.templates" = "Şablonlar";
+"one2.plus.templates.detail" = "Sabah, akşam ve rehberli akışlar.";
+"one2.plus.library" = "Kütüphane";
+"one2.plus.library.detail" = "Kaydettiğin günlükler ve sözler.";
+
+/* Hedef ekran başlıkları (henüz boş) */
+"one2.route.profile" = "profil";
+"one2.route.settings" = "ayarlar";
+"one2.route.themeList" = "haftalık temalar";
+"one2.route.templates" = "şablonlar";
+"one2.route.library" = "kütüphane";
+"one2.route.theme" = "tema";
+"one2.route.content" = "içerik";
+"one2.route.day" = "gün";
+"one2.route.entry" = "girdi";
+"one2.route.checkIn" = "check-in";
+"one2.route.journal" = "yaz";
+"one2.route.quoteReflection" = "söze yaz";
+"one2.route.paywall" = "ONE+";
+
+/* Bilgi ve geliştirici */
+"one2.notice.circleUnavailable" = "Çevre bu sürümde yok.";
+"one2.debug.useV3" = "Eski arayüze dön";
+"one2.debug.restart" = "Uygulamayı yeniden başlatınca geçerli olur.";

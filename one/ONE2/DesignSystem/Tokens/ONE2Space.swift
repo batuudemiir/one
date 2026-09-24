@@ -9,7 +9,7 @@
 
 import CoreGraphics
 
-enum ONE2Space {
+nonisolated enum ONE2Space {
     /// İkon–metin arası.
     static let s1: CGFloat = 4
     /// Chip içi dikey, ilişkili öğeler arası.
@@ -36,7 +36,7 @@ enum ONE2Space {
 }
 
 /// Bileşen ölçüleri (README ve components/*.md).
-enum ONE2Size {
+nonisolated enum ONE2Size {
     /// En küçük dokunma hedefi.
     static let minTouch: CGFloat = 44
     /// Hap ve yuvarlak kontroller (TopBar).
@@ -79,6 +79,26 @@ enum ONE2Size {
     static let tagPadding: CGFloat = 14
     /// İskelet çubuğu yüksekliği (`.o-skel`).
     static let skeletonLine: CGFloat = 14
+
+    /// Dock (`.o-dock`, `.o-tabbar`): tab bar'ın + hapının tepesinden
+    /// uzaklığı; tab bar iç dolgusu 6pt. CSS 34px'te + hapı ortadaki sekme
+    /// ikonunun üstünü 6pt örtüyordu; 44 ile hap ikonun 4pt üstünde biter.
+    static let dockTop: CGFloat = 44
+    static let tabBarPadding: CGFloat = 6
+    /// Sekme öğesinin üst dolgusu (`.o-tab` 10px; alt `space-2`).
+    static let tabItemTop: CGFloat = 10
+
+    /// Referans ekranlardaki en küçük yükseklikler (`.o-week__d`, `.o-tile`,
+    /// `.o-featured`, `.o-quote`, `.o-trend` grafiği).
+    static let weekCell: CGFloat = 72
+    static let practiceTileMin: CGFloat = 200
+    static let featuredMin: CGFloat = 280
+    static let quoteCardMin: CGFloat = 560
+    static let chartHeight: CGFloat = 150
+    /// Fotoğraf anısı kartı (`.o-memory`).
+    static let memoryMin: CGFloat = 240
+    /// İskelet hap genişliği (seri hapı, dönem hapı yer tutucusu).
+    static let skeletonPill: CGFloat = 96
 
     /// Dekoratif kenar (`line`) ve anlamlı kenar (`lineStrong`).
     static let hairline: CGFloat = 1

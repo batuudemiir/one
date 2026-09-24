@@ -12,6 +12,7 @@ import SwiftUI
 struct ONE2Pill<Content: View>: View {
     private let action: () -> Void
     private let label: Content
+    @Environment(\.isEnabled) private var isEnabled
 
     init(action: @escaping () -> Void, @ViewBuilder label: () -> Content) {
         self.action = action
@@ -22,7 +23,7 @@ struct ONE2Pill<Content: View>: View {
         Button(action: action) {
             label
                 .one2Type(.headline)
-                .foregroundStyle(ONE2Color.ink)
+                .foregroundStyle(isEnabled ? ONE2Color.ink : ONE2Color.inkFaint)
                 .padding(.horizontal, ONE2Size.pillPadding)
                 .frame(minHeight: ONE2Size.control)
                 .background(ONE2Color.raised, in: Capsule())
@@ -52,6 +53,7 @@ struct ONE2PillLabel: View {
                 icon.image(size: ONE2Size.iconSmall).accessibilityHidden(true)
             }
             Text(title)
+                .lineLimit(1)
             if showsChevron {
                 ONE2Icon.chevronDown.image(size: ONE2Size.iconSmall).accessibilityHidden(true)
             }

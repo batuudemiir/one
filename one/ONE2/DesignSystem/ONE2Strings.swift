@@ -13,11 +13,11 @@
 
 import Foundation
 
-enum ONE2Strings {
+nonisolated enum ONE2Strings {
     static let table = "ONE2"
 }
 
 /// `ONE2` tablosundan yerelleştirilmiş dize.
-func one2String(_ key: String) -> String {
+nonisolated func one2String(_ key: String) -> String {
     NSLocalizedString(key, tableName: ONE2Strings.table, comment: "")
 }

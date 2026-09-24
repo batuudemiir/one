@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-enum ONE2Icon: String, CaseIterable, Sendable {
+nonisolated enum ONE2Icon: String, CaseIterable, Sendable {
     // Sekmeler
     case today = "sun.max"
     case quotes = "quote.opening"
@@ -40,11 +40,18 @@ enum ONE2Icon: String, CaseIterable, Sendable {
     case offline = "wifi.slash"
     case leaf = "leaf"
     case moon = "moon"
+    case close = "xmark"
+    case back = "chevron.left"
+    case blankPage = "square.and.pencil"
+    case checkIn = "circle.lefthalf.filled"
+    case prompt = "lightbulb"
+    case templates = "square.grid.2x2"
+    case library = "books.vertical"
 
     var systemName: String { rawValue }
 
     /// Sabit boyutlu ikon (kontrol ölçüleri sabit; metin değil).
-    func image(size: CGFloat = ONE2Size.icon) -> some View {
+    @MainActor func image(size: CGFloat = ONE2Size.icon) -> some View {
         Image(systemName: systemName)
             .font(.system(size: size, weight: .regular))
     }
