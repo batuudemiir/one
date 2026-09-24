@@ -36,6 +36,7 @@ final class AppEnvironment {
     let widgetSource: WidgetSnapshotSource
     let exporter: DataExporter
     let journey: JourneyFeed
+    let entitlements: EntitlementStore
     let analytics: EventTracking
     let legacy: LegacyMomentStore
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
@@ -54,7 +55,8 @@ final class AppEnvironment {
          cloud: KeyValueBacking = NSUbiquitousKeyValueStore.default,
          local: KeyValueBacking = UserDefaults(suiteName: WidgetDataWriter.appGroupID) ?? .standard,
          notificationScheduling: NotificationScheduling = OrchestratorNotificationScheduling(),
-         widget: WidgetBridge? = nil) {
+         widget: WidgetBridge? = nil,
+         storeBackend: StoreBackend? = nil) {
         self.clock = clock
         self.analytics = analytics
         self.local = local
@@ -66,15 +68,18 @@ final class AppEnvironment {
         library = LibraryStore(context: context, clock: clock)
         exposure = ExposureStore(context: context, clock: clock)
         let mood = self.mood
-        // Premium: EntitlementStore gelene kadar kapalı (ADR §8).
+        // Premium: tek doğruluk kaynağı EntitlementStore (ADR §8, E15).
+        let entitlements = EntitlementStore(backend: storeBackend ?? StoreKitBackend(), analytics: analytics)
+        self.entitlements = entitlements
+        let hasPremium: () -> Bool = { [weak entitlements] in entitlements?.hasPremium ?? false }
         quotes = LiveQuoteEngine(content: self.content, exposure: exposure, profile: self.profile, clock: clock,
-                                 cloud: cloud, local: local,
+                                 cloud: cloud, local: local, hasPremium: hasPremium,
                                  moodScore: { [clock] in (try? mood.logs(on: clock.today))?.last?.score })
         prompts = LivePromptEngine(content: self.content, exposure: exposure, journal: journal,
-                                   profile: self.profile, clock: clock, local: local)
+                                   profile: self.profile, clock: clock, local: local, hasPremium: hasPremium)
         echoes = EchoEngine(content: self.content, exposure: exposure, profile: self.profile, clock: clock, mood: mood)
         recommendations = RecommendationEngine(content: self.content, prompts: prompts, journal: journal, day: day,
-                                               mood: mood, profile: self.profile, clock: clock)
+                                               mood: mood, profile: self.profile, clock: clock, hasPremium: hasPremium)
         badges = BadgeEngine(content: self.content, journal: journal, day: day, library: library, profile: self.profile)
         insights = InsightsEngine(context: context, mood: mood, journal: journal, day: day, exposure: exposure,
                                   content: self.content, profile: self.profile, clock: clock)
@@ -132,6 +137,7 @@ final class AppEnvironment {
     /// Tier 2: arama metni onarımı, sessiz rozet değerlendirmesi, kırılan
     /// seri olayı, günde bir içerik kontrolü, widget ve bildirim penceresi.
     func onLaunch() async {
+        await entitlements.start()
         _ = try? search.rebuildMissing()
         for award in (try? badges.evaluateOnLaunch()) ?? [] {
             analytics.track(.badgeAwarded(badgeID: award.badge.id, announced: false))

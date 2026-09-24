@@ -23,7 +23,7 @@ struct AppEnvironmentLifecycleTests {
         let container: NSPersistentContainer
     }
 
-    static func rig(_ iso: String = "2026-09-23T06:00:00Z") -> Rig {
+    static func rig(_ iso: String = "2026-09-23T06:00:00Z", storeBackend: StoreBackend = FakeStoreBackend()) -> Rig {
         let clock = TestClock(iso)
         let container = ONE2TestStack.makeContainer()
         let content = ContentRepository(bundle: BundleContentSource(bundle: Bundle(for: PersistenceController.self)),
@@ -34,7 +34,7 @@ struct AppEnvironmentLifecycleTests {
         let env = AppEnvironment(context: container.viewContext, clock: clock, guardLegacyWrites: false,
                                  content: content, analytics: tracker, cloud: MemoryKeyValueStore(), local: local,
                                  notificationScheduling: scheduling,
-                                 widget: WidgetBridge(backing: local, reload: {}))
+                                 widget: WidgetBridge(backing: local, reload: {}), storeBackend: storeBackend)
         return Rig(env: env, tracker: tracker, scheduling: scheduling, local: local, clock: clock, container: container)
     }
 
