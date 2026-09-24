@@ -56,7 +56,10 @@ struct ContentRepositoryTests {
         #expect((20...50).contains(catalog.causes.count))
         #expect((20...50).contains(catalog.badges.count))
         #expect((20...50).contains(catalog.evergreenThemes.count))
-        #expect(catalog.paths.count == 5)
+        // 08 §3.3: yedi düşünce yolu; ücretsiz varsayılan Stoacılar.
+        #expect(catalog.paths.map(\.id) == ["stoacilar", "antik_yunan", "varoluscular", "dogu_bilgeligi",
+                                             "islam_anadolu", "psikologlar", "modern_dusunce"])
+        #expect(catalog.paths.filter { !$0.premium }.map(\.id) == [QuotePath.defaultFreeID])
         #expect(!catalog.themes.isEmpty && !catalog.guided.isEmpty)
         #expect(Set(catalog.quotes.map(\.kind)) == Set(QuoteKind.allCases))
         #expect(catalog.duplicateIDs.isEmpty)

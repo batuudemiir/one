@@ -29,7 +29,7 @@ def errors(content: bc.Content, previous: bc.Content | None = None) -> list[str]
 
 def quote(**overrides) -> dict:
     q = {"id": "q_900001", "text": "Pencereyi açmak da bir başlangıçtır.", "kind": "affirmation", "license": "original",
-         "themes": ["cesaret"], "paths": ["cesur"], "emotionFit": [], "moodFit": [2], "timeOfDay": "any",
+         "themes": ["cesaret"], "paths": ["stoacilar"], "emotionFit": [], "moodFit": [2], "timeOfDay": "any",
          "length": "short", "premium": False, "active": True, "addedIn": 2, "lang": "tr"}
     q.update(overrides)
     return q

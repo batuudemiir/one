@@ -138,3 +138,65 @@ struct QuoteSchemaV2Tests {
         #expect(t.rights == .protected && t.shortName == "X")
     }
 }
+
+// MARK: - S2: ThinkerCatalog
+
+struct ThinkerCatalogTests {
+
+    private static func catalog() -> ContentCatalog {
+        let manifest = ContentManifest(schemaVersion: "2.0", contentVersion: 1, generatedAt: "", files: [])
+        let thinkers = [
+            Thinker(id: "th_a", displayName: "Aa", pathIDs: ["stoacilar"]),
+            Thinker(id: "th_b", displayName: "Bb", pathIDs: ["stoacilar"]),
+            Thinker(id: "th_c", displayName: "Cc", pathIDs: ["stoacilar"]),
+            Thinker(id: "th_d", displayName: "Dd", pathIDs: ["antik_yunan"]),
+            Thinker(id: "th_e", displayName: "Ee", pathIDs: ["psikologlar"]),
+            Thinker(id: "th_f", displayName: "Ff", pathIDs: ["stoacilar"], active: false),
+        ]
+        func q(_ id: String, _ author: String, _ themes: [String]) -> Quote {
+            Quote(id: id, text: "Söz metni \(id) burada duruyor.", kind: .quote, authorID: author,
+                  sourceRef: SourceRef(work: "Eser"), themes: themes)
+        }
+        let quotes = [
+            q("q1", "th_a", ["kabul"]), q("q2", "th_a", ["kabul"]), q("q3", "th_a", ["sabir"]),
+            q("q4", "th_b", ["merak"]),
+            q("q5", "th_c", ["kabul"]), q("q6", "th_c", ["kabul"]),
+            q("q7", "th_d", ["kabul"]),
+            q("q8", "th_e", ["merak"]),
+        ]
+        return ContentCatalog(manifest: manifest, quotes: quotes, thinkers: thinkers)
+    }
+
+    @Test("similar: önce ortak yol, sonra tema yoğunluğu; kendisi ve pasif hariç; limit")
+    func similarOrdering() {
+        let c = Self.catalog()
+        // C: aynı yol + aynı tema (kabul) > B: aynı yol, farklı tema > D: farklı yol, aynı tema > E: hiçbiri
+        #expect(c.similar(to: "th_a", limit: 10).map(\.id) == ["th_c", "th_b", "th_d", "th_e"])
+        #expect(c.similar(to: "th_a", limit: 2).map(\.id) == ["th_c", "th_b"])
+        #expect(c.similar(to: "th_yok", limit: 3).isEmpty)
+    }
+
+    @Test("thinkers(in:): yoldaki aktif düşünürler, ada göre")
+    func thinkersInPath() {
+        let c = Self.catalog()
+        #expect(c.thinkers(in: "stoacilar").map(\.id) == ["th_a", "th_b", "th_c"])
+        #expect(c.thinkers(in: "varoluscular").isEmpty)
+    }
+
+    @Test("Bundle: 15 düşünür, sözler düşünüre bağlı, ad satırı displayName, yol düşünürden")
+    func bundleThinkers() throws {
+        let c = try ContentLoader.load(from: BundleContentSource(bundle: Bundle(for: PersistenceController.self)))
+        #expect(c.thinkers.count == 15)
+        #expect(c.unmatchedAuthors.isEmpty)
+        let pathIDs = Set(c.paths.map(\.id))
+        for t in c.thinkers {
+            #expect(t.id.hasPrefix("th_") && !t.pathIDs.isEmpty && Set(t.pathIDs).isSubset(of: pathIDs), "\(t.id)")
+        }
+        for q in c.quotes where q.kind == .quote {
+            let t = try #require(q.authorID.flatMap(c.thinker), "\(q.id)")
+            #expect(q.attribution == t.displayName && q.paths == t.pathIDs, "\(q.id)")
+        }
+        #expect(c.thinker("th_marcus_aurelius")?.displayName == "Marcus Aurelius")
+        #expect(c.similar(to: "th_seneca", limit: 2).allSatisfy { $0.pathIDs.contains("stoacilar") })
+    }
+}
