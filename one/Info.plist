@@ -28,20 +28,6 @@
 	</array>
 	<key>LSBundleContainsCoreMLmlmodelc</key>
 	<false/>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>Günlük müziğini kaydetmek için Apple Music'e erişim gereklidir.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Günlük anlarını fotoğraflamak ve QR kod taramak için kamera erişimi gereklidir.</string>
-	<key>NSContactsUsageDescription</key>
-	<string>Arkadaşlarını ONE'a davet etmek için rehberine erişim gereklidir.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Uygulama kilidi açıkken anlarını yalnızca sen açabilesin diye Face ID kullanılır.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Ruh hali kartını ve paylaşım görsellerini fotoğraf kütüphanene kaydetmek için erişim gereklidir.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Günlük kartını ve anılarını fotoğraf kütüphanenden seçmek için erişim gereklidir.</string>
-	<key>NSSupportsLiveActivities</key>
-	<true/>
 	<key>SpotifyClientID</key>
 	<string>$(SPOTIFY_CLIENT_ID)</string>
 	<key>TicketmasterAPIKey</key>
