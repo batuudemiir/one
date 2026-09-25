@@ -209,3 +209,7 @@
 "one2.seal.dayReady" = "gün hazır.";
 "one2.seal.entrySaved" = "yazın kaydedildi.";
 "one2.seal.firstDay" = "Bugün başladı.";
+
+/* Yazma ekranları (07 §5.3–5.5, §8) */
+"one2.editor.saveFailed.title" = "Kaydedilemedi.";
+"one2.editor.saveFailed.message" = "Bağlantını kontrol edip tekrar dene.";

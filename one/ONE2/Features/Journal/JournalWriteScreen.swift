@@ -2,13 +2,11 @@
 //  JournalWriteScreen.swift
 //  ONE 2.0
 //
-//  Soruya ya da boş sayfaya yazı (JournalEditor.md, UX-6; `CoverRoute.journalEditor`).
-//  Tam ekran, tab bar gizli. Üstte bağlam etiketi ("Haftalık tema ·
-//  Yavaşlık", "Boş sayfa") ve "Bitti"; soru serif `prompt`; gövde serif;
-//  kelime sayısı. "Bitti" → Seal → Bugün.
-//
-//  Araç hapının Biçim, Foto, Ses, Şarkı ve Etiket düğmeleri depoları ve
-//  seçicileri gelince (söze yazıdaki gibi); işlevsiz kontrol konmadı.
+//  Soruya ya da boş sayfaya yazı (07 §5.3, JournalEditor.md;
+//  `CoverRoute.journalEditor`). Tam ekran, `ground` zemin. Üstte mono bağlam
+//  etiketi ("HAFTALIK TEMA · YAVAŞLIK", "BOŞ SAYFA") ve `Bitti`; soru
+//  Literata `prompt`; gövde `journal`; araç hapında kelime sayısı.
+//  `Bitti` → mühür → Bugün. Hiç yazı yoksa `Kapat`, girdi oluşmaz.
 //
 
 import Foundation
@@ -26,13 +24,14 @@ struct JournalWriteScreen: View {
             if let model {
                 JournalWriteEditor(model: model, onClose: close, onFinish: { router.finishWriting() })
             } else {
-                V3Loading()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                VStack(spacing: 0) {
+                    EditorTopBar(context: nil, hasText: false, isSaving: false, onClose: close, onDone: {})
+                    EditorSkeleton()
+                }
             }
         }
-        .oneScreenGround()
+        .background(ONE2Color.ground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .toolbar(.hidden, for: .tabBar)
         .task {
             guard model == nil, let environment else { return }
             let m = JournalWriteModel(ref: ref, services: .live(environment))
@@ -41,7 +40,7 @@ struct JournalWriteScreen: View {
         }
     }
 
-    /// Kaydetmeden çıkış: taslak cihazda kalır. Tam ekran açılır (07 §3.2).
+    /// Kaydetmeden çıkış: taslak cihazda kalır; uyarı yok.
     private func close() {
         router.cover = nil
     }
@@ -54,28 +53,19 @@ private struct JournalWriteEditor: View {
 
     @FocusState private var focused: Bool
 
-    private static let columnWidth: CGFloat = 640
+    private var hasText: Bool { !model.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
     var body: some View {
         VStack(spacing: 0) {
-            V3TopBar(leading: .back(onClose), style: .subScreen, context: model.context?.label) {
-                Button {
-                    focused = false
-                    model.save()
-                } label: {
-                    Text(NSLocalizedString("one2.reflection.done", comment: "Finish writing"))
-                        .bodyXSSemibold()
-                        .foregroundColor(model.canSave ? V3Tokens.korText : V3Tokens.faintText)
-                        .padding(.horizontal, V3Tokens.spacingXS)
-                        .frame(minWidth: V3Tokens.minTouchTarget, minHeight: V3Tokens.minTouchTarget)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.onePressable)
-                .disabled(!model.canSave)
-            }
+            EditorTopBar(
+                context: model.context?.label,
+                hasText: hasText,
+                isSaving: !model.canSave && hasText,
+                onClose: onClose,
+                onDone: save
+            )
             if model.phase == .loading {
-                V3Loading()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                EditorSkeleton()
             } else {
                 editor
             }
@@ -88,56 +78,36 @@ private struct JournalWriteEditor: View {
         }
     }
 
+    private func save() {
+        focused = false
+        model.save()
+    }
+
     private var editor: some View {
-        VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
+        VStack(alignment: .leading, spacing: ONE2Space.s4) {
             if let prompt = model.context?.prompt {
                 Text(prompt)
-                    .font(V3Typography.quote(22))
-                    .foregroundColor(V3Tokens.ink)
+                    .one2Type(.prompt)
+                    .foregroundStyle(ONE2Color.ink)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
             }
-            ZStack(alignment: .topLeading) {
-                if model.text.isEmpty {
-                    Text(NSLocalizedString("one2.reflection.placeholder", comment: "Empty editor placeholder"))
-                        .font(V3Typography.journal())
-                        .foregroundColor(V3Tokens.faintText)
-                        .padding(.top, V3Tokens.spacingSM)
-                        .padding(.leading, V3Tokens.spacingXS)
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
-                }
-                TextEditor(text: $model.text)
-                    .font(V3Typography.journal())
-                    .foregroundColor(V3Tokens.ink)
-                    .lineSpacing(11)
-                    .tint(V3Tokens.ink)
-                    .scrollContentBackground(.hidden)
-                    .focused($focused)
-                    .accessibilityLabel(model.context?.prompt
-                                        ?? NSLocalizedString("one2.reflection.placeholder", comment: "Empty editor placeholder"))
-            }
-            .frame(maxHeight: .infinity)
+            EditorTextArea(
+                text: $model.text,
+                accessibilityLabel: model.context?.prompt
+                    ?? NSLocalizedString("one2.reflection.placeholder", comment: "Empty editor placeholder"),
+                focused: $focused
+            )
             if model.saveFailed {
-                Text(NSLocalizedString("one2.reflection.saveFailed", comment: "Saving the entry failed"))
-                    .bodySMMedium()
-                    .foregroundColor(V3Tokens.korText)
+                EditorSaveError(onRetry: save)
             }
         }
-        .frame(maxWidth: Self.columnWidth)
+        .frame(maxWidth: ONE2Size.readingColumn)
         .frame(maxWidth: .infinity)
-        .padding(.top, V3Tokens.spacingSM)
-        .oneScreenBody()
+        .padding(.horizontal, ONE2Space.gutter)
+        .padding(.top, ONE2Space.s2)
         .safeAreaInset(edge: .bottom) {
-            HStack {
-                Spacer()
-                Text(JournalCopy.words(model.wordCount))
-                    .monoSM()
-                    .foregroundColor(V3Tokens.mutedText)
-            }
-            .padding(.vertical, V3Tokens.spacingSM)
-            .oneScreenBody()
-            .background(V3Tokens.paper)
+            EditorToolbar(wordCount: model.wordCount)
         }
         .task {
             // Boş sayfada klavye hemen açılır.

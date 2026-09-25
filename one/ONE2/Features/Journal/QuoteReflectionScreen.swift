@@ -2,14 +2,10 @@
 //  QuoteReflectionScreen.swift
 //  ONE 2.0
 //
-//  Söze yazı ekranı (QuoteReflection.md, JournalEditor.md, UX-6). Tam ekran,
-//  tab bar gizli. Üstte bağlam etiketi ve "Bitti"; söz künyesi (yazarken
-//  küçülür), dönen soru + "Başka soru", serif gövde, en altta "Geçen sefer"
-//  satırı ve kelime sayısı. "Bitti" → Seal → Bugün.
-//
-//  Araç hapının Biçim, Foto, Ses, Şarkı ve Etiket düğmeleri, arkalarındaki
-//  depolar (medya, etiket) ve seçiciler gelince eklenir; işlevsiz kontrol
-//  konmadı.
+//  Söze yazı (07 §5.4, components/QuoteReflection.md; `CoverRoute.quoteReflection`).
+//  Editör + üstte söz künyesi (yazarken tek satıra küçülür). Soru söze özel;
+//  sağda "başka soru". Aynı söze daha önce yazıldıysa en altta soluk satır
+//  "Geçen sefer (12 Eyl): …" → önceki yazı sayfası. `Bitti` → mühür → Bugün.
 //
 
 import SwiftUI
@@ -26,13 +22,15 @@ struct QuoteReflectionScreen: View {
             if let model {
                 QuoteReflectionEditor(model: model, onClose: close, onFinish: { router.finishWriting() })
             } else {
-                V3Loading()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                VStack(spacing: 0) {
+                    EditorTopBar(context: JournalCopy.kindTitle(.quoteReflection), hasText: false,
+                                 isSaving: false, onClose: close, onDone: {})
+                    EditorSkeleton()
+                }
             }
         }
-        .oneScreenGround()
+        .background(ONE2Color.ground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .toolbar(.hidden, for: .tabBar)
         .task {
             guard model == nil, let environment else { return }
             let m = QuoteReflectionModel(quoteID: quoteID, services: .live(environment))
@@ -41,7 +39,7 @@ struct QuoteReflectionScreen: View {
         }
     }
 
-    /// Kaydetmeden çıkış: taslak cihazda kalır. Tam ekran açılır (07 §3.2).
+    /// Kaydetmeden çıkış: taslak cihazda kalır; uyarı yok.
     private func close() {
         router.cover = nil
     }
@@ -55,21 +53,27 @@ private struct QuoteReflectionEditor: View {
     @FocusState private var focused: Bool
     @State private var showPrevious = false
 
-    /// Satır genişliği ~65 karakter (iPad'de ortalı sütun).
-    private static let columnWidth: CGFloat = 640
+    private var hasText: Bool { !model.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
     var body: some View {
         VStack(spacing: 0) {
-            V3TopBar(leading: .back(onClose), style: .subScreen,
-                     context: JournalCopy.kindTitle(.quoteReflection)) {
-                doneButton
-            }
+            EditorTopBar(
+                context: JournalCopy.kindTitle(.quoteReflection),
+                hasText: hasText,
+                isSaving: !model.canSave && hasText,
+                onClose: onClose,
+                onDone: save
+            )
             switch model.phase {
             case .loading:
-                V3Loading()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                EditorSkeleton()
             case .missing:
-                ONEErrorView(message: NSLocalizedString("one2.reflection.missing", comment: "Quote no longer available"))
+                Text(NSLocalizedString("one2.reflection.missing", comment: "Quote no longer available"))
+                    .one2Type(.body)
+                    .foregroundStyle(ONE2Color.inkMuted)
+                    .padding(.horizontal, ONE2Space.gutter)
+                    .padding(.top, ONE2Space.s6)
+                    .frame(maxHeight: .infinity, alignment: .top)
             case .writing, .sealed:
                 editor
             }
@@ -82,116 +86,76 @@ private struct QuoteReflectionEditor: View {
         }
         .sheet(isPresented: $showPrevious) {
             if let previous = model.previous {
-                V3SheetScreen(title: JournalCopy.kindTitle(.quoteReflection), onClose: { showPrevious = false }) {
+                ScrollView {
                     EntryReadContent(entry: previous, quote: model.quote)
+                        .padding(.horizontal, ONE2Space.gutter)
+                        .padding(.vertical, ONE2Space.s8)
                 }
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(ONE2Radius.xl)
+                .presentationBackground(ONE2Color.surface)
             }
         }
     }
 
-    // MARK: Bitti
-
-    private var doneButton: some View {
-        Button {
-            focused = false
-            Task { await model.save() }
-        } label: {
-            Text(NSLocalizedString("one2.reflection.done", comment: "Finish writing"))
-                .bodyXSSemibold()
-                .foregroundColor(model.canSave ? V3Tokens.korText : V3Tokens.faintText)
-                .padding(.horizontal, V3Tokens.spacingXS)
-                .frame(minWidth: V3Tokens.minTouchTarget, minHeight: V3Tokens.minTouchTarget)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.onePressable)
-        .disabled(!model.canSave)
+    private func save() {
+        focused = false
+        Task { await model.save() }
     }
 
-    // MARK: Editör
-
     private var editor: some View {
-        VStack(alignment: .leading, spacing: V3Tokens.spacingLG) {
+        VStack(alignment: .leading, spacing: ONE2Space.s4) {
             if let quote = model.quote {
                 QuoteCitation(quote: quote, compact: focused)
             }
             if let prompt = model.prompt {
                 promptRow(prompt)
             }
-            writingArea(prompt: model.prompt?.text)
+            EditorTextArea(
+                text: $model.text,
+                accessibilityLabel: model.prompt?.text
+                    ?? NSLocalizedString("one2.reflection.placeholder", comment: "Empty editor placeholder"),
+                focused: $focused
+            )
             if model.saveFailed {
-                Text(NSLocalizedString("one2.reflection.saveFailed", comment: "Saving the entry failed"))
-                    .bodySMMedium()
-                    .foregroundColor(V3Tokens.korText)
+                EditorSaveError(onRetry: save)
             }
             if let previous = model.previous {
                 Button { showPrevious = true } label: {
                     Text(JournalCopy.previousLine(previous))
-                        .bodySM()
-                        .foregroundColor(V3Tokens.mutedText)
+                        .one2Type(.bodySm)
+                        .foregroundStyle(ONE2Color.inkMuted)
                         .lineLimit(1)
-                        .frame(maxWidth: .infinity, minHeight: V3Tokens.minTouchTarget, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: ONE2Size.minTouch, alignment: .leading)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.onePressable)
+                .buttonStyle(.one2Press)
             }
         }
-        .frame(maxWidth: Self.columnWidth)
+        .frame(maxWidth: ONE2Size.readingColumn)
         .frame(maxWidth: .infinity)
-        .padding(.top, V3Tokens.spacingSM)
-        .oneScreenBody()
+        .padding(.horizontal, ONE2Space.gutter)
+        .padding(.top, ONE2Space.s2)
         .safeAreaInset(edge: .bottom) {
-            HStack {
-                Spacer()
-                Text(JournalCopy.words(model.wordCount))
-                    .monoSM()
-                    .foregroundColor(V3Tokens.mutedText)
-            }
-            .padding(.vertical, V3Tokens.spacingSM)
-            .oneScreenBody()
-            .background(V3Tokens.paper)
+            EditorToolbar(wordCount: model.wordCount)
         }
     }
 
     private func promptRow(_ prompt: PromptSuggestion) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: V3Tokens.spacingMD) {
+        HStack(alignment: .firstTextBaseline, spacing: ONE2Space.s3) {
             Text(prompt.text)
-                .font(V3Typography.quote(22))
-                .foregroundColor(V3Tokens.ink)
+                .one2Type(.prompt)
+                .foregroundStyle(ONE2Color.ink)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
             Button {
                 Task { await model.anotherPrompt() }
             } label: {
                 Text(NSLocalizedString("one2.reflection.anotherPrompt", comment: "Show a different prompt"))
-                    .bodySMMedium()
-                    .foregroundColor(V3Tokens.mutedText)
-                    .frame(minHeight: V3Tokens.minTouchTarget)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.onePressable)
+            .buttonStyle(.one2(.text, size: .compact))
         }
-    }
-
-    private func writingArea(prompt: String?) -> some View {
-        ZStack(alignment: .topLeading) {
-            if model.text.isEmpty {
-                Text(NSLocalizedString("one2.reflection.placeholder", comment: "Empty editor placeholder"))
-                    .font(V3Typography.journal())
-                    .foregroundColor(V3Tokens.faintText)
-                    .padding(.top, V3Tokens.spacingSM)
-                    .padding(.leading, V3Tokens.spacingXS)
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
-            }
-            TextEditor(text: $model.text)
-                .font(V3Typography.journal())
-                .foregroundColor(V3Tokens.ink)
-                .lineSpacing(11)
-                .tint(V3Tokens.ink)
-                .scrollContentBackground(.hidden)
-                .focused($focused)
-                .accessibilityLabel(prompt ?? NSLocalizedString("one2.reflection.placeholder", comment: "Empty editor placeholder"))
-        }
-        .frame(maxHeight: .infinity)
     }
 }

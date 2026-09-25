@@ -2,9 +2,9 @@
 //  QuoteCitation.swift
 //  ONE 2.0
 //
-//  Söz künyesi (QuoteReflection.md): serif italik söz + mono kaynak, kuyu
-//  zemininde. Yazarken tek satıra küçülür. Söze yazı ekranı, önceki yazı
-//  ve girdi detayı aynı künyeyi kullanır.
+//  Söz künyesi (07 §5.4, components/QuoteReflection.md): `raised` kutu,
+//  Literata italik söz, mono "DÜŞÜNÜR · ESER". Yazarken tek satıra küçülür
+//  (`compact`, 280 ms; Reduce Motion'da anında).
 //
 
 import SwiftUI
@@ -16,26 +16,21 @@ struct QuoteCitation: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(alignment: .leading, spacing: V3Tokens.spacingXS) {
+        VStack(alignment: .leading, spacing: ONE2Space.s2) {
             Text(quote.text)
-                .font(V3Typography.quote(compact ? 15 : 18))
+                .one2Type(compact ? .journal : .prompt)
                 .italic()
-                .foregroundColor(V3Tokens.ink)
+                .foregroundStyle(ONE2Color.ink)
                 .lineLimit(compact ? 1 : nil)
                 .fixedSize(horizontal: false, vertical: !compact)
-            if !compact, let attribution = quote.citation {
-                Text(attribution)
-                    .monoSM()
-                    .foregroundColor(V3Tokens.mutedText)
+            if !compact, let citation = quote.citation {
+                ONE2Label(citation)
             }
         }
-        .padding(compact ? V3Tokens.spacingMD : V3Tokens.spacingLG)
+        .padding(compact ? ONE2Space.s3 : ONE2Space.s5)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: V3Tokens.radiusPanel, style: .continuous)
-                .fill(V3Tokens.wash)
-        )
-        .animation(reduceMotion ? nil : ONEAnimation.easing, value: compact)
+        .background(ONE2Color.raised, in: ONE2Radius.shape(ONE2Radius.md))
+        .animation(ONE2Motion.animation(.screen, reduceMotion: reduceMotion), value: compact)
         .accessibilityElement(children: .combine)
     }
 }

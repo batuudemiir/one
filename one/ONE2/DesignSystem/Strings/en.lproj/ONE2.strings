@@ -196,3 +196,7 @@
 "one2.seal.dayReady" = "day's ready.";
 "one2.seal.entrySaved" = "your writing is saved.";
 "one2.seal.firstDay" = "Today began.";
+
+/* Writing screens (07 §5.3–5.5, §8) */
+"one2.editor.saveFailed.title" = "Couldn't save.";
+"one2.editor.saveFailed.message" = "Check your connection and try again.";

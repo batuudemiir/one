@@ -72,6 +72,8 @@ nonisolated enum ONE2Size {
     static let progressLine: CGFloat = 4
     /// Haftalık tema gün noktaları arası.
     static let themeDotGap: CGFloat = 6
+    /// Yazı sütunu (~65 karakter; iPad'de ortalı, 07 §5.3).
+    static let readingColumn: CGFloat = 640
     /// Yatay sayfalı kartlarda bir sonraki kartın görünen payı.
     static let pagePeek: CGFloat = 16
     /// EmotionChip aile noktası.
