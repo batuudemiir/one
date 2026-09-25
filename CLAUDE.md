@@ -149,6 +149,10 @@ marka öğeleri (ad, logo, renk paleti, ikonografi). Kendi içeriğimizi yaz.
   `MidnightResetManager` görev işleyicisi, `AppDelegate` CloudKit push'u.
 - ONE 2.0 açıkken `DailySong`'a insert/update DEBUG'da `assertionFailure`
   verir (`LegacyWriteGuard`); silme serbest.
+- **Tek klasör, tek dal (25 Eylül 2026, Batuhan):** tüm ONE 2.0 işi
+  `~/Desktop/one/one` klasöründe, `one2/faz1` dalında. Ayrı worktree ya da
+  proje kopyası açılmaz; paralel oturumlar aynı ağaçta dosya sahipliğiyle
+  çalışır (05 › Sahiplik sınırları). Kullanıcı her şeyi tek build'de görür.
 - ONE 2.0 işi `one2/*` dallarında. Gerçek kullanıcı verisi (CloudKit
   dökümleri, `tooling/*.json`) repoya girmez; repo public.
 
