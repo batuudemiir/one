@@ -1,5 +1,5 @@
 id,text,kind,author,source,translation,license,licenseNote,themes,paths,emotionFit,moodFit,timeOfDay,reflectionPromptIDs,premium,active,addedIn,lang
 # PLACEHOLDER CONTENT — şablon; "#" ile başlayan satırlar okunmaz. Liste alanları ";" ile ayrılır.,,,,,,,,,,,,,,,,,
-q_000101,Bazı şeyler senin elindedir; bazıları değildir.,quote,Epiktetos,"Encheiridion, 1",oneTranslation,publicDomain,PLACEHOLDER — kaynak doğrulanacak,kabul;sinirlar,filozof,kaygi,1;2;3,any,,false,true,2,tr
-q_000102,Bugün yavaş gitmek de ilerlemektir.,affirmation,,,,original,,yavaslik,sakin;sefkatli,yorgun,1;2,any,,false,true,2,tr
-q_000103,Damlaya damlaya göl olur.,proverb,,,original,publicDomain,,sabir;odak,uretken,,,any,,false,true,2,tr
+q_000101,Bazı şeyler senin elindedir; bazıları değildir.,quote,Epiktetos,"Encheiridion, 1",oneTranslation,publicDomain,PLACEHOLDER — kaynak doğrulanacak,kabul;sinirlar,stoacilar,kaygi,1;2;3,any,,false,true,2,tr
+q_000102,Bugün yavaş gitmek de ilerlemektir.,affirmation,,,,original,,yavaslik,,yorgun,1;2,any,,false,true,2,tr
+q_000103,Damlaya damlaya göl olur.,proverb,,,original,publicDomain,,sabir;odak,,,,any,,false,true,2,tr

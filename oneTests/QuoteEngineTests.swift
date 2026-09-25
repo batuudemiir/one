@@ -14,15 +14,21 @@ import CoreData
 @MainActor
 enum QuoteFixture {
     static let themes = ["cesaret", "minnet", "kabul", "odak", "dinlenme", "umut", "sinirlar", "degisim", "ozsefkat", "merak"]
-    static let paths = ["filozof", "sakin", "cesur", "sefkatli", "uretken"]
+    static let paths = ["stoacilar", "antik_yunan", "varoluscular", "dogu_bilgeligi", "islam_anadolu"]
+    static let authorCount = 40
 
+    /// Her 10. öğe olumlama (akışa girmemeli, 08 §1); gerisi `quote`.
+    /// Yazar k'nin sözleri i ≡ k (mod 40), yolu `paths[k % 5]`.
     static func quotes(_ n: Int, premiumEvery: Int = 0) -> [Quote] {
         (0..<n).map { i in
-            let kind = QuoteKind.allCases[i % 4]
+            let kind: QuoteKind = i % 10 == 9 ? .affirmation : .quote
             let text = i % 3 == 0 ? "Kısa söz \(i)." : "Bu biraz daha uzun bir cümle, sayısı \(i), ve sakin bir düşünce taşıyor."
             return Quote(id: String(format: "q_%06d", i + 1), text: text, kind: kind,
-                         author: kind == .quote ? "Yazar \(i % 40)" : nil, source: kind == .quote ? "Eser" : nil,
+                         authorID: kind == .quote ? authorID(i % authorCount) : nil,
+                         sourceRef: kind == .quote ? SourceRef(work: "Eser", translation: .original) : nil,
                          license: kind == .quote ? .publicDomain : .original,
+                         // Ton yoldan ve yazardan bağımsız dağılır (i/5).
+                         tones: [QuoteTone.allCases[(i / 5) % QuoteTone.allCases.count].rawValue],
                          themes: [themes[i % themes.count], themes[(i / 3) % themes.count]],
                          paths: [paths[i % paths.count]], moodFit: [1 + i % 5],
                          timeOfDay: [.any, .morning, .evening, .day][i % 4],
@@ -30,13 +36,22 @@ enum QuoteFixture {
         }
     }
 
+    static func authorID(_ k: Int) -> ThinkerID { ThinkerNames.syntheticID(for: "Yazar \(k)") }
+
+    static let thinkers: [Thinker] = (0..<authorCount).map { k in
+        Thinker(id: authorID(k), displayName: "Yazar \(k)", pathIDs: [paths[k % paths.count]])
+    }
+
     static func repository(_ quotes: [Quote]) -> ContentRepository {
         let data = try! JSONEncoder().encode(ContentFile(items: quotes))
+        let thinkerData = try! JSONEncoder().encode(ContentFile(items: thinkers))
         let manifest = try! JSONSerialization.data(withJSONObject: [
-            "schemaVersion": "1.0", "contentVersion": 1, "generatedAt": "",
-            "files": [["path": ContentFiles.quotes, "sha256": ContentFiles.sha256(data)]],
+            "schemaVersion": "2.0", "contentVersion": 1, "generatedAt": "",
+            "files": [["path": ContentFiles.quotes, "sha256": ContentFiles.sha256(data)],
+                      ["path": ContentFiles.thinkers, "sha256": ContentFiles.sha256(thinkerData)]],
         ])
-        let source = MemoryContentSource(files: [ContentFiles.manifest: manifest, ContentFiles.quotes: data])
+        let source = MemoryContentSource(files: [ContentFiles.manifest: manifest, ContentFiles.quotes: data,
+                                                 ContentFiles.thinkers: thinkerData])
         return ContentRepository(bundle: source,
                                  cacheDirectory: FileManager.default.temporaryDirectory.appendingPathComponent("q-\(UUID())"),
                                  fetcher: FakeContentFetcher(files: nil), clock: FixedClock(Date()),
@@ -72,7 +87,7 @@ struct QuoteEngineTests {
 
     @Test("1.000 kartlık simülasyonda sıfır tekrar; oturum içinde tekrar yok; çeşitlilik kısıtları tutuyor")
     func thousandCardsNoRepeat() async throws {
-        let rig = QuoteFixture.rig(QuoteFixture.quotes(1_500), paths: ["sakin", "cesur"], premium: true)
+        let rig = QuoteFixture.rig(QuoteFixture.quotes(1_500), paths: ["antik_yunan", "varoluscular"], premium: true)
         var rng = SeededRandom(seed: 7)
         var seenOrder: [Quote] = []
         var shownTotal = 0
@@ -83,6 +98,7 @@ struct QuoteEngineTests {
             let batch = await rig.engine.nextBatch(mode: .forYou, count: size)
             #expect(!batch.isEmpty)
             for q in batch {
+                #expect(q.kind == .quote, "akışta söz dışı tür: \(q.id)")
                 #expect(!sessionIDs.contains(q.id), "oturumda tekrar: \(q.id)")
                 sessionIDs.insert(q.id)
                 shownTotal += 1
@@ -105,7 +121,7 @@ struct QuoteEngineTests {
 
     @Test("Hızlı geçilen kart görülmüş sayılmaz ve sonraki oturumda kuyruktan geri gelir")
     func fastSwipeReturns() async throws {
-        let rig = QuoteFixture.rig(QuoteFixture.quotes(100))
+        let rig = QuoteFixture.rig(QuoteFixture.quotes(100), premium: true)
         rig.engine.startSession()
         let first = await rig.engine.nextBatch(mode: .forYou, count: 5)
         await rig.engine.markSeen(first[0].id, dwell: .milliseconds(300))
@@ -130,7 +146,7 @@ struct QuoteEngineTests {
     @Test("Döngü 2: yalnız 60 günden önce görülenler, en eskisi önce; hepsi yeniyse boş durum")
     func cycleTwo() async throws {
         let quotes = QuoteFixture.quotes(10)
-        let rig = QuoteFixture.rig(quotes)
+        let rig = QuoteFixture.rig(quotes, premium: true)
         let now = rig.clock.now
         for (i, q) in quotes.enumerated() {
             let daysAgo = i < 5 ? 70.0 + Double(i) : 10.0
@@ -141,7 +157,7 @@ struct QuoteEngineTests {
 
         rig.engine.startSession()
         let batch = await rig.engine.nextBatch(mode: .forYou, count: 10)
-        #expect(Set(batch.map(\.id)) == Set(quotes.prefix(5).map(\.id)))
+        #expect(Set(batch.map(\.id)) == Set(quotes.prefix(5).map(\.id))) // 10. öğe olumlama: akışta yok
         #expect(batch.first?.id == quotes[4].id) // 74 gün önce: en eski
 
         for q in batch { await rig.engine.markSeen(q.id, dwell: .seconds(2)) }
@@ -151,36 +167,105 @@ struct QuoteEngineTests {
 
     // MARK: - E2.3 puan ve erişim
 
-    @Test("Skor ≤ 2 iken olumlama oranı artar")
-    func lowMoodAffirmations() async {
-        let quotes = QuoteFixture.quotes(400)
-        func ratio(_ mood: Int) async -> Double {
-            let rig = QuoteFixture.rig(quotes, mood: mood)
-            rig.engine.startSession()
-            let batch = await rig.engine.nextBatch(mode: .forYou, count: 30)
-            return Double(batch.filter { $0.kind == .affirmation }.count) / Double(batch.count)
-        }
-        let low = await ratio(1), high = await ratio(5)
-        #expect(low > high)
-        #expect(low >= 0.4)
+    @Test("Skor ≤ 2 iken yumuşak temalı söz öne çıkar (ton kuralı S4'te)")
+    func lowMoodSoftThemes() {
+        let soft = Quote(id: "s", text: "Kısa.", kind: .quote, themes: ["ozsefkat"])
+        let plain = Quote(id: "p", text: "Kısa.", kind: .quote, themes: ["odak"])
+        #expect(QuoteSelection.moodScore(soft, 1) > QuoteSelection.moodScore(plain, 1))
+        #expect(QuoteSelection.moodScore(soft, 1) > QuoteSelection.moodScore(soft, 5))
     }
 
-    @Test("Ücretsiz: Sana özel + ilk yol açık, diğer yollar/türler kilitli, premium söz yok")
+    @Test("Ücretsiz: Sana özel + ilk seçilen yol açık; diğer yollar ve temalar kilitli; premium söz yok")
     func freeAccess() async {
         let quotes = QuoteFixture.quotes(200, premiumEvery: 4)
-        let rig = QuoteFixture.rig(quotes, paths: ["sakin", "cesur"])
+        let rig = QuoteFixture.rig(quotes, paths: ["varoluscular", "antik_yunan"])
         #expect(rig.engine.isAccessible(.forYou))
-        #expect(rig.engine.isAccessible(.path("sakin")))
-        #expect(!rig.engine.isAccessible(.path("cesur")))
-        #expect(!rig.engine.isAccessible(.kind(.proverb)))
+        #expect(rig.engine.isAccessible(.path("varoluscular")))
+        #expect(!rig.engine.isAccessible(.path("antik_yunan")))
+        #expect(!rig.engine.isAccessible(.path("stoacilar")))
+        #expect(!rig.engine.isAccessible(.theme("minnet")))
         rig.engine.startSession()
-        #expect(await rig.engine.nextBatch(mode: .path("cesur"), count: 5).isEmpty)
-        let batch = await rig.engine.nextBatch(mode: .path("sakin"), count: 20)
-        #expect(!batch.isEmpty && batch.allSatisfy { !$0.premium && $0.paths.contains("sakin") })
+        #expect(await rig.engine.nextBatch(mode: .path("antik_yunan"), count: 5).isEmpty)
+        #expect(await rig.engine.nextBatch(mode: .theme("minnet"), count: 5).isEmpty)
+        let batch = await rig.engine.nextBatch(mode: .path("varoluscular"), count: 20)
+        #expect(!batch.isEmpty && batch.allSatisfy { !$0.premium && $0.paths.contains("varoluscular") })
 
-        let premium = QuoteFixture.rig(quotes, paths: ["sakin"], premium: true)
+        let premium = QuoteFixture.rig(quotes, paths: ["varoluscular"], premium: true)
         premium.engine.startSession()
-        #expect(!(await premium.engine.nextBatch(mode: .kind(.proverb), count: 5)).isEmpty)
+        #expect(premium.engine.isAccessible(.path("antik_yunan")))
+        #expect(!(await premium.engine.nextBatch(mode: .theme("minnet"), count: 5)).isEmpty)
+    }
+
+    @Test("Ücretsiz yol seçilmediyse stoacilar açık")
+    func defaultFreePath() {
+        let rig = QuoteFixture.rig(QuoteFixture.quotes(20))
+        #expect(rig.engine.isAccessible(.path("stoacilar")))
+        #expect(!rig.engine.isAccessible(.path("varoluscular")))
+    }
+
+    @Test("Kuyruk içerikleri: ücretsizde yalnız açık yol, premium işaretsiz, doğrulanmış quote; premium'da tüm yollar")
+    func queueContents() async {
+        var quotes = QuoteFixture.quotes(600, premiumEvery: 5)
+        // Doğrulanmamış söz yayına girmez (08 §1).
+        quotes.append(Quote(id: "q_unverified", text: "Kaynağı belirsiz.", kind: .quote,
+                            authorID: QuoteFixture.authorID(0), verified: false, paths: ["stoacilar"]))
+        func drain(_ rig: QuoteFixture.Rig, _ mode: QuoteFeedMode) async -> [Quote] {
+            var all: [Quote] = []
+            for _ in 0..<40 {
+                rig.engine.startSession()
+                let batch = await rig.engine.nextBatch(mode: mode, count: 15)
+                if batch.isEmpty { break }
+                for q in batch { await rig.engine.markSeen(q.id, dwell: .seconds(2)) }
+                all += batch
+            }
+            return all
+        }
+        let freeRig = QuoteFixture.rig(quotes)
+        let free = await drain(freeRig, .forYou)
+        // Keşif payı (S4): ücretsizde kilitsiz tanıtım kartı, günde en fazla 2.
+        let intros = free.filter { freeRig.engine.isDiscovery($0.id) }
+        #expect(intros.count <= QuoteSelection.introDailyLimit)
+        #expect(intros.allSatisfy { !$0.paths.contains("stoacilar") })
+        let regular = free.filter { !freeRig.engine.isDiscovery($0.id) }
+        let expectedFree = quotes.filter { $0.kind == .quote && $0.verified && !$0.premium && $0.paths == ["stoacilar"] }
+        #expect(Set(regular.map(\.id)) == Set(expectedFree.map(\.id)))
+        #expect(regular.count == expectedFree.count)
+
+        let premium = await drain(QuoteFixture.rig(quotes, paths: ["stoacilar"], premium: true), .forYou)
+        let expectedPremium = quotes.filter { $0.kind == .quote && $0.verified }
+        #expect(Set(premium.map(\.id)) == Set(expectedPremium.map(\.id)))
+        #expect(premium.contains { $0.premium })
+        #expect(Set(premium.flatMap(\.paths)) == Set(QuoteFixture.paths))
+    }
+
+    @Test("Düşünür modu: yalnız o düşünür, açık yoldaysa ücretsiz; tükenince boş ve benzer düşünürler")
+    func thinkerMode() async throws {
+        let quotes = QuoteFixture.quotes(800)
+        let stoic = QuoteFixture.authorID(0), greek = QuoteFixture.authorID(1)
+        let rig = QuoteFixture.rig(quotes, paths: ["stoacilar"])
+        #expect(rig.engine.isAccessible(.thinker(stoic)))
+        #expect(!rig.engine.isAccessible(.thinker(greek)))
+        rig.engine.startSession()
+        #expect(await rig.engine.nextBatch(mode: .thinker(greek), count: 5).isEmpty)
+
+        let own = quotes.filter { $0.authorID == stoic && $0.kind == .quote }
+        var shown: [Quote] = []
+        for _ in 0..<10 {
+            rig.engine.startSession()
+            let batch = await rig.engine.nextBatch(mode: .thinker(stoic), count: 8)
+            if batch.isEmpty { break }
+            #expect(batch.allSatisfy { $0.authorID == stoic })
+            for q in batch { await rig.engine.markSeen(q.id, dwell: .seconds(2)) }
+            shown += batch
+        }
+        #expect(Set(shown.map(\.id)) == Set(own.map(\.id)) && shown.count == own.count)
+        #expect(await rig.engine.remainingUnseen(mode: .thinker(stoic)) == 0)
+        #expect(!QuoteFixture.repository(quotes).catalog.similar(to: stoic, limit: 3).isEmpty)
+
+        let premium = QuoteFixture.rig(quotes, paths: ["stoacilar"], premium: true)
+        premium.engine.startSession()
+        let greekBatch = await premium.engine.nextBatch(mode: .thinker(greek), count: 5)
+        #expect(greekBatch.count == 5 && greekBatch.allSatisfy { $0.authorID == greek })
     }
 
     @Test("Kuyruk kalıcı: aynı depo yeniden açılınca aynı sıradan devam eder")
@@ -208,7 +293,7 @@ struct QuoteEngineTests {
     func dailyQuoteAcrossDevices() async throws {
         let quotes = QuoteFixture.quotes(300)
         let cloud = MemoryKeyValueStore()
-        let deviceA = QuoteFixture.rig(quotes, cloud: cloud, paths: ["filozof"])
+        let deviceA = QuoteFixture.rig(quotes, cloud: cloud, paths: ["stoacilar"])
         let deviceB = QuoteFixture.rig(quotes, cloud: cloud)
         let day = DayKey("2026-09-23")!
         let a = try #require(await deviceA.engine.dailyQuote(for: day))
@@ -218,7 +303,7 @@ struct QuoteEngineTests {
         // KVS henüz senkron olmasa da aynı veriden aynı seçim çıkar.
         let isolated = MemoryKeyValueStore()
         isolated.set(deviceA.profile.profile.userSalt.uuidString, forKey: ProfileStore.Key.userSalt)
-        isolated.set(["filozof"], forKey: ProfileStore.Key.quotePaths)
+        isolated.set(["stoacilar"], forKey: ProfileStore.Key.quotePaths)
         let deviceC = QuoteFixture.rig(quotes, cloud: isolated)
         #expect(await deviceC.engine.dailyQuote(for: day) == a)
 
@@ -254,12 +339,14 @@ struct QuoteEngineTests {
 
     @Test("Görülmemiş sayısı ve content_pool_low tek sefer")
     func poolLow() async {
-        let rig = QuoteFixture.rig(QuoteFixture.quotes(120))
+        let quotes = QuoteFixture.quotes(120)
+        let rig = QuoteFixture.rig(quotes, premium: true)
+        let expected = quotes.filter { $0.kind == .quote }.count
         var reports: [(String, Int)] = []
         rig.engine.onPoolLow = { reports.append(($0.key, $1)) }
-        #expect(await rig.engine.remainingUnseen(mode: .forYou) == 120)
+        #expect(await rig.engine.remainingUnseen(mode: .forYou) == expected)
         _ = await rig.engine.remainingUnseen(mode: .forYou)
-        #expect(reports.count == 1 && reports[0].0 == "forYou" && reports[0].1 == 120)
+        #expect(reports.count == 1 && reports[0].0 == "forYou" && reports[0].1 == expected)
     }
 
     @Test("Favoriler ve yazılanlar kendi listelerinde, akış kurallarından bağımsız")

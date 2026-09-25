@@ -45,6 +45,8 @@ final class LiveQuoteEngine: QuoteEngine {
     static let queueTarget = 30
     static let queueRefillThreshold = 10
     static let seenDwell: Duration = .milliseconds(1200)
+    /// Uzun bakış (08 §4.5).
+    static let longLookDwell: Duration = .seconds(4)
     static let poolLowThreshold = 150
     static let resurfaceAfter: TimeInterval = 90 * 86_400
 
@@ -64,6 +66,8 @@ final class LiveQuoteEngine: QuoteEngine {
     private var sessionShown: Set<QuoteID> = []
     private var sessionUnseen: [String: [QuoteID]] = [:]
     private var poolLowReported: Set<String> = []
+    /// Düşünür yakınlığı önbelleği: gün değişince ya da olay kaydedilince yenilenir.
+    private var signalsCache: (day: DayKey, value: ThinkerSignals)?
 
     init(content: ContentRepository, exposure: ExposureStore, profile: ProfileStore, clock: AppClock,
          cloud: KeyValueBacking = NSUbiquitousKeyValueStore.default,
@@ -101,23 +105,38 @@ final class LiveQuoteEngine: QuoteEngine {
         if mode.isList { return list(mode, catalog: catalog, snapshot: snapshot, count: count) }
 
         let context = makeContext()
+        guard QuoteSelection.isAccessible(mode, context: context, catalog: catalog) else { return [] }
         var queue = validQueue(mode, context: context, catalog: catalog)
         let cycleTwo = Set(queue.cycleTwo)
         queue.ids.removeAll { snapshot[$0]?.wasSeen == true && !cycleTwo.contains($0) }
 
         var batch: [Quote] = []
-        for id in queue.ids where batch.count < count {
-            guard !sessionShown.contains(id), let q = catalog.quote(id) else { continue }
-            batch.append(q)
-        }
-        if batch.count < count || queue.ids.count - batch.count < Self.queueRefillThreshold {
-            refill(&queue, mode: mode, context: context, catalog: catalog, snapshot: snapshot)
+        var intros = introsToday()
+        func take() {
             for id in queue.ids where batch.count < count {
                 guard !sessionShown.contains(id), !batch.contains(where: { $0.id == id }),
                       let q = catalog.quote(id) else { continue }
+                // Tanıtım kartı gösterimde sayılır: günde en fazla 2 (08 §4.4).
+                if !context.hasPremium, QuoteSelection.isIntro(q, context: context) {
+                    guard intros < QuoteSelection.introDailyLimit else { continue }
+                    intros += 1
+                }
                 batch.append(q)
             }
         }
+        take()
+        if batch.count < count || queue.ids.count - batch.count < Self.queueRefillThreshold {
+            refill(&queue, mode: mode, context: context, catalog: catalog, snapshot: snapshot)
+            take()
+        }
+        // Hakkı biten tanıtım kartları kuyruktan çıkar; görülmedikleri için sonra dönebilirler.
+        if !context.hasPremium, intros >= QuoteSelection.introDailyLimit {
+            let delivered = Set(batch.map(\.id))
+            queue.ids.removeAll { id in
+                !delivered.contains(id) && catalog.quote(id).map { QuoteSelection.isIntro($0, context: context) } == true
+            }
+        }
+        local.set(intros, forKey: introKey())
         saveQueue(queue, mode.key)
         for q in batch {
             sessionShown.insert(q.id)
@@ -126,18 +145,34 @@ final class LiveQuoteEngine: QuoteEngine {
         return batch
     }
 
+    /// Eşiğin altı hızlı geçiştir (görülmez, yakınlık −0,3); ≥ 4 sn uzun bakış (+0,5).
     func markSeen(_ id: QuoteID, dwell: Duration) async {
-        guard dwell >= Self.seenDwell else { return }
+        signalsCache = nil
+        guard dwell >= Self.seenDwell else {
+            exposure.recordSkipped(id, kind: .quote)
+            return
+        }
+        if dwell >= Self.longLookDwell { exposure.recordLongLook(id, kind: .quote) }
         seen(id)
     }
 
     func record(_ action: QuoteAction, for id: QuoteID) async {
+        signalsCache = nil
         switch action {
         case .liked: try? exposure.setLiked(true, id: id, kind: .quote); seen(id)
         case .unliked: try? exposure.setLiked(false, id: id, kind: .quote)
-        case .shared: seen(id)
+        case .shared: exposure.recordShared(id, kind: .quote); seen(id)
         case .wroteAbout(let entryID): try? exposure.recordWritten(id, kind: .quote, entryID: entryID); seen(id)
         }
+    }
+
+    /// Düşünür yakınlığı, [−3, +10] (08 §4.5).
+    func affinity(for id: ThinkerID) async -> Double { signals().score(id) }
+
+    /// Keşif payıyla gelen kart mı (08 §4.4)? Ücretsizde bu kart kilitsizdir;
+    /// arayüz "keşif" etiketi için okur.
+    func isDiscovery(_ id: QuoteID) -> Bool {
+        (local.object(forKey: Self.discoveryKey) as? [QuoteID])?.contains(id) == true
     }
 
     func dailyQuote(for day: DayKey) async -> Quote? {
@@ -203,7 +238,7 @@ final class LiveQuoteEngine: QuoteEngine {
 
     /// Modun erişilebilir olup olmadığı (arayüz kilidi için).
     func isAccessible(_ mode: QuoteFeedMode) -> Bool {
-        QuoteSelection.isAccessible(mode, context: makeContext())
+        QuoteSelection.isAccessible(mode, context: makeContext(), catalog: content.catalog)
     }
 
     // MARK: - Günün sözü (saf)
@@ -218,10 +253,26 @@ final class LiveQuoteEngine: QuoteEngine {
         let candidates = pool.isEmpty ? eligible : pool
         var rng = SeededRandom("quote.daily", salt.uuidString, day.string)
         let interest = QuoteInterest.from(exposure, catalog: catalog, now: context.now)
-        return QuoteSelection.ranked(candidates, context: context, interest: interest, catalog: catalog, rng: &rng).first
+        let signals = ThinkerSignals.from(exposure, catalog: catalog, now: context.now)
+        return QuoteSelection.ranked(candidates, context: context, interest: interest, catalog: catalog,
+                                     signals: signals, rng: &rng).first
     }
 
     // MARK: - Private
+
+    private static let discoveryKey = "quote.discovery.ids"
+
+    private func introKey() -> String { "quote.intro.\(clock.today.string)" }
+    private func introsToday() -> Int { local.object(forKey: introKey()) as? Int ?? 0 }
+
+    private func signals() -> ThinkerSignals {
+        let today = clock.today
+        if let cache = signalsCache, cache.day == today { return cache.value }
+        let snapshot = (try? exposure.snapshot(.quote)) ?? ExposureSnapshot(kind: .quote)
+        let value = ThinkerSignals.from(snapshot, catalog: content.catalog, now: clock.now)
+        signalsCache = (today, value)
+        return value
+    }
 
     private func seen(_ id: QuoteID) {
         exposure.recordSeen(id, kind: .quote)
@@ -266,6 +317,8 @@ final class LiveQuoteEngine: QuoteEngine {
         var fingerprint: String
         /// Döngü 2'den gelen (görülmüş ama 60 günü geçmiş) sözler.
         var cycleTwo: [QuoteID] = []
+        /// Bu kuyruğa yerleşen toplam kart; keşif payının sıra sayacı.
+        var placed = 0
     }
 
     private func fingerprint(_ context: QuoteContext, catalog: ContentCatalog) -> String {
@@ -285,21 +338,66 @@ final class LiveQuoteEngine: QuoteEngine {
         let eligible = QuoteSelection.eligible(catalog.quotes, mode: mode, context: context)
         let excluded = Set(queue.ids).union(sessionShown)
         let (candidates, cycle) = QuoteSelection.candidates(eligible, exposure: snapshot, excluding: excluded, now: context.now)
-        guard !candidates.isEmpty else { return }
+        var rules = DiversityRules.for(mode)
+        // Ücretsizde tek açık yol var: yol kuralı yalnız premium "Sana özel"de anlamlı.
+        if !context.hasPremium { rules.samePath = false }
         let history = queue.ids.suffix(8).compactMap(catalog.quote)
+        let dayCounts = thinkerCountsToday(snapshot, queued: queue.ids, catalog: catalog)
         let next: [Quote]
         if cycle == 2 {
+            guard !candidates.isEmpty else { return }
             // En uzun süredir görülmeyen önce; yalnız çeşitlilik uygulanır.
-            next = QuoteSelection.diversified(candidates, count: need, history: history)
+            next = QuoteSelection.diversified(candidates, count: need, history: history,
+                                              rules: rules, dayCounts: dayCounts)
             queue.cycleTwo.append(contentsOf: next.map(\.id))
         } else {
+            let signals = signals()
             var rng = SeededRandom("quote.feed", profile.profile.userSalt.uuidString, clock.today.string, mode.key,
                                    String(queue.ids.count), String(snapshot.seenIDs.count))
             let interest = QuoteInterest.from(snapshot, catalog: catalog, now: context.now)
-            let ranked = QuoteSelection.ranked(candidates, context: context, interest: interest, catalog: catalog, rng: &rng)
-            next = QuoteSelection.diversified(ranked, count: need, history: history)
+            // Skoru ≤ −2 olan düşünür "Sana özel"de yalnız keşif payına girer (08 §4.5).
+            let pool = mode == .forYou ? candidates.filter { !signals.isMuted($0.authorID) } : candidates
+            let ranked = QuoteSelection.ranked(pool, context: context, interest: interest, catalog: catalog,
+                                               signals: signals, rng: &rng)
+            var discovery: [Quote] = []
+            if mode == .forYou {
+                let queuedThinkers = Set(queue.ids.compactMap { catalog.quote($0)?.authorID })
+                let ranked = QuoteSelection.ranked(
+                    QuoteSelection.discoveryCandidates(catalog.quotes, context: context,
+                                                       exposure: snapshot, excluding: excluded)
+                        .filter { !queuedThinkers.contains($0.authorID ?? "") },
+                    context: context, interest: interest, catalog: catalog, signals: signals, rng: &rng)
+                discovery = QuoteSelection.discoveryOrder(ranked, signals: signals)
+            }
+            guard !ranked.isEmpty || !discovery.isEmpty else { return }
+            // Kuyrukta bekleyen tanıtımlar da hakkı kullanır.
+            let queuedIntros = queue.ids.compactMap(catalog.quote).filter { QuoteSelection.isIntro($0, context: context) }.count
+            let result = QuoteSelection.assemble(
+                ranked, discovery: discovery, count: need, history: history, startIndex: queue.placed,
+                rules: rules, dayCounts: dayCounts,
+                introLimit: context.hasPremium ? nil
+                    : max(0, QuoteSelection.introDailyLimit - introsToday() - queuedIntros),
+                isIntro: { QuoteSelection.isIntro($0, context: context) })
+            next = result.quotes
+            if !result.discoveryIDs.isEmpty {
+                let known = local.object(forKey: Self.discoveryKey) as? [QuoteID] ?? []
+                local.set(Array((known + result.discoveryIDs).suffix(200)), forKey: Self.discoveryKey)
+            }
         }
+        queue.placed += next.count
         queue.ids.append(contentsOf: next.map(\.id))
+    }
+
+    /// Bugün görülen ve kuyrukta bekleyen kartların düşünür sayıları (günde 2 kuralı).
+    private func thinkerCountsToday(_ snapshot: ExposureSnapshot, queued: [QuoteID],
+                                    catalog: ContentCatalog) -> [ThinkerID: Int] {
+        let start = clock.calendar.startOfDay(for: clock.now)
+        var counts: [ThinkerID: Int] = [:]
+        for r in snapshot.records.values where (r.lastSeenAt ?? .distantPast) >= start {
+            if let id = catalog.quote(r.contentID)?.authorID { counts[id, default: 0] += 1 }
+        }
+        for id in queued { if let t = catalog.quote(id)?.authorID { counts[t, default: 0] += 1 } }
+        return counts
     }
 
     private func loadQueue(_ key: String) -> Queue {

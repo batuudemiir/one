@@ -159,6 +159,12 @@
         <attribute name="lastEntryID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="lastWrittenAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="writtenCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="shareCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lastSharedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="longLookCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lastLongLookAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="skipCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lastSkippedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <fetchIndex name="byContent">
             <fetchIndexElement property="contentID" type="Binary" order="ascending"/>
             <fetchIndexElement property="contentKind" type="Binary" order="ascending"/>

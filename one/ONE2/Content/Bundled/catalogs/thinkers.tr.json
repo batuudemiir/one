@@ -1,0 +1,274 @@
+{
+  "_note": "// PLACEHOLDER CONTENT — geçici örnek; relaunch öncesi içerik ekibinin metinleriyle değiştirilecek",
+  "items": [
+    {
+      "id": "th_epiktetos",
+      "displayName": "Epiktetos",
+      "shortName": "Epiktetos",
+      "aliases": [
+        "Epictetus"
+      ],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "stoacilar"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_seneca",
+      "displayName": "Seneca",
+      "shortName": "Seneca",
+      "aliases": [
+        "Lucius Annaeus Seneca"
+      ],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "stoacilar"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_marcus_aurelius",
+      "displayName": "Marcus Aurelius",
+      "shortName": "Marcus Aurelius",
+      "aliases": [
+        "Markus Aurelius"
+      ],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "stoacilar"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_herakleitos",
+      "displayName": "Herakleitos",
+      "shortName": "Herakleitos",
+      "aliases": [
+        "Heraklitos"
+      ],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "antik_yunan"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_yunus_emre",
+      "displayName": "Yunus Emre",
+      "shortName": "Yunus Emre",
+      "aliases": [],
+      "kind": "mystic",
+      "eraDisplay": "",
+      "pathIDs": [
+        "islam_anadolu"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_zenon",
+      "displayName": "Zenon",
+      "shortName": "Zenon",
+      "aliases": [],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "stoacilar"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_musonius_rufus",
+      "displayName": "Musonius Rufus",
+      "shortName": "Musonius Rufus",
+      "aliases": [],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "stoacilar"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_platon",
+      "displayName": "Platon",
+      "shortName": "Platon",
+      "aliases": [
+        "Eflatun"
+      ],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "antik_yunan"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_aristoteles",
+      "displayName": "Aristoteles",
+      "shortName": "Aristoteles",
+      "aliases": [],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "antik_yunan"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_epikuros",
+      "displayName": "Epikuros",
+      "shortName": "Epikuros",
+      "aliases": [],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "antik_yunan"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_kierkegaard",
+      "displayName": "Kierkegaard",
+      "shortName": "Kierkegaard",
+      "aliases": [],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "varoluscular"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_lao_tzu",
+      "displayName": "Lao Tzu",
+      "shortName": "Lao Tzu",
+      "aliases": [
+        "Lao Tse"
+      ],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "dogu_bilgeligi"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_konfucyus",
+      "displayName": "Konfüçyüs",
+      "shortName": "Konfüçyüs",
+      "aliases": [],
+      "kind": "philosopher",
+      "eraDisplay": "",
+      "pathIDs": [
+        "dogu_bilgeligi"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_mevlana",
+      "displayName": "Mevlana",
+      "shortName": "Mevlana",
+      "aliases": [
+        "Mevlânâ"
+      ],
+      "kind": "mystic",
+      "eraDisplay": "",
+      "pathIDs": [
+        "islam_anadolu"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    },
+    {
+      "id": "th_william_james",
+      "displayName": "William James",
+      "shortName": "William James",
+      "aliases": [],
+      "kind": "psychologist",
+      "eraDisplay": "",
+      "pathIDs": [
+        "psikologlar"
+      ],
+      "coreIdea": "PLACEHOLDER — içerik ekibi yazacak",
+      "bioShort": "PLACEHOLDER — içerik ekibi yazacak",
+      "premium": false,
+      "active": true,
+      "addedIn": 1,
+      "lang": "tr"
+    }
+  ]
+}

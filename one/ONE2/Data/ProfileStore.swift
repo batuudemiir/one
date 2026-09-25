@@ -59,8 +59,10 @@ nonisolated struct UserProfile: Hashable, Sendable {
     var name: String?
     /// Onboarding odakları (`kaygi`, `odak`, `minnet`, `uyku`, `iliskiler`).
     var focusAreas: [String] = []
-    /// Seçilen söz yolları. İlki ücretsiz kullanıcının "+1 yol"u (04 › karar 4).
+    /// Seçilen düşünce yolları (08 §3.3). İlki ücretsiz kullanıcının "+1 yol"u.
     var quotePaths: [String] = []
+    /// Eski ses yollarından (`sakin`, `filozof`…) taşınan ton tercihleri (08 §3.3).
+    var quoteTones: [String] = []
     var ritualMode: RitualMode = .daily
     var morningTime: ReminderTime = ReminderTime(hour: 8, minute: 30)!
     var eveningTime: ReminderTime = ReminderTime(hour: 21, minute: 30)!
@@ -71,8 +73,21 @@ nonisolated struct UserProfile: Hashable, Sendable {
     var userSalt: UUID
     var contentLang = "tr"
 
-    /// Ücretsiz kullanıcının açık yolu.
-    var freeQuotePath: String? { quotePaths.first }
+    /// Ücretsiz kullanıcının açık yolu; seçilmediyse `stoacilar`.
+    var freeQuotePath: String { quotePaths.first ?? QuotePath.defaultFreeID }
+
+    /// v1 ses yolu değerlerini tonlara ayırır; sıra korunur, tekrar atılır.
+    static func migratePaths(_ raw: [String], tones: [String] = []) -> (paths: [String], tones: [String]) {
+        var paths: [String] = [], out = tones
+        for id in raw {
+            if let tone = QuoteTone.fromV1Path(id) {
+                if !out.contains(tone.rawValue) { out.append(tone.rawValue) }
+            } else if !paths.contains(id) {
+                paths.append(id)
+            }
+        }
+        return (paths, out)
+    }
 }
 
 @Observable
@@ -83,6 +98,7 @@ final class ProfileStore {
         static let name = "profile.name"
         static let focusAreas = "profile.focusAreas"
         static let quotePaths = "profile.quotePaths"
+        static let quoteTones = "profile.quoteTones"
         static let ritualMode = "profile.ritualMode"
         static let morningTime = "profile.morningTime"
         static let eveningTime = "profile.eveningTime"
@@ -91,7 +107,7 @@ final class ProfileStore {
         static let userSalt = "profile.userSalt"
         static let contentLang = "profile.contentLang"
 
-        static let all = [name, focusAreas, quotePaths, ritualMode, morningTime, eveningTime,
+        static let all = [name, focusAreas, quotePaths, quoteTones, ritualMode, morningTime, eveningTime,
                           streakVisible, resurfaceWritten, userSalt, contentLang]
     }
 
@@ -109,6 +125,7 @@ final class ProfileStore {
         self.local = local
         profile = Self.read(cloud: cloud, local: local)
         persistSaltIfNeeded()
+        persistPathMigrationIfNeeded()
         if let kvs = cloud as? NSUbiquitousKeyValueStore {
             observer = NotificationCenter.default.addObserver(
                 forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification, object: kvs, queue: .main
@@ -165,6 +182,16 @@ final class ProfileStore {
         NotificationCenter.default.post(name: Self.didChange, object: self, userInfo: ["keys": keys])
     }
 
+    /// v1 ses yolları okunurken tonlara ayrılır; ayrılmış hâli bir kez geri yazılır.
+    private func persistPathMigrationIfNeeded() {
+        let stored = (cloud.object(forKey: Key.quotePaths) ?? local.object(forKey: Key.quotePaths)) as? [String]
+        guard let stored, stored != profile.quotePaths else { return }
+        for store in [cloud, local] {
+            store.set(profile.quotePaths, forKey: Key.quotePaths)
+            store.set(profile.quoteTones, forKey: Key.quoteTones)
+        }
+    }
+
     private func persistSaltIfNeeded() {
         let salt = profile.userSalt.uuidString
         if cloud.object(forKey: Key.userSalt) as? String != salt { cloud.set(salt, forKey: Key.userSalt) }
@@ -178,7 +205,9 @@ final class ProfileStore {
         var p = UserProfile(userSalt: salt)
         if let name = value(Key.name) as? String, !name.isEmpty { p.name = name }
         if let areas = value(Key.focusAreas) as? [String] { p.focusAreas = areas }
-        if let paths = value(Key.quotePaths) as? [String] { p.quotePaths = paths }
+        let migrated = UserProfile.migratePaths(value(Key.quotePaths) as? [String] ?? [],
+                                                tones: value(Key.quoteTones) as? [String] ?? [])
+        (p.quotePaths, p.quoteTones) = (migrated.paths, migrated.tones)
         if let mode = (value(Key.ritualMode) as? String).flatMap(RitualMode.init(rawValue:)) { p.ritualMode = mode }
         if let t = (value(Key.morningTime) as? String).flatMap(ReminderTime.init) { p.morningTime = t }
         if let t = (value(Key.eveningTime) as? String).flatMap(ReminderTime.init) { p.eveningTime = t }
@@ -193,6 +222,7 @@ final class ProfileStore {
             Key.name: p.name,
             Key.focusAreas: p.focusAreas,
             Key.quotePaths: p.quotePaths,
+            Key.quoteTones: p.quoteTones,
             Key.ritualMode: p.ritualMode.rawValue,
             Key.morningTime: p.morningTime.description,
             Key.eveningTime: p.eveningTime.description,
