@@ -189,7 +189,12 @@ struct oneApp: App {
         defer {
             let elapsed = CFAbsoluteTimeGetCurrent() - __initT0
             ONELaunchSignpost.end("appInit")
-            assert(elapsed < 0.08, "oneApp.init > 80ms (\(Int(elapsed * 1000))ms) — moved work back to sync path?")
+            // Bütçe aşımı uyarıdır, durdurmaz: hata ayıklayıcı bağlıyken ilk
+            // açılış ölçümü şişer ve assert her Run'ı kesiyordu. Aynı desen
+            // PersistenceController.init'te.
+            if elapsed >= 0.08 {
+                ONELogger.warning("oneApp.init > 80ms (\(Int(elapsed * 1000))ms) — moved work back to sync path?", category: .general)
+            }
         }
 
         // One-time migration: notificationsEnabled was written to UserDefaults.standard

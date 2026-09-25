@@ -142,11 +142,14 @@ class CloudKitManager: ObservableObject {
     
     private init() {
         // Launch contract: bu init Tier 0. Bütçe <30ms. Ağır iş için Tier 2/3'e
-        // taşı (oneApp.body .onAppear). Regresyon guard'ı için defer'lı assert.
+        // taşı (oneApp.body .onAppear). Regresyon guard'ı defer'lı uyarı: hata
+        // ayıklayıcı bağlıyken ölçüm şişer, assert her Run'ı kesiyordu.
         let __initT0 = CFAbsoluteTimeGetCurrent()
         defer {
             let elapsed = CFAbsoluteTimeGetCurrent() - __initT0
-            assert(elapsed < 0.03, "CloudKitManager.init > 30ms (\(Int(elapsed * 1000))ms) — added sync work?")
+            if elapsed >= 0.03 {
+                ONELogger.warning("CloudKitManager.init > 30ms (\(Int(elapsed * 1000))ms) — added sync work?", category: .cloudkit)
+            }
         }
 
         container = CKContainer(identifier: "iCloud.com.batu.ones")
