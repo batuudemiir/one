@@ -99,6 +99,16 @@ final class Router {
 
     func popToRoot(_ tab: ONE2Tab? = nil) { paths[tab ?? self.tab] = [] }
 
+    /// Yazma bitti (mühür kapandı): açık akış ve sayfa kapanır, Bugün
+    /// kökünde o günün yazıları görünür.
+    func finishWriting() {
+        cover = nil
+        sheet = nil
+        paths[tab] = []
+        paths[.today] = []
+        tab = .today
+    }
+
     /// Deep link hedefini uygular: sekme verildiyse seçilir ve yığını
     /// hedefle değiştirilir; açık sheet ve tam ekran akış hedefinkilerle
     /// değişir.

@@ -365,6 +365,122 @@ struct QuoteEngineTests {
         #expect(await rig.engine.nextBatch(mode: .favorites, count: 10).map(\.id) == [quotes[2].id])
     }
 
+    // MARK: - Akış (nextItems, feedState)
+
+    @Test("Günün sözü Sözler'in o günkü ilk kartı; bir kez, yalnız Sana özel'de")
+    func dailyFirstCard() async throws {
+        let rig = QuoteFixture.rig(QuoteFixture.quotes(200))
+        rig.engine.startSession()
+        #expect(await rig.engine.nextItems(mode: .path("sakin"), count: 5).allSatisfy { $0.reason == .regular })
+
+        let today = rig.clock.today
+        let daily = try #require(await rig.engine.dailyQuote(for: today))
+        let first = await rig.engine.nextItems(mode: .forYou, count: 5)
+        #expect(first.count == 5 && Set(first.map(\.id)).count == 5)
+        #expect(first[0].quote == daily && first[0].reason == .daily)
+        #expect(first.dropFirst().allSatisfy { $0.reason == .regular })
+
+        let more = await rig.engine.nextItems(mode: .forYou, count: 10)
+        #expect(!more.contains { $0.id == daily.id || $0.reason == .daily })
+        rig.engine.startSession()
+        #expect(!(await rig.engine.nextItems(mode: .forYou, count: 10)).contains { $0.reason == .daily })
+
+        rig.clock.advance(hours: 24)
+        rig.engine.startSession()
+        let next = await rig.engine.nextItems(mode: .forYou, count: 5)
+        #expect(next.first?.reason == .daily && next.first?.quote != daily)
+    }
+
+    @Test("Yazılan söz 90 gün sonra akışa etiketiyle bir kez girer")
+    func resurfacedInFeed() async throws {
+        let quotes = QuoteFixture.quotes(40)
+        let rig = QuoteFixture.rig(quotes)
+        let entry = UUID(), writtenAt = rig.clock.now
+        try rig.exposure.recordWritten(quotes[3].id, kind: .quote, entryID: entry)
+        rig.clock.advance(hours: 24 * 91)
+        rig.engine.startSession()
+
+        let items = await rig.engine.nextItems(mode: .forYou, count: 6)
+        #expect(items.count == 6)
+        #expect(items[0].reason == .daily)
+        let back = items[1 + LiveQuoteEngine.resurfacePosition]
+        #expect(back.quote.id == quotes[3].id && back.writtenCount == 1)
+        #expect(back.reason == .resurfaced(writtenAt: writtenAt, entryID: entry))
+        #expect(items.filter { $0.id == quotes[3].id }.count == 1)
+
+        rig.engine.startSession()
+        #expect(!(await rig.engine.nextItems(mode: .forYou, count: 10)).contains { $0.id == quotes[3].id })
+    }
+
+    @Test("Mod durumu: kilitli, görülmemiş var, döngü 2, tükendi (diğer yollar), liste")
+    func feedStates() async throws {
+        let quotes = QuoteFixture.quotes(20) // yol = i % 5: sakin 4, cesur 4
+        let free = QuoteFixture.rig(quotes, paths: ["sakin", "cesur"])
+        #expect(await free.engine.feedState(mode: .path("cesur")) == .locked)
+
+        let rig = QuoteFixture.rig(quotes, paths: ["sakin", "cesur"], premium: true)
+        #expect(await rig.engine.feedState(mode: .path("sakin")) == .available(unseen: 4))
+        #expect(await rig.engine.feedState(mode: .path("yok")) == .empty)
+        for q in quotes where q.paths.contains("sakin") { rig.exposure.recordSeen(q.id, kind: .quote) }
+        #expect(await rig.engine.feedState(mode: .path("sakin")) == .exhausted(alternatives: [.path("cesur"), .forYou]))
+
+        rig.clock.advance(hours: 24 * 61)
+        #expect(await rig.engine.feedState(mode: .path("sakin")) == .revisiting(count: 4))
+
+        // Ücretsiz kullanıcıya kilitli yol ("cesur", ikinci yol) önerilmez.
+        for q in quotes where q.paths.contains("sakin") { free.exposure.recordSeen(q.id, kind: .quote) }
+        #expect(await free.engine.feedState(mode: .path("sakin")) == .exhausted(alternatives: [.forYou]))
+
+        #expect(await rig.engine.feedState(mode: .favorites) == .empty)
+        await rig.engine.record(.liked, for: quotes[0].id)
+        #expect(await rig.engine.feedState(mode: .favorites) == .list(count: 1))
+    }
+
+    @Test("Künye: beğeni ve yazma sayısı karta taşınır")
+    func itemBadges() async throws {
+        let quotes = QuoteFixture.quotes(10)
+        let rig = QuoteFixture.rig(quotes)
+        await rig.engine.record(.liked, for: quotes[1].id)
+        await rig.engine.record(.wroteAbout(UUID()), for: quotes[1].id)
+        await rig.engine.record(.wroteAbout(UUID()), for: quotes[1].id)
+        let item = try #require(await rig.engine.nextItems(mode: .favorites, count: 5).first)
+        #expect(item.id == quotes[1].id && item.liked && item.writtenCount == 2 && item.reason == .regular)
+    }
+
+    @Test("Görünürlük: ≥%60 ve ≥1,2 sn görüldü; hızlı geçiş atlandı; etkileşimden sonra atlama yok")
+    func visibilityTracker() {
+        let t0 = Date(timeIntervalSince1970: 0)
+        func at(_ s: Double) -> Date { t0.addingTimeInterval(s) }
+        /// Süre kayan noktalı; olayı "seen:b ≥1,2" biçiminde karşılaştır.
+        func label(_ e: QuoteVisibilityEvent?) -> String? {
+            switch e {
+            case .seen(let id, let dwell)?: return "seen:\(id)" + (dwell >= QuoteVisibilityTracker.seenDwell ? "" : " kısa")
+            case .skipped(let id)?: return "skipped:\(id)"
+            case nil: return nil
+            }
+        }
+        var tracker = QuoteVisibilityTracker()
+
+        #expect(tracker.update("a", fraction: 0.9, at: at(0)) == nil)
+        #expect(tracker.update("a", fraction: 0.2, at: at(0.5)) == .skipped("a"))
+
+        // Eşiğin altı süre saymaz.
+        #expect(tracker.update("b", fraction: 0.5, at: at(0)) == nil)
+        #expect(tracker.update("b", fraction: 0.7, at: at(1)) == nil)
+        #expect(tracker.tick(at: at(2)).isEmpty)
+        #expect(tracker.tick(at: at(2.3)).map(label) == ["seen:b"])
+        #expect(tracker.update("b", fraction: 0, at: at(3)) == nil) // bir kez
+
+        #expect(tracker.update("c", fraction: 1, at: at(10)) == nil)
+        tracker.noteInteraction("c")
+        #expect(tracker.update("c", fraction: 0, at: at(10.4)) == nil)
+
+        _ = tracker.update("d", fraction: 1, at: at(20))
+        _ = tracker.update("e", fraction: 0.6, at: at(21))
+        #expect(tracker.flush(at: at(21.5)).map(label) == ["seen:d", "skipped:e"])
+        #expect(tracker.flush(at: at(30)).isEmpty)
+    }
+
     // MARK: - Saf çekirdek
 
     @Test("Çeşitlilik: aynı yazar 8 kartta bir, aynı tür en çok 3, 5 kartta bir kısa, aynı tema en çok 2")

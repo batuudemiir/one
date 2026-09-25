@@ -77,6 +77,8 @@ nonisolated struct QuoteContext: Sendable {
     var hasPremium = false
     /// Bu haftanın tema etiketleri (E5).
     var weekThemeTags: Set<String> = []
+    /// Bu haftanın teması; değişince kalıcı kuyruk yeniden kurulur.
+    var weekThemeID: String?
     var dayPart: DayPart = .any
     /// Son check-in skoru (1–5).
     var moodScore: Int?

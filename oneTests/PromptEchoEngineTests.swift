@@ -106,6 +106,19 @@ struct PromptEngineTests {
         #expect(compare.ref == first.ref && compare.source == .comparison)
     }
 
+    @Test("Başka soru: bu yazışta gösterilenler tekrar gelmez")
+    func reflectionAnotherPrompt() async throws {
+        let rig = Self.rig()
+        var shown: Set<PromptID> = []
+        for _ in 0..<7 {
+            let next = try #require(await rig.engine.reflectionPrompt(for: "q_000001", compare: false, excluding: shown))
+            #expect(!shown.contains(next.ref))
+            shown.insert(next.ref)
+        }
+        #expect(shown.count == 7) // 1 söze özel + 6 genel
+        #expect(await rig.engine.reflectionPrompt(for: "q_000001", compare: false, excluding: shown) != nil)
+    }
+
     @Test("Karşılaştırma: ≥30 gün önce cevaplanan soru, haftada en fazla bir")
     func comparisonWeeklyLimit() async throws {
         let rig = Self.rig()

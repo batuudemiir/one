@@ -162,5 +162,85 @@
 			<string>У вас %d общего друга</string>
 		</dict>
 	</dict>
+	<key>one2.quotes.writtenCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Ты писал(а) об этом %lld раз</string>
+			<key>few</key>
+			<string>Ты писал(а) об этом %lld раза</string>
+			<key>many</key>
+			<string>Ты писал(а) об этом %lld раз</string>
+			<key>other</key>
+			<string>Ты писал(а) об этом %lld раза</string>
+		</dict>
+	</dict>
+	<key>one2.words</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld слово</string>
+			<key>few</key>
+			<string>%lld слова</string>
+			<key>many</key>
+			<string>%lld слов</string>
+			<key>other</key>
+			<string>%lld слова</string>
+		</dict>
+	</dict>
+	<key>one2.today.streak</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld день подряд</string>
+			<key>few</key>
+			<string>%lld дня подряд</string>
+			<key>many</key>
+			<string>%lld дней подряд</string>
+			<key>other</key>
+			<string>%lld дня подряд</string>
+		</dict>
+	</dict>
+	<key>one2.ritual.summary.practices</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld практика выполнена</string>
+			<key>few</key>
+			<string>%lld практики выполнены</string>
+			<key>many</key>
+			<string>%lld практик выполнено</string>
+			<key>other</key>
+			<string>%lld практики выполнено</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

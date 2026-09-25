@@ -101,6 +101,8 @@ struct ONE2RootView: View {
         switch route {
         case .profile:
             ProfileScreen { router.pop(on: tab) }
+        case .entry(let id):
+            EntryDetailScreen(entryID: id)
         default:
             RoutePlaceholderScreen(title: route.title) { router.pop(on: tab) }
         }
@@ -135,8 +137,21 @@ struct ONE2RootView: View {
                 },
                 onClose: { router.cover = nil }
             )
-        default:
-            CoverPlaceholderScreen(title: cover.title) { router.cover = nil }
+        case .journalEditor(let context):
+            NavigationStack { JournalWriteScreen(ref: writeRef(context)) }
+        case .quoteReflection(let quoteID):
+            NavigationStack { QuoteReflectionScreen(quoteID: quoteID) }
+        }
+    }
+
+    /// Editörün bağlam referansı (E4): boş sayfa `nil`, soru kimliği, bu
+    /// haftanın tema sorusu `theme:…`; rehberli günlük UX-8'de.
+    private func writeRef(_ context: JournalContext) -> String? {
+        switch context {
+        case .blank:             return nil
+        case .prompt(let id):    return id
+        case .weeklyTheme:       return WriteContexts.todayTheme(environment)?.ref
+        case .guided(let id):    return id
         }
     }
 

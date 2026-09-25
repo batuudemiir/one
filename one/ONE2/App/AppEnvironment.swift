@@ -15,6 +15,15 @@
 import SwiftUI
 import CoreData
 
+/// Bir kaydın zincir sonucu (E8 + E9); kapanış ekranı (Seal) bunu gösterir.
+nonisolated struct WritingOutcome: Hashable, Sendable {
+    let entry: JournalEntry
+    /// Bu kayıt günü yazıyla tamamladı (≥ 20 kelime, gün önceden kapalı değildi).
+    let completedDay: Bool
+    /// Kapanışta duyurulacak yeni rozetler.
+    let badges: [BadgeDefinition]
+}
+
 final class AppEnvironment {
     let clock: AppClock
     let content: ContentRepository
@@ -41,6 +50,8 @@ final class AppEnvironment {
     let legacy: LegacyMomentStore
     /// `DailySong` yazım emniyet ağı; ortam yaşadıkça kurulu kalır.
     private let legacyWriteGuard: LegacyWriteGuard?
+    /// Son kaydın sonucu. `journal.create` döndüğünde hazırdır (zincir eşzamanlı).
+    private(set) var lastWriting: WritingOutcome?
     /// Cihaz başına durum (son aktif gün, son bilinen seri).
     private let local: KeyValueBacking
 
@@ -105,12 +116,17 @@ final class AppEnvironment {
         }
         journal.didSave = { [day, weak badges, weak self, analytics] entry in
             analytics.track(.entrySaved(kind: entry.kind, words: entry.wordCount, source: entry.sourceContext))
-            if (try? day.recordWriting(entry)) == true {
+            let completed = (try? day.recordWriting(entry)) ?? false
+            if completed {
                 analytics.track(.dayCompleted(by: .writing, backfilled: entry.isBackfilled))
             }
-            for award in (try? badges?.evaluateAfterSave()) ?? [] {
+            let awards = (try? badges?.evaluateAfterSave()) ?? []
+            for award in awards {
                 analytics.track(.badgeAwarded(badgeID: award.badge.id, announced: award.announce))
             }
+            // Kapanış (Seal) bu sonucu gösterir.
+            self?.lastWriting = WritingOutcome(entry: entry, completedDay: completed,
+                                               badges: awards.filter(\.announce).map(\.badge))
             Task { @MainActor in await self?.refreshSurfaces() }
         }
         mood.didSave = { [weak self, analytics] checkIn in

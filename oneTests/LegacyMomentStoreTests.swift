@@ -121,6 +121,16 @@ struct LegacyMomentStoreTests {
             .setValue(Date(), forKey: "date")
         try other.viewContext.save()
         #expect(violations.messages.count == before)
+
+        // CloudKit içe aktarması (başka cihazdaki v3) kural dışı sayılmaz.
+        let mirror = container.newBackgroundContext()
+        mirror.transactionAuthor = "NSCloudKitMirroringDelegate.import"
+        try mirror.performAndWait {
+            NSEntityDescription.insertNewObject(forEntityName: "DailySong", into: mirror)
+                .setValue(Date(), forKey: "date")
+            try mirror.save()
+        }
+        #expect(violations.messages.count == before)
         withExtendedLifetime(guardian) {}
     }
 }

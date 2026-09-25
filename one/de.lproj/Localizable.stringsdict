@@ -128,5 +128,69 @@
 			<string>Ihr habt %d gemeinsame Freunde</string>
 		</dict>
 	</dict>
+	<key>one2.quotes.writtenCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Du hast einmal darüber geschrieben</string>
+			<key>other</key>
+			<string>Du hast %lld-mal darüber geschrieben</string>
+		</dict>
+	</dict>
+	<key>one2.words</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld Wort</string>
+			<key>other</key>
+			<string>%lld Wörter</string>
+		</dict>
+	</dict>
+	<key>one2.today.streak</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld Tag in Folge</string>
+			<key>other</key>
+			<string>%lld Tage in Folge</string>
+		</dict>
+	</dict>
+	<key>one2.ritual.summary.practices</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld Praxis erledigt</string>
+			<key>other</key>
+			<string>%lld Praktiken erledigt</string>
+		</dict>
+	</dict>
 </dict>
 </plist>
