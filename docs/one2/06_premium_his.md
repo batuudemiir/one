@@ -133,6 +133,9 @@ Makalenin çerçevesi en doğrudan burada uygulanır. Hedef: 30 saniye,
 - Renk yalnız marka kurallarından: `ground`, `primary`, `brand`; mood
   renkleri yalnız 4. karede veri olarak.
 
+Uygulama: `Marketing/ONE2Film/` (kaynak, iki kesim ve yeniden üretme
+adımları).
+
 ### Müzik
 
 | BPM | His | ONE için |

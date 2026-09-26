@@ -1,0 +1,6 @@
+node_modules/
+package-lock.json
+events.json
+audio.wav
+v_*.mp4
+snap_*.png

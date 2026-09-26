@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>ONE 2.0 tanıtım filmi</title>
+<link rel="stylesheet" href="node_modules/@fontsource/plus-jakarta-sans/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/plus-jakarta-sans/600.css">
+<link rel="stylesheet" href="node_modules/@fontsource/plus-jakarta-sans/700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/plus-jakarta-sans/800.css">
+<link rel="stylesheet" href="node_modules/@fontsource/literata/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/literata/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/literata/400-italic.css">
+<link rel="stylesheet" href="node_modules/@fontsource/ibm-plex-mono/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/ibm-plex-mono/500.css">
+<style>
+  /* Token'lar: docs/one2/design-system/tokens.json, gece teması */
+  :root {
+    --ground:#000000; --surface:#141416; --raised:#1E1E21; --line:#26262A;
+    --line-strong:#66666E; --ink:#F4F4F5; --ink-muted:#A3A3AA; --ink-faint:#85858D;
+    --primary:#E8E8EA; --on-primary:#111113; --brand:#9AA6FF; --on-brand:#0F1218;
+    --sabah:#F2B84B; --aksam:#7D8BE0; --score-4:#E9B650; --on-score-4:#15181D;
+    --emo-huzur:#6FA684; --on-emo:#15181D;
+    --sans:"Plus Jakarta Sans", sans-serif; --serif:"Literata", serif; --mono:"IBM Plex Mono", monospace;
+  }
+  html, body { margin:0; background:var(--ground); overflow:hidden; }
+  #stage { position:relative; background:var(--ground); overflow:hidden; }
+  svg { position:absolute; left:0; top:0; }
+  .abs { position:absolute; left:0; top:0; will-change:transform, opacity; }
+  .center { transform-origin:50% 50%; }
+  .w { display:inline-block; white-space:pre; }
+  .headline { font-family:var(--sans); font-weight:700; color:var(--ink); letter-spacing:-0.02em; text-align:center; }
+  .label { font-family:var(--mono); font-weight:500; color:var(--ink-faint); letter-spacing:0.2em; text-align:center; }
+  .serif { font-family:var(--serif); color:var(--ink); }
+  .card { background:var(--surface); box-sizing:border-box; }
+  .caret { display:inline-block; background:var(--brand); vertical-align:-0.12em; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+// ------------------------------------------------------------------
+// Kurulum
+// ------------------------------------------------------------------
+const Q = new URLSearchParams(location.search);
+const W = +(Q.get('w') || 1920), H = +(Q.get('h') || 1080);
+const PORTRAIT = H > W;
+const u = Math.min(W, H) / 1080;
+const cx = W / 2, cy = H * (PORTRAIT ? 0.43 : 0.40);
+const labelY = cy - (PORTRAIT ? 430 : 340) * u;
+const headY  = cy + (PORTRAIT ? 560 : 470) * u;
+
+const C = {
+  ground:'#000000', surface:'#141416', raised:'#1E1E21', line:'#26262A', lineStrong:'#66666E',
+  ink:'#F4F4F5', inkMuted:'#A3A3AA', inkFaint:'#85858D', primary:'#E8E8EA', onPrimary:'#111113',
+  brand:'#9AA6FF', onBrand:'#0F1218', sabah:'#F2B84B', aksam:'#7D8BE0',
+  score4:'#E9B650', onScore:'#15181D', huzur:'#6FA684', onEmo:'#15181D',
+};
+
+const stage = document.getElementById('stage');
+stage.style.width = W + 'px'; stage.style.height = H + 'px';
+const NS = 'http://www.w3.org/2000/svg';
+function svg(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function div(cls, style = {}, html = '') {
+  const e = document.createElement('div');
+  e.className = cls; Object.assign(e.style, style); e.innerHTML = html;
+  stage.appendChild(e); return e;
+}
+const svgBack = svg('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}` }, stage);
+const htmlLayer = stage; // HTML öğeleri sırayla eklenir
+function frontSVG() { return svg('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}` }, stage); }
+
+// ------------------------------------------------------------------
+// Zaman: 72 BPM, kesmeler vuruşta
+// ------------------------------------------------------------------
+const BEAT = 60 / 72;
+const S = [0, 4, 8, 12, 16, 20, 26, 33, 36].map(b => b * BEAT); // sahne sınırları
+const TS = 29 * BEAT;         // mühür anı
+const TPRESS = TS - 0.40;     // "Günü kapat" basışı
+
+// Tek eğri: cubic-bezier(0.2, 0.8, 0.2, 1)
+function bezier(x1, y1, x2, y2) {
+  const bx = t => 3*x1*t*(1-t)*(1-t) + 3*x2*t*t*(1-t) + t*t*t;
+  const by = t => 3*y1*t*(1-t)*(1-t) + 3*y2*t*t*(1-t) + t*t*t;
+  return x => {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    let lo = 0, hi = 1;
+    for (let i = 0; i < 28; i++) { const m = (lo + hi) / 2; if (bx(m) < x) lo = m; else hi = m; }
+    return by((lo + hi) / 2);
+  };
+}
+const EASE = bezier(0.2, 0.8, 0.2, 1);
+const clamp = v => Math.max(0, Math.min(1, v));
+const prog = (t, a, d) => EASE(clamp((t - a) / d));
+const lerp = (a, b, m) => a + (b - a) * m;
+function mixHex(a, b, m) {
+  const pa = [1,3,5].map(i => parseInt(a.slice(i, i+2), 16));
+  const pb = [1,3,5].map(i => parseInt(b.slice(i, i+2), 16));
+  return '#' + pa.map((v, i) => Math.round(lerp(v, pb[i], m)).toString(16).padStart(2, '0')).join('');
+}
+// Giriş + çıkış opaklığı
+const vis = (t, a, b, fin = 0.35, fout = 0.28) => prog(t, a, fin) * (1 - prog(t, b, fout));
+
+// Ses olayları (ses tasarımı betiği okur)
+const EVENTS = [];
+
+// ------------------------------------------------------------------
+// Metin yardımcıları
+// ------------------------------------------------------------------
+function place(el, x, y, extra = '') { el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) ${extra}`; }
+
+function headline(text, size = 60) {
+  const el = div('abs headline', { fontSize: size*u + 'px', lineHeight: 1.2, width: (PORTRAIT ? 940 : 1500)*u + 'px' });
+  el.innerHTML = text.split(' ').map(w => `<span class="w">${w}</span>`).join(' ');
+  return { el, words: [...el.querySelectorAll('.w')] };
+}
+function wordsAt(h, t, tin, tout, x = cx, y = headY) {
+  place(h.el, x, y);
+  let any = false;
+  h.words.forEach((w, i) => {
+    const p = prog(t, tin + i * 0.07, 0.55);
+    const q = tout == null ? 0 : prog(t, tout, 0.28);
+    const o = p * (1 - q);
+    if (o > 0.001) any = true;
+    w.style.opacity = o;
+    w.style.transform = `translateY(${(1 - p) * 28*u - q * 14*u}px)`;
+  });
+  h.el.style.visibility = any ? 'visible' : 'hidden';
+}
+function label(text) { const el = div('abs label', { fontSize: 22*u + 'px', whiteSpace: 'nowrap' }, text); return el; }
+function labelAt(el, t, tin, tout) { place(el, cx, labelY); el.style.opacity = vis(t, tin, tout, 0.45); }
+
+// Yazma: harf harf, imleçli
+function typer(text, cls, style) {
+  const el = div('abs ' + cls, style);
+  el.innerHTML = `<span class="tx"></span><span class="caret"></span><span class="ghost" style="visibility:hidden"></span>`;
+  const tx = el.querySelector('.tx'), caret = el.querySelector('.caret'), ghost = el.querySelector('.ghost');
+  caret.style.width = 3*u + 'px'; caret.style.height = '1.05em'; caret.style.marginLeft = 2*u + 'px';
+  return { el, tx, caret, ghost, text };
+}
+function registerTyping(ty, t0, cps) {
+  ty.t0 = t0; ty.cps = cps;
+  [...ty.text].forEach((ch, i) => { if (ch !== ' ') EVENTS.push({ type: 'key', t: t0 + i / cps, i }); });
+}
+function typeAt(ty, t, x, y, fade) {
+  const n = Math.max(0, Math.min(ty.text.length, Math.floor((t - ty.t0) * ty.cps) + 1));
+  const shown = t < ty.t0 ? '' : ty.text.slice(0, n);
+  ty.tx.textContent = shown;
+  // Metin ortalı kalsın diye kalan kısmı görünmez tutuyoruz: satır kaymaz.
+  ty.ghost.textContent = ty.text.slice(shown.length);
+  const done = t - (ty.t0 + ty.text.length / ty.cps);
+  const blink = done > 0 ? (Math.floor(done / 0.5) % 2 === 0 ? 1 : 0) : 1;
+  ty.caret.style.opacity = t < ty.t0 - 0.3 ? 0 : blink;
+  place(ty.el, x, y);
+  ty.el.style.opacity = fade;
+}
+
+// ------------------------------------------------------------------
+// Motif: tek çizgi. Ufuk → satır çizgisi → ölçek rayı → söz çizgisi →
+// yolculuk yolu → akşam ufku → mühür halkası → ufuk.
+// ------------------------------------------------------------------
+const N = 240;
+const shapeOf = f => Array.from({ length: N }, (_, i) => f(i / (N - 1)));
+const line = (x0, y0, x1, y1) => shapeOf(s => [lerp(x0, x1, s), lerp(y0, y1, s)]);
+
+const card3 = { w: (PORTRAIT ? 900 : 980)*u, h: 380*u };
+const discGap = (PORTRAIT ? 176 : 150)*u, discR = 54*u, discY = cy + 10*u;
+const ruleY = cy + (PORTRAIT ? 110 : 50)*u;
+const cards6 = PORTRAIT
+  ? [{ x: cx + 30*u, y: cy - 190*u }, { x: cx + 30*u, y: cy + 190*u }]
+  : [{ x: cx - 330*u, y: cy }, { x: cx + 330*u, y: cy }];
+const card6 = { w: (PORTRAIT ? 820 : 600)*u, h: 300*u };
+const ringR = 128*u, sealR = 90*u;
+const hz7Y = cy + 160*u;
+
+const SH = {
+  arc: shapeOf(s => [cx + lerp(-240, 240, s)*u, cy + 130*u - 34*u*Math.sin(Math.PI*s)]),
+  horizon: line(cx - (PORTRAIT ? 440 : 620)*u, cy + 110*u, cx + (PORTRAIT ? 440 : 620)*u, cy + 110*u),
+  baseline: line(cx - card3.w/2 + 56*u, cy + 124*u, cx + card3.w/2 - 56*u, cy + 124*u),
+  track: line(cx - 2*discGap, discY, cx + 2*discGap, discY),
+  rule: line(cx - 44*u, ruleY, cx + 44*u, ruleY),
+  path: PORTRAIT
+    ? shapeOf(s => [cx - 440*u + 22*u*Math.sin(2*Math.PI*s), lerp(cards6[0].y - 120*u, cards6[1].y + 120*u, s)])
+    : shapeOf(s => [lerp(cards6[0].x, cards6[1].x, s), cy + 200*u + 54*u*Math.sin(Math.PI*s)]),
+  hz7: line(cx - 360*u, hz7Y, cx + 360*u, hz7Y),
+  ring: shapeOf(s => { const a = Math.PI - 2*Math.PI*s; return [cx + ringR*Math.cos(a), cy + ringR*Math.sin(a)]; }),
+};
+function morph(A, B, m) { return A.map((p, i) => [lerp(p[0], B[i][0], m), lerp(p[1], B[i][1], m)]); }
+function subPath(pts, a, b) {
+  if (b - a < 0.002) return '';
+  const fa = a * (N - 1), fb = b * (N - 1);
+  const at = f => { const i = Math.min(N - 2, Math.floor(f)), r = f - i; return [lerp(pts[i][0], pts[i+1][0], r), lerp(pts[i][1], pts[i+1][1], r)]; };
+  const out = [at(fa)];
+  for (let i = Math.ceil(fa); i < fb; i++) out.push(pts[i]);
+  out.push(at(fb));
+  return 'M' + out.map(p => p[0].toFixed(2) + ' ' + p[1].toFixed(2)).join(' L');
+}
+// Anahtar: [biçimin oturduğu an, biçim, geçiş öncesi pay, geçiş süresi]
+const KEYS = [
+  [S[1], 'horizon', 0, 0],
+  [S[2], 'baseline', 0.25, 0.6],
+  [S[3], 'track', 0.25, 0.6],
+  [S[4], 'rule', 0.25, 0.6],
+  [S[5], 'path', 0.25, 0.6],
+  [S[6], 'hz7', 0.25, 0.6],
+  [TS, 'ring', 0.15, 0.6],
+];
+function lineState(t) {
+  if (t < S[1]) { const p = prog(t, 0.9, 1.1); return { pts: SH.arc, a: .5 - .5*p, b: .5 + .5*p, col: C.ink }; }
+  if (t >= S[7]) { const p = prog(t, S[7] + 0.35, 1.1); return { pts: SH.arc, a: .5 - .5*p, b: .5 + .5*p, col: C.ink }; }
+  let k = 0;
+  for (let i = 0; i < KEYS.length; i++) if (t >= KEYS[i][0] - KEYS[i][2]) k = i;
+  const [kt, name, pre, dur] = KEYS[k];
+  let pts = SH[name], m = 1;
+  if (k > 0 && dur > 0) { m = prog(t, kt - pre, dur); pts = morph(SH[KEYS[k-1][1]], SH[name], m); }
+  let a = 0, b = 1, col = C.ink;
+  if (name === 'horizon') { const p = prog(t, S[1], 0.8); a = .5 - .5*p; b = .5 + .5*p; }
+  const pd = prog(t, S[5] - 0.25, 2.3);
+  if (name === 'path') b = Math.max(pd, 1 - m, 0.01);
+  if (name === 'ring') col = mixHex(C.ink, C.brand, m);
+  return { pts, a, b, col };
+}
+
+// ------------------------------------------------------------------
+// Katmanlar (arkadan öne)
+// ------------------------------------------------------------------
+// Sahne 2: güneş ve ışın yayları (ritüel işareti: sabah)
+const defs = svg('defs', {}, svgBack);
+const clip = svg('clipPath', { id: 'above' }, defs);
+svg('rect', { x: 0, y: 0, width: W, height: cy + 110*u }, clip);
+const sunG = svg('g', { 'clip-path': 'url(#above)' }, svgBack);
+const sunR = 96*u, sunY = cy - 10*u;
+const sun = svg('circle', { cx, r: sunR, fill: C.sabah }, sunG);
+const rays = [150, 196].map(r => svg('path', {
+  d: `M ${cx - r*u} ${sunY} A ${r*u} ${r*u} 0 0 1 ${cx + r*u} ${sunY}`,
+  fill: 'none', stroke: C.sabah, 'stroke-width': 2.5*u, 'stroke-linecap': 'round', pathLength: 1, 'stroke-dasharray': '1 1',
+}, sunG));
+
+// Sahne 5: ırmak
+const river = [0, 1, 2].map(() => svg('path', { fill: 'none', stroke: C.inkFaint, 'stroke-width': 2.5*u, 'stroke-linecap': 'round' }, svgBack));
+
+// Sahne 7: ay (ritüel işareti: akşam)
+const moonG = svg('g', {}, svgBack);
+const moon = svg('circle', { r: 46*u, fill: C.aksam }, moonG);
+const moonCut = svg('circle', { r: 42*u, fill: C.ground }, moonG);
+
+// HTML: kartlar
+const card3El = div('abs card', { width: card3.w + 'px', height: card3.h + 'px', borderRadius: 28*u + 'px', border: `${1.5*u}px solid ${C.line}` });
+const q3 = div('abs serif', { fontSize: 48*u + 'px', fontWeight: 500, whiteSpace: 'nowrap', letterSpacing: '-0.01em' });
+q3.innerHTML = 'Bugün neye acele ettin?'.split(' ').map(w => `<span class="w">${w}</span>`).join(' ');
+const q3w = [...q3.querySelectorAll('.w')];
+const theme3 = div('abs label', { fontSize: 20*u + 'px', whiteSpace: 'nowrap' }, 'YAVAŞLAMAK · 3. GÜN');
+
+const cards6El = cards6.map((c, i) => {
+  const el = div('abs card', { width: card6.w + 'px', height: card6.h + 'px', borderRadius: 28*u + 'px', padding: `${34*u}px ${40*u}px`, border: `${1.5*u}px solid ${C.line}` });
+  const date = i === 0 ? '12 MART' : '24 EYLÜL';
+  const ans = i === 0 ? 'Her şeye. Nefes alacak yer yoktu.' : 'Kahveme. Oysa sabah hiç geç değildi.';
+  el.innerHTML = `
+    <div style="font-family:var(--mono);font-weight:500;font-size:${20*u}px;letter-spacing:0.2em;color:${C.inkFaint}">${date}</div>
+    <div style="font-family:var(--sans);font-weight:500;font-size:${26*u}px;color:${C.inkMuted};margin-top:${18*u}px">Bugün neye acele ettin?</div>
+    <div class="ans" style="font-family:var(--serif);font-size:${36*u}px;line-height:1.3;color:${C.ink};margin-top:${16*u}px">${ans}</div>`;
+  return el;
+});
+
+// Sahne 5: söz
+const quoteMark = div('abs serif', { fontSize: 200*u + 'px', lineHeight: 1, color: C.brand, fontWeight: 500 }, '“');
+const quote = div('abs serif', { fontSize: 58*u + 'px', fontWeight: 500, lineHeight: 1.25, textAlign: 'center', width: (PORTRAIT ? 880 : 1400)*u + 'px', letterSpacing: '-0.01em' }, 'Aynı ırmakta iki kez yıkanılmaz.');
+const author = div('abs label', { fontSize: 22*u + 'px', color: C.inkMuted, whiteSpace: 'nowrap' }, 'HERAKLEİTOS');
+
+// Sahne 7: buton
+const button = div('abs', { width: 380*u + 'px', height: 104*u + 'px', borderRadius: 999 + 'px', background: C.primary, color: C.onPrimary,
+  fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 38*u + 'px', display: 'flex', alignItems: 'center', justifyContent: 'center' }, 'Günü kapat');
+
+// Yazma alanları
+const intent = typer('Bugün acele etmeyeceğim.', 'serif', { fontSize: 44*u + 'px', fontStyle: 'italic', whiteSpace: 'nowrap', color: C.ink });
+registerTyping(intent, S[1] + 1.15, 16);
+const answer3 = typer('Kahveme. Oysa sabah hiç geç değildi.', 'serif', { fontSize: 38*u + 'px', whiteSpace: 'nowrap', color: C.inkMuted });
+registerTyping(answer3, S[2] + 1.0, 20);
+
+// Ön SVG: motif çizgisi, diskler, mühür, hafta şeridi
+const front = frontSVG();
+const motif = svg('path', { fill: 'none', 'stroke-width': 3*u, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, front);
+const dots = Array.from({ length: 7 }, () => svg('circle', { r: 6*u, fill: C.inkFaint }, front));
+
+const discs = [1, 2, 3, 4, 5].map((n, i) => {
+  const g = svg('g', {}, front);
+  const c = svg('circle', { r: discR, fill: C.raised }, g);
+  const tx = svg('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-family': 'IBM Plex Mono', 'font-weight': 500, 'font-size': 36*u, fill: C.ink }, g);
+  tx.textContent = n;
+  return { g, c, tx, x: cx + (i - 2)*discGap };
+});
+const disc4Label = svg('text', { 'text-anchor': 'middle', 'font-family': 'IBM Plex Mono', 'font-weight': 500, 'font-size': 22*u, 'letter-spacing': 0.2*22*u, fill: C.inkMuted }, front);
+disc4Label.textContent = '4 · İYİ';
+
+const chips = ['Yorgun', 'Huzurlu', 'Minnettar'].map(name => {
+  const el = div('abs', { height: 72*u + 'px', padding: `0 ${34*u}px`, borderRadius: '999px', display: 'flex', alignItems: 'center',
+    fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 30*u + 'px', boxSizing: 'border-box', border: `${2*u}px solid ${C.lineStrong}`, color: C.ink }, name);
+  return el;
+});
+
+const sealG = svg('g', {}, front);
+const sealDisk = svg('circle', { r: sealR, fill: C.brand }, sealG);
+const sealTick = svg('path', { d: `M ${-34*u} ${2*u} L ${-10*u} ${26*u} L ${36*u} ${-24*u}`, fill: 'none', stroke: C.onBrand, 'stroke-width': 10*u,
+  'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1, 'stroke-dasharray': '1 1' }, sealG);
+
+const weekY = cy + 290*u, weekGap = (PORTRAIT ? 124 : 104)*u;
+const week = ['PZT', 'SAL', 'ÇAR', 'PER', 'CUM', 'CMT', 'PAZ'].map((d, i) => {
+  const g = svg('g', {}, front);
+  const x = cx + (i - 3)*weekGap;
+  const lab = svg('text', { x, y: weekY - 58*u, 'text-anchor': 'middle', 'font-family': 'IBM Plex Mono', 'font-weight': 500, 'font-size': 18*u, 'letter-spacing': 0.15*18*u, fill: C.inkFaint }, g);
+  lab.textContent = d;
+  const c = svg('circle', { cx: x, cy: weekY, r: 30*u }, g);
+  const tick = svg('path', { d: `M ${x - 11*u} ${weekY + 1*u} L ${x - 3*u} ${weekY + 9*u} L ${x + 12*u} ${weekY - 8*u}`, fill: 'none', 'stroke-width': 4*u,
+    'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1, 'stroke-dasharray': '1 1' }, g);
+  if (i < 4) { c.setAttribute('fill', C.raised); tick.setAttribute('stroke', C.ink); tick.setAttribute('stroke-dashoffset', 0); }
+  else if (i === 4) { c.setAttribute('fill', 'none'); c.setAttribute('stroke', C.lineStrong); c.setAttribute('stroke-width', 2.5*u); tick.setAttribute('stroke', C.onPrimary); }
+  else { c.setAttribute('fill', 'none'); c.setAttribute('stroke', C.line); c.setAttribute('stroke-width', 2.5*u); tick.setAttribute('opacity', 0); }
+  return { g, c, tick };
+});
+
+// Metinler
+const wordmark = div('abs', { fontFamily: 'var(--sans)', fontWeight: 800, fontSize: 210*u + 'px', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1 });
+wordmark.innerHTML = ['O', 'N', 'E'].map(l => `<span class="w">${l}</span>`).join('');
+const wmLetters = [...wordmark.querySelectorAll('.w')];
+const store = div('abs', { fontFamily: 'var(--sans)', fontWeight: 500, fontSize: 30*u + 'px', color: C.inkMuted, whiteSpace: 'nowrap' }, "App Store'da");
+
+const L2 = label('SABAH · 07:12'), L3 = label('HAFTANIN TEMASI'), L4 = label("DUYGU CHECK-IN'İ"),
+      L5 = label('GÜNÜN SÖZÜ'), L6 = label('YOLCULUK'), L7 = label('AKŞAM · 22:05');
+const H2 = headline('Sabah niyetini koy.'), H3 = headline('Her gün bir soru. Cevap senin.'),
+      H4 = headline('Nasıl olduğunu sen adlandır.'), H5 = headline('Bir söz, bir sayfa.'),
+      H6 = headline('Aynı soru, farklı zamanlar.'), H7 = headline('Akşam günü kapat.');
+const closed = div('abs serif', { fontSize: 60*u + 'px', fontStyle: 'italic', whiteSpace: 'nowrap', color: C.ink }, 'Bugün kapandı.');
+
+// Kâğıt sesi: yalnız ortak öğe geçişlerinde
+EVENTS.push({ type: 'paper', t: S[2] - 0.22 }, { type: 'paper', t: S[4] - 0.1 }, { type: 'paper', t: S[5] + 1.35 });
+EVENTS.push({ type: 'seal', t: TS });
+EVENTS.push({ type: 'press', t: TPRESS });
+
+// ------------------------------------------------------------------
+// Kare çizimi
+// ------------------------------------------------------------------
+function show(el, o) { el.style.opacity = o; el.style.visibility = o > 0.001 ? 'visible' : 'hidden'; }
+
+window.render = function (t) {
+  // Motif
+  const ls = lineState(t);
+  motif.setAttribute('d', subPath(ls.pts, ls.a, ls.b));
+  motif.setAttribute('stroke', ls.col);
+
+  // 1 · Wordmark (açılış ve kapanış)
+  const inOpen = t < S[1], inClose = t >= S[7];
+  if (inOpen || inClose) {
+    const t0 = inOpen ? 0.2 : S[7] + 0.05;
+    place(wordmark, cx, cy);
+    show(wordmark, 1);
+    wmLetters.forEach((l, i) => { const p = prog(t, t0 + i*0.09, 0.7); l.style.opacity = p; l.style.transform = `translateY(${(1-p)*40*u}px)`; });
+    place(store, cx, cy + 210*u, `translateY(${(1 - prog(t, S[7] + 0.9, 0.6))*16*u}px)`);
+    show(store, inClose ? prog(t, S[7] + 0.9, 0.6) : 0);
+  } else { show(wordmark, 0); show(store, 0); }
+
+  // 2 · Sabah
+  const e2 = S[2] - 0.28;
+  labelAt(L2, t, S[1] + 0.1, e2);
+  const sunO = vis(t, S[1], e2, 0.2);
+  sun.setAttribute('cy', lerp(cy + 110*u + sunR + 4*u, sunY, prog(t, S[1] + 0.15, 1.7)));
+  sunG.setAttribute('opacity', sunO);
+  rays.forEach((r, i) => r.setAttribute('stroke-dashoffset', 1 - prog(t, S[1] + 1.0 + i*0.18, 1.0)));
+  typeAt(intent, t, cx, cy + 200*u, vis(t, S[1] + 0.8, e2, 0.3));
+  wordsAt(H2, t, S[1] + 0.35, e2);
+
+  // 3 · Soru
+  const e3 = S[3] - 0.28;
+  const c3 = vis(t, S[2] - 0.2, e3, 0.5);
+  const s3 = lerp(0.96, 1, prog(t, S[2] - 0.2, 0.5)) - 0.02*prog(t, e3, 0.28);
+  place(card3El, cx, cy, `scale(${s3})`); show(card3El, c3);
+  place(theme3, cx, cy - card3.h/2 + 62*u); show(theme3, c3 * prog(t, S[2] + 0.1, 0.4));
+  place(q3, cx, cy - 72*u); show(q3, c3 > 0 ? 1 : 0);
+  q3w.forEach((w, i) => { const p = prog(t, S[2] + 0.2 + i*0.08, 0.55); w.style.opacity = p * (1 - prog(t, e3, 0.28)); w.style.transform = `translateY(${(1-p)*20*u}px)`; });
+  typeAt(answer3, t, cx, cy + 86*u, c3 > 0 ? (1 - prog(t, e3, 0.28)) : 0);
+  labelAt(L3, t, S[2] + 0.1, e3);
+  wordsAt(H3, t, S[2] + 0.35, e3);
+
+  // 4 · Duygu check-in
+  const e4 = S[4] - 0.28, sel = S[3] + 1.3;
+  labelAt(L4, t, S[3] + 0.1, e4);
+  discs.forEach((d, i) => {
+    const p = prog(t, S[3] - 0.05 + i*0.06, 0.45), o = p * (1 - prog(t, e4, 0.28));
+    let sc = lerp(0.9, 1, p);
+    if (i === 3) sc *= 1 - 0.03 * (prog(t, sel, 0.12) - prog(t, sel + 0.12, 0.18));
+    d.g.setAttribute('transform', `translate(${d.x} ${discY}) scale(${sc})`);
+    d.g.setAttribute('opacity', o);
+    if (i === 3) {
+      const f = prog(t, sel + 0.05, 0.18);
+      d.c.setAttribute('fill', mixHex(C.raised, C.score4, f));
+      d.tx.setAttribute('fill', mixHex(C.ink, C.onScore, f));
+    }
+  });
+  disc4Label.setAttribute('x', discs[3].x); disc4Label.setAttribute('y', discY + 100*u);
+  disc4Label.setAttribute('opacity', vis(t, sel + 0.15, e4, 0.3));
+  const chipIn = sel + 0.18 + 0.30;
+  const chipW = [220, 236, 262].map(v => v*u), chipGap = 20*u;
+  let x0 = cx - (chipW[0] + chipW[1] + chipW[2] + 2*chipGap) / 2;
+  chips.forEach((el, i) => {
+    const x = x0 + chipW[i] / 2; x0 += chipW[i] + chipGap;
+    const p = prog(t, chipIn + i*0.06, 0.28);
+    el.style.width = chipW[i] + 'px'; el.style.justifyContent = 'center';
+    place(el, x, cy + 200*u, `translateY(${(1-p)*16*u}px)`);
+    show(el, p * (1 - prog(t, e4, 0.28)));
+    if (i === 1) {
+      const f = prog(t, chipIn + 0.55, 0.18);
+      el.style.background = f > 0 ? mixHex(C.ground, C.huzur, f) : 'transparent';
+      el.style.borderColor = mixHex(C.lineStrong, C.huzur, f);
+      el.style.color = mixHex(C.ink, C.onEmo, f);
+    }
+  });
+  wordsAt(H4q, t, S[3] + 0.15, e4, cx, cy - 170*u);
+  wordsAt(H4, t, S[3] + 0.35, e4);
+
+  // 5 · Söz
+  const e5 = S[5] - 0.28;
+  labelAt(L5, t, S[4] + 0.1, e5);
+  const pq = prog(t, S[4] - 0.08, 0.6), o5 = pq * (1 - prog(t, e5, 0.28));
+  const qy = PORTRAIT ? cy - 30*u : cy - 60*u;
+  place(quote, cx, qy, `translateY(${(1-pq)*60*u}px)`); show(quote, o5);
+  const pm = prog(t, S[4] + 0.25, 0.5);
+  place(quoteMark, cx, qy - (PORTRAIT ? 200 : 150)*u, `scale(${lerp(0.9, 1, pm)})`); show(quoteMark, pm * (1 - prog(t, e5, 0.28)));
+  place(author, cx, ruleY + 46*u); show(author, vis(t, S[4] + 0.6, e5, 0.4));
+  const rv = vis(t, S[4] + 0.2, e5, 0.4);
+  river.forEach((p, k) => {
+    const y0 = (PORTRAIT ? cy + 330*u : cy + 196*u) + k*38*u, xa = W*0.08, xb = W*0.92;
+    const draw = prog(t, S[4] + 0.3 + k*0.12, 1.4), xe = lerp(xa, xb, draw);
+    let d = '';
+    for (let x = xa; x <= xe; x += 6*u) {
+      const y = y0 + 9*u*Math.sin(2*Math.PI*(x - xa)/(300*u) - t*1.1 + k*1.3);
+      d += (d ? ' L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+    }
+    p.setAttribute('d', d); p.setAttribute('opacity', 0.5 * rv);
+  });
+  wordsAt(H5, t, S[4] + 0.35, e5);
+
+  // 6 · Yolculuk
+  const e6 = S[6] - 0.28;
+  labelAt(L6, t, S[5] + 0.1, e6);
+  cards6El.forEach((el, i) => {
+    const tin = S[5] + (i === 0 ? 0.2 : 1.4);
+    const p = prog(t, tin, 0.6);
+    const dx = PORTRAIT ? 0 : (1-p)*(i === 0 ? -30 : 30)*u, dy = PORTRAIT ? (1-p)*30*u : 0;
+    place(el, cards6[i].x, cards6[i].y, `translate(${dx}px, ${dy}px)`);
+    show(el, p * (1 - prog(t, e6, 0.28)));
+    // Eski cevap geri çekilir, yenisi öne çıkar
+    if (i === 0) el.querySelector('.ans').style.color = mixHex(C.ink, C.inkMuted, prog(t, S[5] + 2.2, 0.8));
+  });
+  const inPath = t >= S[5] - 0.25 && t < S[6] + 0.35;
+  dots.forEach((dt, k) => {
+    const s = (k + 1) / 8;
+    const idx = Math.round(s * (N - 1));
+    const p = ls.pts[idx];
+    dt.setAttribute('cx', p[0]); dt.setAttribute('cy', p[1]);
+    const on = inPath && ls.b >= s ? prog(t, S[5] + 0.1 + s*2.0, 0.3) : 0;
+    dt.setAttribute('opacity', on * (1 - prog(t, e6, 0.28)));
+  });
+  wordsAt(H6, t, S[5] + 0.5, e6);
+
+  // 7 · Akşam
+  const e7 = S[7];
+  labelAt(L7, t, S[6] + 0.1, 99);
+  L7.style.opacity = t < e7 ? L7.style.opacity : 0;
+  const mo = vis(t, S[6] + 0.2, 99, 0.6) * (t < e7 ? 1 : 0);
+  const md = prog(t, S[6], TS - S[6]);
+  const mx = cx + (PORTRAIT ? 300 : 430)*u, my = cy - 200*u + md*18*u;
+  moon.setAttribute('cx', mx); moon.setAttribute('cy', my);
+  moonCut.setAttribute('cx', mx + 18*u); moonCut.setAttribute('cy', my - 12*u);
+  moonG.setAttribute('opacity', mo);
+  const pb = prog(t, S[6] + 0.3, 0.5);
+  const press = 1 - 0.03 * (prog(t, TPRESS, 0.12) - prog(t, TPRESS + 0.12, 0.18));
+  place(button, cx, cy, `translateY(${(1-pb)*20*u}px) scale(${press})`);
+  show(button, pb * (1 - prog(t, TPRESS + 0.2, 0.2)));
+  const ws = vis(t, S[6] + 0.5, e7, 0.5, 0.001);
+  week.forEach((w, i) => {
+    w.g.setAttribute('opacity', ws * prog(t, S[6] + 0.5 + i*0.05, 0.4));
+    if (i === 4) {
+      const f = prog(t, TS + 0.1, 0.18);
+      w.c.setAttribute('fill', f > 0 ? mixHex(C.ground, C.primary, f) : 'none');
+      w.c.setAttribute('stroke', mixHex(C.lineStrong, C.primary, f));
+      w.tick.setAttribute('stroke-dashoffset', 1 - prog(t, TS + 0.2, 0.25));
+    }
+  });
+  const ps = prog(t, TS, 0.32);
+  sealG.setAttribute('transform', `translate(${cx} ${cy}) scale(${lerp(0.9, 1, ps)})`);
+  sealG.setAttribute('opacity', t < e7 ? ps : 0);
+  sealTick.setAttribute('stroke-dashoffset', 1 - prog(t, TS + 0.08, 0.3));
+  wordsAt(H7, t, S[6] + 0.35, TS + 0.1);
+  place(closed, cx, headY, `translateY(${(1 - prog(t, TS + 0.45, 0.5))*16*u}px)`);
+  show(closed, t < e7 ? prog(t, TS + 0.45, 0.5) : 0);
+};
+
+const H4q = headline('Şu an nasılsın?', 50);
+H4q.el.classList.remove('headline'); H4q.el.classList.add('serif');
+H4q.el.style.fontWeight = 500; H4q.el.style.textAlign = 'center';
+
+window.EVENTS = EVENTS;
+window.DURATION = S[8];
+window.fontsReady = () => Promise.all([
+  '500 40px "Plus Jakarta Sans"', '600 40px "Plus Jakarta Sans"', '700 40px "Plus Jakarta Sans"', '800 40px "Plus Jakarta Sans"',
+  '400 40px "Literata"', '500 40px "Literata"', 'italic 400 40px "Literata"', '400 40px "IBM Plex Mono"', '500 40px "IBM Plex Mono"',
+].map(f => document.fonts.load(f, 'ağışüçöİĞŞÜÇÖ ONE 07:12'))).then(() => document.fonts.ready);
+render(0);
+</script>
+</body>
+</html>
