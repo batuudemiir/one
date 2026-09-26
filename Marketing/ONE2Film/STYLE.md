@@ -118,7 +118,7 @@ içerikten alınır: `one/ONE2/Content/Bundled/*.tr.json` ve bileşen kartları.
 | # | Ekran | Durum |
 |---|---|---|
 | 1 | Bugün | `screens/bugun.html` |
-| 2 | Sözler | — |
+| 2 | Sözler | `screens/sozler.html` |
 | 3 | Keşfet | — |
 | 4 | Yolculuk | — |
 | 5 | Eğilimler | — |

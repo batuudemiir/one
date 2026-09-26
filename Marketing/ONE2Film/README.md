@@ -44,6 +44,7 @@ Her filmin sahnesi `screens/<ad>.html`, partisyonu `screens/<ad>.score.json`.
 | Film | Dosya |
 |---|---|
 | Bugün | `ONE2_bugun_9x16.mp4` |
+| Sözler | `ONE2_sozler_9x16.mp4` |
 
 ```bash
 cd Marketing/ONE2Film

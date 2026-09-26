@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>ONE 2.0 · Sözler</title>
+<link rel="stylesheet" href="../kit/base.css">
+<style>
+  /* Ekran: 390pt genişlik (docs/one2/design-system › ScreenSozler, QuoteCard, QuoteReflection). */
+  #cam { position:absolute; left:0; top:0; transform-origin:0 0; }
+  #screen { position:absolute; left:0; top:0; width:390px; height:844px; overflow:hidden; border-radius:48px; background:var(--ground); }
+  .blk { position:absolute; }
+  .pill { background:var(--raised); border-radius:999px; display:flex; align-items:center; justify-content:center; }
+  .ico { fill:none; stroke:var(--ink); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .blk svg { position:static; }
+  .qcard { position:absolute; left:16px; width:358px; height:558px; border-radius:36px; overflow:hidden; }
+  .qcard .bgsvg { position:absolute; left:0; top:0; }
+  .qbody { position:absolute; left:0; top:0; width:358px; height:470px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; }
+  .qtext { font:400 28px/36px var(--serif); color:var(--ink); width:300px; text-wrap:balance; text-shadow:0 1px 12px rgba(0,0,0,.35); }
+  .qsrc { font:500 11px/14px var(--mono); letter-spacing:.2em; color:var(--ink); opacity:.85; }
+  .qmine { font:600 13px/18px var(--sans); padding:6px 12px; border-radius:999px; background:rgba(0,0,0,.28); color:var(--ink); }
+  .qbar { position:absolute; left:0; bottom:0; width:358px; height:88px; display:grid; grid-template-columns:72px 1fr 72px; align-items:center; font:600 18px/24px var(--sans); color:var(--ink); }
+  .qbar > * { display:flex; align-items:center; justify-content:center; }
+  .row { height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; font:500 16px var(--sans); color:var(--ink); }
+  .tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font:600 10px var(--sans); color:var(--ink); width:66px; height:48px; border-radius:24px; }
+  .tab.on { background:var(--ground); }
+  .thumb { position:absolute; top:52px; width:58px; height:80px; border-radius:16px; overflow:hidden; box-sizing:border-box; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../kit/core.js"></script>
+<script>
+const { W, H, u, C, BEAT, prog, lerp, vis, mixHex, svg, layerSVG, div, place, show,
+        headline, wordsAt, label, EVENTS, typer, registerTyping, typeAt, roundRect, arc, morph, subPath } = ONE;
+const B = BEAT;
+const S = [0, 4, 9, 14, 19, 24, 29, 33, 36].map(b => b * B);
+const TSAVE = 29.5 * B;                 // söze yazı kaydedildi
+window.DURATION = S[8];
+const cx = W / 2;
+const BRAND_SOFT = '#232B57';           // tokens.json › brand-soft (gece)
+
+const ICON = {
+  chevron: '<path d="M7 10l5 5 5-5"/>',
+  brush: '<path d="M14.5 4.5l5 5-7.5 7.5-5-5zM7 12l-2.2 2.2c-1 1-1 2.6 0 3.6l-.8 2.2 2.2-.8c1 1 2.6 1 3.6 0L12 17"/>',
+  play: '<path d="M8 5.5v13l10-6.5z"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
+  share: '<path d="M12 4v11M8 8l4-4 4 4M6 12v7h12v-7"/>',
+  heart: '<path d="M12 19.5s-7-4.3-7-9.4C5 7.4 7 5.5 9.3 5.5c1.3 0 2.2.6 2.7 1.5.5-.9 1.4-1.5 2.7-1.5C17 5.5 19 7.4 19 10.1c0 5.1-7 9.4-7 9.4z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+  quote: '<path d="M7 17c-1.5 0-2.5-1.2-2.5-2.8 0-2.6 1.6-5 4-6.2M15.5 17c-1.5 0-2.5-1.2-2.5-2.8 0-2.6 1.6-5 4-6.2"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  book: '<path d="M12 6.5C10 5 7.5 4.6 4 5v13c3.5-.4 6 0 8 1.5 2-1.5 4.5-1.9 8-1.5V5c-3.5-.4-6 0-8 1.5zM12 6.5V19"/>',
+  chart: '<path d="M6 19V11M10 19V6M14 19v-9M18 19v-5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  check: '<path d="M5 12.5l4.2 4.2L19 7"/>',
+  photo: '<rect x="4" y="6" width="16" height="12" rx="2.5"/><circle cx="9" cy="10.5" r="1.5"/><path d="M20 15l-4.5-4-6.5 6"/>',
+};
+const ico = (name, size = 22, color) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="ico"${color ? ` style="stroke:${color}"` : ''}>${ICON[name]}</svg>`;
+
+// ------------------------------------------------------------------
+// İllüstrasyon zeminleri (ONE'ın kendi çizimleri; README › İkonografi)
+// Her biri 358×558 kart koordinatında, zamanla hareket eder.
+// ------------------------------------------------------------------
+function makeBg(kind, parent, w = 358, h = 558, vb = '0 0 358 558') {
+  const s = svg('svg', { width: w, height: h, viewBox: vb, class: 'bgsvg', preserveAspectRatio: 'xMidYMid slice' });
+  parent.appendChild(s);
+  svg('rect', { width: 358, height: 558, fill: kind === 'duz' ? BRAND_SOFT : C.surface }, s);
+  const o = { kind, s, parts: {} };
+  if (kind === 'irmak') {
+    o.parts.waves = [0, 1, 2, 3].map(k => svg('path', { fill: 'none', stroke: C.inkFaint, 'stroke-width': 2, 'stroke-linecap': 'round', opacity: 0.55 - k * 0.08 }, s));
+  } else if (kind === 'ufuk') {
+    const id = 'c' + Math.random().toString(36).slice(2);
+    const cp = svg('clipPath', { id }, svg('defs', {}, s)); svg('rect', { width: 358, height: 452 }, cp);
+    const g = svg('g', { 'clip-path': `url(#${id})` }, s);
+    o.parts.sun = svg('circle', { cx: 179, r: 54, fill: C.sabah, opacity: 0.92 }, g);
+    o.parts.rays = [82, 110].map(r => svg('path', { d: `M ${179 - r} 452 A ${r} ${r} 0 0 1 ${179 + r} 452`, fill: 'none', stroke: C.sabah, 'stroke-width': 2, opacity: 0.4 }, g));
+    svg('line', { x1: 0, x2: 358, y1: 452, y2: 452, stroke: C.inkFaint, 'stroke-width': 2, opacity: 0.6 }, s);
+  } else if (kind === 'gece') {
+    o.parts.moon = svg('g', {}, s);
+    svg('circle', { r: 30, fill: C.aksam }, o.parts.moon);
+    svg('circle', { r: 27, cx: 13, cy: -9, fill: C.surface }, o.parts.moon);
+    o.parts.stars = [[60, 70, 2], [110, 140, 1.5], [300, 190, 1.8], [40, 420, 1.4], [320, 400, 1.6], [200, 60, 1.3], [150, 500, 1.2]]
+      .map(([x, y, r]) => svg('circle', { cx: x, cy: y, r, fill: C.aksam }, s));
+    svg('path', { d: 'M0 470 Q 90 440 180 462 T 358 452', fill: 'none', stroke: C.inkFaint, 'stroke-width': 2, opacity: 0.5 }, s);
+  }
+  return o;
+}
+function drawBg(o, t) {
+  if (o.kind === 'irmak') {
+    o.parts.waves.forEach((p, k) => {
+      let d = '';
+      for (let x = -10; x <= 368; x += 6) {
+        const y = 420 + k * 26 + 7 * Math.sin(2 * Math.PI * x / 170 - t * 1.1 + k * 1.3);
+        d += (d ? ' L' : 'M') + x + ' ' + y.toFixed(1);
+      }
+      p.setAttribute('d', d);
+    });
+  } else if (o.kind === 'ufuk') {
+    const br = 0.5 + 0.5 * Math.sin(t * 1.6);
+    o.parts.sun.setAttribute('cy', 452 - 8 * (0.5 + 0.5 * Math.sin(t * 0.5)));
+    o.parts.rays.forEach((r, i) => r.setAttribute('opacity', 0.22 + 0.3 * (i ? 1 - br : br)));
+  } else if (o.kind === 'gece') {
+    o.parts.moon.setAttribute('transform', `translate(262 108) rotate(${8 * Math.sin(t * 0.9)})`);
+    o.parts.stars.forEach((st, i) => st.setAttribute('opacity', 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 2.4 + i * 1.7))));
+  }
+}
+
+// ------------------------------------------------------------------
+// Ekran
+// ------------------------------------------------------------------
+const cam = div('', {}, '', ONE.stage); cam.id = 'cam';
+const screen = div('', {}, '', cam); screen.id = 'screen';
+const blk = (x, y, w, h, html = '', style = {}, parent = screen) => div('blk', Object.assign({ left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' }, style), html, parent);
+
+// Söz kartları: dikey sayfalı
+const pager = blk(0, 110, 390, 734, '', { overflow: 'hidden' });
+const pagerIn = blk(0, 0, 390, 844, '', {}, pager);
+const CARD_Y = 8, CARD_STEP = 572;
+const QUOTES = [
+  { text: 'Bugün yavaş gitmek de ilerlemektir.', src: 'OLUMLAMA', icon: 'sun', bg: 'ufuk' },
+  { text: 'Dikkatini verdiğin şey büyür.', src: 'DÜŞÜNCE', icon: 'quote', bg: 'gece' },
+  { text: 'Yavaş yürüyen tez varır.', src: 'ATASÖZÜ', icon: 'quote', bg: 'irmak', mine: 2 },
+];
+const cards = QUOTES.map((q, i) => {
+  const el = div('qcard', { top: (CARD_Y + i * CARD_STEP) + 'px' }, '', pagerIn);
+  const bgs = {};
+  const kinds = i === 2 ? ['irmak', 'ufuk', 'gece'] : [q.bg];
+  kinds.forEach(k => { const holder = div('blk', { left: 0, top: 0, width: '358px', height: '558px' }, '', el); bgs[k] = { holder, o: makeBg(k, holder) }; });
+  const body = div('qbody', {}, `${ico(q.icon, 28, C.ink)}<div class="qtext">${q.text}</div><div class="qsrc">${q.src}</div>${q.mine ? `<div class="qmine">Bu söze <span class="n">${q.mine}</span> kez yazdın</div>` : ''}`, el);
+  const bar = div('qbar', {}, `<div>${ico('share', 26, C.ink)}</div><div class="write">Bunun hakkında yaz</div><div>${ico('heart', 26, C.ink)}</div>`, el);
+  return { el, bgs, body, bar, mineN: body.querySelector('.n'), mine: body.querySelector('.qmine'), write: bar.querySelector('.write') };
+});
+
+// Üst çubuk
+const topbar = blk(0, 54, 390, 48);
+const srcPill = div('blk pill', { left: '16px', top: '0', height: '48px', padding: '0 14px 0 18px', gap: '6px', font: '600 16px var(--sans)', color: C.ink }, 'Sana özel' + ico('chevron', 18), topbar);
+const rounds = ['brush', 'play', 'search'].map((n, i) => div('blk pill', { left: (222 + i * 56) + 'px', top: '0', width: '48px', height: '48px' }, ico(n, 22), topbar));
+
+// Kaynak menüsü
+const menu = blk(16, 110, 230, 322, '', { background: C.raised, borderRadius: '22px', padding: '9px 0', boxSizing: 'border-box', transformOrigin: '20% 0', zIndex: 6 });
+const MENU = ['Sana özel', 'Olumlama', 'Söz', 'Atasözü', 'Düşünce', 'Beğendiklerin', 'Yazdıkların'];
+const menuRows = MENU.map((m, i) => div('row', { position: 'absolute', left: 0, right: 0, top: (9 + i * 43.5) + 'px' }, `<span>${m}</span>${i === 0 ? ico('check', 18, C.ink) : ''}`, menu));
+
+// Dock
+const dock = blk(0, 688, 390, 124);
+div('blk pill', { left: '159px', top: '0', width: '72px', height: '56px', background: C.primary }, ico('plus', 26, C.onPrimary), dock);
+const tabbar = div('blk', { left: '16px', top: '64px', width: '358px', height: '60px', borderRadius: '30px', background: 'rgba(42,42,46,0.8)', backdropFilter: 'blur(20px)',
+  border: `1px solid ${C.line}`, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 6px' }, '', dock);
+[['sun', 'Bugün'], ['quote', 'Sözler'], ['compass', 'Keşfet'], ['book', 'Yolculuk'], ['chart', 'Eğilimler']].forEach(([ic, name], i) => div('tab' + (i === 1 ? ' on' : ''), {}, ico(ic, 20) + name, tabbar));
+
+// Arka plan sayfası (fırça)
+const sheet = blk(0, 598, 390, 246, '', { background: C.surface, borderRadius: '28px 28px 0 0', zIndex: 5 });
+div('blk', { left: '179px', top: '8px', width: '32px', height: '4px', borderRadius: '2px', background: C.lineStrong }, '', sheet);
+div('blk', { left: '24px', top: '20px', font: '600 17px var(--sans)', color: C.ink }, 'Arka plan', sheet);
+const THUMBS = ['irmak', 'ufuk', 'gece', 'duz'];
+const THUMB_VB = { irmak: '54 300 220 303', ufuk: '69 300 220 303', gece: '150 20 220 303', duz: '0 0 220 303' };
+const thumbs = THUMBS.map((k, i) => {
+  const th = div('thumb', { left: (24 + i * 70) + 'px' }, '', sheet);
+  const o = makeBg(k, th, 58, 80, THUMB_VB[k]);
+  return { th, o, k };
+});
+div('thumb', { left: (24 + 4 * 70) + 'px', border: `1.5px dashed ${C.lineStrong}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }, ico('photo', 24, C.inkMuted), sheet);
+const thumbRing = blk(0, 48, 66, 88, '', { borderRadius: '19px', border: `2px solid ${C.ink}`, boxSizing: 'border-box' }, sheet);
+div('blk', { left: '24px', top: '150px', font: '500 13px var(--sans)', color: C.inkMuted }, 'Irmak · Ufuk · Gece · Düz · Fotoğrafın', sheet);
+
+// Söze yazı (QuoteReflection)
+const refl = blk(0, 0, 390, 844, '', { background: C.ground, zIndex: 7 });
+div('blk', { left: '24px', top: '66px', font: '500 11px/14px var(--mono)', letterSpacing: '.2em', color: C.inkMuted }, 'SÖZE YAZI', refl);
+div('blk', { left: '300px', width: '66px', textAlign: 'right', top: '60px', font: '600 17px var(--sans)', color: C.inkMuted }, 'Bitti', refl);
+const kunye = blk(16, 100, 358, 104, '', { background: C.raised, borderRadius: '22px' }, refl);
+div('blk', { left: '20px', top: '20px', width: '318px', font: 'italic 400 21px/28px var(--serif)', color: C.ink }, 'Yavaş yürüyen tez varır.', kunye);
+div('blk', { left: '20px', top: '66px', font: '500 11px/14px var(--mono)', letterSpacing: '.2em', color: C.inkFaint }, 'ATASÖZÜ', kunye);
+const rq = div('blk', { left: '24px', top: '230px', width: '342px', font: '400 22px/30px var(--serif)', color: C.ink },
+  'Bu söz bugün sana ne söylüyor?'.split(' ').map(w => `<span class="w">${w}</span>`).join(' '), refl);
+const rqWords = [...rq.querySelectorAll('.w')];
+const answer = typer('Bugün her şeye değil, yalnızca birine yetiştim.', 'serif', { left: '24px', top: '306px', width: '342px', font: '400 19px/30px var(--serif)', color: C.ink }, refl);
+answer.el.style.transform = 'none';
+const prev = blk(24, 400, 342, 50, `<span style="font:500 11px var(--mono);letter-spacing:.15em;color:${C.inkFaint}">GEÇEN SEFER · 12 EYL</span><br><span style="font:italic 400 16px/26px var(--serif);color:${C.inkFaint}">Acele ettiğim her şey yarım kaldı.</span>`, {}, refl);
+
+// ------------------------------------------------------------------
+// Katmanlar ve metinler
+// ------------------------------------------------------------------
+const veil = div('abs', { width: W + 'px', height: (H * 0.36) + 'px', top: (H * 0.64) + 'px', background: `linear-gradient(to bottom, rgba(0,0,0,0) 0%, ${C.ground} 38%)` });
+const front = layerSVG();
+const motif = svg('path', { fill: 'none', 'stroke-width': 3*u, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, front);
+
+const title = headline('Sözler.', { size: 150, width: 900 });
+title.el.style.fontWeight = 800; title.el.style.letterSpacing = '-0.035em';
+const titleSub = headline('Her gün sana göre seçilmiş sözler.', { size: 44, cls: 'sub' });
+const wordmark = headline('ONE', { size: 210, width: 900 });
+wordmark.el.style.fontWeight = 800; wordmark.el.style.letterSpacing = '-0.03em';
+wordmark.el.innerHTML = ['O', 'N', 'E'].map(l => `<span class="w">${l}</span>`).join('');
+wordmark.words = [...wordmark.el.querySelectorAll('.w')];
+const store = headline("App Store'da", { size: 32, cls: 'sub' });
+const endLabel = label('SÖZLER', 26);
+
+const headY = 1590*u, subY = 1672*u;
+const SCENES = [
+  [S[1], 'Bir söz. Tüm ekran.', 'Dikkatin dağılmasın diye her seferinde tek söz.'],
+  [S[2], 'Olumlama. Düşünce. Atasözü.', 'Kaydırdıkça sıradaki söz gelir.'],
+  [S[3], 'Sana özel.', 'Ruh haline, günün saatine ve haftanın temasına göre.'],
+  [S[4], 'Zemini sen seç.', 'Bir renk, bir çizim ya da kendi fotoğrafın.'],
+  [S[5], 'Okumakla kalma. Yaz.', 'Aynı söze verdiğin cevaplar zamanla birikir.'],
+].map(([t0, h, s], i) => ({ t0, t1: S[i + 2], h: headline(h), s: headline(s, { size: 36, cls: 'sub' }) }));
+const triple = headline('Oku. Düşün. Yaz.', { size: 64, width: 1000 });
+const TRIPLE_T = [30, 31, 32].map(b => b * B);
+
+// ------------------------------------------------------------------
+// Kamera
+// ------------------------------------------------------------------
+const K = {
+  full:  { s: 1.6,  fx: 195, fy: 422, X: cx, Y: 830*u },
+  card:  { s: 2.1,  fx: 195, fy: 397, X: cx, Y: 790*u },
+  menu:  { s: 2.35, fx: 195, fy: 262, X: cx, Y: 720*u },
+  brush: { s: 1.95, fx: 195, fy: 470, X: cx, Y: 790*u },
+  refl:  { s: 2.35, fx: 195, fy: 272, X: cx, Y: 760*u },
+};
+const CAMKEYS = [[0, 'full'], [S[2], 'card'], [S[3], 'menu'], [S[4], 'brush'], [S[5], 'refl'], [S[6], 'full']];
+function camera(t) {
+  let k = 0;
+  for (let i = 0; i < CAMKEYS.length; i++) if (t >= CAMKEYS[i][0] - 0.2) k = i;
+  const cur = K[CAMKEYS[k][1]];
+  if (k === 0) return Object.assign({}, cur);
+  const prev = K[CAMKEYS[k - 1][1]], m = prog(t, CAMKEYS[k][0] - 0.2, 0.95);
+  const o = {};
+  for (const key in cur) o[key] = lerp(prev[key], cur[key], m);
+  return o;
+}
+
+// Olaylar
+const SWIPE = [S[2] + 0.9, S[2] + 2.45];
+const TPILL = S[3] + 0.6, TMENU_OFF = S[3] + 3.3;
+const TBRUSH = S[4] + 0.55, TTH = [S[4] + 1.6, S[4] + 2.6], TSHEET_OFF = S[4] + 3.5;
+const TWRITE = S[5] + 0.55, TREFL = S[5] + 0.75;
+registerTyping(answer, S[5] + 1.85, 22);
+EVENTS.push({ type: 'paper', t: S[1] + 0.2 }, { type: 'paper', t: SWIPE[0] }, { type: 'paper', t: SWIPE[1] },
+  { type: 'press', t: TPILL }, { type: 'key', t: TMENU_OFF }, { type: 'press', t: TBRUSH }, { type: 'paper', t: TBRUSH + 0.2 },
+  { type: 'press', t: TTH[0] }, { type: 'press', t: TTH[1] }, { type: 'press', t: TWRITE }, { type: 'paper', t: TREFL },
+  { type: 'paper', t: S[6] + 0.05 }, { type: 'seal', t: TSAVE });
+
+const pressScale = (t, t0) => 1 - 0.03 * (prog(t, t0, 0.12) - prog(t, t0 + 0.12, 0.18));
+const FOCUS_WIN = [[S[2], S[3]], [S[3], S[4]], [S[4], S[5]], [S[5], S[6]]];
+
+// ------------------------------------------------------------------
+// Kare
+// ------------------------------------------------------------------
+window.render = function (t) {
+  const c = camera(t);
+  const tx = c.X - c.s * c.fx, ty = c.Y - c.s * c.fy;
+  cam.style.transform = `translate(${tx}px, ${ty}px) scale(${c.s})`;
+  cam.style.visibility = t >= S[1] - 0.1 && t < S[7] + 0.2 ? 'visible' : 'hidden';
+  screen.style.opacity = 1 - prog(t, S[7] - 0.35, 0.35);
+  const zoom = FOCUS_WIN.reduce((a, [a0, a1]) => Math.max(a, prog(t, a0 - 0.2, 0.7) * (1 - prog(t, a1 - 0.2, 0.7))), 0);
+
+  // Kurulum
+  [[topbar, 0.25], [pager, 0.4], [dock, 0.6]].forEach(([b, d]) => {
+    const p = prog(t, S[1] + d, 0.55);
+    b.style.opacity = p; b.style.transform = `translateY(${(1 - p) * 24}px)`;
+  });
+  // Dock yakınlaşmada söner; kart odağında üst çubuk da geri çekilir
+  const dimDock = zoom;
+  dock.style.opacity = prog(t, S[1] + 0.6, 0.55) * (1 - dimDock);
+  const topDim = prog(t, S[2] - 0.2, 0.7) * (1 - prog(t, S[3] - 0.2, 0.7));
+  topbar.style.opacity = prog(t, S[1] + 0.25, 0.55) * (1 - 0.84 * topDim);
+
+  // Sayfalama
+  const page = prog(t, SWIPE[0], 0.55) + prog(t, SWIPE[1], 0.55);
+  pagerIn.style.transform = `translateY(${-page * CARD_STEP}px)`;
+  cards.forEach(cd => Object.values(cd.bgs).forEach(b => drawBg(b.o, t)));
+
+  // Menü
+  srcPill.style.transform = `scale(${pressScale(t, TPILL)})`;
+  const mo = vis(t, TPILL + 0.12, TMENU_OFF, 0.3, 0.25);
+  menu.style.opacity = mo; menu.style.visibility = mo > 0.001 ? 'visible' : 'hidden';
+  menu.style.transform = `scale(${lerp(0.96, 1, prog(t, TPILL + 0.12, 0.3))})`;
+  menuRows.forEach((r, i) => { const p = prog(t, TPILL + 0.2 + i * 0.05, 0.4); r.style.opacity = p; r.style.transform = `translateY(${(1 - p) * 6}px)`; });
+  pager.style.opacity = t < S[1] + 1 ? pager.style.opacity : 1 - 0.7 * mo;
+
+  // Fırça: sayfa, küçük resimler, zemin geçişi
+  rounds[0].style.transform = `scale(${pressScale(t, TBRUSH)})`;
+  const sp = prog(t, TBRUSH + 0.15, 0.45) * (1 - prog(t, TSHEET_OFF, 0.35));
+  sheet.style.transform = `translateY(${(1 - sp) * 260}px)`;
+  sheet.style.visibility = sp > 0.001 ? 'visible' : 'hidden';
+  thumbs.forEach(th => { drawBg(th.o, t); });
+  thumbs[1].th.style.transform = `scale(${pressScale(t, TTH[0])})`;
+  thumbs[2].th.style.transform = `scale(${pressScale(t, TTH[1])})`;
+  const sel = t < TTH[0] ? 0 : t < TTH[1] ? 1 : 2;
+  const ringX = 24 - 4 + lerp(lerp(0, 70, prog(t, TTH[0], 0.3)), 140, prog(t, TTH[1], 0.3));
+  thumbRing.style.left = ringX + 'px';
+  const c3 = cards[2].bgs;
+  const f1 = prog(t, TTH[0] + 0.05, 0.45), f2 = prog(t, TTH[1] + 0.05, 0.45);
+  c3.irmak.holder.style.opacity = 1;
+  c3.ufuk.holder.style.opacity = f1 * (1 - f2);
+  c3.gece.holder.style.opacity = f2;
+
+  // Söze yazı
+  cards[2].write.style.transform = `scale(${pressScale(t, TWRITE)})`;
+  const rp = prog(t, TREFL, 0.6) * (1 - prog(t, S[6] - 0.05, 0.5));
+  refl.style.transform = `translateY(${(1 - rp) * 844}px)`;
+  refl.style.visibility = rp > 0.001 ? 'visible' : 'hidden';
+  rqWords.forEach((w, i) => { const p = prog(t, TREFL + 0.5 + i * 0.07, 0.55); w.style.opacity = p; w.style.transform = `translateY(${(1 - p) * 10}px)`; });
+  typeAt(answer, t);
+  prev.style.opacity = prog(t, TREFL + 0.9, 0.5);
+  // Kayıt: rozet 2 → 3
+  cards[2].mineN.textContent = t >= TSAVE ? 3 : 2;
+  cards[2].mine.style.transform = `scale(${1 + 0.06 * (prog(t, TSAVE, 0.16) - prog(t, TSAVE + 0.16, 0.3))})`;
+
+  // Motif: ufuk → ekran çerçevesi → wordmark yayı
+  const A = arc(cx, 930*u, 200*u, 26*u);
+  const R = roundRect(tx, ty, 390 * c.s, 844 * c.s, 48 * c.s);
+  let pts = A, a = 0, b = 1, col = C.ink;
+  if (t < S[1] - 0.25) { const p = prog(t, 0.9, 1.0); a = .5 - .5*p; b = .5 + .5*p; }
+  else if (t < S[7] - 0.3) { const m = prog(t, S[1] - 0.25, 0.9); pts = morph(A, R, m); col = mixHex(C.ink, C.lineStrong, m); }
+  else { const m = prog(t, S[7] - 0.3, 0.9); pts = morph(R, A, m); col = mixHex(C.lineStrong, C.ink, m); }
+  motif.setAttribute('d', subPath(pts, a, b));
+  motif.setAttribute('stroke', col);
+
+  // Metinler
+  wordsAt(title, t, 0.2, S[1] - 0.3, cx, 820*u, { stagger: 0.09 });
+  wordsAt(titleSub, t, 1.2, S[1] - 0.3, cx, 1010*u);
+  show(veil, zoom);
+  SCENES.forEach(sc => {
+    const tin = sc.t0 + 0.35, tout = sc.t1 - 0.28;
+    wordsAt(sc.h, t, tin, tout, cx, headY);
+    wordsAt(sc.s, t, tin + 0.35, tout, cx, subY);
+  });
+  place(triple.el, cx, 1640*u);
+  triple.el.style.visibility = t > TRIPLE_T[0] - 0.1 && t < S[7] ? 'visible' : 'hidden';
+  triple.words.forEach((w, i) => {
+    const p = prog(t, TRIPLE_T[i], 0.55), q = prog(t, S[7] - 0.28, 0.28);
+    w.style.opacity = p * (1 - q);
+    w.style.transform = `translateY(${(1 - p) * 30*u - q * 14*u}px)`;
+  });
+  wordsAt(wordmark, t, S[7] + 0.05, null, cx, 820*u, { stagger: 0.09 });
+  wordsAt(store, t, S[7] + 0.9, null, cx, 1010*u);
+  place(endLabel, cx, 1090*u); endLabel.style.opacity = t >= S[7] ? prog(t, S[7] + 1.1, 0.5) : 0;
+};
+render(0);
+</script>
+</body>
+</html>
