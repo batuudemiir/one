@@ -1,0 +1,28 @@
+@import url("../node_modules/@fontsource/plus-jakarta-sans/500.css");
+@import url("../node_modules/@fontsource/plus-jakarta-sans/600.css");
+@import url("../node_modules/@fontsource/plus-jakarta-sans/700.css");
+@import url("../node_modules/@fontsource/plus-jakarta-sans/800.css");
+@import url("../node_modules/@fontsource/literata/400.css");
+@import url("../node_modules/@fontsource/literata/500.css");
+@import url("../node_modules/@fontsource/literata/400-italic.css");
+@import url("../node_modules/@fontsource/ibm-plex-mono/400.css");
+@import url("../node_modules/@fontsource/ibm-plex-mono/500.css");
+
+/* Token'lar: docs/one2/design-system/tokens.json, gece teması */
+:root {
+  --ground:#000000; --surface:#141416; --raised:#1E1E21; --line:#26262A;
+  --line-strong:#66666E; --ink:#F4F4F5; --ink-muted:#A3A3AA; --ink-faint:#85858D;
+  --primary:#E8E8EA; --on-primary:#111113; --brand:#9AA6FF; --on-brand:#0F1218;
+  --sabah:#F2B84B; --aksam:#7D8BE0;
+  --sans:"Plus Jakarta Sans", sans-serif; --serif:"Literata", serif; --mono:"IBM Plex Mono", monospace;
+}
+html, body { margin:0; background:var(--ground); overflow:hidden; }
+#stage { position:relative; background:var(--ground); overflow:hidden; }
+svg { position:absolute; left:0; top:0; overflow:visible; }
+.abs { position:absolute; left:0; top:0; }
+.w { display:inline-block; white-space:pre; }
+.headline { font-family:var(--sans); font-weight:700; color:var(--ink); letter-spacing:-0.02em; text-align:center; }
+.sub { font-family:var(--sans); font-weight:500; color:var(--ink-muted); letter-spacing:-0.005em; text-align:center; }
+.label { font-family:var(--mono); font-weight:500; color:var(--ink-faint); letter-spacing:0.2em; text-align:center; }
+.serif { font-family:var(--serif); color:var(--ink); }
+.caret { display:inline-block; background:var(--brand); vertical-align:-0.12em; }

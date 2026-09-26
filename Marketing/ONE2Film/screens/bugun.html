@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>ONE 2.0 · Bugün</title>
+<link rel="stylesheet" href="../kit/base.css">
+<style>
+  /* Ekran: 390pt genişlik (docs/one2/design-system › ScreenBugun). */
+  #cam { position:absolute; left:0; top:0; transform-origin:0 0; }
+  #screen { position:absolute; left:0; top:0; width:390px; height:844px; overflow:hidden; border-radius:48px; background:var(--ground); }
+  #content { position:absolute; left:0; top:0; width:390px; }
+  .blk { position:absolute; }
+  .pill { background:var(--raised); border-radius:999px; display:flex; align-items:center; justify-content:center; }
+  .ico { fill:none; stroke:var(--ink); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .sec { font:700 24px/30px var(--sans); letter-spacing:-.01em; color:var(--ink); }
+  .dayname { font:600 13px/16px var(--sans); color:var(--ink-muted); text-align:center; }
+  .cell { position:absolute; width:44px; height:44px; border-radius:18px; display:flex; align-items:center; justify-content:center; font:600 16px var(--sans); color:var(--ink-faint); box-sizing:border-box; }
+  .disc { position:absolute; width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font:500 20px var(--mono); }
+  .tile { position:absolute; width:173px; height:124px; background:var(--surface); border-radius:28px; }
+  .well { position:absolute; left:58.5px; top:14px; width:56px; height:56px; border-radius:50%; background:var(--raised); }
+  .tile p { position:absolute; left:0; right:0; top:82px; margin:0; text-align:center; font:600 16px/22px var(--sans); color:var(--ink); }
+  .tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font:600 10px var(--sans); color:var(--ink); width:66px; height:48px; border-radius:24px; }
+  .tab.on { background:var(--ground); }
+  .tab svg, .blk svg { position:static; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../kit/core.js"></script>
+<script>
+const { W, H, u, C, BEAT, prog, lerp, vis, mixHex, svg, layerSVG, div, place, show,
+        headline, wordsAt, label, EVENTS, roundRect, arc, morph, subPath } = ONE;
+const B = BEAT;
+const S = [0, 4, 9, 14, 19, 24, 29, 33, 36].map(b => b * B);   // sahne sınırları
+const TSEL = 16.5 * B - 0.75, TDONE = 16.5 * B;                 // check-in: seçim, tamamlanma
+window.DURATION = S[8];
+const cx = W / 2;
+
+// ------------------------------------------------------------------
+// İkonlar (SF Symbols karşılıkları, 24'lük ızgara, regular)
+// ------------------------------------------------------------------
+const ICON = {
+  flame: '<path d="M12 21c-3.6 0-6-2.4-6-5.6 0-3.2 2.6-5 3.6-8.4 1.8 1.4 2.4 3.2 2.4 4.6 1-.6 1.6-1.8 1.8-3 1.6 1.6 2.2 3.8 2.2 6.8 0 3.2-2.4 5.6-4 5.6z"/>',
+  person: '<circle cx="12" cy="9" r="3.4"/><path d="M5.5 19c1.2-3 3.7-4.4 6.5-4.4s5.3 1.4 6.5 4.4"/><circle cx="12" cy="12" r="9.2"/>',
+  sliders: '<path d="M4 8h9M17 8h3M4 16h3M11 16h9"/><circle cx="15" cy="8" r="2"/><circle cx="9" cy="16" r="2"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+  quote: '<path d="M7 17c-1.5 0-2.5-1.2-2.5-2.8 0-2.6 1.6-5 4-6.2M15.5 17c-1.5 0-2.5-1.2-2.5-2.8 0-2.6 1.6-5 4-6.2"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  book: '<path d="M12 6.5C10 5 7.5 4.6 4 5v13c3.5-.4 6 0 8 1.5 2-1.5 4.5-1.9 8-1.5V5c-3.5-.4-6 0-8 1.5zM12 6.5V19"/>',
+  chart: '<path d="M6 19V11M10 19V6M14 19v-9M18 19v-5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+};
+const ico = (name, size = 22, color) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="ico"${color ? ` style="stroke:${color}"` : ''}>${ICON[name]}</svg>`;
+
+// ------------------------------------------------------------------
+// Ekran
+// ------------------------------------------------------------------
+const cam = div('', {}, '', ONE.stage); cam.id = 'cam';
+const screen = div('', {}, '', cam); screen.id = 'screen';
+const content = div('', {}, '', screen); content.id = 'content';
+const blk = (x, y, w, h, html = '', style = {}) => div('blk', Object.assign({ left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' }, style), html, content);
+
+// Üst çubuk: seri hapı, selamlama, profil
+const topbar = blk(0, 54, 390, 48);
+const streakPill = div('blk pill', { left: '16px', top: '0', height: '48px', padding: '0 18px 0 14px', gap: '6px' }, ico('flame', 20) + '<b class="num" style="font:700 18px var(--sans);color:var(--brand)">1</b>', topbar);
+const streakNum = streakPill.querySelector('.num');
+div('blk', { left: '0', width: '390px', top: '8px', textAlign: 'center', font: '700 24px/32px var(--sans)', letterSpacing: '-0.02em', color: C.ink }, 'iyi akşamlar', topbar);
+div('blk pill', { left: '326px', top: '0', width: '48px', height: '48px' }, ico('person', 22), topbar);
+
+// Hafta şeridi
+const week = blk(16, 118, 358, 80);
+const DAYS = [['Pzt', 21, 'done'], ['Sal', 22, 'done'], ['Çar', 23, 'gap'], ['Per', 24, 'done'], ['Cum', 25, 'today'], ['Cmt', 26, 'future'], ['Paz', 27, 'future']];
+const colW = 358 / 7;
+const cells = DAYS.map(([d, n, st], i) => {
+  const x = i * colW;
+  div('blk dayname', { left: x + 'px', width: colW + 'px', top: '0' }, d, week);
+  const cell = div('cell', { left: (x + colW / 2 - 22) + 'px', top: '26px' }, '', week);
+  if (st === 'today') { cell.style.border = `1px solid ${C.lineStrong}`; cell.style.color = C.ink; cell.style.fontWeight = 700; }
+  cell.innerHTML = `<span class="d">${n}</span><svg class="tk" width="22" height="22" viewBox="0 0 24 24" style="position:absolute;left:11px;top:11px"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="${C.ink}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="${st === 'done' ? 0 : 1}"/></svg>`;
+  if (st === 'done') cell.querySelector('.d').style.visibility = 'hidden';
+  return { cell, st, d: cell.querySelector('.d'), tk: cell.querySelector('.tk path') };
+});
+
+// Geriye dönük doldurma kartı (boş güne dokununca)
+const gapSheet = blk(28, 206, 334, 128, `
+  <div style="position:absolute;inset:0;background:var(--raised);border-radius:22px"></div>
+  <div style="position:absolute;left:20px;right:20px;top:18px;font:500 15px/21px var(--sans);color:var(--ink)">Çarşamba boş kaldı. İstersen şimdi doldurabilirsin.</div>
+  <div class="btn" style="position:absolute;left:20px;top:74px;height:38px;padding:0 18px;border-radius:19px;background:var(--primary);color:var(--on-primary);font:600 15px/38px var(--sans)">Şimdi yaz</div>`);
+const gapBtn = gapSheet.querySelector('.btn');
+gapSheet.style.zIndex = 5;
+
+// Check-in kartı
+const checkin = blk(16, 212, 358, 280, '', { border: `1px solid ${C.line}`, borderRadius: '28px', boxSizing: 'border-box', background: C.ground });
+const askA = div('blk', { left: '0', top: '0', width: '356px', height: '278px' }, '', checkin);
+div('blk', { left: '0', width: '356px', top: '52px', textAlign: 'center', font: '700 24px/30px var(--sans)', color: C.ink }, 'Şu an nasılsın?', askA);
+const discs = [1, 2, 3, 4, 5].map((n, i) => {
+  const d = div('disc', { left: (20 + i * 66) + 'px', top: '124px', background: C.score[i], color: C.onScore[i] }, String(n), askA);
+  return d;
+});
+const ring = div('blk', { left: (20 + 3 * 66 - 6) + 'px', top: '118px', width: '64px', height: '64px', borderRadius: '50%', boxSizing: 'border-box', border: `2px solid ${C.ink}` }, '', askA);
+div('blk', { left: '14px', top: '190px', width: '64px', textAlign: 'center', font: '500 12px var(--sans)', color: C.inkMuted }, 'Çok zor', askA);
+div('blk', { left: '278px', top: '190px', width: '64px', textAlign: 'center', font: '500 12px var(--sans)', color: C.inkMuted }, 'Çok iyi', askA);
+const doneB = div('blk', { left: '0', top: '0', width: '356px', height: '278px' }, '', checkin);
+const echoText = 'İyi bir gün; neyin iyi geldiğini not etmeye değer.';
+const echo = div('blk', { left: '28px', width: '300px', top: '70px', textAlign: 'center', font: 'italic 400 24px/33px var(--serif)', color: C.inkMuted }, echoText.split(' ').map(w => `<span class="w">${w}</span>`).join(' '), doneB);
+const echoWords = [...echo.querySelectorAll('.w')];
+const moodPill = div('blk pill', { left: '128px', top: '176px', height: '44px', padding: '0 16px 0 7px', gap: '10px', font: '600 16px var(--sans)', color: C.ink },
+  `<span style="width:30px;height:30px;border-radius:50%;background:${C.score[3]};color:${C.onScore[3]};display:flex;align-items:center;justify-content:center;font:500 14px var(--mono)">4</span>İyi`, doneB);
+
+// Pratiklerin
+const pract = blk(16, 520, 358, 166);
+div('blk sec', { left: '0', top: '0' }, 'Pratiklerin', pract);
+div('blk', { left: '334px', top: '4px' }, ico('sliders', 22), pract);
+const tileA = div('tile', { left: '0', top: '42px' }, '<div class="well"></div><p>Sabah hazırlığı</p>', pract);
+const tileB = div('tile', { left: '185px', top: '42px' }, '<div class="well"></div><p>Akşam refleksiyonu</p>', pract);
+// İllüstrasyon: güneş (sabah) ve ay (akşam) — ritüel işaretleri
+const sunSVG = svg('svg', { width: 56, height: 56, viewBox: '-28 -28 56 56', style: 'position:absolute;left:0;top:0' });
+tileA.querySelector('.well').appendChild(sunSVG);
+const sunCore = svg('circle', { r: 8, fill: C.sabah }, sunSVG);
+const rays = Array.from({ length: 8 }, (_, i) => svg('line', { stroke: C.sabah, 'stroke-width': 2.2, 'stroke-linecap': 'round' }, sunSVG));
+const moonSVG = svg('svg', { width: 56, height: 56, viewBox: '-28 -28 56 56', style: 'position:absolute;left:0;top:0' });
+tileB.querySelector('.well').appendChild(moonSVG);
+const moonG = svg('g', {}, moonSVG);
+svg('circle', { r: 11, fill: C.aksam }, moonG);
+svg('circle', { r: 10, cx: 5, cy: -4, fill: C.raised }, moonG);
+const stars = [[-13, -12, 1.6], [13, 9, 1.3], [-7, 14, 1.1]].map(([x, y, r]) => svg('circle', { cx: x, cy: y, r, fill: C.aksam }, moonSVG));
+
+// Haftalık tema
+const theme = blk(16, 734, 358, 302);
+div('blk sec', { left: '0', top: '0' }, 'Haftalık tema', theme);
+div('blk', { left: '230px', width: '128px', textAlign: 'right', top: '4px', font: '600 16px var(--sans)', color: C.inkMuted }, 'Tümünü gör ›', theme);
+const tcard = div('blk', { left: '0', top: '42px', width: '358px', height: '260px', background: C.surface, borderRadius: '28px' }, '', theme);
+div('blk', { left: '22px', top: '22px', font: '500 11px/14px var(--mono)', letterSpacing: '.2em', color: C.inkMuted }, 'HAFTALIK TEMA · 3/7', tcard);
+div('blk', { left: '22px', top: '44px', font: '700 28px/34px var(--sans)', letterSpacing: '-0.02em', color: C.ink }, 'Yavaşlamak', tcard);
+const tq = div('blk', { left: '22px', top: '88px', width: '314px', font: '400 20px/28px var(--serif)', color: C.ink },
+  'Günün hangi anında nefes aldın?'.split(' ').map(w => `<span class="w">${w}</span>`).join(' '), tcard);
+const tqWords = [...tq.querySelectorAll('.w')];
+const dayLines = Array.from({ length: 7 }, (_, i) => div('blk', { left: (22 + i * 45.4) + 'px', top: '160px', width: '38px', height: '4px', borderRadius: '2px', boxSizing: 'border-box' }, '', tcard));
+const yaz = div('blk', { left: '22px', top: '186px', width: '314px', height: '52px', borderRadius: '26px', background: C.primary, color: C.onPrimary, font: '600 17px/52px var(--sans)', textAlign: 'center' }, 'Yaz', tcard);
+
+// Kaydırma kenarı: içerik dock'un altına sönerek girer
+const edge = div('blk', { left: '0', top: '620px', width: '390px', height: '224px', background: `linear-gradient(to bottom, rgba(0,0,0,0), ${C.ground} 62%)` }, '', screen);
+
+// Yüzen dock: + hapı ve cam tab bar (içerik altından kayar)
+const dock = div('blk', { left: '0', top: '688px', width: '390px', height: '124px' }, '', screen);
+div('blk pill', { left: '159px', top: '0', width: '72px', height: '56px', background: C.primary }, ico('plus', 26, C.onPrimary), dock);
+const tabbar = div('blk', { left: '16px', top: '64px', width: '358px', height: '60px', borderRadius: '30px', background: 'rgba(42,42,46,0.8)', backdropFilter: 'blur(20px)',
+  border: `1px solid ${C.line}`, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 6px' }, '', dock);
+[['sun', 'Bugün'], ['quote', 'Sözler'], ['compass', 'Keşfet'], ['book', 'Yolculuk'], ['chart', 'Eğilimler']].forEach(([ic, name], i) => {
+  div('tab' + (i === 0 ? ' on' : ''), {}, ico(ic, 20) + name, tabbar);
+});
+
+// ------------------------------------------------------------------
+// Katmanlar: okunabilirlik perdesi, motif, metinler
+// ------------------------------------------------------------------
+const veil = div('abs', { width: W + 'px', height: (H * 0.36) + 'px', top: (H * 0.64) + 'px', background: `linear-gradient(to bottom, rgba(0,0,0,0) 0%, ${C.ground} 38%)` });
+const front = layerSVG();
+const motif = svg('path', { fill: 'none', 'stroke-width': 3*u, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, front);
+
+const titleY = 820*u;
+const title = headline('Bugün.', { size: 150, width: 900 });
+title.el.style.fontWeight = 800; title.el.style.letterSpacing = '-0.035em';
+const titleSub = headline('Günün tamamı, tek bir sayfada.', { size: 44, cls: 'sub' });
+const wordmark = headline('ONE', { size: 210, width: 900 });
+wordmark.el.style.fontWeight = 800; wordmark.el.style.letterSpacing = '-0.03em';
+const store = headline("App Store'da", { size: 32, cls: 'sub' });
+const endLabel = label('BUGÜN', 26);
+
+const headY = 1590*u, subY = 1672*u;
+const SCENES = [
+  [S[1], 'Her şey yerli yerinde.', 'Haftan, hislerin, ritüellerin ve bu haftanın sorusu.'],
+  [S[2], 'Haftan, bir bakışta.', 'Boş kalan günü sonradan da yazabilirsin.'],
+  [S[3], 'Nasıl olduğunu sen söylersin.', 'Bir sayı seçersin; karşılığında yargısız tek bir cümle.'],
+  [S[4], 'Sabahı aç. Akşamı kapat.', 'Ritüellerin her gün aynı yerde durur.'],
+  [S[5], 'Boş sayfa yok.', 'Her hafta bir tema, her gün yeni bir soru.'],
+].map(([t0, h, s], i) => ({ t0, t1: S[i + 2], h: headline(h), s: headline(s, { size: 36, cls: 'sub' }) }));
+const triple = headline('Bir soru. Bir cevap. Bir gün.', { size: 64, width: 1000 });
+const TRIPLE_T = [30, 31, 32].map(b => b * B);
+
+// ------------------------------------------------------------------
+// Kamera: odak noktası (ekran pt), ölçek, sahnedeki yeri, kaydırma
+// ------------------------------------------------------------------
+const K = {
+  full:  { s: 1.6,  fx: 195, fy: 422, X: cx, Y: 830*u, scroll: 0 },
+  week:  { s: 2.55, fx: 195, fy: 128, X: cx, Y: 700*u, scroll: 0 },
+  check: { s: 2.45, fx: 195, fy: 352, X: cx, Y: 760*u, scroll: 0 },
+  pract: { s: 2.45, fx: 195, fy: 603, X: cx, Y: 760*u, scroll: 0 },
+  theme: { s: 2.3,  fx: 195, fy: 525, X: cx, Y: 780*u, scroll: 360 },
+};
+const CAMKEYS = [[0, 'full'], [S[2], 'week'], [S[3], 'check'], [S[4], 'pract'], [S[5], 'theme'], [S[6], 'full']];
+function camera(t) {
+  let k = 0;
+  for (let i = 0; i < CAMKEYS.length; i++) if (t >= CAMKEYS[i][0] - 0.2) k = i;
+  const cur = K[CAMKEYS[k][1]];
+  if (k === 0) return Object.assign({}, cur);
+  const prev = K[CAMKEYS[k - 1][1]], m = prog(t, CAMKEYS[k][0] - 0.2, 0.95);
+  const o = {};
+  for (const key in cur) o[key] = lerp(prev[key], cur[key], m);
+  return o;
+}
+// Hangi sahne hangi bloğa odaklanıyor
+const FOCUS = [
+  [S[2], S[3], [topbar, week, gapSheet]],
+  [S[3], S[4], [checkin]],
+  [S[4], S[5], [pract]],
+  [S[5], S[6], [theme]],
+];
+const BLOCKS = [topbar, week, gapSheet, checkin, pract, theme, dock, edge];
+const ENTER = new Map([[topbar, 0.25], [week, 0.37], [checkin, 0.49], [pract, 0.61], [theme, 0.73], [dock, 0.85], [edge, 0.85]]);
+
+// Ses olayları
+const TAP_GAP = S[2] + 0.75, TSHEET = S[2] + 0.95, TBTN = S[2] + 2.0, TFILL = S[2] + 2.35;
+const TTILE = S[4] + 2.6, TYAZ = S[5] + 2.7;
+EVENTS.push({ type: 'paper', t: S[1] + 0.2 }, { type: 'key', t: TAP_GAP }, { type: 'paper', t: TSHEET - 0.05 }, { type: 'press', t: TBTN },
+  { type: 'press', t: TSEL }, { type: 'seal', t: TDONE }, { type: 'press', t: TTILE }, { type: 'paper', t: S[5] - 0.2 }, { type: 'press', t: TYAZ });
+
+const pressScale = (t, t0) => 1 - 0.03 * (prog(t, t0, 0.12) - prog(t, t0 + 0.12, 0.18));
+
+// ------------------------------------------------------------------
+// Kare
+// ------------------------------------------------------------------
+window.render = function (t) {
+  const c = camera(t);
+  const tx = c.X - c.s * c.fx, ty = c.Y - c.s * c.fy;
+  cam.style.transform = `translate(${tx}px, ${ty}px) scale(${c.s})`;
+  content.style.transform = `translateY(${-c.scroll}px)`;
+
+  // Ekranın görünürlüğü: B'de kurulur, D'de söner
+  const screenOn = t >= S[1] - 0.1 && t < S[7] + 0.2;
+  cam.style.visibility = screenOn ? 'visible' : 'hidden';
+  screen.style.opacity = 1 - prog(t, S[7] - 0.35, 0.35);
+
+  // Bloklar: giriş + odak dışı sönükleşme
+  const zoom = FOCUS.reduce((a, [a0, a1]) => Math.max(a, prog(t, a0 - 0.2, 0.7) * (1 - prog(t, a1 - 0.2, 0.7))), 0);
+  BLOCKS.forEach(b => {
+    let o = 1, y = 0;
+    if (ENTER.has(b)) { const p = prog(t, S[1] + ENTER.get(b), 0.55); o = p; y = (1 - p) * 24; }
+    let dim = 0;
+    FOCUS.forEach(([a0, a1, set]) => {
+      if (set.includes(b)) return;
+      const w = prog(t, a0 - 0.2, 0.7) * (1 - prog(t, a1 - 0.2, 0.7));
+      dim = Math.max(dim, w * (b === dock || b === edge ? 1 : 0.84));
+    });
+    if (b !== gapSheet) { b.style.opacity = o * (1 - dim); b.style.transform = `translateY(${y}px)`; }
+    else b.dataset.dim = dim;
+  });
+
+  // Seri sayısı: 1 → 11 (boş gün doldurulunca) → 12 (bugün tamamlanınca)
+  const n = t < TFILL + 0.15 ? 1 : Math.round(lerp(1, 11, prog(t, TFILL + 0.15, 0.9)));
+  streakNum.textContent = t >= TDONE + 0.35 ? 12 : n;
+
+  // Hafta: boş güne dokunuş, doldurma, bugünün tiki
+  const gap = cells[2];
+  gap.cell.style.transform = `scale(${pressScale(t, TAP_GAP)})`;
+  gap.cell.style.border = `1px solid ${mixHex(C.ground, C.lineStrong, vis(t, TAP_GAP, TFILL, 0.2))}`;
+  gap.d.style.opacity = 1 - prog(t, TFILL - 0.1, 0.2);
+  gap.tk.setAttribute('stroke-dashoffset', 1 - prog(t, TFILL, 0.3));
+  const today = cells[4];
+  today.d.style.opacity = 1 - prog(t, TDONE + 0.3, 0.2);
+  today.tk.setAttribute('stroke-dashoffset', 1 - prog(t, TDONE + 0.35, 0.3));
+
+  // Doldurma kartı
+  const so = vis(t, TSHEET, TBTN + 0.2, 0.3, 0.25);
+  gapSheet.style.opacity = so; gapSheet.style.visibility = so > 0.001 ? 'visible' : 'hidden';
+  gapSheet.style.transform = `translateY(${(1 - prog(t, TSHEET, 0.3)) * 10}px)`;
+  gapBtn.style.transform = `scale(${pressScale(t, TBTN)})`;
+
+  // Check-in: soru → seçim → yankı
+  ring.style.opacity = prog(t, TSEL, 0.18);
+  discs[3].style.transform = `scale(${pressScale(t, TSEL)})`;
+  askA.style.opacity = 1 - prog(t, TDONE - 0.3, 0.28);
+  doneB.style.opacity = prog(t, TDONE - 0.05, 0.3);
+  echoWords.forEach((w, i) => { const p = prog(t, TDONE + i * 0.06, 0.55); w.style.opacity = p; w.style.transform = `translateY(${(1 - p) * 10}px)`; });
+  const mp = prog(t, TDONE + 0.5, 0.4);
+  moodPill.style.opacity = mp; moodPill.style.transform = `translateY(${(1 - mp) * 8}px)`;
+
+  // Pratikler: güneş döner, ışınlar nefes alır; ay salınır, yıldızlar yanıp söner
+  const pt = t - S[4];
+  const breathe = t > S[4] - 0.3 ? 0.5 + 0.5 * Math.sin(pt * 2.2) : 1;
+  rays.forEach((r, i) => {
+    const a = i * Math.PI / 4 + (t > S[4] ? pt * 0.35 : 0);
+    const r0 = 12, r1 = 15.5 + 1.8 * breathe;
+    r.setAttribute('x1', (r0 * Math.cos(a)).toFixed(2)); r.setAttribute('y1', (r0 * Math.sin(a)).toFixed(2));
+    r.setAttribute('x2', (r1 * Math.cos(a)).toFixed(2)); r.setAttribute('y2', (r1 * Math.sin(a)).toFixed(2));
+  });
+  moonG.setAttribute('transform', `rotate(${t > S[4] ? 10 * Math.sin(pt * 1.3) : 0})`);
+  stars.forEach((s, i) => s.setAttribute('opacity', t > S[4] ? 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(pt * 2.6 + i * 2.1)) : 0.6));
+  tileA.style.transform = `scale(${pressScale(t, TTILE)})`;
+
+  // Tema: soru kelime kelime, günler dolar, "Yaz"
+  tqWords.forEach((w, i) => { const p = prog(t, S[5] + 0.8 + i * 0.07, 0.55); w.style.opacity = p; w.style.transform = `translateY(${(1 - p) * 10}px)`; });
+  dayLines.forEach((d, i) => {
+    const f = i < 3 ? prog(t, S[5] + 1.3 + i * 0.18, 0.3) : 0;
+    d.style.background = f > 0 ? mixHex(C.surface, C.ink, f) : 'transparent';
+    d.style.border = i < 3 && f >= 1 ? 'none' : `1px solid ${C.line}`;
+  });
+  yaz.style.transform = `scale(${pressScale(t, TYAZ)})`;
+
+  // Motif: ufuk → ekran çerçevesi (kamerayla hareket eder) → wordmark yayı
+  const A = arc(cx, 930*u, 200*u, 26*u);
+  const R = roundRect(tx, ty, 390 * c.s, 844 * c.s, 48 * c.s);
+  let pts = A, a = 0, b = 1, col = C.ink;
+  if (t < S[1] - 0.25) { const p = prog(t, 0.9, 1.0); a = .5 - .5*p; b = .5 + .5*p; }
+  else if (t < S[7] - 0.3) { const m = prog(t, S[1] - 0.25, 0.9); pts = morph(A, R, m); col = mixHex(C.ink, C.lineStrong, m); }
+  else { const m = prog(t, S[7] - 0.3, 0.9); pts = morph(R, A, m); col = mixHex(C.lineStrong, C.ink, m); }
+  motif.setAttribute('d', subPath(pts, a, b));
+  motif.setAttribute('stroke', col);
+
+  // Açılış
+  wordsAt(title, t, 0.2, S[1] - 0.3, cx, titleY, { stagger: 0.09 });
+  wordsAt(titleSub, t, 1.2, S[1] - 0.3, cx, 1010*u);
+
+  // Sahne başlıkları
+  show(veil, zoom);
+  SCENES.forEach(sc => {
+    const tin = sc.t0 + 0.35, tout = sc.t1 - 0.28;
+    wordsAt(sc.h, t, tin, tout, cx, headY);
+    wordsAt(sc.s, t, tin + 0.35, tout, cx, subY);
+  });
+  // Üçlü: her parça kendi vuruşunda
+  place(triple.el, cx, 1640*u);
+  triple.el.style.visibility = t > TRIPLE_T[0] - 0.1 && t < S[7] ? 'visible' : 'hidden';
+  triple.words.forEach((w, i) => {
+    const p = prog(t, TRIPLE_T[Math.floor(i / 2)] + (i % 2) * 0.07, 0.55), q = prog(t, S[7] - 0.28, 0.28);
+    w.style.opacity = p * (1 - q);
+    w.style.transform = `translateY(${(1 - p) * 30*u - q * 14*u}px)`;
+  });
+
+  // Kapanış
+  wordsAt(wordmark, t, S[7] + 0.05, null, cx, 820*u, { stagger: 0.09 });
+  wordsAt(store, t, S[7] + 0.9, null, cx, 1010*u);
+  place(endLabel, cx, 1090*u); endLabel.style.opacity = t >= S[7] ? prog(t, S[7] + 1.1, 0.5) : 0;
+};
+
+// Wordmark harf harf yükselsin
+wordmark.el.innerHTML = ['O', 'N', 'E'].map(l => `<span class="w">${l}</span>`).join('');
+wordmark.words = [...wordmark.el.querySelectorAll('.w')];
+render(0);
+</script>
+</body>
+</html>

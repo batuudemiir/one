@@ -4,3 +4,6 @@ events.json
 audio.wav
 v_*.mp4
 snap_*.png
+v.mp4
+audio.wav
+node_modules

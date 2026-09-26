@@ -35,6 +35,25 @@ ve kapanışta, vuruşa denk gelir.
   birlikte değişir; mühür anında A7sus4 Re'ye çözülür. Ses efekti üç
   aile: tuş, kâğıt, mühür.
 
+## Ekran filmleri (9:16)
+
+Her ekran için bir film: Bugün, Sözler, Keşfet, Yolculuk ve Eğilimler.
+Stil kuralları `STYLE.md` dosyasında, ortak çekirdek `kit/` klasöründe.
+Her filmin sahnesi `screens/<ad>.html`, partisyonu `screens/<ad>.score.json`.
+
+| Film | Dosya |
+|---|---|
+| Bugün | `ONE2_bugun_9x16.mp4` |
+
+```bash
+cd Marketing/ONE2Film
+FF=$(python3 -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())")
+node kit/render.js screens/bugun.html 1080 1920 v.mp4 "$FF" events.json
+python3 kit/synth.py screens/bugun.score.json events.json audio.wav
+"$FF" -y -i v.mp4 -i audio.wav -c:v copy -c:a aac -b:a 192k -shortest ONE2_bugun_9x16.mp4
+node kit/render.js screens/bugun.html 1080 1920 --snap 5 9.3 26   # tek tek kare
+```
+
 ## Yeniden üretmek
 
 Gerekenler: Node 18+, Python 3 + `numpy`, ffmpeg (`imageio-ffmpeg`
