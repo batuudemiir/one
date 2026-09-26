@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>ONE 2.0 · Keşfet</title>
+<link rel="stylesheet" href="../kit/base.css">
+<style>
+  /* Ekran: 390pt genişlik (docs/one2/design-system › ScreenKesfet, FeaturedCard, ContentCard; UX-8). */
+  #cam { position:absolute; left:0; top:0; transform-origin:0 0; }
+  #screen { position:absolute; left:0; top:0; width:390px; height:844px; overflow:hidden; border-radius:48px; background:var(--ground); }
+  .blk { position:absolute; }
+  .pill { background:var(--raised); border-radius:999px; display:flex; align-items:center; justify-content:center; }
+  .ico { fill:none; stroke:var(--ink); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .blk svg { position:static; }
+  .sec { font:700 24px/30px var(--sans); letter-spacing:-.01em; color:var(--ink); }
+  .ccard { position:absolute; top:0; width:250px; height:248px; background:var(--surface); border-radius:28px; }
+  .arch { position:absolute; left:14px; top:14px; width:222px; height:88px; border-radius:44px 44px 12px 12px; overflow:hidden; }
+  .badge { position:absolute; left:50%; top:90px; transform:translateX(-50%); background:var(--ground); color:var(--ink); font:500 10px/14px var(--mono); letter-spacing:.2em; padding:4px 10px; border-radius:999px; white-space:nowrap; }
+  .ccat { position:absolute; left:18px; top:122px; font:500 14px var(--sans); color:var(--ink-muted); }
+  .ctit { position:absolute; left:18px; top:144px; font:700 20px/26px var(--sans); color:var(--ink); letter-spacing:-.01em; }
+  .cdes { position:absolute; left:18px; top:176px; width:214px; font:500 14px/20px var(--sans); color:var(--ink-muted); }
+  .more { position:absolute; right:20px; top:20px; font:700 16px var(--sans); color:var(--ink); letter-spacing:.05em; }
+  .tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font:600 10px var(--sans); color:var(--ink); width:66px; height:48px; border-radius:24px; }
+  .tab.on { background:var(--ground); }
+  .mono { font:500 11px/14px var(--mono); letter-spacing:.2em; color:var(--ink-muted); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../kit/core.js"></script>
+<script>
+const { W, H, u, C, BEAT, prog, lerp, vis, mixHex, svg, layerSVG, div, place, show,
+        headline, wordsAt, label, EVENTS, typer, registerTyping, typeAt, roundRect, arc, morph, subPath } = ONE;
+const B = BEAT;
+const S = [0, 4, 9, 14, 19, 24, 29, 33, 36].map(b => b * B);
+window.DURATION = S[8];
+const cx = W / 2;
+const DARK = C.onEmo;   // renkli kemer üstündeki çizgi rengi (on-emo / on-score: #15181D)
+
+const ICON = {
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
+  lock: '<rect x="6" y="11" width="12" height="9" rx="2"/><path d="M8.5 11V8.5a3.5 3.5 0 017 0V11"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  chevR: '<path d="M10 7l5 5-5 5"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+  quote: '<path d="M7 17c-1.5 0-2.5-1.2-2.5-2.8 0-2.6 1.6-5 4-6.2M15.5 17c-1.5 0-2.5-1.2-2.5-2.8 0-2.6 1.6-5 4-6.2"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  book: '<path d="M12 6.5C10 5 7.5 4.6 4 5v13c3.5-.4 6 0 8 1.5 2-1.5 4.5-1.9 8-1.5V5c-3.5-.4-6 0-8 1.5zM12 6.5V19"/>',
+  chart: '<path d="M6 19V11M10 19V6M14 19v-9M18 19v-5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+};
+const ico = (name, size = 22, color) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="ico"${color ? ` style="stroke:${color}"` : ''}>${ICON[name]}</svg>`;
+
+// ------------------------------------------------------------------
+// İllüstrasyonlar (ONE'ın kendi çizimleri), zamanla hareket eder
+// ------------------------------------------------------------------
+// Yaprak: yavaşlamanın işareti — süzülür, salınır, döner.
+function makeLeaf(parent, w, h) {
+  const s = svg('svg', { width: w, height: h, viewBox: `0 0 ${w} ${h}`, style: 'position:absolute;left:0;top:0' }); parent.appendChild(s);
+  const g = svg('g', {}, s);
+  svg('path', { d: 'M0 -34 C 22 -20 22 16 0 34 C -22 16 -22 -20 0 -34 Z', fill: 'none', stroke: C.ink, 'stroke-width': 2, 'stroke-linejoin': 'round' }, g);
+  svg('path', { d: 'M0 -30 L0 44 M0 -8 L10 -16 M0 6 L-11 -3 M0 18 L9 10', fill: 'none', stroke: C.ink, 'stroke-width': 1.6, 'stroke-linecap': 'round' }, g);
+  svg('line', { x1: 18, x2: w - 18, y1: h - 26, y2: h - 26, stroke: C.inkFaint, 'stroke-width': 2, 'stroke-linecap': 'round' }, s);
+  return { draw(t) {
+    const p = (t * 0.09) % 1;
+    const y = lerp(-20, h - 60, p), x = w / 2 + 22 * Math.sin(t * 1.3);
+    g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(24 * Math.sin(t * 1.3 + 0.8)).toFixed(1)}) scale(0.9)`);
+    g.setAttribute('opacity', Math.min(1, p * 6, (1 - p) * 6).toFixed(2));
+  } };
+}
+// Kemer çizimleri (222×88)
+function makeArch(kind, parent) {
+  const s = svg('svg', { width: 222, height: 88, viewBox: '0 0 222 88', style: 'position:absolute;left:0;top:0' }); parent.appendChild(s);
+  if (kind === 'sabah') {
+    const cp = 'cp' + Math.random().toString(36).slice(2);
+    svg('rect', { width: 222, height: 72 }, svg('clipPath', { id: cp }, svg('defs', {}, s)));
+    const g = svg('g', { 'clip-path': `url(#${cp})` }, s);
+    const sun = svg('circle', { cx: 111, r: 20, fill: 'none', stroke: DARK, 'stroke-width': 2.2 }, g);
+    const rays = Array.from({ length: 7 }, () => svg('line', { stroke: DARK, 'stroke-width': 2.2, 'stroke-linecap': 'round' }, g));
+    svg('line', { x1: 20, x2: 202, y1: 72, y2: 72, stroke: DARK, 'stroke-width': 2.2, 'stroke-linecap': 'round' }, s);
+    return { draw(t) {
+      const cy = 72 - 10 * (0.5 + 0.5 * Math.sin(t * 0.8));
+      sun.setAttribute('cy', cy);
+      rays.forEach((r, i) => { const a = Math.PI + (i + 0.5) * Math.PI / 7; const r1 = 27, r2 = 33 + 2 * Math.sin(t * 2 + i);
+        r.setAttribute('x1', 111 + r1 * Math.cos(a)); r.setAttribute('y1', cy + r1 * Math.sin(a)); r.setAttribute('x2', 111 + r2 * Math.cos(a)); r.setAttribute('y2', cy + r2 * Math.sin(a)); });
+    } };
+  }
+  if (kind === 'aksam') {
+    const stars = [[70, 40, 9], [111, 28, 12], [152, 44, 9]].map(([x, y, r]) => {
+      const g = svg('g', { transform: `translate(${x} ${y})` }, s);
+      svg('path', { d: `M0 ${-r} L${r * 0.28} ${-r * 0.28} L${r} 0 L${r * 0.28} ${r * 0.28} L0 ${r} L${-r * 0.28} ${r * 0.28} L${-r} 0 L${-r * 0.28} ${-r * 0.28} Z`, fill: 'none', stroke: DARK, 'stroke-width': 2, 'stroke-linejoin': 'round' }, g);
+      return g;
+    });
+    return { draw(t) { stars.forEach((g, i) => { const k = 0.85 + 0.15 * Math.sin(t * 2.2 + i * 2.1); const [x, y] = [[70, 40], [111, 28], [152, 44]][i]; g.setAttribute('transform', `translate(${x} ${y}) scale(${k.toFixed(3)})`); g.setAttribute('opacity', (0.55 + 0.45 * k).toFixed(2)); }); } };
+  }
+  // Kafandakini boşalt: düşünce çizgileri sağa akıp söner
+  const lines = [0, 1, 2, 3].map(() => svg('line', { stroke: C.inkMuted, 'stroke-width': 2.2, 'stroke-linecap': 'round' }, s));
+  svg('circle', { cx: 52, cy: 46, r: 20, fill: 'none', stroke: C.inkMuted, 'stroke-width': 2.2 }, s);
+  return { draw(t) {
+    lines.forEach((l, i) => { const p = ((t * 0.35) + i / 4) % 1; const x = 82 + p * 120, len = 26 - 10 * p;
+      l.setAttribute('x1', x); l.setAttribute('x2', x + len); l.setAttribute('y1', 32 + i * 9); l.setAttribute('y2', 32 + i * 9); l.setAttribute('opacity', (1 - p).toFixed(2)); });
+  } };
+}
+
+// ------------------------------------------------------------------
+// Ekran
+// ------------------------------------------------------------------
+const cam = div('', {}, '', ONE.stage); cam.id = 'cam';
+const screen = div('', {}, '', cam); screen.id = 'screen';
+const blk = (x, y, w, h, html = '', style = {}, parent = screen) => div('blk', Object.assign({ left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' }, style), html, parent);
+const DRAW = [];
+
+const topbar = blk(0, 54, 390, 110);
+const searchBtn = div('blk pill', { left: '326px', top: '0', width: '48px', height: '48px' }, ico('search', 22), topbar);
+div('blk', { left: '16px', top: '58px', font: '700 44px/48px var(--sans)', letterSpacing: '-.025em', color: C.ink }, 'keşfet', topbar);
+
+// Öne çıkan: bu haftanın teması (themes/2026-w39)
+const featured = blk(16, 184, 358, 200, '', { background: C.surface, borderRadius: '28px' });
+const art = div('blk', { left: '14px', top: '14px', width: '140px', height: '172px', background: C.raised, borderRadius: '20px', overflow: 'hidden' }, '', featured);
+DRAW.push(makeLeaf(art, 140, 172));
+div('blk', { left: '170px', top: '18px', font: '500 13px var(--sans)', color: C.inkMuted }, '21–27 Eylül', featured);
+div('blk', { left: '170px', top: '38px', width: '170px', font: '700 22px/27px var(--sans)', letterSpacing: '-.01em', color: C.ink }, 'Yavaşlamak haftası', featured);
+div('blk', { left: '170px', top: '96px', width: '170px', font: '500 14px/19px var(--sans)', color: C.inkMuted }, 'Bu hafta acele etmeden bakıyoruz. Yedi gün, yedi soru.', featured);
+const startBtn = div('blk', { left: '246px', top: '148px', height: '38px', padding: '0 16px', borderRadius: '19px', background: C.primary, color: C.onPrimary, font: '600 15px/38px var(--sans)', display: 'flex', alignItems: 'center', gap: '2px' }, 'Başla' + ico('chevR', 16, C.onPrimary), featured);
+
+// Rehberli günlükler satırı (guided/*.tr.json)
+const section = blk(16, 408, 358, 30);
+div('blk sec', { left: '0', top: '0' }, 'Rehberli günlükler', section);
+div('blk', { left: '230px', width: '128px', textAlign: 'right', top: '4px', font: '600 16px var(--sans)', color: C.inkMuted }, 'Tümünü gör ›', section);
+const row = blk(0, 452, 390, 248);
+const rowIn = blk(0, 0, 1000, 248, '', {}, row);
+const GUIDED = [
+  { kind: 'sabah', cat: 'Sabah', t: 'Güne niyet', d: 'Güne tek bir niyetle başla.', lock: true },
+  { kind: 'bosalt', cat: 'Rehberli', t: 'Kafandakini boşalt', d: 'Aklında dönenleri sayfaya bırak.', badge: 'ÖNE ÇIKAN' },
+  { kind: 'aksam', cat: 'Akşam', t: 'Üç iyi şey', d: 'Günün küçük iyiliklerini fark et.', badge: 'YENİ' },
+];
+const ccards = GUIDED.map((g, i) => {
+  const el = div('ccard', { left: (16 + i * 262) + 'px' }, '', rowIn);
+  const archEl = div('arch', { background: g.kind === 'sabah' ? C.sabah : g.kind === 'aksam' ? C.aksam : C.raised }, '', el);
+  DRAW.push(makeArch(g.kind, archEl));
+  if (g.lock) div('blk', { left: '93px', top: '26px', width: '36px', height: '36px', borderRadius: '50%', background: C.ground, display: 'flex', alignItems: 'center', justifyContent: 'center' }, ico('lock', 18, C.ink), archEl);
+  el.insertAdjacentHTML('beforeend', `${g.badge ? `<span class="badge">${g.badge}</span>` : ''}<span class="more">···</span><span class="ccat">${g.cat}</span><span class="ctit">${g.t}</span><span class="cdes">${g.d}</span>`);
+  return el;
+});
+
+// Dock + kaydırma kenarı
+const edge = blk(0, 620, 390, 224, '', { background: `linear-gradient(to bottom, rgba(0,0,0,0), ${C.ground} 62%)` });
+const dock = blk(0, 688, 390, 124);
+div('blk pill', { left: '159px', top: '0', width: '72px', height: '56px', background: C.primary }, ico('plus', 26, C.onPrimary), dock);
+const tabbar = div('blk', { left: '16px', top: '64px', width: '358px', height: '60px', borderRadius: '30px', background: 'rgba(42,42,46,0.8)', backdropFilter: 'blur(20px)',
+  border: `1px solid ${C.line}`, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 6px' }, '', dock);
+[['sun', 'Bugün'], ['quote', 'Sözler'], ['compass', 'Keşfet'], ['book', 'Yolculuk'], ['chart', 'Eğilimler']].forEach(([ic, name], i) => div('tab' + (i === 2 ? ' on' : ''), {}, ico(ic, 20) + name, tabbar));
+
+// Rehberli akış: tanıtım → 1. adım → 2. adım (guided/g_minnet_01)
+const intro = blk(0, 0, 390, 844, '', { background: C.ground, zIndex: 7 });
+div('blk pill', { left: '16px', top: '54px', width: '44px', height: '44px' }, ico('close', 20), intro);
+const bigArch = div('blk', { left: '16px', top: '110px', width: '358px', height: '150px', borderRadius: '75px 75px 20px 20px', background: C.aksam, overflow: 'hidden' }, '', intro);
+const bigStars = div('blk', { left: '68px', top: '31px', width: '222px', height: '88px', transform: 'scale(1.4)' }, '', bigArch);
+DRAW.push(makeArch('aksam', bigStars));
+div('blk', { left: '16px', top: '282px', font: '500 15px var(--sans)', color: C.inkMuted }, 'Akşam · Rehberli', intro);
+div('blk', { left: '16px', top: '304px', font: '700 32px/38px var(--sans)', letterSpacing: '-.02em', color: C.ink }, 'Üç iyi şey', intro);
+div('blk mono', { left: '16px', top: '352px' }, '4 ADIM · 2 DK', intro);
+div('blk', { left: '16px', top: '376px', width: '358px', font: '400 19px/28px var(--serif)', color: C.ink }, 'Günün küçük iyiliklerini fark et.', intro);
+const goBtn = div('blk', { left: '16px', top: '424px', width: '358px', height: '52px', borderRadius: '26px', background: C.primary, color: C.onPrimary, font: '600 17px/52px var(--sans)', textAlign: 'center' }, 'Başla', intro);
+
+const flow = blk(0, 0, 390, 844, '', { background: C.ground, zIndex: 8 });
+const bars = [0, 1, 2, 3].map(i => {
+  const bg = div('blk', { left: (16 + i * 91) + 'px', top: '64px', width: '85px', height: '4px', borderRadius: '2px', background: C.line }, '', flow);
+  return div('blk', { left: '0', top: '0', height: '4px', borderRadius: '2px', background: C.ink, width: '0px' }, '', bg);
+});
+const stepLabel = div('blk mono', { left: '16px', top: '88px' }, 'ÜÇ İYİ ŞEY · 1/4', flow);
+const q1 = div('blk', { left: '16px', top: '120px', width: '358px', font: '400 24px/32px var(--serif)', color: C.ink },
+  'Bugün iyi giden ilk şey neydi?'.split(' ').map(w => `<span class="w">${w}</span>`).join(' '), flow);
+const q1w = [...q1.querySelectorAll('.w')];
+const a1 = typer('Sabah kahvemi balkonda içtim.', 'serif', { left: '16px', top: '196px', width: '358px', font: '400 20px/30px var(--serif)', color: C.inkMuted }, flow);
+const q2 = div('blk', { left: '16px', top: '120px', width: '358px', font: '400 24px/32px var(--serif)', color: C.ink },
+  'İkinci iyi şey?'.split(' ').map(w => `<span class="w">${w}</span>`).join(' '), flow);
+const q2w = [...q2.querySelectorAll('.w')];
+const nextBtn = div('blk', { left: '16px', top: '424px', width: '358px', height: '52px', borderRadius: '26px', background: C.primary, color: C.onPrimary, font: '600 17px/52px var(--sans)', textAlign: 'center' }, 'Devam', flow);
+
+// Arama: içerik + sözler, türe göre gruplu
+const search = blk(0, 0, 390, 844, '', { background: C.ground, zIndex: 9 });
+const field = div('blk pill', { left: '16px', top: '54px', width: '274px', height: '48px', justifyContent: 'flex-start', padding: '0 16px', gap: '10px', boxSizing: 'border-box' }, ico('search', 20, C.inkMuted), search);
+const query = typer('yavaş', '', { position: 'static', font: '500 17px var(--sans)', color: C.ink }, field);
+query.el.style.position = 'static';
+div('blk', { left: '302px', top: '54px', width: '72px', height: '48px', font: '600 16px/48px var(--sans)', color: C.inkMuted, textAlign: 'center' }, 'Vazgeç', search);
+const res = [
+  [124, '<span class="mono">İÇERİK</span>'],
+  [150, `<div style="display:flex;gap:14px;align-items:center"><div style="width:56px;height:56px;border-radius:28px 28px 10px 10px;background:${C.raised}"></div><div><div style="font:700 17px var(--sans);color:${C.ink}">Yavaşlamak</div><div style="font:500 14px var(--sans);color:${C.inkMuted};margin-top:3px">Haftalık tema · 7 soru</div></div></div>`],
+  [236, '<span class="mono">SÖZLER</span>'],
+  [262, `<div style="font:400 19px/26px var(--serif);color:${C.ink}">Yavaş yürüyen tez varır.</div><div class="mono" style="margin-top:4px;color:${C.inkFaint}">ATASÖZÜ</div>`],
+  [330, `<div style="font:400 19px/26px var(--serif);color:${C.ink}">Bugün yavaş gitmek de ilerlemektir.</div><div class="mono" style="margin-top:4px;color:${C.inkFaint}">OLUMLAMA</div>`],
+].map(([y, html]) => div('blk', { left: '16px', top: y + 'px', width: '358px' }, html, search));
+
+// ------------------------------------------------------------------
+// Katmanlar ve metinler
+// ------------------------------------------------------------------
+const veil = div('abs', { width: W + 'px', height: (H * 0.36) + 'px', top: (H * 0.64) + 'px', background: `linear-gradient(to bottom, rgba(0,0,0,0) 0%, ${C.ground} 38%)` });
+const front = layerSVG();
+const motif = svg('path', { fill: 'none', 'stroke-width': 3*u, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, front);
+
+const title = headline('Keşfet.', { size: 150, width: 900 });
+title.el.style.fontWeight = 800; title.el.style.letterSpacing = '-0.035em';
+const titleSub = headline('Yazmak için yeni yollar.', { size: 44, cls: 'sub' });
+const wordmark = headline('ONE', { size: 210, width: 900 });
+wordmark.el.style.fontWeight = 800; wordmark.el.style.letterSpacing = '-0.03em';
+wordmark.el.innerHTML = ['O', 'N', 'E'].map(l => `<span class="w">${l}</span>`).join('');
+wordmark.words = [...wordmark.el.querySelectorAll('.w')];
+const store = headline("App Store'da", { size: 32, cls: 'sub' });
+const endLabel = label('KEŞFET', 26);
+
+const headY = 1590*u, subY = 1672*u;
+const SCENES = [
+  [S[1], 'Ne yazacağını düşünme.', 'Rehberli günlükler, temalar ve söz koleksiyonları.'],
+  [S[2], 'Her hafta yeni bir tema.', 'Yedi gün, yedi soru; hepsi aynı konunun etrafında.'],
+  [S[3], 'Sabah, akşam, her an.', 'Günün saatine göre rehberli günlükler.'],
+  [S[4], 'Adım adım, kendi sözlerinle.', 'Dört adım, iki dakika, her adımda tek soru.'],
+  [S[5], 'Aradığını bul.', 'İçerik ve sözler, türüne göre gruplanır.'],
+].map(([t0, h, s], i) => ({ t0, t1: S[i + 2], h: headline(h), s: headline(s, { size: 36, cls: 'sub' }) }));
+const triple = headline('Seç. Başla. Yaz.', { size: 64, width: 1000 });
+const TRIPLE_T = [30, 31, 32].map(b => b * B);
+
+// ------------------------------------------------------------------
+// Kamera
+// ------------------------------------------------------------------
+const K = {
+  full:  { s: 1.6,  fx: 195, fy: 422, X: cx, Y: 830*u },
+  feat:  { s: 2.55, fx: 195, fy: 284, X: cx, Y: 760*u },
+  row:   { s: 2.3,  fx: 195, fy: 562, X: cx, Y: 780*u },
+  flow:  { s: 2.3,  fx: 195, fy: 270, X: cx, Y: 740*u },
+  srch:  { s: 2.3,  fx: 195, fy: 236, X: cx, Y: 740*u },
+};
+const CAMKEYS = [[0, 'full'], [S[2], 'feat'], [S[3], 'row'], [S[4], 'flow'], [S[5], 'srch'], [S[6], 'full']];
+function camera(t) {
+  let k = 0;
+  for (let i = 0; i < CAMKEYS.length; i++) if (t >= CAMKEYS[i][0] - 0.2) k = i;
+  const cur = K[CAMKEYS[k][1]];
+  if (k === 0) return Object.assign({}, cur);
+  const prev = K[CAMKEYS[k - 1][1]], m = prog(t, CAMKEYS[k][0] - 0.2, 0.95);
+  const o = {};
+  for (const key in cur) o[key] = lerp(prev[key], cur[key], m);
+  return o;
+}
+
+// Olaylar
+const TSTART = S[2] + 2.6;                       // öne çıkanda "Başla" basışı (yalnız dokunuş)
+const SWIPE = [S[3] + 1.0, S[3] + 2.4];
+const TCARD = S[4] + 0.35, TINTRO = S[4] + 0.5, TGO = S[4] + 1.55, TFLOW = S[4] + 1.7;
+registerTyping(a1, S[4] + 2.25, 22);
+const TNEXT = 23.5 * B - 0.15, TSTEP2 = 23.5 * B;  // 2. adım: müzik burada çözülür
+const TSRCH = S[5] + 0.45, TSRCH_IN = S[5] + 0.6;
+registerTyping(query, S[5] + 1.05, 9);
+const TRES = S[5] + 1.75;
+EVENTS.push({ type: 'paper', t: S[1] + 0.2 }, { type: 'press', t: TSTART }, { type: 'paper', t: SWIPE[0] }, { type: 'paper', t: SWIPE[1] },
+  { type: 'press', t: TCARD }, { type: 'paper', t: TINTRO }, { type: 'press', t: TGO }, { type: 'press', t: TNEXT }, { type: 'paper', t: TSTEP2 },
+  { type: 'press', t: TSRCH }, { type: 'paper', t: S[6] + 0.05 });
+
+const pressScale = (t, t0) => 1 - 0.03 * (prog(t, t0, 0.12) - prog(t, t0 + 0.12, 0.18));
+const FOCUS_WIN = [[S[2], S[3]], [S[3], S[4]], [S[4], S[5]], [S[5], S[6]]];
+const BLOCKS = [[topbar, 0.25, null], [featured, 0.37, [S[2], S[3]]], [section, 0.49, [S[3], S[4]]], [row, 0.55, [S[3], S[4]]], [edge, 0.7, 'dock'], [dock, 0.7, 'dock']];
+
+// ------------------------------------------------------------------
+// Kare
+// ------------------------------------------------------------------
+window.render = function (t) {
+  const c = camera(t);
+  const tx = c.X - c.s * c.fx, ty = c.Y - c.s * c.fy;
+  cam.style.transform = `translate(${tx}px, ${ty}px) scale(${c.s})`;
+  cam.style.visibility = t >= S[1] - 0.1 && t < S[7] + 0.2 ? 'visible' : 'hidden';
+  screen.style.opacity = 1 - prog(t, S[7] - 0.35, 0.35);
+  const winW = ([a0, a1]) => prog(t, a0 - 0.2, 0.7) * (1 - prog(t, a1 - 0.2, 0.7));
+  const zoom = FOCUS_WIN.reduce((a, w) => Math.max(a, winW(w)), 0);
+
+  BLOCKS.forEach(([b, d, focus]) => {
+    const p = prog(t, S[1] + d, 0.55);
+    let dim = 0;
+    if (focus === 'dock') dim = zoom;
+    else FOCUS_WIN.slice(0, 2).forEach(w => { if (!focus || focus[0] !== w[0]) dim = Math.max(dim, winW(w) * 0.84); });
+    b.style.opacity = p * (1 - dim);
+    b.style.transform = `translateY(${(1 - p) * 24}px)`;
+  });
+
+  DRAW.forEach(d => d.draw(t));
+  startBtn.style.transform = `scale(${pressScale(t, TSTART)})`;
+
+  // Satır kayar
+  const off = 262 * (prog(t, SWIPE[0], 0.6) + prog(t, SWIPE[1], 0.6));
+  rowIn.style.transform = `translateX(${-off}px)`;
+  ccards[2].style.transform = `scale(${pressScale(t, TCARD)})`;
+
+  // Rehberli akış
+  const ip = prog(t, TINTRO, 0.55) * (1 - prog(t, S[6] - 0.05, 0.5));
+  intro.style.transform = `translateY(${(1 - ip) * 844}px)`; intro.style.visibility = ip > 0.001 ? 'visible' : 'hidden';
+  goBtn.style.transform = `scale(${pressScale(t, TGO)})`;
+  const fp = prog(t, TFLOW, 0.45) * (1 - prog(t, S[6] - 0.05, 0.5));
+  flow.style.opacity = fp; flow.style.visibility = fp > 0.001 ? 'visible' : 'hidden';
+  flow.style.transform = `translateY(${(1 - prog(t, TFLOW, 0.45)) * 20 + prog(t, S[6] - 0.05, 0.5) * 844}px)`;
+  bars[0].style.width = (85 * prog(t, TFLOW + 0.2, 0.4)) + 'px';
+  bars[1].style.width = (85 * prog(t, TSTEP2, 0.4)) + 'px';
+  stepLabel.textContent = t < TSTEP2 ? 'ÜÇ İYİ ŞEY · 1/4' : 'ÜÇ İYİ ŞEY · 2/4';
+  const out1 = prog(t, TSTEP2 - 0.1, 0.25);
+  q1w.forEach((w, i) => { const p = prog(t, TFLOW + 0.3 + i * 0.07, 0.55); w.style.opacity = p * (1 - out1); w.style.transform = `translateY(${(1 - p) * 10}px)`; });
+  typeAt(a1, t); a1.el.style.opacity = 1 - out1;
+  q2w.forEach((w, i) => { const p = prog(t, TSTEP2 + 0.1 + i * 0.07, 0.55); w.style.opacity = p; w.style.transform = `translateY(${(1 - p) * 10}px)`; });
+  nextBtn.style.transform = `scale(${pressScale(t, TNEXT)})`;
+
+  // Arama
+  searchBtn.style.transform = `scale(${pressScale(t, TSRCH)})`;
+  const sp = prog(t, TSRCH_IN, 0.4) * (1 - prog(t, S[6] - 0.05, 0.4));
+  search.style.opacity = sp; search.style.visibility = sp > 0.001 ? 'visible' : 'hidden';
+  typeAt(query, t);
+  res.forEach((r, i) => { const p = prog(t, TRES + i * 0.09, 0.45); r.style.opacity = p; r.style.transform = `translateY(${(1 - p) * 10}px)`; });
+
+  // Motif
+  const A = arc(cx, 930*u, 200*u, 26*u);
+  const R = roundRect(tx, ty, 390 * c.s, 844 * c.s, 48 * c.s);
+  let pts = A, a = 0, b = 1, col = C.ink;
+  if (t < S[1] - 0.25) { const p = prog(t, 0.9, 1.0); a = .5 - .5*p; b = .5 + .5*p; }
+  else if (t < S[7] - 0.3) { const m = prog(t, S[1] - 0.25, 0.9); pts = morph(A, R, m); col = mixHex(C.ink, C.lineStrong, m); }
+  else { const m = prog(t, S[7] - 0.3, 0.9); pts = morph(R, A, m); col = mixHex(C.lineStrong, C.ink, m); }
+  motif.setAttribute('d', subPath(pts, a, b));
+  motif.setAttribute('stroke', col);
+
+  // Metinler
+  wordsAt(title, t, 0.2, S[1] - 0.3, cx, 820*u, { stagger: 0.09 });
+  wordsAt(titleSub, t, 1.2, S[1] - 0.3, cx, 1010*u);
+  show(veil, zoom);
+  SCENES.forEach(sc => {
+    const tin = sc.t0 + 0.35, tout = sc.t1 - 0.28;
+    wordsAt(sc.h, t, tin, tout, cx, headY);
+    wordsAt(sc.s, t, tin + 0.35, tout, cx, subY);
+  });
+  place(triple.el, cx, 1640*u);
+  triple.el.style.visibility = t > TRIPLE_T[0] - 0.1 && t < S[7] ? 'visible' : 'hidden';
+  triple.words.forEach((w, i) => {
+    const p = prog(t, TRIPLE_T[i], 0.55), q = prog(t, S[7] - 0.28, 0.28);
+    w.style.opacity = p * (1 - q);
+    w.style.transform = `translateY(${(1 - p) * 30*u - q * 14*u}px)`;
+  });
+  wordsAt(wordmark, t, S[7] + 0.05, null, cx, 820*u, { stagger: 0.09 });
+  wordsAt(store, t, S[7] + 0.9, null, cx, 1010*u);
+  place(endLabel, cx, 1090*u); endLabel.style.opacity = t >= S[7] ? prog(t, S[7] + 1.1, 0.5) : 0;
+};
+render(0);
+</script>
+</body>
+</html>
