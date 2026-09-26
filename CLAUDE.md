@@ -19,6 +19,7 @@ Rehberli akışlarda süre bilgisi ("2 dakika") serbest.
 | `02_veri_modeli.md` | Varlıklar, alanlar, CloudKit kuralları |
 | `AUDIT.md` | v3 kod tabanı envanteri ve riskler (R1–R17) |
 | `MIGRATION.md`, `ADR-001.md` | Taşıma ve mimari kararları (yazıldıkça) |
+| `06_premium_his.md` | Hareket, haptik, müzik ve tanıtım videosu kuralları |
 
 ## Sabit kimlikler — asla değiştirilmez
 

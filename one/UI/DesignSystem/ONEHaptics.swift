@@ -290,6 +290,19 @@ enum ONEHaptics {
         gen.impactOccurred(intensity: 0.85)
     }
 
+    /// ONE 2.0 kapanış mührü — tek, yumuşak vuruş (Seal kartı).
+    ///
+    /// v3'ün `saveRitual` → `saveRitualPeak` → `saveRitualSeal` →
+    /// `songSaved` dizisinin karşılığı değil, yerine geçen şey: ONE 2.0
+    /// kapanışında tek dokunuş var. Mührün girişiyle aynı anda çağrılır
+    /// (`one2SealEntrance`).
+    static func one2Seal() {
+        guard isEnabled else { return }
+        let gen = UIImpactFeedbackGenerator(style: .soft)
+        gen.prepare()
+        gen.impactOccurred(intensity: 0.7)
+    }
+
     /// Rozet açıldı — başarı bildirimi.
 
 
