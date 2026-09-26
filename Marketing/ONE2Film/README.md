@@ -47,6 +47,7 @@ Her filmin sahnesi `screens/<ad>.html`, partisyonu `screens/<ad>.score.json`.
 | Sözler | `ONE2_sozler_9x16.mp4` |
 | Keşfet | `ONE2_kesfet_9x16.mp4` |
 | Yolculuk | `ONE2_yolculuk_9x16.mp4` |
+| Eğilimler | `ONE2_egilimler_9x16.mp4` |
 
 ```bash
 cd Marketing/ONE2Film

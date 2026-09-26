@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>ONE 2.0 · Eğilimler</title>
+<link rel="stylesheet" href="../kit/base.css">
+<style>
+  /* Ekran: 390pt genişlik (docs/one2/design-system › ScreenEgilimler, MoodTrend; UX-9). */
+  #cam { position:absolute; left:0; top:0; transform-origin:0 0; }
+  #screen { position:absolute; left:0; top:0; width:390px; height:844px; overflow:hidden; border-radius:48px; background:var(--ground); }
+  #content { position:absolute; left:0; top:0; width:390px; }
+  .blk { position:absolute; }
+  .pill { background:var(--raised); border-radius:999px; display:flex; align-items:center; justify-content:center; }
+  .ico { fill:none; stroke:var(--ink); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .blk svg { position:static; }
+  .card { position:absolute; left:16px; width:358px; background:var(--surface); border-radius:28px; }
+  .card h3 { position:absolute; left:20px; top:18px; margin:0; font:700 20px/26px var(--sans); color:var(--ink); letter-spacing:-.01em; }
+  .card .subt { position:absolute; left:20px; top:46px; font:500 15px var(--sans); color:var(--ink-muted); }
+  .card .tr { position:absolute; right:20px; top:22px; font:500 14px/18px var(--mono); letter-spacing:.08em; color:var(--ink-faint); }
+  .plus { position:absolute; right:20px; top:18px; font:500 11px/14px var(--mono); letter-spacing:.15em; color:var(--ink); background:var(--raised); padding:5px 10px; border-radius:999px; }
+  .mono { font:500 11px/14px var(--mono); letter-spacing:.2em; color:var(--ink-muted); }
+  .tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font:600 10px var(--sans); color:var(--ink); width:66px; height:48px; border-radius:24px; }
+  .tab.on { background:var(--ground); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../kit/core.js"></script>
+<script>
+const { W, H, u, C, BEAT, prog, lerp, vis, mixHex, svg, layerSVG, div, place, show,
+        headline, wordsAt, label, EVENTS, roundRect, arc, morph, subPath } = ONE;
+const B = BEAT;
+const S = [0, 4, 9, 14, 19, 24, 29, 33, 36].map(b => b * B);
+window.DURATION = S[8];
+const cx = W / 2;
+// Duygu aileleri (tokens.json › emo-*, gece)
+const EMO = { huzur: '#6FA684', nese: '#E9AE2E', yorgun: '#8D96A3', kaygi: '#A27FBA' };
+const trNum = (v, d = 1) => v.toFixed(d).replace('.', ',');
+const trInt = v => Math.round(v).toLocaleString('tr-TR');
+
+const ICON = {
+  chevron: '<path d="M7 10l5 5 5-5"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+  quote: '<path d="M7 17c-1.5 0-2.5-1.2-2.5-2.8 0-2.6 1.6-5 4-6.2M15.5 17c-1.5 0-2.5-1.2-2.5-2.8 0-2.6 1.6-5 4-6.2"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  book: '<path d="M12 6.5C10 5 7.5 4.6 4 5v13c3.5-.4 6 0 8 1.5 2-1.5 4.5-1.9 8-1.5V5c-3.5-.4-6 0-8 1.5zM12 6.5V19"/>',
+  chart: '<path d="M6 19V11M10 19V6M14 19v-9M18 19v-5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+};
+const ico = (name, size = 22, color) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="ico"${color ? ` style="stroke:${color}"` : ''}>${ICON[name]}</svg>`;
+
+// Yolculuk filmiyle aynı Eylül verisi (screens/yolculuk.html › dayData)
+function hash(n) { let x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+const SEPT_FIXED = { 21: 4, 22: 3, 23: 4, 24: 3, 25: 4 };
+function septScore(d) {
+  if (SEPT_FIXED[d]) return SEPT_FIXED[d];
+  if (d === 2 || d === 14) return null;
+  return Math.max(1, Math.min(5, Math.round(3.2 + 1.5 * Math.sin((8 * 31 + d) / 9) + (hash(d * 3 + 8) - 0.5) * 1.8)));
+}
+const POINTS = [];
+for (let d = 12; d <= 25; d++) { const s = septScore(d); if (s) POINTS.push({ d, s }); }
+const AVG = POINTS.reduce((a, p) => a + p.s, 0) / POINTS.length;
+
+// ------------------------------------------------------------------
+// Ekran
+// ------------------------------------------------------------------
+const cam = div('', {}, '', ONE.stage); cam.id = 'cam';
+const screen = div('', {}, '', cam); screen.id = 'screen';
+const content = div('', {}, '', screen); content.id = 'content';
+const blk = (x, y, w, h, html = '', style = {}, parent = content) => div('blk', Object.assign({ left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' }, style), html, parent);
+
+const topbar = blk(0, 54, 390, 150);
+div('blk pill', { left: '266px', top: '0', height: '48px', width: '108px', gap: '4px', font: '600 16px var(--sans)', color: C.ink }, '14 gün' + ico('chevron', 18), topbar);
+div('blk', { left: '16px', top: '58px', font: '700 44px/48px var(--sans)', letterSpacing: '-.025em', color: C.ink }, 'eğilimler', topbar);
+div('blk mono', { left: '0', width: '390px', textAlign: 'center', top: '124px' }, 'GENEL İÇGÖRÜLER', topbar);
+
+// Mood çizgisi
+const moodCard = blk(16, 206, 358, 220, '', {}); moodCard.className = 'card';
+moodCard.innerHTML = `<h3>Mood</h3><span class="tr avg">ORT 0,0</span><span class="subt">Son 14 gün</span>`;
+const avgEl = moodCard.querySelector('.avg');
+const chart = svg('svg', { width: 358, height: 220, viewBox: '0 0 358 220', style: 'position:absolute;left:0;top:0' }); moodCard.appendChild(chart);
+const CX0 = 48, CX1 = 334, CY = s => 196 - (s - 1) * 26;   // 1 → 196, 5 → 92
+[1, 2, 3, 4, 5].forEach(s => {
+  svg('line', { x1: CX0, x2: CX1, y1: CY(s), y2: CY(s), stroke: C.line, 'stroke-width': 1 }, chart);
+  const tx = svg('text', { x: 24, y: CY(s) + 4, 'font-family': 'IBM Plex Mono', 'font-size': 11, fill: C.inkFaint, 'text-anchor': 'middle' }, chart); tx.textContent = s;
+});
+const px = d => lerp(CX0, CX1, (d - 12) / 13);
+const trend = svg('path', { d: 'M' + POINTS.map(p => `${px(p.d)} ${CY(p.s)}`).join(' L'), fill: 'none', stroke: C.inkMuted, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', pathLength: 1, 'stroke-dasharray': '1 1' }, chart);
+const dots = POINTS.map((p, i) => {
+  const today = p.d === 25;
+  const g = svg('g', { transform: `translate(${px(p.d)} ${CY(p.s)})` }, chart);
+  if (today) svg('circle', { r: 11, fill: 'none', stroke: C.ink, 'stroke-width': 2 }, g);
+  svg('circle', { r: today ? 7 : 5.5, fill: C.score[p.s - 1], stroke: C.surface, 'stroke-width': 2.5 }, g);
+  return { g, x: px(p.d), y: CY(p.s), i };
+});
+
+// Duygu dağılımı (ONE+)
+const emoCard = blk(16, 438, 358, 212); emoCard.className = 'card';
+emoCard.innerHTML = `<h3>Bu ayın duyguları</h3><span class="plus">ONE+</span><span class="subt">Check-in'lerde en sık seçtiklerin</span>`;
+// Son iki hafta zor geçti (ORT 2,5), son günler yükselişte: oranlar ve etiketler bununla tutarlı.
+const EMOS = [['Yorgunluk', 32, EMO.yorgun], ['Huzur', 28, EMO.huzur], ['Kaygı', 22, EMO.kaygi], ['Neşe', 18, EMO.nese]];
+const bars = EMOS.map(([name, pct, col], i) => {
+  const y = 86 + i * 30;
+  div('blk', { left: '20px', top: y + 'px', width: '90px', font: '500 15px var(--sans)', color: C.ink }, name, emoCard);
+  const track = div('blk', { left: '112px', top: (y + 6) + 'px', width: '170px', height: '8px', borderRadius: '4px', background: C.raised }, '', emoCard);
+  const fill = div('blk', { left: '0', top: '0', height: '8px', borderRadius: '4px', background: col, width: '0' }, '', track);
+  const val = div('blk', { left: '292px', top: (y + 1) + 'px', width: '46px', textAlign: 'right', font: '500 13px var(--mono)', color: C.inkMuted }, '%0', emoCard);
+  return { fill, val, pct };
+});
+
+// Etiketler ve ruh hali (ONE+) — InsightsEngine.causeRelations
+const causeCard = blk(16, 662, 358, 218); causeCard.className = 'card';
+causeCard.innerHTML = `<h3>Etiketler ve ruh halin</h3><span class="plus">ONE+</span><span class="subt">Genel ortalaman ${trNum(AVG)}</span>`;
+const AX0 = 116, AX1 = 326, AXv = v => lerp(AX0, AX1, (v - 1) / 4);
+const cz = svg('svg', { width: 358, height: 218, viewBox: '0 0 358 218', style: 'position:absolute;left:0;top:0' }); causeCard.appendChild(cz);
+const avgLine = svg('line', { x1: AXv(AVG), x2: AXv(AVG), y1: 80, y2: 196, stroke: C.lineStrong, 'stroke-width': 1.5, 'stroke-dasharray': '4 4' }, cz);
+[1, 3, 5].forEach(v => { const tx = svg('text', { x: AXv(v), y: 210, 'font-family': 'IBM Plex Mono', 'font-size': 11, fill: C.inkFaint, 'text-anchor': 'middle' }, cz); tx.textContent = v; });
+const CAUSES = [['Hareket', 3.6], ['Doğa', 3.4], ['İş', 2.1], ['Uyku', 1.9]];
+const cdots = CAUSES.map(([name, v], i) => {
+  const y = 94 + i * 28;
+  const tx = svg('text', { x: 20, y: y + 5, 'font-family': 'Plus Jakarta Sans', 'font-weight': 500, 'font-size': 15, fill: C.ink }, cz); tx.textContent = name;
+  svg('line', { x1: AX0, x2: AX1, y1: y, y2: y, stroke: C.line, 'stroke-width': 1 }, cz);
+  const g = svg('g', {}, cz);
+  svg('circle', { r: 7, fill: C.score[Math.round(v) - 1], stroke: C.surface, 'stroke-width': 2.5 }, g);
+  const vt = svg('text', { x: 14, y: 4, 'font-family': 'IBM Plex Mono', 'font-size': 12, fill: C.inkMuted }, g); vt.textContent = trNum(v);
+  return { g, y, v };
+});
+
+// Yazma istatistikleri
+const writeCard = blk(16, 892, 358, 170); writeCard.className = 'card';
+writeCard.innerHTML = `<h3>Yazma</h3><span class="subt">Mart'tan bu yana</span>`;
+const STATS = [[214, 'GİRDİ'], [23480, 'KELİME'], [21, 'EN UZUN SERİ']];
+const nums = STATS.map(([v, lab], i) => {
+  const x = [20, 102, 236][i];
+  const n = div('blk', { left: x + 'px', top: '86px', font: '500 30px/38px var(--mono)', color: C.ink, letterSpacing: '-.02em' }, '0', writeCard);
+  div('blk mono', { left: x + 'px', top: '130px', letterSpacing: '.15em', color: C.inkFaint }, lab, writeCard);
+  return { n, v };
+});
+
+// Dock + kenar (viewport'a sabit)
+const edge = blk(0, 620, 390, 224, '', { background: `linear-gradient(to bottom, rgba(0,0,0,0), ${C.ground} 62%)` }, screen);
+const dock = blk(0, 688, 390, 124, '', {}, screen);
+div('blk pill', { left: '159px', top: '0', width: '72px', height: '56px', background: C.primary }, ico('plus', 26, C.onPrimary), dock);
+const tabbar = div('blk', { left: '16px', top: '64px', width: '358px', height: '60px', borderRadius: '30px', background: 'rgba(42,42,46,0.8)', backdropFilter: 'blur(20px)',
+  border: `1px solid ${C.line}`, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 6px' }, '', dock);
+[['sun', 'Bugün'], ['quote', 'Sözler'], ['compass', 'Keşfet'], ['book', 'Yolculuk'], ['chart', 'Eğilimler']].forEach(([ic, name], i) => div('tab' + (i === 4 ? ' on' : ''), {}, ico(ic, 20) + name, tabbar));
+
+// ------------------------------------------------------------------
+// Katmanlar ve metinler
+// ------------------------------------------------------------------
+const veil = div('abs', { width: W + 'px', height: (H * 0.36) + 'px', top: (H * 0.64) + 'px', background: `linear-gradient(to bottom, rgba(0,0,0,0) 0%, ${C.ground} 38%)` });
+const front = layerSVG();
+const motif = svg('path', { fill: 'none', 'stroke-width': 3*u, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, front);
+
+const title = headline('Eğilimler.', { size: 150, width: 1000 });
+title.el.style.fontWeight = 800; title.el.style.letterSpacing = '-0.035em';
+const titleSub = headline('Günlerinin ardındaki desen.', { size: 44, cls: 'sub' });
+const wordmark = headline('ONE', { size: 210, width: 900 });
+wordmark.el.style.fontWeight = 800; wordmark.el.style.letterSpacing = '-0.03em';
+wordmark.el.innerHTML = ['O', 'N', 'E'].map(l => `<span class="w">${l}</span>`).join('');
+wordmark.words = [...wordmark.el.querySelectorAll('.w')];
+const store = headline("App Store'da", { size: 32, cls: 'sub' });
+const endLabel = label('EĞİLİMLER', 26);
+
+const headY = 1590*u, subY = 1672*u;
+const SCENES = [
+  [S[1], 'Her check-in bir iz bırakır.', 'Eğilimler bu izleri okunur bir resme çevirir.'],
+  [S[2], 'Ruh halin, gün gün.', 'Son on dört gün, tek bir çizgide.'],
+  [S[3], 'Duyguların, oranlarıyla.', "Check-in'lerde en sık seçtiklerin, yüzdeleriyle."],
+  [S[4], 'Neyin iyi geldiğini gör.', 'Etiketlerine göre ortalaman, yan yana.'],
+  [S[5], 'Yazdığın her şey sayılır.', 'Girdiler, kelimeler ve en uzun serin.'],
+].map(([t0, h, s], i) => ({ t0, t1: S[i + 2], h: headline(h), s: headline(s, { size: 36, cls: 'sub' }) }));
+const triple = headline('Kaydet. Gör. Anla.', { size: 64, width: 1000 });
+const TRIPLE_T = [30, 31, 32].map(b => b * B);
+
+// ------------------------------------------------------------------
+// Kamera (çerçeve alt kenarı başlık bandına düşmez: STYLE.md)
+// ------------------------------------------------------------------
+const K = {
+  full:  { s: 1.6,  fx: 195, fy: 422, X: cx, Y: 830*u, scroll: 0 },
+  mood:  { s: 2.45, fx: 195, fy: 316, X: cx, Y: 720*u, scroll: 0 },
+  emo:   { s: 2.45, fx: 195, fy: 544, X: cx, Y: 740*u, scroll: 0 },
+  cause: { s: 2.45, fx: 195, fy: 471, X: cx, Y: 820*u, scroll: 300 },
+  write: { s: 2.45, fx: 195, fy: 616, X: cx, Y: 760*u, scroll: 360 },
+};
+const CAMKEYS = [[0, 'full'], [S[2], 'mood'], [S[3], 'emo'], [S[4], 'cause'], [S[5], 'write'], [S[6], 'full']];
+function camera(t) {
+  let k = 0;
+  for (let i = 0; i < CAMKEYS.length; i++) if (t >= CAMKEYS[i][0] - 0.2) k = i;
+  const cur = K[CAMKEYS[k][1]];
+  if (k === 0) return Object.assign({}, cur);
+  const prev = K[CAMKEYS[k - 1][1]], m = prog(t, CAMKEYS[k][0] - 0.2, 0.95);
+  const o = {};
+  for (const key in cur) o[key] = lerp(prev[key], cur[key], m);
+  return o;
+}
+
+// Zamanlar
+const TLINE = S[2] + 0.7, TBARS = S[3] + 0.8, TCAUSE = S[4] + 0.8, TNUMS = S[5] + 0.7, TLAND = 26.5 * B;   // sayılar yerine oturunca müzik çözülür
+EVENTS.push({ type: 'paper', t: S[1] + 0.2 }, { type: 'paper', t: S[4] - 0.15 }, { type: 'paper', t: S[5] - 0.15 }, { type: 'paper', t: S[6] + 0.05 },
+  ...dots.map((d, i) => ({ type: 'key', t: TLINE + 0.12 + i * 0.1 })));
+const FOCUS = [[S[2], S[3], moodCard], [S[3], S[4], emoCard], [S[4], S[5], causeCard], [S[5], S[6], writeCard]];
+const CARDS = [moodCard, emoCard, causeCard, writeCard];
+
+// ------------------------------------------------------------------
+// Kare
+// ------------------------------------------------------------------
+window.render = function (t) {
+  const c = camera(t);
+  const tx = c.X - c.s * c.fx, ty = c.Y - c.s * c.fy;
+  cam.style.transform = `translate(${tx}px, ${ty}px) scale(${c.s})`;
+  content.style.transform = `translateY(${-c.scroll}px)`;
+  cam.style.visibility = t >= S[1] - 0.1 && t < S[7] + 0.2 ? 'visible' : 'hidden';
+  screen.style.opacity = 1 - prog(t, S[7] - 0.35, 0.35);
+  const winW = (a0, a1) => prog(t, a0 - 0.2, 0.7) * (1 - prog(t, a1 - 0.2, 0.7));
+  const zoom = FOCUS.reduce((a, [a0, a1]) => Math.max(a, winW(a0, a1)), 0);
+
+  // Kurulum + odak dışı sönme
+  [[topbar, 0.25], [moodCard, 0.37], [emoCard, 0.49], [causeCard, 0.61], [writeCard, 0.7]].forEach(([b, d]) => {
+    const p = prog(t, S[1] + d, 0.55);
+    let dim = 0;
+    FOCUS.forEach(([a0, a1, card]) => { if (card !== b) dim = Math.max(dim, winW(a0, a1) * 0.84); });
+    b.style.opacity = p * (1 - dim); b.style.transform = `translateY(${(1 - p) * 24}px)`;
+  });
+  [edge, dock].forEach(b => { b.style.opacity = prog(t, S[1] + 0.6, 0.55) * (1 - zoom); });
+
+  // Mood çizgisi: çizilir, noktalar sırayla, ortalama sayar
+  const lp = prog(t, TLINE, 1.6);
+  trend.setAttribute('stroke-dashoffset', 1 - lp);
+  dots.forEach(d => {
+    const p = prog(t, TLINE + 0.12 + d.i * 0.1, 0.3);
+    d.g.setAttribute('transform', `translate(${d.x} ${d.y}) scale(${lerp(0.3, 1, p)})`);
+    d.g.setAttribute('opacity', p);
+  });
+  avgEl.textContent = 'ORT ' + trNum(AVG * prog(t, TLINE, 1.6));
+
+  // Duygu çubukları
+  bars.forEach((b, i) => {
+    const p = prog(t, TBARS + i * 0.14, 0.8);
+    b.fill.style.width = (170 * b.pct / 32 * p) + 'px';
+    b.val.textContent = '%' + Math.round(b.pct * p);
+  });
+
+  // Etiket noktaları: ortalamadan kendi yerlerine kayar
+  avgLine.setAttribute('opacity', prog(t, TCAUSE - 0.3, 0.4));
+  cdots.forEach((d, i) => {
+    const p = prog(t, TCAUSE + i * 0.16, 0.7);
+    d.g.setAttribute('transform', `translate(${lerp(AXv(AVG), AXv(d.v), p)} ${d.y})`);
+    d.g.setAttribute('opacity', prog(t, TCAUSE - 0.2 + i * 0.16, 0.3));
+  });
+
+  // Yazma sayıları
+  nums.forEach((n, i) => {
+    const p = prog(t, TNUMS + i * 0.12, TLAND - TNUMS - i * 0.12);
+    n.n.textContent = trInt(n.v * p);
+  });
+
+  // Motif
+  const A = arc(cx, 930*u, 200*u, 26*u);
+  const R = roundRect(tx, ty, 390 * c.s, 844 * c.s, 48 * c.s);
+  let pts = A, a = 0, b = 1, col = C.ink;
+  if (t < S[1] - 0.25) { const p = prog(t, 0.9, 1.0); a = .5 - .5*p; b = .5 + .5*p; }
+  else if (t < S[7] - 0.3) { const m = prog(t, S[1] - 0.25, 0.9); pts = morph(A, R, m); col = mixHex(C.ink, C.lineStrong, m); }
+  else { const m = prog(t, S[7] - 0.3, 0.9); pts = morph(R, A, m); col = mixHex(C.lineStrong, C.ink, m); }
+  motif.setAttribute('d', subPath(pts, a, b));
+  motif.setAttribute('stroke', col);
+
+  // Metinler
+  wordsAt(title, t, 0.2, S[1] - 0.3, cx, 820*u, { stagger: 0.09 });
+  wordsAt(titleSub, t, 1.2, S[1] - 0.3, cx, 1010*u);
+  show(veil, zoom);
+  SCENES.forEach(sc => {
+    const tin = sc.t0 + 0.35, tout = sc.t1 - 0.28;
+    wordsAt(sc.h, t, tin, tout, cx, headY);
+    wordsAt(sc.s, t, tin + 0.35, tout, cx, subY);
+  });
+  place(triple.el, cx, 1640*u);
+  triple.el.style.visibility = t > TRIPLE_T[0] - 0.1 && t < S[7] ? 'visible' : 'hidden';
+  triple.words.forEach((w, i) => {
+    const p = prog(t, TRIPLE_T[i], 0.55), q = prog(t, S[7] - 0.28, 0.28);
+    w.style.opacity = p * (1 - q);
+    w.style.transform = `translateY(${(1 - p) * 30*u - q * 14*u}px)`;
+  });
+  wordsAt(wordmark, t, S[7] + 0.05, null, cx, 820*u, { stagger: 0.09 });
+  wordsAt(store, t, S[7] + 0.9, null, cx, 1010*u);
+  place(endLabel, cx, 1090*u); endLabel.style.opacity = t >= S[7] ? prog(t, S[7] + 1.1, 0.5) : 0;
+};
+render(0);
+</script>
+</body>
+</html>

@@ -122,7 +122,7 @@ içerikten alınır: `one/ONE2/Content/Bundled/*.tr.json` ve bileşen kartları.
 | 2 | Sözler | `screens/sozler.html` |
 | 3 | Keşfet | `screens/kesfet.html` |
 | 4 | Yolculuk | `screens/yolculuk.html` |
-| 5 | Eğilimler | — |
+| 5 | Eğilimler | `screens/egilimler.html` |
 
 ## Kontrol
 
