@@ -48,6 +48,7 @@ Rengi `ink`. Çerçeve olduğunda `line-strong`'a döner. Yalnız mühür anınd
 - Tek eğri: `cubic-bezier(0.2, 0.8, 0.2, 1)`. Sabit hızlı hareket yok,
   zıplama yok.
 - Basış: 0.97, 120ms iniş, 180ms dönüş. Seçimden sonra 300ms bekleme.
+- Çerçevenin alt kenarı başlık bandına (1540–1720) düşmez: `Y + (844 − fy) × s` ya 1520'nin altında ya 1720'nin üstünde kalır.
 - Kamera: odak noktasına 0.95 sn'de yaklaşır (ölçek 1.6 → 2.3–2.55). Odak
   dışındaki bloklar %16'ya söner. Dock yakınlaşmada tamamen kaybolur.
 - Ritim: açılış ve kurulum hızlı, odak sahneleri orta hızda, kapanış yavaş.
@@ -120,7 +121,7 @@ içerikten alınır: `one/ONE2/Content/Bundled/*.tr.json` ve bileşen kartları.
 | 1 | Bugün | `screens/bugun.html` |
 | 2 | Sözler | `screens/sozler.html` |
 | 3 | Keşfet | `screens/kesfet.html` |
-| 4 | Yolculuk | — |
+| 4 | Yolculuk | `screens/yolculuk.html` |
 | 5 | Eğilimler | — |
 
 ## Kontrol

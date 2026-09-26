@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>ONE 2.0 · Yolculuk</title>
+<link rel="stylesheet" href="../kit/base.css">
+<style>
+  /* Ekran: 390pt genişlik (docs/one2/design-system › ScreenYolculuk, HistoryCard; UX-9). */
+  #cam { position:absolute; left:0; top:0; transform-origin:0 0; }
+  #screen { position:absolute; left:0; top:0; width:390px; height:844px; overflow:hidden; border-radius:48px; background:var(--ground); }
+  .blk { position:absolute; }
+  .pill { background:var(--raised); border-radius:999px; display:flex; align-items:center; justify-content:center; }
+  .ico { fill:none; stroke:var(--ink); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .blk svg { position:static; }
+  .dayh { position:absolute; left:16px; font:600 17px var(--sans); color:var(--ink-muted); }
+  .hcard { position:absolute; left:16px; width:358px; background:var(--surface); border-radius:28px; box-sizing:border-box; padding:18px 20px; }
+  .hcard h3 { margin:0; font:700 20px/26px var(--sans); color:var(--ink); letter-spacing:-.01em; }
+  .hcard .tm { position:absolute; right:20px; top:22px; font:500 14px/18px var(--mono); letter-spacing:.08em; color:var(--ink-faint); }
+  .hcard p { margin:10px 0 0; font:400 17px/25px var(--serif); color:var(--ink-muted); }
+  .mini { margin:10px 0 0; padding-left:12px; border-left:2px solid var(--line-strong); font:italic 400 16px/22px var(--serif); color:var(--ink-muted); }
+  .mood { display:inline-flex; align-items:center; gap:10px; margin-top:12px; height:40px; padding:0 14px 0 6px; border-radius:999px; border:1px solid var(--line-strong); font:600 15px var(--sans); color:var(--ink); }
+  .mood i { font-style:normal; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font:500 13px var(--mono); }
+  .row { height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; font:500 16px var(--sans); color:var(--ink); }
+  .tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font:600 10px var(--sans); color:var(--ink); width:66px; height:48px; border-radius:24px; }
+  .tab.on { background:var(--ground); }
+  .mono { font:500 11px/14px var(--mono); letter-spacing:.2em; color:var(--ink-muted); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../kit/core.js"></script>
+<script>
+const { W, H, u, C, BEAT, prog, lerp, vis, mixHex, svg, layerSVG, div, place, show,
+        headline, wordsAt, label, EVENTS, roundRect, arc, morph, subPath } = ONE;
+const B = BEAT;
+const S = [0, 4, 9, 14, 19, 24, 29, 33, 36].map(b => b * B);
+window.DURATION = S[8];
+const cx = W / 2;
+
+const ICON = {
+  chevron: '<path d="M7 10l5 5 5-5"/>',
+  chevL: '<path d="M14 7l-5 5 5 5"/>',
+  filter: '<path d="M4 7h16M7 12h10M10 17h4"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
+  check: '<path d="M5 12.5l4.2 4.2L19 7"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+  quote: '<path d="M7 17c-1.5 0-2.5-1.2-2.5-2.8 0-2.6 1.6-5 4-6.2M15.5 17c-1.5 0-2.5-1.2-2.5-2.8 0-2.6 1.6-5 4-6.2"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  book: '<path d="M12 6.5C10 5 7.5 4.6 4 5v13c3.5-.4 6 0 8 1.5 2-1.5 4.5-1.9 8-1.5V5c-3.5-.4-6 0-8 1.5zM12 6.5V19"/>',
+  chart: '<path d="M6 19V11M10 19V6M14 19v-9M18 19v-5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+};
+const ico = (name, size = 22, color) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="ico"${color ? ` style="stroke:${color}"` : ''}>${ICON[name]}</svg>`;
+const moodPill = (n, txt) => `<span class="mood"><i style="background:${C.score[n - 1]};color:${C.onScore[n - 1]}">${n}</i>${txt}</span>`;
+
+// Deterministik örnek veri: gün → skor (1–5), yazı var mı
+function hash(n) { let x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+// Bu hafta Bugün filmiyle aynı: 21–25 Eylül dolu (23'ü sonradan dolduruldu).
+const SEPT_FIXED = { 21: 4, 22: 3, 23: 4, 24: 3, 25: 4 };
+const EMPTY = { 8: [2, 14] };            // ay → boş günler
+function dayData(month, d) {           // month: 0–11 (2026), d: 1–31
+  if (month === 8 && SEPT_FIXED[d]) return { score: SEPT_FIXED[d], wrote: d !== 22 };
+  if ((EMPTY[month] || []).includes(d) || (month !== 8 && hash(month * 40 + d) < 0.07)) return null;
+  const score = Math.max(1, Math.min(5, Math.round(3.2 + 1.5 * Math.sin((month * 31 + d) / 9) + (hash(d * 3 + month) - 0.5) * 1.8)));
+  return { score, wrote: hash(d * 7 + month * 13) > 0.45 };
+}
+
+// ------------------------------------------------------------------
+// Ekran
+// ------------------------------------------------------------------
+const cam = div('', {}, '', ONE.stage); cam.id = 'cam';
+const screen = div('', {}, '', cam); screen.id = 'screen';
+const blk = (x, y, w, h, html = '', style = {}, parent = screen) => div('blk', Object.assign({ left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' }, style), html, parent);
+
+// Akış (Günler)
+const feed = blk(0, 170, 390, 674, '', { overflow: 'hidden' });
+const feedIn = blk(0, 0, 390, 1200, '', {}, feed);
+const F = (html) => { feedIn.insertAdjacentHTML('beforeend', html); return feedIn.lastElementChild; };
+F(`<div class="dayh" style="top:14px">Bugün, 25 Eyl ›</div>`);
+F(`<div class="hcard" style="top:44px"><h3>Mood check-in</h3><span class="tm">21:40</span>${moodPill(4, 'İyi · Huzurlu')}</div>`);
+const sozCard = F(`<div class="hcard" style="top:164px"><h3>Söze yazı</h3><span class="tm">21:52</span><div class="mini">Yavaş yürüyen tez varır.</div><p>Bugün her şeye değil, yalnızca birine yetiştim.</p></div>`);
+F(`<div class="hcard" style="top:340px"><h3>Üç iyi şey</h3><span class="tm">22:05</span><p>Sabah kahvemi balkonda içtim.</p></div>`);
+F(`<div class="dayh" style="top:468px">Dün, 24 Eyl ›</div>`);
+F(`<div class="hcard" style="top:498px"><h3>Akşam refleksiyonu</h3><span class="tm">22:31</span><p>Toplantı uzadı ama yürüyerek döndüm. Kafam boşaldı.</p></div>`);
+F(`<div class="dayh" style="top:652px">23 Eyl Çarşamba ›</div>`);
+F(`<div class="hcard" style="top:682px"><h3>Haftalık tema</h3><span class="tm">10:14</span><div class="mini">Günün hangi anında nefes aldın?</div><p>Öğle arası, merdivende üç dakika.</p></div>`);
+F(`<div class="dayh" style="top:862px">22 Eyl Salı ›</div>`);
+F(`<div class="hcard" style="top:892px"><h3>Mood check-in</h3><span class="tm">19:08</span>${moodPill(3, 'İdare · Yorgun')}</div>`);
+
+// Üst çubuk ve başlık
+const topbar = blk(0, 54, 390, 110);
+const pillTxt = div('blk pill', { left: '158px', top: '0', height: '48px', width: '108px', gap: '4px', font: '600 16px var(--sans)', color: C.ink }, '<span class="pt">Günler</span>' + ico('chevron', 18), topbar);
+const pt = pillTxt.querySelector('.pt');
+div('blk pill', { left: '274px', top: '0', width: '48px', height: '48px' }, ico('filter', 22), topbar);
+div('blk pill', { left: '326px', top: '0', width: '48px', height: '48px' }, ico('search', 22), topbar);
+div('blk', { left: '16px', top: '58px', font: '700 44px/48px var(--sans)', letterSpacing: '-.025em', color: C.ink }, 'yolculuk', topbar);
+
+// Dönem menüsü
+const menu = blk(136, 110, 180, 188, '', { background: C.raised, borderRadius: '22px', zIndex: 6, transformOrigin: '60% 0' });
+const menuRows = ['Günler', 'Haftalar', 'Aylar', 'Yıllar'].map((m, i) => div('row', { position: 'absolute', left: 0, right: 0, top: (8 + i * 43) + 'px' }, `<span>${m}</span><span class="ck"></span>`, menu));
+const setMenuCheck = i => menuRows.forEach((r, k) => { r.querySelector('.ck').innerHTML = k === i ? ico('check', 18) : ''; });
+
+// Ay görünümü: Eylül 2026 (1 Eylül Salı)
+const month = blk(0, 170, 390, 520, '', {});
+div('blk', { left: '16px', top: '14px', font: '700 24px/30px var(--sans)', color: C.ink }, 'Eylül 2026', month);
+['P', 'S', 'Ç', 'P', 'C', 'C', 'P'].forEach((d, i) => div('blk mono', { left: (16 + i * 51.1) + 'px', width: '51px', textAlign: 'center', top: '60px', letterSpacing: '0' }, d, month));
+const mCells = [];
+for (let d = 1; d <= 30; d++) {
+  const idx = d + 0;            // 1 Eylül salı → sütun 1
+  const col = idx % 7, rowI = Math.floor(idx / 7);
+  const x = 16 + col * 51.1, y = 86 + rowI * 66;
+  const data = d <= 25 ? dayData(8, d) : null;
+  const cell = div('blk', { left: x + 'px', top: y + 'px', width: '51px', height: '62px' }, '', month);
+  if (d === 25) Object.assign(cell.style, { border: `1px solid ${C.lineStrong}`, borderRadius: '18px', boxSizing: 'border-box' });
+  div('blk', { left: '0', width: '51px', top: '6px', textAlign: 'center', font: `600 12px var(--sans)`, color: d > 25 ? C.inkFaint : C.inkMuted }, String(d), cell);
+  const dot = div('blk', { left: '18.5px', top: '26px', width: '14px', height: '14px', borderRadius: '50%', boxSizing: 'border-box',
+    background: data ? C.score[data.score - 1] : 'transparent', border: data ? 'none' : `1px solid ${C.line}` }, '', cell);
+  const mark = data && data.wrote ? div('blk', { left: '20.5px', top: '46px', width: '10px', height: '2px', borderRadius: '1px', background: C.ink }, '', cell) : null;
+  mCells.push({ d, dot, mark, data });
+}
+
+// Yıl görünümü: 2026, 12 mini ay
+const year = blk(0, 170, 390, 560, '', {});
+div('blk', { left: '16px', top: '14px', font: '700 24px/30px var(--sans)', color: C.ink }, '2026', year);
+const MONTHS = ['OCA', 'ŞUB', 'MAR', 'NİS', 'MAY', 'HAZ', 'TEM', 'AĞU', 'EYL', 'EKİ', 'KAS', 'ARA'];
+const DAYS_IN = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const FIRST_DOW = [3, 6, 6, 2, 4, 0, 2, 5, 1, 3, 6, 1];   // 2026, pazartesi = 0
+const yDots = [];
+MONTHS.forEach((m, mi) => {
+  const gx = 16 + (mi % 3) * 122, gy = 60 + Math.floor(mi / 3) * 122;
+  div('blk mono', { left: gx + 'px', top: gy + 'px', letterSpacing: '.15em' }, m, year);
+  for (let d = 1; d <= DAYS_IN[mi]; d++) {
+    const idx = FIRST_DOW[mi] + d - 1, c = idx % 7, r = Math.floor(idx / 7);
+    const active = mi >= 2 && (mi < 8 || (mi === 8 && d <= 25));   // Mart'tan bugüne
+    const data = active ? dayData(mi, d) : null;
+    const dot = div('blk', { left: (gx + c * 15) + 'px', top: (gy + 22 + r * 15) + 'px', width: '10px', height: '10px', borderRadius: '50%', boxSizing: 'border-box',
+      background: data ? C.score[data.score - 1] : 'transparent', border: data ? 'none' : `1px solid ${C.line}` }, '', year);
+    yDots.push({ dot, order: mi * 31 + d, data });
+  }
+});
+
+// Girdi detayı + değişim çifti
+const detail = blk(0, 0, 390, 844, '', { background: C.ground, zIndex: 8 });
+div('blk pill', { left: '16px', top: '54px', width: '44px', height: '44px' }, ico('chevL', 22), detail);
+div('blk mono', { left: '16px', top: '118px' }, 'SÖZE YAZI · 25 EYL · 21:52', detail);
+const dk = div('blk', { left: '16px', top: '144px', width: '358px', height: '96px', background: C.raised, borderRadius: '22px' }, '', detail);
+div('blk', { left: '20px', top: '20px', font: 'italic 400 21px/28px var(--serif)', color: C.ink }, 'Yavaş yürüyen tez varır.', dk);
+div('blk mono', { left: '20px', top: '60px', color: C.inkFaint }, 'ATASÖZÜ', dk);
+div('blk', { left: '16px', top: '262px', width: '358px', font: '400 21px/31px var(--serif)', color: C.ink }, 'Bugün her şeye değil, yalnızca birine yetiştim.', detail);
+const pair = blk(16, 350, 358, 250, '', {}, detail);
+div('blk', { left: '0', top: '0', font: '700 20px/26px var(--sans)', color: C.ink }, 'Aynı söze diğer cevapların', pair);
+// Zaman çizgisi: iki cevabı bağlar
+const tl = svg('svg', { width: 30, height: 170, viewBox: '0 0 30 170', style: 'position:absolute;left:0;top:44px' }); pair.appendChild(tl);
+const tlLine = svg('line', { x1: 8, x2: 8, y1: 12, y2: 150, stroke: C.lineStrong, 'stroke-width': 2, 'stroke-linecap': 'round', pathLength: 1, 'stroke-dasharray': '1 1' }, tl);
+const tlDots = [12, 150].map(y => svg('circle', { cx: 8, cy: y, r: 5, fill: C.ink }, tl));
+const ans = [
+  [44, '12 EYL', 'Acele ettiğim her şey yarım kaldı.', C.inkMuted],
+  [182, '25 EYL · BUGÜN', 'Bugün her şeye değil, yalnızca birine yetiştim.', C.ink],
+].map(([y, d, txt, col]) => div('blk', { left: '30px', top: y + 'px', width: '328px' }, `<div class="mono" style="color:${C.inkFaint}">${d}</div><div style="margin-top:6px;font:400 18px/26px var(--serif);color:${col}">${txt}</div>`, pair));
+
+// Dock + kenar
+const edge = blk(0, 620, 390, 224, '', { background: `linear-gradient(to bottom, rgba(0,0,0,0), ${C.ground} 62%)` });
+const dock = blk(0, 688, 390, 124);
+div('blk pill', { left: '159px', top: '0', width: '72px', height: '56px', background: C.primary }, ico('plus', 26, C.onPrimary), dock);
+const tabbar = div('blk', { left: '16px', top: '64px', width: '358px', height: '60px', borderRadius: '30px', background: 'rgba(42,42,46,0.8)', backdropFilter: 'blur(20px)',
+  border: `1px solid ${C.line}`, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 6px' }, '', dock);
+[['sun', 'Bugün'], ['quote', 'Sözler'], ['compass', 'Keşfet'], ['book', 'Yolculuk'], ['chart', 'Eğilimler']].forEach(([ic, name], i) => div('tab' + (i === 3 ? ' on' : ''), {}, ico(ic, 20) + name, tabbar));
+
+// ------------------------------------------------------------------
+// Katmanlar ve metinler
+// ------------------------------------------------------------------
+const veil = div('abs', { width: W + 'px', height: (H * 0.36) + 'px', top: (H * 0.64) + 'px', background: `linear-gradient(to bottom, rgba(0,0,0,0) 0%, ${C.ground} 38%)` });
+const front = layerSVG();
+const motif = svg('path', { fill: 'none', 'stroke-width': 3*u, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, front);
+
+const title = headline('Yolculuk.', { size: 150, width: 1000 });
+title.el.style.fontWeight = 800; title.el.style.letterSpacing = '-0.035em';
+const titleSub = headline('Yazdığın her şey, zamanın içinde.', { size: 44, cls: 'sub' });
+const wordmark = headline('ONE', { size: 210, width: 900 });
+wordmark.el.style.fontWeight = 800; wordmark.el.style.letterSpacing = '-0.03em';
+wordmark.el.innerHTML = ['O', 'N', 'E'].map(l => `<span class="w">${l}</span>`).join('');
+wordmark.words = [...wordmark.el.querySelectorAll('.w')];
+const store = headline("App Store'da", { size: 32, cls: 'sub' });
+const endLabel = label('YOLCULUK', 26);
+
+const headY = 1590*u, subY = 1672*u;
+const SCENES = [
+  [S[1], 'Günlerin, sırasıyla.', "Check-in'ler, günlükler ve sözlere yazdıkların tek akışta."],
+  [S[2], 'Her gün, kendi başlığıyla.', 'Kaydırdıkça geriye gidersin, gün gün.'],
+  [S[3], 'Bir ay, bir bakışta.', 'Her gün bir renk; yazdığın günler işaretli.'],
+  [S[4], 'Bir yıl, renkleriyle.', 'On iki ay, tek ekranda.'],
+  [S[5], 'Değişimini gör.', 'Aynı söze farklı günlerde verdiğin cevaplar, yan yana.'],
+].map(([t0, h, s], i) => ({ t0, t1: S[i + 2], h: headline(h), s: headline(s, { size: 36, cls: 'sub' }) }));
+const triple = headline('Yaz. Biriktir. Geri bak.', { size: 64, width: 1000 });
+const TRIPLE_W = [[0], [1], [2, 3]];
+const TRIPLE_T = [30, 31, 32].map(b => b * B);
+
+// ------------------------------------------------------------------
+// Kamera
+// ------------------------------------------------------------------
+const K = {
+  full:  { s: 1.6,  fx: 195, fy: 422, X: cx, Y: 830*u },
+  feed:  { s: 2.1,  fx: 195, fy: 430, X: cx, Y: 870*u },
+  month: { s: 2.25, fx: 195, fy: 404, X: cx, Y: 760*u },
+  year:  { s: 2.05, fx: 195, fy: 427, X: cx, Y: 640*u },
+  det:   { s: 2.2,  fx: 195, fy: 380, X: cx, Y: 770*u },
+};
+const CAMKEYS = [[0, 'full'], [S[2], 'feed'], [S[3], 'month'], [S[4], 'year'], [S[5], 'det'], [S[6], 'full']];
+function camera(t) {
+  let k = 0;
+  for (let i = 0; i < CAMKEYS.length; i++) if (t >= CAMKEYS[i][0] - 0.2) k = i;
+  const cur = K[CAMKEYS[k][1]];
+  if (k === 0) return Object.assign({}, cur);
+  const prev = K[CAMKEYS[k - 1][1]], m = prog(t, CAMKEYS[k][0] - 0.2, 0.95);
+  const o = {};
+  for (const key in cur) o[key] = lerp(prev[key], cur[key], m);
+  return o;
+}
+
+// Olaylar
+const SCROLL = [S[2] + 0.9, S[2] + 2.3];
+const M1 = { tap: S[3] + 0.45, pick: S[3] + 1.2, idx: 2 };   // Aylar
+const M2 = { tap: S[4] + 0.3, pick: S[4] + 0.95, idx: 3 };   // Yıllar
+const M3 = { tap: S[5] + 0.15, pick: S[5] + 0.65, idx: 0 };  // Günler'e dön
+const TCARD = S[5] + 1.15, TDET = S[5] + 1.3, TPAIR = 26.5 * B;   // değişim çifti: müzik çözülür
+const MENUS = [M1, M2, M3];
+EVENTS.push({ type: 'paper', t: S[1] + 0.2 }, { type: 'paper', t: SCROLL[0] }, { type: 'paper', t: SCROLL[1] },
+  ...MENUS.flatMap(m => [{ type: 'press', t: m.tap }, { type: 'key', t: m.pick }]),
+  { type: 'press', t: TCARD }, { type: 'paper', t: TDET }, { type: 'paper', t: S[6] + 0.05 });
+
+const pressScale = (t, t0) => 1 - 0.03 * (prog(t, t0, 0.12) - prog(t, t0 + 0.12, 0.18));
+const FOCUS_WIN = [[S[2], S[3]], [S[3], S[4]], [S[4], S[5]], [S[5], S[6]]];
+
+// ------------------------------------------------------------------
+// Kare
+// ------------------------------------------------------------------
+window.render = function (t) {
+  const c = camera(t);
+  const tx = c.X - c.s * c.fx, ty = c.Y - c.s * c.fy;
+  cam.style.transform = `translate(${tx}px, ${ty}px) scale(${c.s})`;
+  cam.style.visibility = t >= S[1] - 0.1 && t < S[7] + 0.2 ? 'visible' : 'hidden';
+  screen.style.opacity = 1 - prog(t, S[7] - 0.35, 0.35);
+  const zoom = FOCUS_WIN.reduce((a, [a0, a1]) => Math.max(a, prog(t, a0 - 0.2, 0.7) * (1 - prog(t, a1 - 0.2, 0.7))), 0);
+
+  // Kurulum
+  [[topbar, 0.25], [feed, 0.4], [edge, 0.6], [dock, 0.6]].forEach(([b, d]) => {
+    const p = prog(t, S[1] + d, 0.55);
+    b.style.opacity = p * ((b === dock || b === edge) ? 1 - zoom : 1); b.style.transform = `translateY(${(1 - p) * 24}px)`;
+  });
+
+  // Akış kaydırma (C1) ve geri dönüş (C4)
+  const back = prog(t, M3.pick + 0.1, 0.5);
+  const scroll = 420 * (prog(t, SCROLL[0], 0.8) * 0.5 + prog(t, SCROLL[1], 0.8) * 0.5) * (1 - back);
+  feedIn.style.transform = `translateY(${-scroll}px)`;
+
+  // Dönem menüleri
+  let mo = 0, sel = 0;
+  MENUS.forEach(m => {
+    const o = vis(t, m.tap + 0.1, m.pick + 0.15, 0.25, 0.22);
+    if (o > mo) { mo = o; }
+    if (t >= m.pick) sel = m.idx;
+  });
+  const openM = MENUS.find(m => t >= m.tap && t < m.pick + 0.4);
+  setMenuCheck(openM ? (t < openM.pick ? (MENUS.indexOf(openM) === 0 ? 0 : MENUS[MENUS.indexOf(openM) - 1].idx) : openM.idx) : sel);
+  menu.style.opacity = mo; menu.style.visibility = mo > 0.001 ? 'visible' : 'hidden';
+  menu.style.transform = `scale(${lerp(0.96, 1, mo)})`;
+  pt.textContent = ['Günler', 'Haftalar', 'Aylar', 'Yıllar'][sel];
+  pillTxt.style.transform = `scale(${MENUS.reduce((a, m) => a * pressScale(t, m.tap), 1)})`;
+
+  // Görünümler
+  const mIn = prog(t, M1.pick + 0.15, 0.4), mOut = prog(t, M2.pick + 0.1, 0.3);
+  const yIn = prog(t, M2.pick + 0.15, 0.4), yOut = prog(t, M3.pick + 0.05, 0.3);
+  const feedO = (1 - prog(t, M1.pick, 0.3)) + prog(t, M3.pick + 0.1, 0.4);
+  feed.style.opacity = Math.min(1, feedO) * prog(t, S[1] + 0.4, 0.55);
+  month.style.opacity = mIn * (1 - mOut); month.style.visibility = mIn * (1 - mOut) > 0.001 ? 'visible' : 'hidden';
+  year.style.opacity = yIn * (1 - yOut); year.style.visibility = yIn * (1 - yOut) > 0.001 ? 'visible' : 'hidden';
+  // Ay: günler sırayla dolar
+  mCells.forEach(m => {
+    const p = prog(t, M1.pick + 0.35 + m.d * 0.045, 0.3);
+    m.dot.style.transform = `scale(${m.data ? lerp(0.4, 1, p) : 1})`; m.dot.style.opacity = m.data ? p : 1;
+    if (m.mark) m.mark.style.opacity = prog(t, M1.pick + 0.6 + m.d * 0.045, 0.3);
+  });
+  // Yıl: aylar dalga gibi dolar
+  yDots.forEach(y => {
+    if (!y.data) return;
+    const p = prog(t, M2.pick + 0.3 + (y.order - 62) * 0.0068, 0.3);
+    y.dot.style.opacity = p; y.dot.style.transform = `scale(${lerp(0.3, 1, p)})`;
+  });
+
+  // Girdi detayı ve değişim çifti
+  sozCard.style.transform = `scale(${pressScale(t, TCARD)})`;
+  const dp = prog(t, TDET, 0.5) * (1 - prog(t, S[6] - 0.05, 0.5));
+  detail.style.transform = `translateX(${(1 - dp) * 390}px)`; detail.style.visibility = dp > 0.001 ? 'visible' : 'hidden';
+  const pp = prog(t, TPAIR - 0.35, 0.5);
+  pair.style.opacity = pp;
+  tlLine.setAttribute('stroke-dashoffset', 1 - prog(t, TPAIR - 0.1, 0.7));
+  tlDots[0].setAttribute('opacity', prog(t, TPAIR - 0.2, 0.3)); tlDots[1].setAttribute('opacity', prog(t, TPAIR + 0.5, 0.3));
+  ans[0].style.opacity = prog(t, TPAIR - 0.1, 0.4);
+  ans[1].style.opacity = prog(t, TPAIR + 0.5, 0.4); ans[1].style.transform = `translateY(${(1 - prog(t, TPAIR + 0.5, 0.5)) * 10}px)`;
+
+  // Motif
+  const A = arc(cx, 930*u, 200*u, 26*u);
+  const R = roundRect(tx, ty, 390 * c.s, 844 * c.s, 48 * c.s);
+  let pts = A, a = 0, b = 1, col = C.ink;
+  if (t < S[1] - 0.25) { const p = prog(t, 0.9, 1.0); a = .5 - .5*p; b = .5 + .5*p; }
+  else if (t < S[7] - 0.3) { const m = prog(t, S[1] - 0.25, 0.9); pts = morph(A, R, m); col = mixHex(C.ink, C.lineStrong, m); }
+  else { const m = prog(t, S[7] - 0.3, 0.9); pts = morph(R, A, m); col = mixHex(C.lineStrong, C.ink, m); }
+  motif.setAttribute('d', subPath(pts, a, b));
+  motif.setAttribute('stroke', col);
+
+  // Metinler
+  wordsAt(title, t, 0.2, S[1] - 0.3, cx, 820*u, { stagger: 0.09 });
+  wordsAt(titleSub, t, 1.2, S[1] - 0.3, cx, 1010*u);
+  show(veil, zoom);
+  SCENES.forEach(sc => {
+    const tin = sc.t0 + 0.35, tout = sc.t1 - 0.28;
+    wordsAt(sc.h, t, tin, tout, cx, headY);
+    wordsAt(sc.s, t, tin + 0.35, tout, cx, subY);
+  });
+  place(triple.el, cx, 1640*u);
+  triple.el.style.visibility = t > TRIPLE_T[0] - 0.1 && t < S[7] ? 'visible' : 'hidden';
+  TRIPLE_W.forEach((ids, g) => ids.forEach((i, k) => {
+    const w = triple.words[i];
+    const p = prog(t, TRIPLE_T[g] + k * 0.07, 0.55), q = prog(t, S[7] - 0.28, 0.28);
+    w.style.opacity = p * (1 - q);
+    w.style.transform = `translateY(${(1 - p) * 30*u - q * 14*u}px)`;
+  }));
+  wordsAt(wordmark, t, S[7] + 0.05, null, cx, 820*u, { stagger: 0.09 });
+  wordsAt(store, t, S[7] + 0.9, null, cx, 1010*u);
+  place(endLabel, cx, 1090*u); endLabel.style.opacity = t >= S[7] ? prog(t, S[7] + 1.1, 0.5) : 0;
+};
+render(0);
+</script>
+</body>
+</html>
